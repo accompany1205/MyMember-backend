@@ -7,6 +7,7 @@ const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.email);
 
 exports.signup = (req, res) => {
+    console.log(req.body, 'fs')
     console.log("req.body", req.body);
     const user = new User(req.body);
     console.log(user)
@@ -42,18 +43,18 @@ exports.forgetpasaword = (req, res) => {
                             <p>${process.env.RESET_URL}/reset_password/${resetPassToken}</p>
                             `
             };
-            User.updateOne({ _id: user._id },  { reset_token: resetPassToken }, (err, success) => {
+            User.updateOne({ _id: user._id }, { reset_token: resetPassToken }, (err, success) => {
                 if (err) {
                     res.send({ error: 'reset token is not add' })
                 }
                 else {
-                      sgMail.send(resetPassData, function (err, data) {
+                    sgMail.send(resetPassData, function (err, data) {
                         if (err) {
                             res.send({ error: 'email not sent' })
                             console.log(err)
                         }
                         else {
-                            res.send({ msg: 'email send successfully reset link sent your email'})
+                            res.send({ msg: 'email send successfully reset link sent your email' })
                         }
                     })
                 }
@@ -62,32 +63,32 @@ exports.forgetpasaword = (req, res) => {
     })
 }
 
-exports.resetPassword = (req,res)=>{
+exports.resetPassword = (req, res) => {
     var newPass = req.body.newPass;
     var Token = req.headers["authorization"]
-    const bearer = Token.split(' ');                
+    const bearer = Token.split(' ');
     const bearerToken = bearer[1];
-    if(typeof bearerToken !== 'undefined'){
-        jwt.verify(bearerToken, process.env.JWT_RESET_PASSWORD_KEY,(err,decodeToken)=>{
-            if(err){
-                res.send({error:'incorrect token or it expire'})
+    if (typeof bearerToken !== 'undefined') {
+        jwt.verify(bearerToken, process.env.JWT_RESET_PASSWORD_KEY, (err, decodeToken) => {
+            if (err) {
+                res.send({ error: 'incorrect token or it expire' })
             }
-            else{
+            else {
                 console.log(decodeToken)
-                User.findByIdAndUpdate({_id:decodeToken._id},{$set:{reset_token:'',hashed_password:newPass}})
-                .exec((err,restdata)=>{
-                    if(err){
-                        res.send({error:'password is not reset'})
-                    }
-                    else{
-                        res.send({error:'password is reset successfully'})
-                    }
-                })
+                User.findByIdAndUpdate({ _id: decodeToken._id }, { $set: { reset_token: '', hashed_password: newPass } })
+                    .exec((err, restdata) => {
+                        if (err) {
+                            res.send({ error: 'password is not reset' })
+                        }
+                        else {
+                            res.send({ error: 'password is reset successfully' })
+                        }
+                    })
             }
         })
     }
-    else{
-        res.send({error:'authentication error'})
+    else {
+        res.send({ error: 'authentication error' })
     }
 }
 
@@ -185,52 +186,52 @@ exports.resetPassword = (req,res)=>{
 //     }
 // };
 
-exports.signin =(req, res)=>{
+exports.signin = (req, res) => {
     // find the user based on email
     const { email, password } = req.body;
     console.log(req.body)
-    User.findOne({ email }).exec((err, data) => {
+    User.findOne({ email: email }).exec((err, data) => {
         if (err || !data) {
             console.log(err)
             return res.status(400).json({
                 error: 'User with that email does not exist. Please signup'
             });
         }
-     else{
-        if(data.password == req.body.password){
-        if(data.role == 0){
-            if(data.status == 'Active'){    
-            // if (!data.authenticate(password)) {
-            //     return res.status(401).json({
-            //         error: 'Email and password dont match'
-            //     });
-            // }
-            token = jwt.sign({ id: data._id }, process.env.JWT_SECRET);
-            res.cookie('t', token, { expire: new Date() + 9999 });
-            const { _id,username, name, email, role, logo,location_name } = data;
-            console.log(data)
-            return res.json({ token, data: { _id,username, email, name, role, logo, location_name  } });
-            }
-            else{
-                return res.json({error:'your account is deactivate'})
-            }
-        }
-        else if(data.role == 1){
-            // if (!data.authenticate(password)) {
-            //     return res.status(401).json({
-            //         error: 'Email and password dont match'
-            //     });
-            // }
-            token = jwt.sign({ id: data._id,role: data.role }, process.env.JWT_SECRET);
-            res.cookie('t', token, { expire: new Date() + 9999 });
-            const { _id,username, name, email, role } = data;
-            return res.json({ token, data: { _id,username ,email, name, role } });
-        }
-    }
         else {
-            res.send({ error: 'password is wrong' })
+            if (data.password == req.body.password) {
+                if (data.role == 0) {
+                    if (data.status == 'Active') {
+                        // if (!data.authenticate(password)) {
+                        //     return res.status(401).json({
+                        //         error: 'Email and password dont match'
+                        //     });
+                        // }
+                        token = jwt.sign({ id: data._id }, process.env.JWT_SECRET);
+                        res.cookie('t', token, { expire: new Date() + 9999 });
+                        const { _id, username, name, email, role, logo, location_name } = data;
+                        console.log(data)
+                        return res.json({ token, data: { _id, username, email, name, role, logo, location_name } });
+                    }
+                    else {
+                        return res.json({ error: 'your account is deactivate' })
+                    }
+                }
+                else if (data.role == 1) {
+                    // if (!data.authenticate(password)) {
+                    //     return res.status(401).json({
+                    //         error: 'Email and password dont match'
+                    //     });
+                    // }
+                    token = jwt.sign({ id: data._id, role: data.role }, process.env.JWT_SECRET);
+                    res.cookie('t', token, { expire: new Date() + 9999 });
+                    const { _id, username, name, email, role } = data;
+                    return res.json({ token, data: { _id, username, email, name, role } });
+                }
+            }
+            else {
+                res.send({ error: 'password is wrong' })
+            }
         }
-      }
     })
 }
 
@@ -271,7 +272,7 @@ exports.verifySchool = (req, res, next) => {
 
     if (typeof bearerToken !== "undefined") {
         jwt.verify(bearerToken, process.env.JWT_SECRET, (err, authData) => {
-            console.log(authData,req.params.userId)
+            console.log(authData, req.params.userId)
             if (err) {
                 res.sendStatus(403);
             } else {
@@ -292,8 +293,8 @@ exports.isAdmin = (req, res, next) => {
     const bearer = Token.split(' ');
     const bearerToken = bearer[1];
     if (typeof bearerToken !== "undefined") {
-        jwt.verify(bearerToken,process.env.JWT_SECRET, (err, adminData) => {
-            console.log(adminData,req.params.userId,'run')
+        jwt.verify(bearerToken, process.env.JWT_SECRET, (err, adminData) => {
+            console.log(adminData, req.params.userId, 'run')
             if (err) {
                 res.sendStatus(403);
             } else {

@@ -12,7 +12,7 @@ const programSchema = new mongoose.Schema(
         },
         rank_name: {
             type: String,
-            required: true,
+            
         },
         day_to_ready: {
             type: String,

@@ -1,12 +1,12 @@
 const mongoose = require("mongoose");
-const schema = mongoose.Schema                    
+const schema = mongoose.Schema
 const stripeSchema = new schema(
     {
         stripeName: {
             type: String,
             trim: true,
             required: true,
-            unique:true,
+            unique: true,
             maxlength: 32
         },
         color: {
@@ -14,8 +14,8 @@ const stripeSchema = new schema(
             required: true
         },
         lable: {
-            type:String,
-            required:true
+            type: String,
+            required: true
         },
         total_stripe: {
             type: String,
@@ -23,28 +23,31 @@ const stripeSchema = new schema(
         },
         progression: {
             type: String,
-            required:true
+            required: true
         },
         candidate: {
             type: String,
-            required:true
+            required: true
         },
         stripe_image: {
-         type: String
+            type: String
         },
         age_requirement: {
             required: true,
             type: String
         },
-        manage_stripe:[
-        {
+        manage_stripe: [
+            {
+                type: schema.Types.ObjectId,
+                ref: 'manageStripe'
+            },
+        ],
+        userId: {
             type: schema.Types.ObjectId,
-            ref:'manageStripe'           
         },
-     ],
-     userId:{
-        type:schema.Types.ObjectId,
-    } 
+        status: {
+            type: String
+        }
     },
     { timestamps: true }
 );
