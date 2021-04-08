@@ -190,7 +190,7 @@ exports.signin = (req, res) => {
     // find the user based on email
     const { email, password } = req.body;
     console.log(req.body)
-    User.findOne({ email: email }).exec((err, data) => {
+    User.findOne({ username: email }).exec((err, data) => {
         if (err || !data) {
             console.log(err)
             return res.status(400).json({
