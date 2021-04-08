@@ -188,9 +188,9 @@ exports.resetPassword = (req, res) => {
 
 exports.signin = (req, res) => {
     // find the user based on email
-    const { email, password } = req.body;
+    const { username, password } = req.body;
     console.log(req.body)
-    User.findOne({ username: email }).exec((err, data) => {
+    User.findOne({ username: username }).exec((err, data) => {
         if (err || !data) {
             console.log(err)
             return res.status(400).json({
