@@ -183,7 +183,7 @@ export const loginWithJWT = user => {
   return dispatch => {
     axios
       .post(`${baseUrl}/api/signin`, {
-        email: user.email,
+        username: user.username,
         password: user.password
       })
       .then(response => {
@@ -202,12 +202,12 @@ export const loginWithJWT = user => {
   }
 }
 
-export const LOGIN_WITH_JWT = ({email, password}) => {
-  console.log("email", email);
+export const LOGIN_WITH_JWT = ({username, password}) => {
+  console.log("username", username);
   console.log("password", password);
   return async dispatch => {
     try{
-        let response = await axios.post(`${baseUrl}/api/signin`, { email, password });
+        let response = await axios.post(`${baseUrl}/api/signin`, { username, password });
         if(response.data && response.status === 200){
           let loggedInUser = response.data.data;
           // console.log(">>>>>>>>>>>>>",loggedInUser)
