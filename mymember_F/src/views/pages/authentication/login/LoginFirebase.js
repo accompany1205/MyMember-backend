@@ -16,7 +16,7 @@ import {
 
 class LoginFirebase extends React.Component {
   state = {
-    email: "demo@demo.com",
+    username: "demo@demo.com",
     password: "demodemo",
     remember: false
   }
@@ -24,7 +24,7 @@ class LoginFirebase extends React.Component {
   handleLogin = e => {
     e.preventDefault()
     this.props.submitLoginWithFireBase(
-      this.state.email,
+      this.state.username,
       this.state.password,
       this.state.remember
     )
@@ -43,16 +43,16 @@ class LoginFirebase extends React.Component {
           <Form action="/" onSubmit={this.handleLogin}>
             <FormGroup className="form-label-group position-relative has-icon-left">
               <Input
-                type="email"
-                placeholder="Email"
-                value={this.state.email}
-                onChange={e => this.setState({ email: e.target.value })}
+                type="username"
+                placeholder="Username"
+                value={this.state.username}
+                onChange={e => this.setState({ username: e.target.value })}
                 required
               />
               <div className="form-control-position">
                 <Mail size={15} />
               </div>
-              <Label>Email</Label>
+              <Label>User Name</Label>
             </FormGroup>
             <FormGroup className="form-label-group position-relative has-icon-left">
               <Input

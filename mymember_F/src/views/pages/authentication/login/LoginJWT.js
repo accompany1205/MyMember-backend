@@ -10,7 +10,7 @@ import { history } from "../../../../history"
 
 class LoginJWT extends React.Component {
   state = {
-    email: "",
+    username: "",
     password: "",
     remember: false
   }
@@ -36,16 +36,16 @@ class LoginJWT extends React.Component {
           <Form onSubmit={this.handleLogin}>
             <FormGroup className="form-label-group position-relative has-icon-left">
               <Input
-                type="email"
-                placeholder="Email"
-                value={this.state.email}
-                onChange={e => this.setState({ email: e.target.value })}
+                type="username"
+                placeholder="Username"
+                value={this.state.username}
+                onChange={e => this.setState({ username: e.target.value })}
                 required
               />
               <div className="form-control-position">
                 <Mail size={15} />
               </div>
-              <Label>Email</Label>
+              <Label>User Name</Label>
             </FormGroup>
             <FormGroup className="form-label-group position-relative has-icon-left">
               <Input
