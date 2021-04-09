@@ -11,11 +11,11 @@ const {
 } = require("../controllers/auth");
 const { userSignupValidator } = require("../validator");
 
-router.post("/signup",userSignupValidator, signup);
+router.post("/signup", userSignupValidator, signup);
 // router.post("/email_activation",activation)
 router.post("/signin", signin);
 router.post("/signout", signout);
-router.put("/forgetPassword",forgetpasaword);
-router.put("/resetPassword",resetPassword);
+router.put("/forgetPassword", forgetpasaword);
+router.put("/resetPassword", resetPassword);
 
 module.exports = router;
