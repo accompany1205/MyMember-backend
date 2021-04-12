@@ -92,7 +92,7 @@ class AnalyticsDashboard extends React.Component {
         </Row>
         <Row className="match-height">
           <Col md="6" sm="12">
-            <BirthDayAnniversary/>
+            {/* <BirthDayAnniversary/> */}
           </Col>
           {/* <Col md="6" sm="12">
             <MemberShipManagement/>

@@ -26,8 +26,6 @@ class ModalForm extends React.Component {
   render() {
     return (
       <React.Fragment>
-                 
-                
                 <button className="btn_ey"
                     onClick={this.toggleModal}>
                     <Plus 
