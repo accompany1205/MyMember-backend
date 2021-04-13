@@ -5,13 +5,18 @@ const expressJwt = require('express-jwt'); // for authorization check
 const { errorHandler } = require('../helpers/dbErrorHandler');
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.email);
+var dummy_menu = require("../dummy_menu")
 
-exports.signup = (req, res) => {
-    console.log(req.body, 'fs')
-    console.log("req.body", req.body);
+exports.signup = async(req, res) => {
+    const {email ,username} =req.body
+    console.log(email,username)
+    var userData = await User.findOne({$or:[{email:email},{username:username}]})
+    console.log(userData)
+    if(!userData){
+        console.log("req.body", req.body);
     const user = new User(req.body);
     console.log(user)
-    user.save((err, user) => {
+    user.save(async(err, user) => {
         if (err) {
             console.log(err)
             return res.status(400).json({
@@ -21,10 +26,20 @@ exports.signup = (req, res) => {
         }
         user.salt = undefined;
         user.hashed_password = undefined;
-        res.json({
-            user
-        });
+        await dummy_menu.all_std(user.id)
+        await dummy_menu.active_std(user.id)
+        await dummy_menu.after_school_std(user.id)
+        await dummy_menu.camp_std(user.id)
+        await dummy_menu.former_std(user.id)
+        await dummy_menu.former_trail_std(user.id)
+        await dummy_menu.leads_std(user.id)
+
+        res.json({code:200,msg:user});
     });
+    }
+    else{
+        res.json({code:400,msg:'this username or email already exist'})
+    }
 };
 exports.forgetpasaword = (req, res) => {
     var { email } = req.body

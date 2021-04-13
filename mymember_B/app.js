@@ -96,6 +96,10 @@ const location = require("./routes/admin/settings/location")
 const user_membership = require("./routes/admin/membership_management/school_membership")
 const buy_user_membership = require("./routes/admin/membership_management/school_buy_membership")
 
+//menu routes
+const student_menu = require("./routes/menu/std_menu/all_student_menu")
+
+
 //school auth key email,text,payment get way
 const emailKey = require("./routes/email_key")
 const textkey = require("./routes/text_key")
@@ -206,15 +210,19 @@ app.use('/api',sample_doc)
 app.use('/api',emailKey)
 app.use('/api',textkey)
 
-const privateKey1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/privkey.pem', 'utf8');
-const certificate1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/cert.pem', 'utf8');
-const ca1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/chain.pem', 'utf8');
 
-const credentials1 = {
-	key: privateKey1,
-	cert: certificate1,
-	ca: ca1
-};
+// menu middleware
+app.use('/api',student_menu)
+
+// const privateKey1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/privkey.pem', 'utf8');
+// const certificate1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/cert.pem', 'utf8');
+// const ca1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/chain.pem', 'utf8');
+
+// const credentials1 = {
+// 	key: privateKey1,
+// 	cert: certificate1,
+// 	ca: ca1
+// };
 
 // app.use(function (req, res, next){
 //     res.header("Access-Control-Allow-Origin", "*");
@@ -226,14 +234,12 @@ const credentials1 = {
 //     next();
 //   });
 
-const port = process.env.PORT || 8080;
-var server = https.createServer(credentials1, app).listen(port, function(){
-    console.log("Express server listening on port " + port);
-});
 
-
-
-//  const port = process.env.PORT || 8080;
-// app.listen(port, () => {
-//     console.log(`Server is running on port ${port}`);
+// var server = https.createServer(credentials1, app).listen(port, function(){
+//     console.log("Express server listening on port " + port);
 // });
+
+const port = process.env.PORT || 8080;
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+});

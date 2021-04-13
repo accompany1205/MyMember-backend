@@ -76,14 +76,14 @@ exports.list_template = (req,res)=>{
 }
 
 exports.add_template = (req,res)=>{
-    var schedule = req.body.schedule
-       authKey.findOne({userId:req.params.userId})      
-        .exec((err,key)=>{
-            if(err){
-                res.send({Error:'email auth key is not find so schedule is not create',error:err})
-            }
-            else{
-                console.log(key)
+    // var schedule = req.body.schedule
+    //    authKey.findOne({userId:req.params.userId})      
+    //     .exec((err,key)=>{
+    //         if(err){
+    //             res.send({Error:'email auth key is not find so schedule is not create',error:err})
+    //         }
+    //         else{
+    //             console.log(key)
                 var obj ={
                     to: req.body.to,
                     from: req.body.from,
@@ -97,7 +97,6 @@ exports.add_template = (req,res)=>{
                     email_type:'schedule',
                     email_status:true,
                     category:'compose',
-                    email_auth_key:key.auth_key,
                     userId:req.params.userId,
                     folderId:req.params.folderId
                 }
@@ -119,8 +118,8 @@ exports.add_template = (req,res)=>{
                  })
               }
           })
-       }
-    })
+    //    }
+    // })
 }
 exports.update_template =(req,res)=>{
     all_temp.update({_id:req.params.templateId},req.body,(err,updateTemp)=>{
