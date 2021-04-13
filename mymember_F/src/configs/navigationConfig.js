@@ -276,6 +276,47 @@ const SchoolNavigationConfig = [
           },
         ]
       },
+      {
+        id: "text",
+        title: "Text",
+        type: "collapse",
+        icon: <Icon.Mail size={12} color="black" />,
+        children: [
+          // {
+          //   id: "text",
+          //   title: "Text",
+          //   type: "item",
+          //   icon: <Icon.Circle size={10} color="green" />,
+          //   permissions: ["admin", "editor"],
+          //   navLink: "/app/marketing/email/compose"
+          // },
+          {
+            id: "library",
+            title: "Nurturing",
+            type: "item",
+            icon: <Icon.Circle size={10} color="black" />,
+            permissions: ["admin", "editor"],
+            navLink: "/app/marketing/text/nurting"
+          },
+          {
+            id: "systemText",
+            title: "System",
+            type: "item",
+            icon: <Icon.Circle size={10} color="blue" />,
+            permissions: ["admin", "editor"],
+            navLink: "/app/marketing/text/system"
+          },
+          
+          {
+            id: "library",
+            title: "Library",
+            type: "item",
+            icon: <Icon.Circle size={10} color="red" />,
+            permissions: ["admin", "editor"],
+            navLink: "/app/marketing/text/library"
+          },
+        ]
+      },
 
     ]
   },

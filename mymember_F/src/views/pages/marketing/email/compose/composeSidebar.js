@@ -37,15 +37,18 @@ class ComposeSidebar extends React.Component {
     }))
   }
 
-  componentDidMount() {
+  componentDidMount(){
     this.props.GET_CATEGORIES();
+    this.setState({rowData:this.props.categories});
     
   }
   componentDidUpdate(prevProps) {
+ 
     if (prevProps.categories !== this.props.categories) {
       for (let mainFolder of this.props.categories) {
         if (mainFolder.folder.length != 0) {
-          let _1stSubFolder = mainFolder.folder[0]
+          let _1stSubFolder = mainFolder.folder[0];
+          console.log("inside caterogru",this.props.categories)
           this.setState({
             rowData: this.props.categories,
             loading: false,
@@ -91,7 +94,7 @@ class ComposeSidebar extends React.Component {
   }
   render() {
     const { rowData } = this.state
-    const mainfolder = this.props.routerProps.location.pathname.split("/")
+    const mainfolder = this.props.routerProps.location.pathname.split("/");
     return (
       <React.Fragment>
         <div
@@ -123,7 +126,7 @@ class ComposeSidebar extends React.Component {
           >
             <ListGroup style={{ width: "100%" }} className="list-group-messages font-medium-1">
               {
-                rowData?.map((collapseItem, id) => {
+                this.props.categories ? this.props.categories.map((collapseItem, id) => {
                   return (
                     <ListGroupItem
                     key={id}
@@ -202,7 +205,7 @@ class ComposeSidebar extends React.Component {
                       </Collapse>
                     </ListGroupItem>
                   )
-                })
+                }):"list is empty"
               }
 
             </ListGroup>
@@ -244,7 +247,8 @@ class ComposeSidebar extends React.Component {
           You won't be able to revert this!
         </SweetAlert>
       </React.Fragment>
-    )
+   
+   )
   }
 }
 
