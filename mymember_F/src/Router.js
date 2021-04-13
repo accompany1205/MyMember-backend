@@ -111,6 +111,7 @@ const MymoneyFinanceAddccexpiring = lazy(() => import("./views/pages/myMoney/fin
 const MarketingNurting = lazy(() => import("./views/pages/marketing/email/nurturing/nurturingMain"))
 const MarketingSytems = lazy(() => import("./views/pages/marketing/email/system/system"))
 // const MarketingLibrary = lazy(() => import("./views/pages/marketing/email/library/libraryMain"))
+
 const MarketingTextAddNurting = lazy(() => import("./views/pages/marketing/text/nurturing/nurturingMain"))
 const MarketingTextAddSystem = lazy(() => import("./views/pages/marketing/text/system/system"))
 const MarketingTextAddLibrary = lazy(() => import("./views/pages/marketing/text/library/libraryMain"))
@@ -304,6 +305,7 @@ class AppRouter extends React.Component {
             exact
             component={() => <Redirect to="/email/inbox" />}
           />
+
           <AppRoute path="/email/:filter" component={emailCompose} />
           <AppRoute path="/chat" component={chat} />
           <AppRoute
@@ -322,6 +324,7 @@ class AppRouter extends React.Component {
           <AppRoute path="/app/appointment" component={appointment} />
           <AppRoute path="/ecommerce/shop" component={shop} />
           <AppRoute path="/ecommerce/wishlist" component={wishlist} />
+          
           <AppRoute
             path="/ecommerce/product-detail"
             component={productDetail}
@@ -350,6 +353,7 @@ class AppRouter extends React.Component {
           <AppRoute path="/company/mymoney/finance/ccexpiring" component={MymoneyFinanceAddccexpiring} />
           <AppRoute path="/company/marketing/email/nurturing" component={ MarketingNurting} />
           <AppRoute path="/company/marketing/email/system" component={MarketingSytems } />
+
           <AppRoute path="/company/marketing/text/nurturing" component={ MarketingTextAddNurting} />
           <AppRoute path="/company/marketing/text/system" component={MarketingTextAddSystem } />
           <AppRoute path="/company/marketing/text/library" component={MarketingTextAddLibrary } />
@@ -521,6 +525,11 @@ class AppRouter extends React.Component {
           <AppRoute path="/app/marketing/email/sent_all_email" component={allEmailList} />
           <AppRoute path="/app/marketing/email/compose" component={composeEmail} />
           <AppRoute path="/app/marketing/email/library" component={libraryEmail} />
+          
+          <AppRoute path="/app/marketing/text/nurting" component={MarketingTextAddNurting} />
+          <AppRoute path="/app/marketing/text/system" component={MarketingTextAddSystem} />
+          <AppRoute path="/app/marketing/text/library" component={MarketingTextAddLibrary} />
+
           <AppRoute path="/app/student/list" component={userList} />
           <AppRoute path="/app/member/list" component={memberList} />
           <AppRoute path="/app/student/active-trail/list" component={activetrailuserList} />

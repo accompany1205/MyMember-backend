@@ -29,7 +29,6 @@ class FloatingLabels extends React.Component {
     changeHandler = e => {
         console.log(e.target.name, e.target.value);
         this.setState({ ...this.state, [e.target.name]: e.target.value });
-
     }
 
     onsubmit = (e) => {

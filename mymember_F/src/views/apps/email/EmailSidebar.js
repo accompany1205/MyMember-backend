@@ -13,9 +13,7 @@ class EmailSidebar extends React.Component {
   }
   componentDidMount() {
     this.props.GetFolderList();
-
   }
-
   render() {
 
     return (
