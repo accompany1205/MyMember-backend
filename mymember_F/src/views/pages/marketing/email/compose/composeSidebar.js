@@ -20,15 +20,21 @@ import NewFolder from "./composeCategoryModal"
 import "../../../../../assets/scss/plugins/extensions/editor.scss"
 
 class ComposeSidebar extends React.Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      collapseID: "",
+      rowData: null,
+      defaultAlert: false,
+      ActiveFolderAction: null,
+      actionFolderId: null,
+      defaultAlert4sub:false,
+      defaultSubFolder: {},
+      isEditorr:"",
+      datafirst:""
+    }
+  
 
-  state = {
-    collapseID: "",
-    rowData: null,
-    defaultAlert: false,
-    ActiveFolderAction: null,
-    actionFolderId: null,
-    defaultAlert4sub:false,
-    defaultSubFolder: {}
   }
 
   toggleCollapse = (collapseID) => {
@@ -43,12 +49,10 @@ class ComposeSidebar extends React.Component {
     
   }
   componentDidUpdate(prevProps) {
- 
     if (prevProps.categories !== this.props.categories) {
       for (let mainFolder of this.props.categories) {
         if (mainFolder.folder.length != 0) {
           let _1stSubFolder = mainFolder.folder[0];
-          console.log("inside caterogru",this.props.categories)
           this.setState({
             rowData: this.props.categories,
             loading: false,
@@ -64,7 +68,11 @@ class ComposeSidebar extends React.Component {
   }
 
   CallCHANGEFILTER = (_path,id) =>{
-     this.props.CHANGE_FILTER(_path,id)
+     this.props.CHANGE_FILTER(_path,id);
+     if(this.props.isEditorr == true){
+      this.props.handleIsEditor(false)
+     }
+     
   }
   deleteFolder = (item) => {
     this.setState({ defaultAlert: true, actionFolder: item })
@@ -92,6 +100,7 @@ class ComposeSidebar extends React.Component {
     }
     this.setState({ defaultAlert4sub:false,defaultAlert: false, actionFolder: null })
   }
+  
   render() {
     const { rowData } = this.state
     const mainfolder = this.props.routerProps.location.pathname.split("/");
@@ -170,6 +179,7 @@ class ComposeSidebar extends React.Component {
                                 this.CallCHANGEFILTER(`${collapseItem.categoryName}/${subFolder.folderName}`, subFolder._id) }
                                 active={`app/marketing/email/compose/${collapseItem.categoryName}/${subFolder.folderName}` === this.props.routerProps.location.pathname}
                                 className="border-0 cursor-pointer pt-0"
+
                               >
                                 <FolderPlus size={18} />
                                 <span className="align-middle ml-1">{subFolder.folderName}</span>
@@ -198,6 +208,7 @@ class ComposeSidebar extends React.Component {
                               isEditMainFolder={false}
                               isEditSubFolder={false}
                               isSubFolder={true}
+                              
                               mainFolder={collapseItem}
                             />
                           </ListGroupItem>
@@ -207,10 +218,8 @@ class ComposeSidebar extends React.Component {
                   )
                 }):"list is empty"
               }
-
             </ListGroup>
           </PerfectScrollbar>
-
         </div>
         <SweetAlert title="Are you sure?"
           warning
