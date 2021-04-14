@@ -4,8 +4,8 @@ const cloudUrl = require("../gcloud/imageUrl")
 const program = require("../models/program")
 const rank_change = require("../models/change_rank");
 const change_rank = require('../models/change_rank');
-const ManyStudents = require('../std.js');
-const students = require('../std.js');
+// const ManyStudents = require('../std.js');
+// const students = require('../std.js');
 
 // exports.next_std_find =(req,res)=>{
 //     addmemberModal.find({_id:{$lt:req.params.stdId}},{upsert:true})
