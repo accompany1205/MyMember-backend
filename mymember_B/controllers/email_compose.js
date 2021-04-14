@@ -68,16 +68,9 @@ exports.category_list =(req,res)=>{
 }
 
 exports.sendEmail = (req,res)=>{
-    AuthKey.findOne({userId:req.params.userId})
-    .exec((err,datakey)=>{
-        
-        if(err){
-            res.send(err)
-        }
-        else{
-            console.log(datakey)
-            const emailData = {
-                sendgrid_key: datakey.auth_key,
+
+        const emailData = {
+                sendgrid_key: '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',
                 to: req.body.to,
                 from_email: req.body.from,
                 from_name: 'noreply@gmail.com',
@@ -111,8 +104,7 @@ exports.sendEmail = (req,res)=>{
                 res.send({error:'email not send'})
                 console.log(err)
             })
-        }
-    })
+ 
 }
 
 exports.addCategory =(req,res)=>{
