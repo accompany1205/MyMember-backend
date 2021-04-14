@@ -139,7 +139,7 @@ exports.remove_template =(req,res)=>{
         }
         else{
             console.log(removeTemplate)
-            compose_folder.update({"template":removeTemplate._id},{$pull:{"template":removeTemplate._id}},
+            compose_folder.updateOne({"template":removeTemplate._id},{$pull:{"template":removeTemplate._id}},
             function(err,temp){
                 if(err){
                     res.send({error:'compose template details is not remove in folder'})
