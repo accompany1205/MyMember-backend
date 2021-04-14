@@ -3,13 +3,13 @@ const std = require("../models/addmember")
 const async = require('async')
 
 exports.text_contact_list = (req,res)=>{
-txtList.find({$and:[{userId:req.params.userId,contact_type:'Text'}]})
+txtList.find({userId:req.params.userId})
 .exec((err,emailList)=>{
   if(err){
-    res.send({error:'text list is not found'})
+    res.send({code:400,msg:'text list is not found'})
   }
   else{
-    res.send(emailList)
+    res.send({code:200,msg:emailList})
   }
 })
 }

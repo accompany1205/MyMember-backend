@@ -12,7 +12,7 @@ const textListSchema = new schema({
     },
     contact_type:{
         type:String,
-        default:" "
+        default:""
     },
     primaryPhone:{
         type:String

@@ -122,12 +122,12 @@ exports.add_template = (req,res)=>{
     // })
 }
 exports.update_template =(req,res)=>{
-    all_temp.update({_id:req.params.templateId},req.body,(err,updateTemp)=>{
+    all_temp.updateOne({_id:req.params.templateId},req.body,(err,updateTemp)=>{
         if(err){
-            res.send({error:'template is not update'})
+            res.send({code:400,msg:'template is not update'})
         }
         else{
-            res.send(updateTemp)
+            res.send({code:200,msg:'template update success',result:updateTemp})
         }
     }) 
 }
