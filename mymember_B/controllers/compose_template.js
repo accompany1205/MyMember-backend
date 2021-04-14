@@ -151,3 +151,14 @@ exports.remove_template =(req,res)=>{
         }
     })
 }
+
+exports.multipal_temp_remove =(req,res)=>{
+    all_temp.deleteMany({_id:req.body.tempId}).exec((err,resp)=>{
+        if(err){
+            res.json({code:400,msg:'templates not remove'})
+        }
+        else{
+            res.json({code:200,msg:'template is remove successfully'})
+        }
+    })
+}

@@ -35,8 +35,9 @@ exports.tempList = (req,res)=>{
 }
 
 exports.smartList = (req,res)=>{
+    console.log('fsdf')
     Member.aggregate([
-        {$match:{$and:[{userId:req.params.userId},{status:'Active'}]}},
+        {$match:{$and:[{userId:req.params.userId}]}},
         {$group: {
            _id: "$studentType",
            "count": { "$sum": 1 },
@@ -44,10 +45,10 @@ exports.smartList = (req,res)=>{
        }}
     ]).exec((err,sList)=>{
         if(err){
-            res.send(err)
+            res.send({code:400,msg:'smart list not found'})
         }
         else{
-            res.send(sList)
+            res.send({code:200,msg:sList})
         }
     })
 }
