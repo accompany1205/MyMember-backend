@@ -5,18 +5,13 @@ const expressJwt = require('express-jwt'); // for authorization check
 const { errorHandler } = require('../helpers/dbErrorHandler');
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.email);
-var dummy_menu = require("../dummy_menu")
+const navbar = require('../models/navbar.js')
 
-exports.signup = async(req, res) => {
-    const {email ,username} =req.body
-    console.log(email,username)
-    var userData = await User.findOne({$or:[{email:email},{username:username}]})
-    console.log(userData)
-    if(!userData){
-        console.log("req.body", req.body);
+exports.signup = (req, res) => {
+    console.log("req.body", req.body);
     const user = new User(req.body);
     console.log(user)
-    user.save(async(err, user) => {
+    user.save((err, user) => {
         if (err) {
             console.log(err)
             return res.status(400).json({
@@ -26,20 +21,9 @@ exports.signup = async(req, res) => {
         }
         user.salt = undefined;
         user.hashed_password = undefined;
-        await dummy_menu.all_std(user.id)
-        await dummy_menu.active_std(user.id)
-        await dummy_menu.after_school_std(user.id)
-        await dummy_menu.camp_std(user.id)
-        await dummy_menu.former_std(user.id)
-        await dummy_menu.former_trail_std(user.id)
-        await dummy_menu.leads_std(user.id)
-
-        res.json({code:200,msg:user});
+        navbar_custom(user.id)
+        res.json({ user });
     });
-    }
-    else{
-        res.json({code:400,msg:'this username or email already exist'})
-    }
 };
 exports.forgetpasaword = (req, res) => {
     var { email } = req.body
@@ -203,19 +187,16 @@ exports.resetPassword = (req, res) => {
 
 exports.signin = (req, res) => {
     // find the user based on email
-    const { username, password } = req.body;
+    const { email, password } = req.body;
     console.log(req.body)
-    
-    User.findOne({ username: username }).exec((err, data) => {
+    User.findOne({ email }).exec((err, data) => {
         if (err || !data) {
             console.log(err)
-
             return res.status(400).json({
                 error: 'User with that email does not exist. Please signup'
             });
         }
         else {
-            console.log(data)
             if (data.password == req.body.password) {
                 if (data.role == 0) {
                     if (data.status == 'Active') {
@@ -330,3 +311,110 @@ exports.isAdmin = (req, res, next) => {
 };
 
 
+function navbar_custom(user_id) {
+
+    const Data = [{
+        user_id: user_id,
+        ui: 'Dashboard',
+        li: ''
+    },
+    {
+        user_id: user_id,
+        ui: 'Student',
+        li: ['Student', 'Active Trail', 'Lead', 'Former Student', 'Former Trail', 'After School', 'Camp', 'Studen By Program', 'Membership by Program']
+    },
+
+    {
+        user_id: user_id,
+        ui: 'My School',
+        li: ['Miss you call', 'Renewals', 'Birthday', 'Candidates']
+
+    },
+    {
+        user_id: user_id,
+        ui: 'Testing',
+        li: ['Eligible', 'Recomended', 'Registration']
+
+    },
+    {
+        user_id: user_id,
+        ui: 'Task and Goal',
+        li: ['To Do List', 'Goal']
+
+    },
+    {
+        user_id: user_id,
+        ui: 'Calendar',
+        li: ['Attendence', 'Appointment', 'Self Check In']
+
+    },
+    {
+        user_id: user_id,
+        ui: 'Marketing',
+        li: ['Email', 'Compose', 'Nurturing', 'System', 'Library', 'Sent']
+
+    },
+    {
+        user_id: user_id,
+        ui: 'Shop',
+        li: ['Membership', 'Store', 'Testing', 'Purchase History']
+
+    },
+    {
+        user_id: user_id,
+        ui: 'My Money',
+        li: ['Expenses', 'Finance']
+
+    },
+    {
+        user_id: user_id,
+        ui: 'Finance',
+        li: ['Delinquent', 'Forecast', 'CC Expiring', 'Test']
+
+    },
+    {
+        user_id: user_id,
+        ui: 'Statistics',
+        li: ['Active Students', 'Active Trial', 'Lead', 'Former Student', 'Former Trial', 'After School', 'Camp']
+    },
+    {
+        user_id: user_id,
+        ui: 'Documents',
+        li: ''
+    },
+    {
+        user_id: user_id,
+        ui: 'Settings',
+        li: ''
+    }]
+
+    navbar.insertMany(Data).then((response => {
+        console.log(response)
+    }))
+}
+
+exports.get_navbar = async (req, res) => {
+    const { user_id } = req.body
+    await navbar.find({ user_id: user_id }, { _id: 0, user_id: 0, __v: 0 }).then(response => {
+        res.send(response)
+    }).catch(error => {
+        res.json({ error: errorHandler(error) })
+    })
+}
+
+exports.edit_navbar_li = async (req, res) => {
+    const { user_id, ui, li, newli } = req.body
+    await navbar.updateOne({ user_id: user_id, ui: ui, li: li }, { $set: { "li.$": newli } }).then(response => {
+        res.send(response)
+    }).catch(error => {
+        res.json({ error: errorHandler(error) })
+    })
+}
+exports.edit_navbar_ui = async (req, res) => {
+    const { user_id, ui, newui } = req.body
+    await navbar.updateOne({ user_id: user_id, ui: ui }, { $set: { ui: newui } }).then(response => {
+        res.send(response)
+    }).catch(error => {
+        res.json({ error: errorHandler(error) })
+    })
+}

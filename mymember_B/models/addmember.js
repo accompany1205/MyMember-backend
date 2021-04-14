@@ -3,43 +3,42 @@ const schema = mongoose.Schema
 const addmemberSchema = new schema(
     {
         studentType:{
-            type:String,
-            required:true
+            type:String
+            
         },
         firstName:{
-            type:String,
-            required:true
+            type:String
+            
         },
         lastName:{
-            type:String,
-            required:true
+            type:String
+            
         },
         status:{
-            type: String,
-            required:true
+            type: String
+            
         },
         days_expire:{
             type:String,
             default:' '
         },
         dob:{
-            type:Date,
-            required:true
+            type:Date
+            
         },
         day_left:{
             type:String,
             default:' '
         },
         age:{
-            type:String,
-            required:true
+            type:String
         },
         gender:{
-            type:String,
-            required:true
+            type:String
+            
         },
         email:{
-            type:String,
+            type:String
          },
         primaryPhone:{
             type:String
@@ -48,13 +47,13 @@ const addmemberSchema = new schema(
             type:String
         },
         address:{
-            type:String,
+            type:String
         },
         country:{
-            type:String,
+            type:String
         },
         state:{
-            type:String,
+            type:String
         },
         zipPostalCode:{
             type:String
@@ -94,7 +93,7 @@ const addmemberSchema = new schema(
             type:String
         },
         customId:{
-            type:String,
+            type:String
         },
         leadsTracking:{
             type:String
@@ -103,10 +102,10 @@ const addmemberSchema = new schema(
             type:String   
         },
         intrested:{
-            type:String,
+            type:String
         },
         school:{
-            type:String,
+            type:String
         },
         memberprofileImage:{
             type:String,
