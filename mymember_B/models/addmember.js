@@ -77,6 +77,27 @@ const addmemberSchema = new schema(
             type:schema.Types.ObjectId,
             ref:'manage_change_rank'
         }],
+        next_rank_id:{
+            type:String
+        },
+        next_rank_name:{
+            type:String
+        },
+        next_rank_img:{
+            type:String
+        },
+        current_rank_name:{
+            type:String,
+            default:""
+        },
+        current_rank_img:{
+            type:String,
+            default:""
+        },
+        current_rank_id:{
+            type:String,
+            default:""
+        },
         category:{
             type:String    
         },

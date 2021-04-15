@@ -26,12 +26,14 @@ const { addmember,
     studentCount,
     listMember,
     next_std_find,
-    
+    camp_count
 } = require("../controllers/addmember")
 const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 const upload = require('../handler/multer');
 
 // router.post("/member/next_std_find/:stdId",next_std_find)
+// perticular std count
+router.get('/memeber/camp_std_count/:userId',verifySchool,camp_count)
 
 //dashboard routes
 router.get('/member/student_type_count/:userId', verifySchool, studentCount)

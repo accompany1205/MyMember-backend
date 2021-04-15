@@ -5,6 +5,14 @@ const  Member = require('../models/addmember')
 const sgMail = require('sendgrid-v3-node');
 const AuthKey = require('../models/email_key')
 // sgMail.setApiKey(process.env.email);
+function TimeZone(){
+    const str = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+    const date_time =str.split(',')
+    console.log(date_time)
+    const date = date_time[0]
+    const time = date_time[1]
+    return { Date:date,Time:time}
+}
 
 exports.userEmailList = (req,res)=>{
     user.findOne({_id:req.params.userId})
@@ -68,9 +76,8 @@ exports.category_list =(req,res)=>{
 }
 
 exports.sendEmail = (req,res)=>{
-
         const emailData = {
-                sendgrid_key: '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',
+                sendgrid_key: process.env.Email_Key,
                 to: req.body.to,
                 from_email: req.body.from,
                 from_name: 'noreply@gmail.com',
@@ -80,8 +87,10 @@ exports.sendEmail = (req,res)=>{
             emailData.content = req.body.template;
         
             sgMail.send_via_sendgrid(emailData).then(resp=>{
-               console.log(resp)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
+               var DT = TimeZone() 
                var emailDetail =  new emailSent(req.body)
+               emailDetail.sent_date = DT.Date
+               emailDetail.sent_time = DT.Time
                console.log(emailDetail)
                emailDetail.save((err,emailSave)=>{
                    if(err){
@@ -102,7 +111,7 @@ exports.sendEmail = (req,res)=>{
                })
             }).catch(err=>{
                 res.send({error:'email not send'})
-                console.log(err)
+                console.log({err})
             })
  
 }

@@ -28,11 +28,9 @@ const EmailSchema = schema({
    },
    sent_date:{
         type:String,
-        default:new Date().toLocaleDateString()
    },
    sent_time:{
         type:String,
-        default:new Date().toLocaleTimeString()
    },
    category:{
        type:String,

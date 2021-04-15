@@ -52,10 +52,10 @@ exports.all_email_list = async(req,res)=>{
     all_temp.find({userId:req.params.userId})
     .exec((err,allTemp)=>{
         if(err){
-            res.send({error:'template list not found'})
+            res.send({code:400,msg:'email list not found'})
         }
         else{
-            res.send(allTemp)
+            res.send({code:200,msg:allTemp})
         }
     })
 }
@@ -121,6 +121,7 @@ exports.add_template = (req,res)=>{
     //    }
     // })
 }
+
 exports.update_template =(req,res)=>{
     all_temp.updateOne({_id:req.params.templateId},req.body,(err,updateTemp)=>{
         if(err){
