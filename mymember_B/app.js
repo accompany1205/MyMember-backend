@@ -240,7 +240,6 @@ var server = https.createServer(credentials1, app).listen(port, function(){
     console.log("Express server listening on port " + port);
 });
 
-
 // app.listen(port, () => {
 //     console.log(`Server is running on port ${port}`);
 // });
