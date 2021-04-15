@@ -26,8 +26,9 @@ class SmartListTable extends React.Component {
         selectedSmartList : []
     }
 
-    componentDidMount() {
+    componentDidMount =async()=> {
         this.props.GET_SMARTLIST();
+        this.setState({rowData: await this.props.smartlist})
     }
 
     componentDidUpdate(prevProps) {
@@ -53,6 +54,7 @@ class SmartListTable extends React.Component {
     }
 
     render() {
+        console.log("row data is ",this.state.rowData)
         const { loading, rowData, viewRecipientData, viewRecipient } = this.state
         return (
             <Row className="app-user-list">
@@ -76,7 +78,7 @@ class SmartListTable extends React.Component {
                                                     {this.state.rowData !== null ? (
                                                         <ContextLayout.Consumer>
                                                             {context => (
-                                                                rowData.map((item, i) => {
+                                                                rowData.msg.map((item, i) => {
                                                                     return (
                                                                         <tr key={i}>
                                                                             <th>
@@ -117,7 +119,7 @@ class SmartListTable extends React.Component {
                                                         <th>Fullname</th>
                                                         <th>Email</th>
                                                         <th>Phone</th>
-                                                        <th>Status</th>
+                                                        {/* <th>Status</th> */}
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -132,7 +134,7 @@ class SmartListTable extends React.Component {
                                                                                     <td>{item.firstName}{' '}{item.lastName}</td>
                                                                                     <td>{item.email}</td>
                                                                                     <td>{item.primaryPhone}</td>
-                                                                                    <td>{item.status}</td>
+                                                                                    {/* <td>{item.status}</td> */}
                                                                                 </tr>
                                                                             )
                                                                         })

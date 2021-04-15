@@ -150,6 +150,21 @@ class EditorControlled extends React.Component {
 
                 </FormGroup>
               </Col>
+              <Col sm="4">
+                <Label for="nameFloating">Temp List</Label>
+                <FormGroup className="form-label-group">
+                  <Input
+                    type="text"
+                    name="to"
+                    id="to"
+                    placeholder="Temp List"
+                    defaultValue={editExisting ? defaultTemplateData.to.join() : selectedSmartList.join()}
+                    onClick={this.HandleSmartListModal}
+                  />
+
+                </FormGroup>
+              </Col>
+
               {/* <Col sm="4">
                 <Label for="nameFloating">Temp List</Label>
                 <FormGroup className="form-label-group">
