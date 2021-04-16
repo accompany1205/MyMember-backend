@@ -84,7 +84,6 @@ class EditorControlled extends React.Component {
   render() {
     const { editorState, selectedSmartList, subject, title, from, temp, to } = this.state
     const { editExisting, defaultTemplateData } = this.props
-    console.log(this.state);
     return (
       <Fragment>
         <Card className="mb-0">
