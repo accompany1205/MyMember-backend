@@ -3,17 +3,41 @@ const compose_folder = require("../models/email_compose_folder")
 const authKey = require("../models/email_key")
 const async = require('async')
 
+single_temp_update_status = (req,res)=>{
+    console.log(req.body.email_status)
+    if(req.body.email_status == true){
+        all_temp.updateOne({_id:req.params.tempId},{$set:{email_status:true}},(err,resp)=>{
+            if(err){
+                res.json({code:400,msg:'email status not deactive'})
+            }
+            else{
+                res.json({code:200,msg:'email status active successfully'})
+            }
+        })
+    }else if(req.body.email_status == false){
+        all_temp.updateOne({_id:req.params.tempId},{$set:{email_status:false}},(err,resp)=>{
+            if(err){
+                res.json({code:400,msg:'email status not active'})
+            }
+            else{
+                res.json({code:200,msg:'email status deactive successfully'})
+            }
+        })
+    }
+}
+
 exports.status_update_template = (req,res)=>{
-    if(req.body.status == 'false'){
+    console.log(req.body.email_status)
+    if(req.body.email_status == false){
         all_temp.find({$and:[{userId:req.params.userId},{folderId:req.params.folderId}]})
         .exec((err,TempData)=>{
             if(err){
-                res.send(err)
+                res.send({code:400,msg:'all email template not deactive'})
             }
             else{
                 console.log(TempData)
                 async.eachSeries(TempData,(obj,done)=>{
-                    All_Temp.findByIdAndUpdate(obj._id,{$set:{email_status:false}},done)
+                    all_temp.findByIdAndUpdate(obj._id,{$set:{email_status:false}},done)
                     },function Done(err,List){
                       if(err){
                         res.send(err)
@@ -25,11 +49,11 @@ exports.status_update_template = (req,res)=>{
             }
         })
     }
-    else if(req.body.status == 'true'){
+    else if(req.body.email_status == true){
         all_temp.find({$and:[{userId:req.params.userId},{folderId:req.params.folderId}]})
        .exec((err,TempData)=>{
             if(err){
-                res.send(err)
+                res.send({code:400,msg:'all email template not active'})
             }
             else{
                 console.log(TempData)
