@@ -53,8 +53,10 @@ class SmartListTable extends React.Component {
         })
     }
 
+    
+
     render() {
-        console.log("row data is ",this.state.rowData)
+      
         const { loading, rowData, viewRecipientData, viewRecipient } = this.state
         return (
             <Row className="app-user-list">
@@ -116,6 +118,7 @@ class SmartListTable extends React.Component {
                                             <Table>
                                                 <thead>
                                                     <tr>
+                                                    <th>Select</th>
                                                         <th>Fullname</th>
                                                         <th>Email</th>
                                                         <th>Phone</th>
@@ -131,6 +134,13 @@ class SmartListTable extends React.Component {
                                                                         viewRecipientData.map((item, i) => {
                                                                             return (
                                                                                 <tr key={i}>
+                                                                                     <th>
+                                                                                <Checkbox
+                                                                                    color="primary"
+                                                                                    onClick={() => this.props.handleSelectSmartListDetail(item.email)}
+                                                                                    icon={<Check className="vx-icon" size={16} />}
+                                                                                />
+                                                                            </th>
                                                                                     <td>{item.firstName}{' '}{item.lastName}</td>
                                                                                     <td>{item.email}</td>
                                                                                     <td>{item.primaryPhone}</td>

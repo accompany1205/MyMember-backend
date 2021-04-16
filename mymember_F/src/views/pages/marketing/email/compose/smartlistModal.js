@@ -8,7 +8,7 @@ import SmartListTable from "./smartlistTable"
 
 class SmartListModal extends React.Component {
   render() {
-    const {handleSelectSmartList,modal,toggleModal} = this.props
+    const {handleSelectSmartList,modal,toggleModal,handleSelectSmartListDetail} = this.props
     return (
       <React.Fragment>
             <Modal
@@ -20,7 +20,7 @@ class SmartListModal extends React.Component {
                  Smart List
                 </ModalHeader>
                 <ModalBody>
-                  <SmartListTable handleSelectSmartList={handleSelectSmartList} />
+                  <SmartListTable handleSelectSmartList={handleSelectSmartList} handleSelectSmartListDetail={handleSelectSmartListDetail}/>
                 </ModalBody>
               
             </Modal>

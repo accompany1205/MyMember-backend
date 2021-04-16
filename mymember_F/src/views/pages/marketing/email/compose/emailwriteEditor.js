@@ -11,7 +11,8 @@ import { connect } from 'react-redux';
 // import { SENT_EMAIL_COMPOSE } from "../../../../../redux/actions/mymoney/index"
 import SelectFolderToSave from "./SelectFolderToSave";
 import { Fragment } from "react";
-import SmartListModal from "./smartlistModal";
+import SmartListModal from "./smartlistModal"; 
+import TempListModal from './tempListModal'
 import { SENT_EMAIL_COMPOSE } from "../../../../../redux/actions/compose/index"
 
 
@@ -21,7 +22,8 @@ class EditorControlled extends React.Component {
     super();
   }
   state = {
-    selectedSmartList: [],
+    selectedSmartList:[],
+    selectedtemplist:[],
     editorState: EditorState.createEmpty(),
     to: "",
     from: "tekeshwar810@gmail.com",
@@ -29,7 +31,8 @@ class EditorControlled extends React.Component {
     title: "",
     template: "",
     temp: "",
-    modal: false
+    modal: false,
+    modalSecond:false
   }
 
   changeHandler = e => {
@@ -44,15 +47,52 @@ class EditorControlled extends React.Component {
       modal: !prevState.modal
     }))
   }
+  HandleTempListModal =()=>{
+    this.setState(prevState => ({
+      modalSecond: !prevState.modalSecond
+    }))
+  }
   toggleModal = () => {
     this.setState(prevState => ({
       modal: !prevState.modal
     }))
   }
 
+  toggleModalSecond = () => {
+    this.setState(prevState => ({
+      modalSecond: !prevState.modalSecond
+    }))
+  }
 
+  handleSelectSmartList = (item) => {
+    let data = []
+    for (let obj of item) {
+      data.push(obj.email)
+    }
+      data.filter((item) => this.setState({ selectedSmartList: [...this.state.selectedSmartList, data] }))
+
+  }
+  
+  handleSelectSmartListDetail = (item) => {
+    this.setState({ selectedSmartList: [...this.state.selectedSmartList, item] ,selectedtemplist:[]})
+  }
+
+  handleSelectTempListDetail = (item) => {
+    this.setState({ selectedtemplist: [...this.state.selectedtemplist, item],selectedSmartList:[] })
+  }
+
+  defaultEmailBody = ()=>{
+    const sampleMarkup =
+    this.props.defaultTemplateData.template;
+    const blocksFromHTML = convertFromHTML(sampleMarkup);
+    const state = ContentState.createFromBlockArray(
+      blocksFromHTML.contentBlocks,
+      blocksFromHTML.entityMap,
+    );
+    return(EditorState.createWithContent(state))
+  }
   onsubmit = () => {
-    let payload = { ...this.state, to: this.state.selectedSmartList, template: draftToHtml(convertToRaw(this.state.editorState.getCurrentContent())) }
+    let payload = { ...this.state, to: this.state.selectedSmartList ? this.state.selectedSmartList :this.state.selectedtemplist , template: draftToHtml(convertToRaw(this.state.editorState.getCurrentContent())) }
     this.props.SENT_EMAIL_COMPOSE(payload);
     this.props.showTemplate()
     this.setState({
@@ -66,27 +106,8 @@ class EditorControlled extends React.Component {
       temp: ""
     })
   }
-  handleSelectSmartList = (item) => {
-    let data = []
-    for (let obj of item) {
-      data.push(obj.email)
-    }
-    data.filter((item) => this.setState({ selectedSmartList: [...this.state.selectedSmartList, item] }))
-  }
-
-  defaultEmailBody = ()=>{
-    const sampleMarkup =
-    this.props.defaultTemplateData.template;
-
-    const blocksFromHTML = convertFromHTML(sampleMarkup);
-    const state = ContentState.createFromBlockArray(
-      blocksFromHTML.contentBlocks,
-      blocksFromHTML.entityMap,
-    );
-    return(EditorState.createWithContent(state))
-  }
   render() {
-    const { editorState, selectedSmartList, subject, title, from, temp, to } = this.state
+    const { editorState, selectedSmartList, selectedtemplist,subject, title, from, temp, to } = this.state
     const { editExisting, defaultTemplateData } = this.props
 
     return (
@@ -150,7 +171,7 @@ class EditorControlled extends React.Component {
 
                 </FormGroup>
               </Col>
-              <Col sm="4">
+              {/* <Col sm="4">
                 <Label for="nameFloating">Temp List</Label>
                 <FormGroup className="form-label-group">
                   <Input
@@ -163,22 +184,22 @@ class EditorControlled extends React.Component {
                   />
 
                 </FormGroup>
-              </Col>
+              </Col> */}
 
-              {/* <Col sm="4">
+               <Col sm="4">
                 <Label for="nameFloating">Temp List</Label>
                 <FormGroup className="form-label-group">
                   <Input
                     type="text"
                     name="to"
                     defaultValue={to != "" ? "" : temp}
-                    id="nameFloating"
-                    placeholder="Please Select Contacts"
-
+                    placeholder="Temp List"
+                    defaultValue={editExisting ? defaultTemplateData.to.join() : selectedtemplist.join()}
+                    onClick={this.HandleTempListModal}
                   />
 
                 </FormGroup>
-              </Col> */}
+              </Col> 
             </Row>
             <Row>
               <Col sm="4">
@@ -190,7 +211,7 @@ class EditorControlled extends React.Component {
                     id="title"
                     placeholder="Title"
                     defaultValue={editExisting ? defaultTemplateData.title : title}
-                    onChange={this.changeHandler}
+                    onChange={this.HandleSmartListModal}
                   />
 
                 </FormGroup>
@@ -235,7 +256,14 @@ class EditorControlled extends React.Component {
         <SmartListModal
           toggleModal={this.toggleModal}
           modal={this.state.modal}
-          handleSelectSmartList={this.handleSelectSmartList} />
+          handleSelectSmartList={this.handleSelectSmartList} 
+          handleSelectSmartListDetail ={this.handleSelectSmartListDetail}
+          />
+          <TempListModal 
+                toggleModalSecond={this.toggleModalSecond}
+                modalSecond={this.state.modalSecond}
+                handleSelectTempListDetail={this.handleSelectTempListDetail} 
+          />
       </Fragment>
     )
   }
@@ -243,7 +271,8 @@ class EditorControlled extends React.Component {
 
 const mapStateToProps = state => {
   return {
-    selectedSmartList: state.EmailComposeMarketing.selectedSmartList
+    selectedSmartList: state.EmailComposeMarketing.selectedSmartList,
+    selectedtemplist:state.EmailComposeMarketing.selectedtemplist
   }
 }
 export default connect(mapStateToProps, { SENT_EMAIL_COMPOSE, })(EditorControlled)

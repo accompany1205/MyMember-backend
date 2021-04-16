@@ -214,6 +214,29 @@ export const GET_SMARTLIST = () => {
   }
 }
 
+export const GET_TEMPLIST = () => {
+
+  return async dispatch => {
+    try {
+      let response = await axios.get(`${process.env.REACT_APP_BASE_URL +'/api'}/student_email_temp_list/${getUserId()}`, {
+        headers: getHeaders()
+      })
+      if (response.data && response.status === 200) {
+        dispatch({
+          type: "GET_TEMPLIST",
+          payload: response.data
+        })
+      }
+    }
+    catch (error) {
+      console.log(error?.message);
+    }
+  }
+}
+
+
+
+
 export const DELETE_SCHEDULE_MAIL = (templateId) => {
   return async dispatch => {
     try {
