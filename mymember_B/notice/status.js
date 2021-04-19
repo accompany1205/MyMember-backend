@@ -1,6 +1,6 @@
 const corn = require('node-cron')
 const addmemberModal = require('../models/addmember')
-const EmailSent = require('../models/emailSentSave')
+const emailsentsave = require('../models/emailSentSave')
 const textSentSave = require("../models/textSentSave")
 const sgMail = require('sendgrid-v3-node');
 const { sync } = require('make-dir');
@@ -126,101 +126,111 @@ module.exports = corn.schedule("00 55 11 * * 0-6", function () {
     })
 })
 
+
 module.exports = corn.schedule('*/20 * * * * *',function(){
-    console.log('run')
-    let options = {
-        timeZone: 'Asia/Kolkata',
-        hour: 'numeric',
-        year: 'numeric',
-        month: 'numeric',
-        day: 'numeric',
-        minute: 'numeric',
-        second: 'numeric',
-        },
-        formatter = new Intl.DateTimeFormat([], options);
-        var a =(formatter.format(new Date()));
-        var str = a
-        var h = str.split(",");
-        console.log(h[0],h[1],'dt')
-        var dates = h[0]
-        var d = dates.split('/') // date split
-        console.log(d,'datesplit')
-
-        var time12h=h[1]
-        const [b,time, modifier] = time12h.split(' ');
-        let [hours, minutes] = time.split(':');
-        if (hours === '12') {
-          hours = '00';
-        }
-        if (modifier === 'PM') {
-          hours = parseInt(hours, 10) + 12;
-        }
-        
-        console.log(msg= {Time:`${hours}:${minutes}`})
-        console.log(msg.Time)
-
-        var curdat = new Date(`${d[2]} ${d[0]} ${d[1]} ${msg.time}`)
-        console.log(curdat,'current')
-        var CurDate = new Date()
-        console.log(CurDate,'newdate')
-
-
-
-        EmailSent.aggregate([
-            {
-                $match: {
-                    $and: [{ email_status: true },{email_type:'schedule'},
-                    { $expr: { $eq: [{ $month: '$DateT' }, { $month: CurDate }] } },
-                    { $expr: { $eq: [{ $dayOfMonth: '$DateT' }, { $dayOfMonth: CurDate }] } },
-                    { $expr: { $eq: [{ $year: '$DateT' }, { $year: CurDate }] } },
-                    { $expr: { $eq: [{ $hour: '$DateT' }, { $hour: CurDate }] } },
-                    { $expr: { $eq: [{ $minute: '$DateT' }, { $minute: CurDate }] } },
-                    ]
-                }
-            }
-        ]).exec((err,resp)=>{
-            if(resp.length >0){
-            console.log(resp)
-            var Data = resp
-            Data.forEach((row)=>{
-                console.log(row)
-                var to = row.to
-                var from = row.from
-                var sub = row.subject
-                var template = row.template
-                var dmy = row.DateT
-                    console.log('inside email')
-                    const emailData = {
-                        sendgrid_key:'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',
-                        to:to,
-                        from_email: from,
-                        from_name: 'noreply@gmail.com',
-                    };
-                    emailData.subject = sub;
-                    emailData.content = template;
-                 
-                    sgMail.send_via_sendgrid(emailData).then(resp => {
-                    EmailSent.findByIdAndUpdate(row._id, {$set:{email_type:'sent'}})
-                            .exec((err, emailUpdate) => {
-                                if (err) {
-                                    console.log('email status is not update')
-                                }
-                                else {
-                                    console.log('email sent successfully status schdule sent')
-                                }
-                            })
-                    }).catch(err => {
-                        console.log('email not send')
-                        console.log(err)
-                    })
-            })
-  
+    emailsentsave.find({email_status:true}).exec((err,resp)=>{
+        if(err){
+            console.log(err)
         }
         else{
-            console.log('data not come')
+            console.log(resp)
         }
+    })
+  
 })
-})
+
+// module.exports = corn.schedule('*/20 * * * * *',function(){
+//     console.log('run')
+//     let options = {
+//         timeZone: 'Asia/Kolkata',
+//         hour: 'numeric',
+//         year: 'numeric',
+//         month: 'numeric',
+//         day: 'numeric',
+//         minute: 'numeric',
+//         second: 'numeric',
+//         },
+//         formatter = new Intl.DateTimeFormat([], options);
+//         var a =(formatter.format(new Date()));
+//         var str = a
+//         var h = str.split(",");
+//         console.log(h[0],h[1],'dt')
+//         var dates = h[0]
+//         var d = dates.split('/') // date split
+//         console.log(d,'datesplit')
+
+//         var time12h=h[1]
+//         const [b,time, modifier] = time12h.split(' ');
+//         let [hours, minutes] = time.split(':');
+//         if (hours === '12') {
+//           hours = '00';
+//         }
+//         if (modifier === 'PM') {
+//           hours = parseInt(hours, 10) + 12;
+//         }
+        
+//         console.log(msg= {Time:`${hours}:${minutes}`})
+//         console.log(msg.Time)
+
+//         var curdat = new Date(`${d[2]} ${d[0]} ${d[1]} ${msg.time}`)
+//         console.log(curdat,'current')
+//         var CurDate = new Date()
+//         console.log(CurDate,'newdate')
+//         EmailSent.aggregate([
+//             {
+//                 $match: {
+//                     $and: [{ email_status: true },{email_type:'schedule'},
+//                     { $expr: { $eq: [{ $month: '$DateT' }, { $month: CurDate }] } },
+//                     { $expr: { $eq: [{ $dayOfMonth: '$DateT' }, { $dayOfMonth: CurDate }] } },
+//                     { $expr: { $eq: [{ $year: '$DateT' }, { $year: CurDate }] } },
+//                     { $expr: { $eq: [{ $hour: '$DateT' }, { $hour: CurDate }] } },
+//                     { $expr: { $eq: [{ $minute: '$DateT' }, { $minute: CurDate }] } },
+//                     ]
+//                 }
+//             }
+//         ]).exec((err,resp)=>{
+//             if(resp.length >0){
+//             console.log(resp)
+//             var Data = resp
+//             Data.forEach((row)=>{
+//                 console.log(row)
+//                 var to = row.to
+//                 var from = row.from
+//                 var sub = row.subject
+//                 var template = row.template
+//                 var dmy = row.DateT
+//                     console.log('inside email')
+//                     const emailData = {
+//                         sendgrid_key:'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',
+//                         to:to,
+//                         from_email: from,
+//                         from_name: 'noreply@gmail.com',
+//                     };
+//                     emailData.subject = sub;
+//                     emailData.content = template;
+                 
+//                     sgMail.send_via_sendgrid(emailData).then(resp => {
+//                     EmailSent.findByIdAndUpdate(row._id, {$set:{email_type:'sent'}})
+//                             .exec((err, emailUpdate) => {
+//                                 if (err) {
+//                                     console.log('email status is not update')
+//                                 }
+//                                 else {
+//                                     console.log('email sent successfully status schdule sent')
+//                                 }
+//                             })
+//                     }).catch(err => {
+//                         console.log('email not send')
+//                         console.log(err)
+//                     })
+//             })
+  
+//         }
+//         else{
+//             console.log('data not come')
+//         }
+// })
+// })
 
 
 // module.exports = corn.schedule('*/60 * * * * *',function(){
