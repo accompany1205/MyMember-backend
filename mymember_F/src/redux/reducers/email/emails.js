@@ -64,6 +64,7 @@ const emails = (state = initialState, action) => {
         selectedEmails: []
       }
     }
+    
     case "MOVE_MAIL":
       return { ...state, selectedEmails: [] }
     case "SET_UNREAD":

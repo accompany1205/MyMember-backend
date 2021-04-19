@@ -28,13 +28,15 @@ import {
   StarEmail,
   searchMail,
   selectMail,
+  selectMailStatus,
+  deselectMailStatus,
   selectAllMails,
   deselectAllMails,
   unreadMails,
   setLabel
 } from "../../../../../redux/actions/email/index";
 import { moveMail } from "../../../../../redux/actions/mymoney/index"
-import { GET_SCHEDULE_MAILS } from "../../../../../redux/actions/compose"
+import { GET_SCHEDULE_MAILS ,DESELECT_MAIL_STATUS,SELECT_MAIL_STATUS,SELECT_MAIL_STATUS_ALL} from "../../../../../redux/actions/compose"
 import Checkbox from "../../../../../components/@vuexy/checkbox/CheckboxesVuexy";
 import RadioVuexy from  "../../../../../components/@vuexy/radio/RadioVuexy";
 import EmailDetails from "./EmailDetails"
@@ -55,12 +57,14 @@ class EmailList extends React.Component {
     selectAll: false,
     currentEmail: [],
     value: "",
-    currentFilter: this.props.routerProps.match.params.filter
+    currentFilter: this.props.routerProps.match.params.filter,
+    statusActive:""
   }
 
   async componentDidMount() {
     this.setState({
-      mails: this.props.allScheduleMails.template
+      mails: this.props.allScheduleMails.template,
+      mailsfolder:this.props.allScheduleMails.template
     })
   }
 
@@ -129,7 +133,7 @@ class EmailList extends React.Component {
                     }}
                     onChange={e => e.stopPropagation()}
                   />                 
-                  <div className="favorite">
+                  {/* <div className="favorite">
                     <Star
                       size={18}
                       fill={mail.isStarred ? "#FF9F43" : "transparent"}
@@ -140,7 +144,7 @@ class EmailList extends React.Component {
                       }}
                     />
 
-                  </div>
+                  </div> */}
 
                 </div>
               </Media>
@@ -159,20 +163,19 @@ class EmailList extends React.Component {
                   <div className="mail-items">
                     <span className="float-right">
                     <h5 className="text-bold-600 mb-25 ">Active/Deactive</h5> <span className="mail-date">
-                   
-                    <Checkbox
+                       <Checkbox
                     color="primary"
                     className="user-checkbox"
-                    icon={<Check className="vx-icon" size={12} />}
+                    icon={ <Check className="vx-icon" size={12}/>}
                     label={""}
-                    checked={"checked"}
+                    checked={ mail.email_status ? "checked":""}
                     size="sm"
-                    onClick={e => {
-                      this.props.selectMail(mail._id)
-                      e.stopPropagation()
-                    }}
-                    onChange={e => e.stopPropagation()}
-                  /> 
+                    onClick={e => e.stopPropagation()}
+                    onChange={ e=> e.target.checked
+                      ?   this.props.SELECT_MAIL_STATUS(mail._id)
+                      : this.props.DESELECT_MAIL_STATUS(mail._id)
+                    }
+                  />
                       </span>
                     </span>
                   </div>
@@ -235,12 +238,25 @@ class EmailList extends React.Component {
                       : this.props.deselectAllMails()
                   }}
                 />
-
               </div>
               <div className="action-right">
                 <ul className="list-inline m-0">
+                <li className="list-inline-item">
+                <Checkbox
+                  color="primary"
+                  icon={<Check className="vx-icon" size={16} />}
+                  label="Deactive/Active"
+                  checked={
+                    this.state.statusActive  ? true:false
+                  }
+                  onClick={()=>this.props.SELECT_MAIL_STATUS_ALL(this.props.allScheduleMails._id,this.state.statusActive)}
+                  onChange={()=>this.setState({statusActive:!this.state.statusActive})}
+                />
+                 
+                  </li>
                   <li className="list-inline-item">
                     <UncontrolledDropdown>
+                                 
                       <DropdownToggle tag="div">
                         <Folder size={22} />
                       </DropdownToggle>
@@ -376,10 +392,15 @@ const mapStateToProps = state => {
 }
 export default connect(mapStateToProps, {
   GET_SCHEDULE_MAILS,
+  DESELECT_MAIL_STATUS,
+  SELECT_MAIL_STATUS,
+  SELECT_MAIL_STATUS_ALL,
   StarEmail,
   searchMail,
   moveMail,
   selectMail,
+  selectMailStatus,
+  deselectMailStatus,
   selectAllMails,
   deselectAllMails,
   unreadMails,
