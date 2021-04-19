@@ -194,6 +194,7 @@ export const GET_SCHEDULE_MAILS = (folderId) => {
     }
   }
 }
+
 export const GET_SMARTLIST = () => {
 
   return async dispatch => {
@@ -218,7 +219,7 @@ export const GET_TEMPLIST = () => {
 
   return async dispatch => {
     try {
-      let response = await axios.get(`${process.env.REACT_APP_BASE_URL +'/api'}/student_email_temp_list/${getUserId()}`, {
+      let response = await axios.get(`${baseUrl}/student_email_temp_list/${getUserId()}`, {
         headers: getHeaders()
       })
       if (response.data && response.status === 200) {
@@ -255,7 +256,6 @@ export const DELETE_SCHEDULE_MAIL = (templateId) => {
     }
   }
 }
-
 
 export const CHANGE_FILTER = (filter,id) => {
   return dispatch => {

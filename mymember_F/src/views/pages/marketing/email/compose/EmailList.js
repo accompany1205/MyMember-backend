@@ -7,7 +7,7 @@ import {
   DropdownItem,
   DropdownMenu,
   Media
-} from "reactstrap"
+} from "reactstrap";
 import {
   Search,
   Check,
@@ -19,7 +19,7 @@ import {
   Mail,
   Star,
   Menu
-} from "react-feather"
+} from "react-feather";
 
 import PerfectScrollbar from "react-perfect-scrollbar"
 import { connect } from "react-redux"
@@ -32,10 +32,11 @@ import {
   deselectAllMails,
   unreadMails,
   setLabel
-} from "../../../../../redux/actions/email/index"
+} from "../../../../../redux/actions/email/index";
 import { moveMail } from "../../../../../redux/actions/mymoney/index"
 import { GET_SCHEDULE_MAILS } from "../../../../../redux/actions/compose"
-import Checkbox from "../../../../../components/@vuexy/checkbox/CheckboxesVuexy"
+import Checkbox from "../../../../../components/@vuexy/checkbox/CheckboxesVuexy";
+import RadioVuexy from  "../../../../../components/@vuexy/radio/RadioVuexy";
 import EmailDetails from "./EmailDetails"
 import { Fragment } from "react";
 
@@ -127,7 +128,7 @@ class EmailList extends React.Component {
                       e.stopPropagation()
                     }}
                     onChange={e => e.stopPropagation()}
-                  />
+                  />                 
                   <div className="favorite">
                     <Star
                       size={18}
@@ -153,6 +154,26 @@ class EmailList extends React.Component {
                     <span className="text-truncate">
                       <h5 className="text-bold-600 mb-25 ">Template</h5>
                       {mail.email_type}
+                    </span>
+                  </div>
+                  <div className="mail-items">
+                    <span className="float-right">
+                    <h5 className="text-bold-600 mb-25 ">Active/Deactive</h5> <span className="mail-date">
+                   
+                    <Checkbox
+                    color="primary"
+                    className="user-checkbox"
+                    icon={<Check className="vx-icon" size={12} />}
+                    label={""}
+                    checked={"checked"}
+                    size="sm"
+                    onClick={e => {
+                      this.props.selectMail(mail._id)
+                      e.stopPropagation()
+                    }}
+                    onChange={e => e.stopPropagation()}
+                  /> 
+                      </span>
                     </span>
                   </div>
                   <div className="mail-items">
@@ -199,6 +220,7 @@ class EmailList extends React.Component {
             </div>
             <div className="app-action">
               <div className="action-left">
+               
                 <Checkbox
                   color="primary"
                   icon={<Check className="vx-icon" size={16} />}
@@ -213,6 +235,7 @@ class EmailList extends React.Component {
                       : this.props.deselectAllMails()
                   }}
                 />
+
               </div>
               <div className="action-right">
                 <ul className="list-inline m-0">

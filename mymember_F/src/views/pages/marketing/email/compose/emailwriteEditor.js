@@ -26,7 +26,7 @@ class EditorControlled extends React.Component {
     selectedtemplist:[],
     editorState: EditorState.createEmpty(),
     to: "",
-    from: "tekeshwar810@gmail.com",
+    from: "ankit.jain.mit@gmail.com",
     subject: "",
     title: "",
     template: "",
@@ -43,13 +43,16 @@ class EditorControlled extends React.Component {
     this.setState({ editorState });
   };
   HandleSmartListModal = () => {
+
     this.setState(prevState => ({
-      modal: !prevState.modal
+      modal: !prevState.modal,
+      selectedSmartList:[]
     }))
   }
   HandleTempListModal =()=>{
     this.setState(prevState => ({
-      modalSecond: !prevState.modalSecond
+      modalSecond: !prevState.modalSecond,
+      selectedtemplist:[],
     }))
   }
   toggleModal = () => {
@@ -69,16 +72,16 @@ class EditorControlled extends React.Component {
     for (let obj of item) {
       data.push(obj.email)
     }
-      data.filter((item) => this.setState({ selectedSmartList: [...this.state.selectedSmartList, data] }))
+      data.filter((item) => this.setState({ selectedSmartList: this.state.selectedSmartList.concat(data),selectedtemplist:[] }))
 
   }
   
   handleSelectSmartListDetail = (item) => {
-    this.setState({ selectedSmartList: [...this.state.selectedSmartList, item] ,selectedtemplist:[]})
+    this.setState({ selectedSmartList: this.state.selectedSmartList.concat(item) ,selectedtemplist:[]})
   }
 
   handleSelectTempListDetail = (item) => {
-    this.setState({ selectedtemplist: [...this.state.selectedtemplist, item],selectedSmartList:[] })
+    this.setState({ selectedtemplist: this.state.selectedtemplist.concat(item),selectedSmartList:[] })
   }
 
   defaultEmailBody = ()=>{
@@ -92,14 +95,18 @@ class EditorControlled extends React.Component {
     return(EditorState.createWithContent(state))
   }
   onsubmit = () => {
-    let payload = { ...this.state, to: this.state.selectedSmartList ? this.state.selectedSmartList :this.state.selectedtemplist , template: draftToHtml(convertToRaw(this.state.editorState.getCurrentContent())) }
+ 
+    var Finalsendmail =  this.state.selectedSmartList.length > 0 ? this.state.selectedSmartList.toString() :this.state.selectedtemplist.toString();
+     
+    let payload = { ...this.state, to: Finalsendmail , template: draftToHtml(convertToRaw(this.state.editorState.getCurrentContent())) }
     this.props.SENT_EMAIL_COMPOSE(payload);
     this.props.showTemplate()
     this.setState({
       selectedSmartList: [],
+      selectedtemplist:[],
       editorState: EditorState.createEmpty(),
       to: "",
-      from: "tekeshwar810@gmail.com",
+      from: "ankit.jain.mit@gmail.com",
       subject: "",
       title: "",
       template: "",
@@ -109,8 +116,8 @@ class EditorControlled extends React.Component {
   render() {
     const { editorState, selectedSmartList, selectedtemplist,subject, title, from, temp, to } = this.state
     const { editExisting, defaultTemplateData } = this.props
-
-    return (
+    console.log(this.state.selectedSmartList)
+    return (  
       <Fragment>
         <Card className="mb-0">
           <CardBody>
@@ -192,12 +199,10 @@ class EditorControlled extends React.Component {
                   <Input
                     type="text"
                     name="to"
-                    defaultValue={to != "" ? "" : temp}
                     placeholder="Temp List"
                     defaultValue={editExisting ? defaultTemplateData.to.join() : selectedtemplist.join()}
                     onClick={this.HandleTempListModal}
                   />
-
                 </FormGroup>
               </Col> 
             </Row>
@@ -211,7 +216,7 @@ class EditorControlled extends React.Component {
                     id="title"
                     placeholder="Title"
                     defaultValue={editExisting ? defaultTemplateData.title : title}
-                    onChange={this.HandleSmartListModal}
+                    onChange={this.changeHandler}
                   />
 
                 </FormGroup>
@@ -239,8 +244,6 @@ class EditorControlled extends React.Component {
                 />
                 <p style={{ fontSize: "12px" }}>Email will be sent to recipients who have the same email address only once. Any merge field used in the email will be merged with one of the recipients.</p>
               </Col>
-
-
             </Row>template
             
             <Editor
