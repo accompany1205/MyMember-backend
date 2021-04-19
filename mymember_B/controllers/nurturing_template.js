@@ -2,6 +2,24 @@ const template = require("../models/emailSentSave")
 const nurturing_folder = require("../models/email_nurturing_folder")
 const key = require("../models/email_key")
 
+function timefun(){
+    var DT = new Date().toLocaleString('en-US', {timeZone: 'Asia/Kolkata'})
+    var TimeDate = DT.split(',')
+    var date=TimeDate[0]
+    var time12h=TimeDate[1]
+    const [b,time, modifier] = time12h.split(' ');
+   
+    let [hours, minutes] = time.split(':');
+    if (hours === '12') {
+      hours = '00';
+    }
+    if (modifier === 'PM') {
+      hours = parseInt(hours, 10) + 12;
+    }
+    return({Date:date,Time:`${hours}:${minutes}`})
+    
+ }
+
 exports.list_template = (req,res)=>{
     nurturing_folder.findById(req.params.folderId)
     .populate('template')
@@ -17,13 +35,6 @@ exports.list_template = (req,res)=>{
 }
 
 exports.add_template = (req,res)=>{
-    // var schedule = req.body.schedule
-    key.find({userId:req.params.userId})
-    .exec((err,Key)=>{
-        if(err){
-            res.send({Error:'email auth key is not find so schedule is not create',error:err})
-        }
-        else{
             var obj ={
                 to: req.body.to,
                 from: req.body.from,
@@ -37,34 +48,33 @@ exports.add_template = (req,res)=>{
                 email_type:'schedule',
                 category:'nurturing',
                 email_status:true,
-                email_auth_key:Key.auth_key,
                 userId:req.params.userId,
                 folderId:req.params.folderId,
-                createdBy:'admin'
             }
+                var data = timefun() 
                 var emailDetail =  new template(obj)
+                emailDetail.sent_date = data.Date
+                emailDetail.sent_time = data.Time  
                 console.log(emailDetail)
                 emailDetail.save((err,emailSave)=>{
          
          if(err){
-              res.send(err)
+              res.send({code:200,msg:'template not save'})
               console.log(err)
           }
           else{
             nurturing_folder.findByIdAndUpdate(req.params.folderId,{$push:{template:emailSave._id}})
             .exec((err,template)=>{
                 if(err){
-                    res.send({error:'nurturing template details is not add in folder'})
+                    res.send({code:400,msg:'nurturing template details is not add in folder'})
                 }
                 else{
-                    res.send({msg:'nurturing template details is add in folder',result:emailSave})
+                    res.send({code:200,msg:'nurturing template details is add in folder',result:emailSave})
                 }
             })
           }
       })
-    }
- })
-    
+   
 }
 
 exports.remove_template =(req,res)=>{

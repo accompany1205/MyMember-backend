@@ -2,8 +2,69 @@ const all_temp = require("../models/emailSentSave");
 const compose_folder = require("../models/email_compose_folder")
 const authKey = require("../models/email_key")
 const async = require('async')
+const moment = require('moment');
 
-single_temp_update_status = (req,res)=>{
+// function timefun(){
+//     var DT = new Date().toLocaleString('en-US', {timeZone: 'Asia/Kolkata'})
+//     var TimeDate = DT.split(',')
+//     var date=TimeDate[0]
+//     var time12h=TimeDate[1]
+//     const [b,time, modifier] = time12h.split(' ');
+   
+//     let [hours, minutes] = time.split(':');
+//     if (hours === '12') {
+//       hours = '00';
+//     }
+//     if (modifier === 'PM') {
+//       hours = parseInt(hours, 10) + 12;
+//     }
+//     return({Date:date,Time:`${hours}:${minutes}`})
+    
+//  }
+
+exports.getData = (req,res)=>{
+let options = {
+    timeZone: 'Asia/Kolkata',
+    hour: 'numeric',
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    },
+    formatter = new Intl.DateTimeFormat([], options);
+    var a =(formatter.format(new Date()));
+    var str = a
+    var h = str.split(",");
+    console.log(h[0],h[1])
+    var dates = h[0]
+    var d = dates.split('/')
+    var curdat = new Date(`${d[1]} ${d[0]} ${d[2]} ${h[1]}`)
+    
+    all_temp.aggregate([
+        {
+            $match: {
+                $and: [{ email_status: true },
+                { $expr: { $eq: [{ $month: '$DateT' }, { $month: curdat }] } },
+                { $expr: { $eq: [{ $dayOfMonth: '$DateT' }, { $dayOfMonth: curdat }] } },
+                { $expr: { $eq: [{ $year: '$DateT' }, { $year: curdat }] } },
+                { $expr: { $eq: [{ $hour: '$DateT' }, { $hour: curdat }] } },
+                { $expr: { $eq: [{ $minute: '$DateT' }, { $minute: curdat }] } },
+                ]
+            }
+        }
+    ]).exec((err,resp)=>{
+        if(err){
+            res.json({code:400,msg:'data not found'})
+            console.log(err)
+        }
+        else{
+            res.json({code:200,msg:resp})
+        }
+    })
+}
+
+exports.single_temp_update_status = (req,res)=>{
     console.log(req.body.email_status)
     if(req.body.email_status == true){
         all_temp.updateOne({_id:req.params.tempId},{$set:{email_status:true}},(err,resp)=>{
@@ -99,7 +160,7 @@ exports.list_template = (req,res)=>{
     })
 }
 
-exports.add_template = (req,res)=>{
+exports.add_template = async(req,res)=>{
     // var schedule = req.body.schedule
     //    authKey.findOne({userId:req.params.userId})      
     //     .exec((err,key)=>{
@@ -108,7 +169,10 @@ exports.add_template = (req,res)=>{
     //         }
     //         else{
     //             console.log(key)
-                var obj ={
+    if(req.body.follow_up === 0){
+    var dz = new Date(`${req.body.sent_date} ${req.body.sent_time}`);
+    console.log(dz)
+                var obj = {
                     to: req.body.to,
                     from: req.body.from,
                     title:req.body.title,
@@ -116,6 +180,7 @@ exports.add_template = (req,res)=>{
                     template:req.body.template,
                     sent_date: req.body.sent_date,
                     sent_time: req.body.sent_time,
+                    DateT:dz,
                     repeat_mail: req.body.repeat_mail,
                     follow_up: req.body.follow_up,
                     email_type:'schedule',
@@ -124,14 +189,43 @@ exports.add_template = (req,res)=>{
                     userId:req.params.userId,
                     folderId:req.params.folderId
                 }
-          var emailDetail =  new all_temp(obj)
-          emailDetail.save((err,emailSave)=>{
+            }
+           
+            else if(req.body.follow_up > 0){
+                var date = new Date(`${req.body.sent_date} ${req.body.sent_time}`);
+                date.setDate(date.getDate() + req.body.follow_up);
+                var nD = moment(date).format('MM/DD/YYYY')    
+                console.log(nD)// this is date mm/dd/yyyy
+                console.log(date); // this is iso date time
+             
+                var obj = {
+                    to: req.body.to,
+                    from: req.body.from,
+                    title:req.body.title,
+                    subject:req.body.subject, 
+                    template:req.body.template,
+                    sent_date: nD,
+                    sent_time: req.body.sent_time,
+                    DateT:date,
+                    repeat_mail: req.body.repeat_mail,
+                    follow_up: req.body.follow_up,
+                    email_type:'schedule',
+                    email_status:true,
+                    category:'compose',
+                    userId:req.params.userId,
+                    folderId:req.params.folderId
+                }
+            }
+
+             var emailDetail =  new all_temp(obj)
+          console.log(emailDetail) 
+          emailDetail.save(async(err,emailSave)=>{
               if(err){
                   res.send({Error:'email details is not save',error:err})
                   console.log(err)
               }
               else{
-                compose_folder.findByIdAndUpdate(req.params.folderId,{$push:{template:emailSave._id}})
+             compose_folder.findByIdAndUpdate(req.params.folderId,{$push:{template:emailSave._id}})
                 .exec((err,template)=>{
                     if(err){
                         res.send({error:'compose template details is not add in folder'})
@@ -140,7 +234,7 @@ exports.add_template = (req,res)=>{
                         res.send({msg:'compose template details is add in folder',result:emailSave})
                     }
                  })
-              }
+             }
           })
     //    }
     // })

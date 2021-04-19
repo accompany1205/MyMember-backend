@@ -1,3 +1,4 @@
+const { any } = require('async');
 const mongoose = require('mongoose');
 const schema =  mongoose.Schema
 const EmailSchema = schema({
@@ -31,6 +32,9 @@ const EmailSchema = schema({
    },
    sent_time:{
         type:String,
+   },
+   DateT:{
+       type:Date
    },
    category:{
        type:String,
