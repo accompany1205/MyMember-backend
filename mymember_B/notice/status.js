@@ -141,6 +141,7 @@ module.exports = corn.schedule('*/20 * * * * *',function(){
         var a =(formatter.format(new Date()));
         var str = a
         var h = str.split(",");
+        console.log(h[0],h[1],'dt')
         var dates = h[0]
         var d = dates.split('/') // date split
         console.log(d,'datesplit')
