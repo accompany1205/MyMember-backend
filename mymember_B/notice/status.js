@@ -160,7 +160,7 @@ module.exports = corn.schedule('*/20 * * * * *',function(){
         console.log(msg.Time)
 
         var curdat = new Date(`${d[2]} ${d[0]} ${d[1]} ${msg.time}`)
-        console.log(curdat,current)
+        console.log(curdat,'current')
 
 
 
