@@ -141,13 +141,28 @@ module.exports = corn.schedule('*/20 * * * * *',function(){
         var a =(formatter.format(new Date()));
         var str = a
         var h = str.split(",");
-        console.log(h[0],h[1])
         var dates = h[0]
-        var d = dates.split('/')
-        console.log(d)
-        var curdat = new Date(`${d[2]} ${d[1]} ${d[0]} ${h[1]}`)
-        console.log(curdat,'current')
+        var d = dates.split('/') // date split
+        console.log(d,'datesplit')
+
+        var time12h=h[1]
+        const [b,time, modifier] = time12h.split(' ');
+        let [hours, minutes] = time.split(':');
+        if (hours === '12') {
+          hours = '00';
+        }
+        if (modifier === 'PM') {
+          hours = parseInt(hours, 10) + 12;
+        }
         
+        console.log(msg= {Time:`${hours}:${minutes}`})
+        console.log(msg.Time)
+
+        var curdat = new Date(`${d[2]} ${d[0]} ${d[1]} ${msg.time}`)
+        console.log(curdat,current)
+
+
+
         EmailSent.aggregate([
             {
                 $match: {

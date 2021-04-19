@@ -32,28 +32,59 @@
 
 
 
-// let options = {
-//     timeZone: 'Asia/Kolkata',
-//     hour: 'numeric',
-//     year: 'numeric',
-//     month: 'numeric',
-//     day: 'numeric',
-//     minute: 'numeric',
-//     second: 'numeric',
-//     },
-//     formatter = new Intl.DateTimeFormat([], options);
-//     var a =(formatter.format(new Date()));
-//     var str = a
-//     var h = str.split(",");
-//     console.log(h[0],h[1])
-//     var dates = h[0]
-//     var d = dates.split('/')
-//     console.log(d)
-//     var curdat = new Date(`${d[2]} ${d[1]} ${d[0]} ${h[1]}`)
+let options = {
+    timeZone: 'Asia/Kolkata',
+    hour: 'numeric',
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    },
+    formatter = new Intl.DateTimeFormat([], options);
+    var a =(formatter.format(new Date()));
 
-//     console.log(curdat.getHours())
-// var TI = '15:25'
-// var follow = 0
+    // var TimeDate = DT.split(',')
+    // var date=TimeDate[0]
+    // var time12h=TimeDate[1]
+    // const [b,time, modifier] = time12h.split(' ');
+   
+    // let [hours, minutes] = time.split(':');
+    // if (hours === '12') {
+    //   hours = '00';
+    // }
+    // if (modifier === 'PM') {
+    //   hours = parseInt(hours, 10) + 12;
+    // }
+    // return({Date:date,Time:`${hours}:${minutes}`})
+    
+
+    
+    var str = a
+    console.log(str)    
+    var h = str.split(",");
+    console.log(h)
+    var dates = h[0]
+    var d = /*dates.split('/')*/[ '4', '19', '2021' ]
+    console.log(d)
+
+    var time12h=h[1]
+    const [b,time, modifier] = time12h.split(' ');
+    let [hours, minutes] = time.split(':');
+    if (hours === '12') {
+      hours = '00';
+    }
+    if (modifier === 'PM') {
+      hours = parseInt(hours, 10) + 12;
+    }
+    
+    console.log(msg= {Time:`${hours}:${minutes}`})
+    console.log(msg.Time)
+    var curdat = new Date(`${d[2]} ${d[0]} ${d[1]} ${msg.Time}`)
+    console.log(curdat)
+        
+var TI = '15:25'
+var follow = 0
 // var d = new Date()
 // // console.log(d)
 // var nd = d.getDate()+follow
