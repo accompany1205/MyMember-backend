@@ -144,7 +144,8 @@ module.exports = corn.schedule('*/20 * * * * *',function(){
         console.log(h[0],h[1])
         var dates = h[0]
         var d = dates.split('/')
-        var curdat = new Date(`${d[1]} ${d[0]} ${d[2]} ${h[1]}`)
+        console.log(d)
+        var curdat = new Date(`${d[2]} ${d[1]} ${d[0]} ${h[1]}`)
         console.log(curdat,'current')
         
         EmailSent.aggregate([

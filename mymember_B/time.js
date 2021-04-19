@@ -48,10 +48,12 @@
 //     console.log(h[0],h[1])
 //     var dates = h[0]
 //     var d = dates.split('/')
-//     var curdat = new Date(`${d[1]} ${d[0]} ${d[2]} ${h[1]}`)
-//     console.log(curdat.getMonth())
-var TI = '15:25'
-var follow = 0
+//     console.log(d)
+//     var curdat = new Date(`${d[2]} ${d[1]} ${d[0]} ${h[1]}`)
+
+//     console.log(curdat.getHours())
+// var TI = '15:25'
+// var follow = 0
 // var d = new Date()
 // // console.log(d)
 // var nd = d.getDate()+follow
@@ -63,11 +65,11 @@ var follow = 0
 // console.log(nD)
 // console.log(nD.getDate())
 // var dz = new Date(`${req.body.sent_date} ${req.body.sent_time}`);
-const moment = require('moment');
-var sent_date = '04/19/2021'
-var sent_time = '15:33'
-var date = new Date(`${sent_date} ${sent_time}`);
-date.setDate(date.getDate() + follow);
+// const moment = require('moment');
+// var sent_date = '04/19/2021'
+// var sent_time = '15:33'
+// var date = new Date(`${sent_date} ${sent_time}`);
+// date.setDate(date.getDate() + follow);
 
-var mT = moment(date).format('MM/DD/YYYY')    
-console.log(date,mT)
+// var mT = moment(date).format('MM/DD/YYYY')    
+// console.log(date,mT)
