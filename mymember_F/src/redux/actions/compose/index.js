@@ -107,8 +107,71 @@ export const EDIT_MAIN_EMAIL_COMPOSE = (data, folder) => {
   }
 }
 
-export const EDIT_SUB_EMAIL_COMPOSE = (data, folder) => {
+export const DESELECT_MAIL_STATUS = (id) => {
+var data = {
+    "email_status":false
+}
+  return async dispatch => {
+    try {
+      let response = await axios.put(`${baseUrl}/single_template_status_change/${getUserId()}/${id}`, data, {
+        headers: getHeaders()
+      })
+      if (response.data && response.status === 200) {
+        console.log(response.data);
+      }
+      dispatch(GET_CATEGORIES());
+    }
+    catch (error) {
+      console.log(error?.message);
+    }
+  }
+}
 
+
+
+export const SELECT_MAIL_STATUS = (id) => {
+  var data = {
+      "email_status":true
+  }
+    return async dispatch => {
+      try {
+        let response = await axios.put(`${baseUrl}/single_template_status_change/${getUserId()}/${id}`, data, {
+          headers: getHeaders()
+        })
+        if (response.data && response.status === 200) {
+          console.log(response.data);
+        }
+        dispatch(GET_CATEGORIES());
+      }
+      catch (error) {
+        console.log(error?.message);
+      }
+    }
+  }
+
+
+  export const SELECT_MAIL_STATUS_ALL = (id,datamain) => {
+    var data = {
+        "email_status":datamain
+    }
+      return async dispatch => {
+        try {
+          let response = await axios.put(`${baseUrl}/update_template_status/${getUserId()}/${id}`, data, {
+            headers: getHeaders()
+          })
+          if (response.data && response.status === 200) {
+            console.log(response.data);
+          }
+          dispatch(GET_CATEGORIES());
+        }
+        catch (error) {
+          console.log(error?.message);
+        }
+      }
+    }
+
+
+export const EDIT_SUB_EMAIL_COMPOSE = (data, folder) => {
   return async dispatch => {
     try {
       let response = await axios.put(`${baseUrl}/update_folder/${getUserId()}/${folder._id}`, data, {
@@ -126,7 +189,6 @@ export const EDIT_SUB_EMAIL_COMPOSE = (data, folder) => {
 }
 
 export const ADD_TEMPLATE_TO_COMPOSE = (data, id) => {
-  console.log(data);
   let url = `${baseUrl}/add_template/${getUserId()}/${id}`
   return async dispatch => {
     try {
@@ -142,6 +204,11 @@ export const ADD_TEMPLATE_TO_COMPOSE = (data, id) => {
     }
   }
 }
+
+
+
+
+
 export const DELETE_FOLDER = (folder) => {
   return async dispatch => {
     try {
@@ -183,6 +250,7 @@ export const GET_SCHEDULE_MAILS = (folderId) => {
 
       })
       if (response.data && response.status === 200) {
+        console.log(response.data)
         dispatch({
           type: "GET_SCHEDULE_MAILS",
           payload: response.data

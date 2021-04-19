@@ -67,6 +67,23 @@ export const deselectAllMails = () => {
     })
   }
 }
+export const selectMailStatus = (id,status) => {
+  return dispatch => {
+    dispatch({
+      type: "SELECT_MAIL_STATUS",id
+    })
+  }
+}
+export const deselectMailStatus = (id) => {
+  return dispatch => {
+    dispatch({
+      type: "DESELECT_MAIL_STATUS",
+      id
+    })
+  }
+}
+
+
 
 export const moveMail = (to, id) => {
   return async (dispatch, getState) => {
