@@ -82,7 +82,7 @@ let options = {
     console.log(msg.Time)
     var curdat = new Date(`${d[2]} ${d[0]} ${d[1]} ${msg.Time}`)
     console.log(curdat)
-    console.log(new Date())
+    console.log(new Date().getMinutes())
         
 var TI = '15:25'
 var follow = 0
