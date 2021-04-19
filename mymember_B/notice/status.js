@@ -176,7 +176,9 @@ module.exports = corn.schedule('*/20 * * * * *',function(){
         console.log(curdat,'current')
         var CurDate = new Date()
         console.log(CurDate,'newdate')
-        console.log(CurDate.getMinutes(),CurDate.getMonth(),CurDate.getDate(),CurDate.getMonth(),CurDate.getFullYear())
+        console.log(CurDate.getMinutes(),CurDate.getHours(),CurDate.getDate(),CurDate.getMonth(),CurDate.getFullYear())
+        
+
         emailsentsave.aggregate([
             {
                 $match: {
