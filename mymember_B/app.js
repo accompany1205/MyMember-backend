@@ -118,7 +118,7 @@ mongoose
         useUnifiedTopology: true
     })
     .then(() => console.log('DB Connected'));
-    const statusCheck = require("./notice/status")
+    // const statusCheck = require("./notice/status")
 
 // middlewares
 app.use(express.json());
