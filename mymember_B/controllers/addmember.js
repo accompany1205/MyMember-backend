@@ -21,18 +21,24 @@ const change_rank = require('../models/change_rank');
 //     })
 // }
 
-exports. camp_count =(req,res)=>{
-    addmemberModal
-    .find({studentType:'Active Student'})
-    .count()
-    .exec((err,resp)=>{
-        if(err){
-            res.json({code:400,msg:'camp student count not find'})
-        }
-        else{
-            res.json({code:200,msg:'camp student successfully find',count:resp})
-        }
-    })
+exports.std_count =async(req,res)=>{
+   
+
+    var resdata = await addmemberModal.find({$and:[{userId:req.params.userId},{studentType:'Camp'}]}).count()
+    var resdata1 = await addmemberModal.find({$and:[{userId:req.params.userId},{studentType:'Active Student'}]}).count()
+    var resdata2 = await addmemberModal.find({$and:[{userId:req.params.userId},{studentType:'Former Student'}]}).count()
+    var resdata3 = await addmemberModal.find({$and:[{userId:req.params.userId},{studentType:'Former Trail'}]}).count()
+    var resdata4 = await addmemberModal.find({$and:[{userId:req.params.userId},{studentType:'Active Trail'}]}).count()
+    var resdata5 = await addmemberModal.find({$and:[{userId:req.params.userId},{studentType:'After School'}]}).count()
+    var resdata6 = await addmemberModal.find({$and:[{userId:req.params.userId},{studentType:'Leads'}]}).count()
+
+    var total=resdata+resdata1+resdata2+resdata3+resdata4+resdata5+resdata6
+    res.json({'total':total,'camp':resdata,'active':resdata1,'former':resdata2,'former_trail':resdata3,'active_trial':resdata4,'after_school':resdata5,'leads':resdata6})
+    
+
+  
+
+
     
 }
 
@@ -64,7 +70,7 @@ exports.studentCount = (req, res) => {
                 _id: "$studentType",
                 "count": { "$sum": 1 },
             }
-        }
+        },
     ]).exec((err, stdCount) => {
         if (err) {
             res.send({code:400,msg:'student count not found'})

@@ -4,23 +4,28 @@ const authKey = require("../models/email_key")
 const async = require('async')
 const moment = require('moment');
 
-// function timefun(){
-//     var DT = new Date().toLocaleString('en-US', {timeZone: 'Asia/Kolkata'})
-//     var TimeDate = DT.split(',')
-//     var date=TimeDate[0]
-//     var time12h=TimeDate[1]
-//     const [b,time, modifier] = time12h.split(' ');
-   
-//     let [hours, minutes] = time.split(':');
-//     if (hours === '12') {
-//       hours = '00';
-//     }
-//     if (modifier === 'PM') {
-//       hours = parseInt(hours, 10) + 12;
-//     }
-//     return({Date:date,Time:`${hours}:${minutes}`})
+function timefun(sd,st){
+
+    var date = sd
+    var stime = st
+    var spD = date.split('/')
+    var spT = stime.split(":")
+    console.log(spD,spT)
+
+    var y = spD[2]
+    var mo = parseInt(spD[0])-1
+    var d = parseInt(spD[1])
+    var h = spT[0]
+    var mi = spT[1]
+    var se = '0'
+    var mil = '0'
+    console.log(y,mo,d,h,mi,se,mil)
+    return  curdat = new Date(y,mo,d,h,mi,se,mil)
     
-//  }
+//     console.log(curdat.getHours(),curdat.getMinutes())
+
+    
+ }
 
 exports.getData = (req,res)=>{
 let options = {
@@ -34,12 +39,41 @@ let options = {
     },
     formatter = new Intl.DateTimeFormat([], options);
     var a =(formatter.format(new Date()));
+    // var str = a
+    // var h = str.split(",");
+    // console.log(h[0],h[1])
+    // var dates = h[0]
+    // var d = dates.split('/')
+    // var curdat = new Date(`${d[1]} ${d[0]} ${d[2]} ${h[1]}`)
+
     var str = a
     var h = str.split(",");
-    console.log(h[0],h[1])
     var dates = h[0]
     var d = dates.split('/')
-    var curdat = new Date(`${d[1]} ${d[0]} ${d[2]} ${h[1]}`)
+    
+    var time12h=h[1] // time change in 24hr
+    const [b,time, modifier] = time12h.split(' ');
+    let [hours, minutes] = time.split(':');
+    if (hours === '12') {
+      hours = '00';
+    }
+    if (modifier === 'PM') {
+      hours = parseInt(hours, 10) + 12;
+    }
+   
+    console.log(msg= {hour:`${hours}`,min:`${minutes}`})
+    // console.log(d[2],d[0],d[1],msg.hour,msg.min,se,mil)
+    console.log(msg.hour ,msg.min )
+    
+    var y = d[2]
+    var mo = d[1]-1
+    var d = d[0]
+    var h = msg.hour
+    var mi = msg.min
+    var se = '0'
+    var mil = '0'
+    var curdat = new Date(y,mo,d,h,mi,se,mil)
+    console.log(curdat,'cur')
     
     all_temp.aggregate([
         {
@@ -170,8 +204,9 @@ exports.add_template = async(req,res)=>{
     //         else{
     //             console.log(key)
     if(req.body.follow_up === 0){
-    var dz = new Date(`${req.body.sent_date} ${req.body.sent_time}`);
-    console.log(dz)
+      var date_iso = timefun(req.body.sent_date,req.body.sent_time)
+      console.log(date_iso)
+    
                 var obj = {
                     to: req.body.to,
                     from: req.body.from,
@@ -180,7 +215,7 @@ exports.add_template = async(req,res)=>{
                     template:req.body.template,
                     sent_date: req.body.sent_date,
                     sent_time: req.body.sent_time,
-                    DateT:dz,
+                    DateT:date_iso,
                     repeat_mail: req.body.repeat_mail,
                     follow_up: req.body.follow_up,
                     email_type:'schedule',
@@ -192,12 +227,14 @@ exports.add_template = async(req,res)=>{
             }
            
             else if(req.body.follow_up > 0){
-                var date = new Date(`${req.body.sent_date} ${req.body.sent_time}`);
-                date.setDate(date.getDate() + req.body.follow_up);
-                var nD = moment(date).format('MM/DD/YYYY')    
-                console.log(nD)// this is date mm/dd/yyyy
-                console.log(date); // this is iso date time
-             
+                var date_iso_follow = timefun(req.body.sent_date,req.body.sent_time)
+
+                console.log(date_iso_follow,'si')
+                date_iso_follow.setDate(date_iso_follow.getDate() + req.body.follow_up);
+                var nD = moment(date_iso_follow).format('MM/DD/YYYY')    
+                console.log(nD,'lo')// this is date mm/dd/yyyy
+                console.log(date_iso_follow); // this is iso date time
+                console.log(date_iso_follow.getHours(),'hrou')
                 var obj = {
                     to: req.body.to,
                     from: req.body.from,
@@ -206,7 +243,7 @@ exports.add_template = async(req,res)=>{
                     template:req.body.template,
                     sent_date: nD,
                     sent_time: req.body.sent_time,
-                    DateT:date,
+                    DateT:date_iso_follow,
                     repeat_mail: req.body.repeat_mail,
                     follow_up: req.body.follow_up,
                     email_type:'schedule',
@@ -236,8 +273,6 @@ exports.add_template = async(req,res)=>{
                  })
              }
           })
-    //    }
-    // })
 }
 
 exports.update_template =(req,res)=>{

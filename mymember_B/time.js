@@ -44,6 +44,7 @@ let options = {
     formatter = new Intl.DateTimeFormat([], options);
     var a =(formatter.format(new Date()));
 
+    console.log(a)
     // var TimeDate = DT.split(',')
     // var date=TimeDate[0]
     // var time12h=TimeDate[1]
@@ -61,28 +62,57 @@ let options = {
 
     
     var str = a
-    console.log(str)    
     var h = str.split(",");
-    console.log(h)
     var dates = h[0]
-    var d = /*dates.split('/')*/[ '4', '19', '2021' ]
-    console.log(d)
-
-    var time12h=h[1]
-    const [b,time, modifier] = time12h.split(' ');
-    let [hours, minutes] = time.split(':');
-    if (hours === '12') {
-      hours = '00';
-    }
-    if (modifier === 'PM') {
-      hours = parseInt(hours, 10) + 12;
-    }
+    var d = dates.split('/')
+    var dateary = d
+    console.log(dateary,'fd')
+    var hms = h[1].split(':')    
+    console.log(hms)          
     
-    console.log(msg= {Time:`${hours}:${minutes}`})
-    console.log(msg.Time)
-    var curdat = new Date(`${d[2]} ${d[0]} ${d[1]} ${msg.Time}`)
-    console.log(curdat)
-    console.log(new Date().getMinutes())
+    //time12h = '13:28 PM'
+    // [ ,'13:28','PM"]
+    // var time12h=h[1] // time change in 24hr
+    // console.log(time12h,'fdh1111')
+    // const tl =  time12h.split(' ');
+    // console.log('tt',tl)
+    // const [b,time, modifier] = time12h.split(' ');
+    // console.log('b',time)
+    // let [hours, minutes] = time.split(':');
+    // console.log(hours,minutes,'h','m')
+    // if (hours === '12') {
+    //   hours = '00';
+    // }
+    // if (modifier === 'PM') {
+    //   hours = parseInt(hours, 10) + 12;
+    // }
+   
+    // console.log(msg= {hour:`${hours}`,min:`${minutes}`})
+    // console.log(msg.hour ,msg.min )
+
+    var y = dateary[2]
+    var mo = parseInt(dateary[1])-1
+    var d = parseInt(dateary[0])
+    var h = hms[0]
+    var mi = hms[1]
+    var se = '0'
+    var mil = '0'
+    console.log(y,mo,d,h,mi,se,mil)
+    var curdat = new Date(y,mo,d,h,mi,se,mil)
+    
+    console.log(curdat.getHours(),curdat.getMinutes(),curdat,'cur')
+
+    // var y ='2021'
+    // var mo = '4'
+    // var d = '20'
+    // var h = '11'
+    // var mi = '04'
+    // var se = '0'
+    // var mil = '0'
+
+
+    // new Date(year, month, day, hours, minutes, seconds, milliseconds)
+
         
 var TI = '15:25'
 var follow = 0
