@@ -30,8 +30,6 @@
 // var newDate =  new Date().toLocaleString('en-US', {timeZone: 'Asia/Kolkata'})
 // console.log(newDate)
 
-
-
 let options = {
     timeZone: 'Asia/Kolkata',
     hour: 'numeric',
@@ -45,6 +43,7 @@ let options = {
     var a =(formatter.format(new Date()));
 
     console.log(a,'ffffsd')
+
     // var TimeDate = DT.split(',')
     // var date=TimeDate[0]
     // var time12h=TimeDate[1]
@@ -60,41 +59,43 @@ let options = {
     // return({Date:date,Time:`${hours}:${minutes}`})
     
 
+// 4/21/2021, 11:08:00 AM dt
+// 0|app       | 4/21/2021  11:08:00 AM split_td
+// 0|app       | [ ' 11', '08', '00 AM' ] splitT
+// 0|app       | 2021 20 4  11 08 0 0
+// 0|app       | 2022-09-04T11:08:00.000Z cur
+// 0|app       | data not come
+
     
     var str = a
     var h = str.split(",");
+    console.log(h[0],h[1],'split_td')
     var dates = h[0]
     var d = dates.split('/')
-    var dateary = d
+    var dateary = ['4','21','2021']
     console.log(dateary,'fd')
-    var hms = h[1].split(':')    
-    console.log(hms)          
+    var h1 = '11:08:00 AM'
     
-    //time12h = '13:28 PM'
-    // [ ,'13:28','PM"]
-    // var time12h=h[1] // time change in 24hr
-    // console.log(time12h,'fdh1111')
-    // const tl =  time12h.split(' ');
-    // console.log('tt',tl)
-    // const [b,time, modifier] = time12h.split(' ');
-    // console.log('b',time)
-    // let [hours, minutes] = time.split(':');
-    // console.log(hours,minutes,'h','m')
-    // if (hours === '12') {
-    //   hours = '00';
-    // }
-    // if (modifier === 'PM') {
-    //   hours = parseInt(hours, 10) + 12;
-    // }
+    var time12h=h1 // time change in 24hr
+    console.log(time12h,'fdh1111')
+    const [time, modifier] = time12h.split(' ');
+    let [hours, minutes] = time.split(':');
+    console.log(hours,minutes,'h','m')
+    if (hours === '12') {
+      hours = '00';
+    }
+    if (modifier === 'PM') {
+      hours = parseInt(hours, 10) + 12;
+    }
    
-    // console.log(msg= {hour:`${hours}`,min:`${minutes}`})
-    // console.log(msg.hour ,msg.min )
+    console.log(msg= {hour:`${hours}`,min:`${minutes}`})
+    console.log(msg.hour ,msg.min )
 
     var y = dateary[2]
-    var mo = parseInt(dateary[1])-1
-    var d = parseInt(dateary[0])
-    var h = hms[0]
-    var mi = hms[1]
+    var mo = parseInt(dateary[0])-1
+    var d = parseInt(dateary[1])
+    var h = msg.hour
+    var mi = msg.min
     var se = '0'
     var mil = '0'
     console.log(y,mo,d,h,mi,se,mil)

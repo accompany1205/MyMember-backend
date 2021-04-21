@@ -161,27 +161,51 @@ module.exports = corn.schedule('*/20 * * * * *',function(){
         var dates = h[0]
         var d = dates.split('/')
         var dateary = d
-        var hms = h[1].split(':')    
-        console.log(hms,'splitT')  
+        // var hms = h[1].split(':')    
+        // console.log(hms,'splitT')  
+
+        // 4/21/2021, 11:08:00 AM dt
+// 0|app       | 4/21/2021  11:08:00 AM split_td
+// 0|app       | [ ' 11', '08', '00 AM' ] splitT
+// 0|app       | 2021 20 4  11 08 0 0
+// 0|app       | 2022-09-04T11:08:00.000Z cur
+// 0|app       | data not come
+
+// var h1 = '11:08:00 AM'
+// var time12h=h1 // time change in 24hr
+// console.log(time12h,'fdh1111')
+// const [time, modifier] = time12h.split(' ');
+// let [hours, minutes] = time.split(':');
+// console.log(hours,minutes,'h','m')
+// if (hours === '12') {
+//   hours = '00';
+// }
+// if (modifier === 'PM') {
+//   hours = parseInt(hours, 10) + 12;
+// }
+
+// console.log(msg= {hour:`${hours}`,min:`${minutes}`})
+// console.log(msg.hour ,msg.min )
+
         
-    //     var time12h=h[1] // time change in 24hr
-    //     const [b,time, modifier] = time12h.split(' ');
-    //     let [hours, minutes] = time.split(':');
-    //     if (hours === '12') {
-    //         hours = '00';
-    //     }
-    //     if (modifier === 'PM') {
-    //     hours = parseInt(hours, 10) + 12;
-    //   }
+        var time12h=h[1] // time change in 24hr
+        const [time, modifier] = time12h.split(' ');
+        let [hours, minutes] = time.split(':');
+        if (hours === '12') {
+            hours = '00';
+        }
+        if (modifier === 'PM') {
+        hours = parseInt(hours, 10) + 12;
+      }
    
-    // console.log(msg= {hour:`${hours}`,min:`${minutes}`})
-    // console.log(msg.hour,msg.min)
+    console.log(msg= {hour:`${hours}`,min:`${minutes}`})
+    console.log(msg.hour,msg.min)
     
         var y = d[2]
-        var mo = parseInt(dateary[1])-1
-        var d = parseInt(dateary[0])
-        var h = hms[0]
-        var mi = hms[1]
+        var mo = parseInt(dateary[0])-1
+        var d = parseInt(dateary[1])
+        var h = msg.hour
+        var mi = msg.min
         var se = '0'
         var mil = '0'
         console.log(y,mo,d,h,mi,se,mil)
