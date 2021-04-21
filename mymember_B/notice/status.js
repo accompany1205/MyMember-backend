@@ -187,11 +187,23 @@ module.exports = corn.schedule('*/20 * * * * *',function(){
 // console.log(msg= {hour:`${hours}`,min:`${minutes}`})
 // console.log(msg.hour ,msg.min )
 
+
+// run
+// 0|app  | 4/21/2021, 11:59:00 AM dt
+// 0|app  | 4/21/2021  11:59:00 AM split_td
+// 0|app  | [ '', '11:59:00', 'AM' ] 24hour_am_pm
+// 0|app  | [ '' ] hour_m
+// 0|app  | { hour: '', min: 'undefined' }
+// 0|app  |  undefined
+// 0|app  | 2021 3 21  undefined 0 0
+// 0|app  | Invalid Date cur
+// 0|app  | data not come
+
         
         var time12h=h[1] // time change in 24hr
         var tisp = time12h.split(' ');
         console.log(tisp,'24hour_am_pm')
-        const [time, modifier] = time12h.split(' ');
+        const [b,time, modifier] = time12h.split(' ');
         var ti = time.split(':')
         console.log(ti,'hour_m')
         let [hours, minutes] = time.split(':');
