@@ -26,10 +26,13 @@ const { addmember,
     studentCount,
     listMember,
     next_std_find,
-    std_count
+    std_count,
+    bluckStd
 } = require("../controllers/addmember")
 const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 const upload = require('../handler/multer');
+
+router.post('/bluck_student_add',bluckStd)
 
 // router.post("/member/next_std_find/:stdId",next_std_find)
 // perticular std count

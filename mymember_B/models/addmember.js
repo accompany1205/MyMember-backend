@@ -88,11 +88,11 @@ const addmemberSchema = new schema(
         },
         current_rank_name:{
             type:String,
-            default:""
+            default:"No Belt"
         },
         current_rank_img:{
             type:String,
-            default:""
+            default:"https://storage.googleapis.com/mymember/All-Images/7dbb2cf0-969e-11eb-b12e-7f5ddf0f0ed7-No%20Belt.jpg"
         },
         current_rank_id:{
             type:String,

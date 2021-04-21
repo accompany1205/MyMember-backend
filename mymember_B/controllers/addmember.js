@@ -21,9 +21,109 @@ const change_rank = require('../models/change_rank');
 //     })
 // }
 
-exports.std_count =async(req,res)=>{
-   
 
+exports.bluckStd = async(req,res)=>{
+    var List = req.body.data
+    await Promise.all(List.map(async (item) => {
+
+    var memberdetails = item;
+    var memberObj = new addmemberModal(memberdetails);
+    memberObj.userId =req.params.userId
+    memberObj.save(function (err, data) {
+        if (err) {
+            console.log(err)
+            res.send({ error: 'member is not add' })
+        }
+        else {
+            if(req.file){
+                cloudUrl.imageUrl(req.file).then((stdImgUrl)=>{
+                addmemberModal.findByIdAndUpdate(data._id,{$set:{memberprofileImage:stdImgUrl}})
+               .then((response) => {
+                 // res.send({'res':response})
+                 program.findOne({programName:req.body.program})
+                 .select('programName')
+                 .populate({
+                     path:'program_rank',
+                     model:'Program_rank',
+                     select:('rank_name rank_image')
+                 })
+                 .exec((err,proData)=>{
+                     if(err){
+                         res.send({code:400,msg:'program not found'})
+                     }
+                     else{
+                         var d =proData.program_rank[0]
+                           addmemberModal.findByIdAndUpdate({_id:response._id},
+                                 {$set:{
+                                     next_rank_id:d._id,
+                                     next_rank_name:d.rank_name,
+                                     next_rank_img:d.rank_image,
+                                     programID:proData._id
+                                     }},
+                                 ((err,mangerank)=>{
+                                     if(err){
+                                         res.send({code:400,msg:'manage rank not found'})
+                                     }
+                                   else{
+                                       res.send(mangerank)
+                                }
+                         }))
+                    }
+                 })
+                 
+                 }).catch((err) => {
+                      res.send(err)
+               })   
+           }).catch((error)=>{
+                    res.send({error: "image url is not create"})
+           })
+          }
+         else{
+             console.log(memberdetails.program)
+                program.findOne({programName:memberdetails.program})
+                .select('programName')
+                .populate({
+                    path:'program_rank',
+                    model:'Program_rank',
+                    select:('rank_name rank_image')
+                })
+                .exec(async(err,proData)=>{
+                    if(err|| !proData){
+                        res.send({code:400,msg:'program not find'})
+                    }
+                    else{
+                        var d =proData.program_rank[0]
+                        console.log(d,'fs')
+                         await addmemberModal.findByIdAndUpdate({_id:data._id},
+                                {$set:{
+                                    next_rank_id:d._id,
+                                    next_rank_name:d.rank_name,
+                                    next_rank_img:d.rank_image,
+                                    programID:proData._id
+
+                                    }}
+                                // ((err,mangerank)=>{
+                                //     if(err){
+                                //         res.send({code:400,msg:'manage rank not find of program'})
+                                //     }
+                                //     else{
+                                //          res.send(mangerank)
+                                //     }
+                         /*})*/)
+                   }
+                })
+            }
+        }
+    })
+})).then((resp)=>{
+    res.send('student add successfully')
+}).catch((error)=>{
+    res.send(error)
+})
+}
+
+
+exports.std_count =async(req,res)=>{
     var resdata = await addmemberModal.find({$and:[{userId:req.params.userId},{studentType:'Camp'}]}).count()
     var resdata1 = await addmemberModal.find({$and:[{userId:req.params.userId},{studentType:'Active Student'}]}).count()
     var resdata2 = await addmemberModal.find({$and:[{userId:req.params.userId},{studentType:'Former Student'}]}).count()
@@ -34,12 +134,7 @@ exports.std_count =async(req,res)=>{
 
     var total=resdata+resdata1+resdata2+resdata3+resdata4+resdata5+resdata6
     res.json({'total':total,'camp':resdata,'active':resdata1,'former':resdata2,'former_trail':resdata3,'active_trial':resdata4,'after_school':resdata5,'leads':resdata6})
-    
-
-  
-
-
-    
+   
 }
 
 exports.listMember = (req, res) => {

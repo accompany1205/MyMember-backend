@@ -36,24 +36,6 @@ exports.list_template = (req,res)=>{
 }
 
 exports.add_template = (req,res)=>{
-            // var obj ={
-            //     to: req.body.to,
-            //     from: req.body.from,
-            //     title:req.body.title,
-            //     subject:req.body.subject, 
-            //     template:req.body.template,
-            //     sent_date: req.body.sent_date,
-            //     sent_time: req.body.sent_time,
-            //     repeat_mail: req.body.repeat_mail,
-            //     follow_up: req.body.follow_up,
-            //     email_type:'schedule',
-            //     category:'nurturing',
-            //     email_status:true,
-            //     userId:req.params.userId,
-            //     folderId:req.params.folderId,
-            // }
-            //     var data = timefun() 
-
             if(req.body.follow_up === 0){
                 var date_iso = timefun(req.body.sent_date,req.body.sent_time)
                 console.log(date_iso)
@@ -112,8 +94,7 @@ exports.add_template = (req,res)=>{
                 var emailDetail =  new template(obj)
                 console.log(emailDetail)
                 emailDetail.save((err,emailSave)=>{
-         
-         if(err){
+           if(err){
               res.send({code:200,msg:'template not save'})
               console.log(err)
           }
@@ -152,6 +133,29 @@ exports.remove_template =(req,res)=>{
     })
 }
 
+exports.single_tem_update_status =(req,res)=>{
+    console.log(req.body.email_status)
+    if(req.body.email_status == true){
+        template.updateOne({_id:req.params.tempId},{$set:{email_status:true}},(err,resp)=>{
+            if(err){
+                res.json({code:400,msg:'email nurturing status not deactive'})
+            }
+            else{
+                res.json({code:200,msg:'email nurturing status active successfully'})
+            }
+        })
+    }else if(req.body.email_status == false){
+        template.updateOne({_id:req.params.tempId},{$set:{email_status:false}},(err,resp)=>{
+            if(err){
+                res.json({code:400,msg:'email nurturing status not active'})
+            }
+            else{
+                res.json({code:200,msg:'email nurturing status deactive successfully'})
+            }
+        })
+    }
+}
+
 exports.update_template =(req,res)=>{
     template.update({_id:req.params.templateId},req.body,(err,updateTemp)=>{
         if(err){
@@ -162,7 +166,7 @@ exports.update_template =(req,res)=>{
         }
     }) 
 }
-    
+
 exports.status_update_template =(req,res)=>{
     if(req.body.status == 'false'){
         template.find({$and:[{userId:req.params.userId},{folderId:req.params.folderId}]})
