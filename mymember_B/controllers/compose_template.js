@@ -256,23 +256,23 @@ exports.add_template = async(req,res)=>{
 
              var emailDetail =  new all_temp(obj)
           console.log(emailDetail) 
-        //   emailDetail.save(async(err,emailSave)=>{
-        //       if(err){
-        //           res.send({Error:'email details is not save',error:err})
-        //           console.log(err)
-        //       }
-        //       else{
-        //      compose_folder.findByIdAndUpdate(req.params.folderId,{$push:{template:emailSave._id}})
-        //         .exec((err,template)=>{
-        //             if(err){
-        //                 res.send({error:'compose template details is not add in folder'})
-        //             }
-        //             else{
-        //                 res.send({msg:'compose template details is add in folder',result:emailSave})
-        //             }
-        //          })
-        //      }
-        //   })
+          emailDetail.save(async(err,emailSave)=>{
+              if(err){
+                  res.send({Error:'email details is not save',error:err})
+                  console.log(err)
+              }
+              else{
+             compose_folder.findByIdAndUpdate(req.params.folderId,{$push:{template:emailSave._id}})
+                .exec((err,template)=>{
+                    if(err){
+                        res.send({error:'compose template details is not add in folder'})
+                    }
+                    else{
+                        res.send({msg:'compose template details is add in folder',result:emailSave})
+                    }
+                 })
+             }
+          })
 }
 
 exports.update_template =(req,res)=>{
