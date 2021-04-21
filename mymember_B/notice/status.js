@@ -189,7 +189,11 @@ module.exports = corn.schedule('*/20 * * * * *',function(){
 
         
         var time12h=h[1] // time change in 24hr
+        var tisp = time12h.split(' ');
+        console.log(tisp,'24hour_am_pm')
         const [time, modifier] = time12h.split(' ');
+        var ti = time.split(':')
+        console.log(ti,'hour_m')
         let [hours, minutes] = time.split(':');
         if (hours === '12') {
             hours = '00';
