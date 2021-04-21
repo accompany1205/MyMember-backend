@@ -5,7 +5,6 @@ const async = require('async')
 const moment = require('moment');
 
 function timefun(sd,st){
-
     var date = sd
     var stime = st
     var spD = date.split('/')
@@ -21,10 +20,7 @@ function timefun(sd,st){
     var mil = '0'
     console.log(y,mo,d,h,mi,se,mil)
     return  curdat = new Date(y,mo,d,h,mi,se,mil)
-    
-//     console.log(curdat.getHours(),curdat.getMinutes())
-
-    
+   
  }
 
 exports.getData = (req,res)=>{
@@ -225,8 +221,7 @@ exports.add_template = async(req,res)=>{
                     folderId:req.params.folderId
                 }
             }
-           
-            else if(req.body.follow_up > 0){
+             else if(req.body.follow_up > 0){
                 var date_iso_follow = timefun(req.body.sent_date,req.body.sent_time)
 
                 console.log(date_iso_follow,'si')
@@ -253,6 +248,10 @@ exports.add_template = async(req,res)=>{
                     folderId:req.params.folderId
                 }
             }
+            else if(req.body.follow_up < 0){
+                res.send({code:400,msg:'follow up not set less then 0'})
+            }
+
 
              var emailDetail =  new all_temp(obj)
           console.log(emailDetail) 

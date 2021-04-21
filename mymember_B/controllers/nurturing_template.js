@@ -2,23 +2,24 @@ const template = require("../models/emailSentSave")
 const nurturing_folder = require("../models/email_nurturing_folder")
 const key = require("../models/email_key")
 
-function timefun(){
-    var DT = new Date().toLocaleString('en-US', {timeZone: 'Asia/Kolkata'})
-    var TimeDate = DT.split(',')
-    var date=TimeDate[0]
-    var time12h=TimeDate[1]
-    const [b,time, modifier] = time12h.split(' ');
+function timefun(sd,st){
+    var date = sd
+    var stime = st
+    var spD = date.split('/')
+    var spT = stime.split(":")
+    console.log(spD,spT)
+
+    var y = spD[2]
+    var mo = parseInt(spD[0])-1
+    var d = parseInt(spD[1])
+    var h = spT[0]
+    var mi = spT[1]
+    var se = '0'
+    var mil = '0'
+    console.log(y,mo,d,h,mi,se,mil)
+    return  curdat = new Date(y,mo,d,h,mi,se,mil)
    
-    let [hours, minutes] = time.split(':');
-    if (hours === '12') {
-      hours = '00';
-    }
-    if (modifier === 'PM') {
-      hours = parseInt(hours, 10) + 12;
-    }
-    return({Date:date,Time:`${hours}:${minutes}`})
-    
- }
+}
 
 exports.list_template = (req,res)=>{
     nurturing_folder.findById(req.params.folderId)
@@ -35,26 +36,80 @@ exports.list_template = (req,res)=>{
 }
 
 exports.add_template = (req,res)=>{
-            var obj ={
-                to: req.body.to,
-                from: req.body.from,
-                title:req.body.title,
-                subject:req.body.subject, 
-                template:req.body.template,
-                sent_date: req.body.sent_date,
-                sent_time: req.body.sent_time,
-                repeat_mail: req.body.repeat_mail,
-                follow_up: req.body.follow_up,
-                email_type:'schedule',
-                category:'nurturing',
-                email_status:true,
-                userId:req.params.userId,
-                folderId:req.params.folderId,
-            }
-                var data = timefun() 
+            // var obj ={
+            //     to: req.body.to,
+            //     from: req.body.from,
+            //     title:req.body.title,
+            //     subject:req.body.subject, 
+            //     template:req.body.template,
+            //     sent_date: req.body.sent_date,
+            //     sent_time: req.body.sent_time,
+            //     repeat_mail: req.body.repeat_mail,
+            //     follow_up: req.body.follow_up,
+            //     email_type:'schedule',
+            //     category:'nurturing',
+            //     email_status:true,
+            //     userId:req.params.userId,
+            //     folderId:req.params.folderId,
+            // }
+            //     var data = timefun() 
+
+            if(req.body.follow_up === 0){
+                var date_iso = timefun(req.body.sent_date,req.body.sent_time)
+                console.log(date_iso)
+              
+                          var obj = {
+                              to: req.body.to,
+                              from: req.body.from,
+                              title:req.body.title,
+                              subject:req.body.subject, 
+                              template:req.body.template,
+                              sent_date: req.body.sent_date,
+                              sent_time: req.body.sent_time,
+                              DateT:date_iso,
+                              repeat_mail: req.body.repeat_mail,
+                              follow_up: req.body.follow_up,
+                              email_type:'schedule',
+                              email_status:true,
+                              category:'nurturing',
+                              userId:req.params.userId,
+                              folderId:req.params.folderId
+                          }
+                      }
+
+                      else if(req.body.follow_up > 0){
+                        var date_iso_follow = timefun(req.body.sent_date,req.body.sent_time)
+        
+                        console.log(date_iso_follow,'si')
+                        date_iso_follow.setDate(date_iso_follow.getDate() + req.body.follow_up);
+                        var mdy = moment(date_iso_follow).format('MM/DD/YYYY')    
+                        console.log(mdy,'lo')// this is date mm/dd/yyyy
+                        console.log(date_iso_follow); // this is iso date time
+                        console.log(date_iso_follow.getHours(),'hrou')
+
+                        var obj = {
+                            to: req.body.to,
+                            from: req.body.from,
+                            title:req.body.title,
+                            subject:req.body.subject, 
+                            template:req.body.template,
+                            sent_date: mdy,
+                            sent_time: req.body.sent_time,
+                            DateT:date_iso_follow,
+                            repeat_mail: req.body.repeat_mail,
+                            follow_up: req.body.follow_up,
+                            email_type:'schedule',
+                            email_status:true,
+                            category:'nurturing',
+                            userId:req.params.userId,
+                            folderId:req.params.folderId
+                        }
+                    }
+                    else if(req.body.follow_up < 0){
+                        res.send({code:400,msg:'follow up not set less then 0'})
+                    } 
+
                 var emailDetail =  new template(obj)
-                emailDetail.sent_date = data.Date
-                emailDetail.sent_time = data.Time  
                 console.log(emailDetail)
                 emailDetail.save((err,emailSave)=>{
          
@@ -107,7 +162,7 @@ exports.update_template =(req,res)=>{
         }
     }) 
 }
-
+    
 exports.status_update_template =(req,res)=>{
     if(req.body.status == 'false'){
         template.find({$and:[{userId:req.params.userId},{folderId:req.params.folderId}]})
