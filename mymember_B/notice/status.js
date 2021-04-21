@@ -153,14 +153,16 @@ module.exports = corn.schedule('*/20 * * * * *',function(){
       
         formatter = new Intl.DateTimeFormat([], options);
         var a =(formatter.format(new Date()));
+        console.log(a,'dt')
 
         var str = a
         var h = str.split(",");
+        console.log(h[0],h[1],'split_td')
         var dates = h[0]
         var d = dates.split('/')
         var dateary = d
         var hms = h[1].split(':')    
-        console.log(hms)  
+        console.log(hms,'splitT')  
         
     //     var time12h=h[1] // time change in 24hr
     //     const [b,time, modifier] = time12h.split(' ');

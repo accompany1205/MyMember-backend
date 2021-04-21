@@ -44,7 +44,7 @@ let options = {
     formatter = new Intl.DateTimeFormat([], options);
     var a =(formatter.format(new Date()));
 
-    console.log(a)
+    console.log(a,'ffffsd')
     // var TimeDate = DT.split(',')
     // var date=TimeDate[0]
     // var time12h=TimeDate[1]
