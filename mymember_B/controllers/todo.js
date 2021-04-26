@@ -5,31 +5,31 @@ const { errorHandler } = require('../helpers/dbErrorHandler');
 
 
 exports.todoCreate = (req, res) => {
-const Id = req.params.userId
-const task = new tasks(req.body);
-console.log(req.body,Id)
+    const Id = req.params.userId
+    const task = new tasks(req.body);
+    console.log(req.body, Id)
     task.save((err, data) => {
         if (err) {
             res.send("todo not add")
             console.log(err)
-        }else{
-        console.log(data)
-        tasks.findByIdAndUpdate({_id:data._id},{$set:{ userId: Id}}).exec((err,todoData)=>{
-            if(err){
-                res.send({error:'user id is not add in todo'})
-            }
-            else{
-                res.send({msg:'todo add successfully'})
-                console.log(todoData)
-            }
-        })
+        } else {
+            console.log(data)
+            tasks.findByIdAndUpdate({ _id: data._id }, { $set: { userId: Id } }).exec((err, todoData) => {
+                if (err) {
+                    res.send({ error: 'user id is not add in todo' })
+                }
+                else {
+                    res.send({ msg: 'todo add successfully' })
+                    console.log(todoData)
+                }
+            })
 
         }
     });
 };
 
 exports.taskread = (req, res) => {
-    tasks.find({userId : req.params.userId})
+    tasks.find({ userId: req.params.userId })
         .then((result) => {
             res.json(result)
         }).catch((err) => {
@@ -68,4 +68,75 @@ exports.remove = (req, res) => {
             console.log(err)
             res.send(err)
         })
+}
+
+
+exports.today_taskread = (req, res) => {
+    var todayDate = new Date()
+    // current date
+    // adjust 0 before single digit date
+    let date = ("0" + todayDate.getDate()).slice(-2);
+
+    // current month
+    let month = todayDate.toLocaleString('default', { month: 'long' })
+
+    //let month = ("0" + (todayDate.getMonth() + 1)).slice(-2);
+
+    // current year
+    let year = todayDate.getFullYear();
+
+    var newtodoDate = `${date} ${month} ${year}`;
+
+    console.log(newtodoDate)
+    tasks.find({ userId: req.params.userId, todoDate: newtodoDate })
+        .then((result) => {
+            res.json(result)
+        }).catch((err) => {
+            res.send(err)
+        })
+}
+
+exports.tomorrow_taskread = (req, res) => {
+    var todayDate = new Date()
+    // current date
+    // adjust 0 before single digit
+    let date = todayDate.getDate() + 1;
+
+    // current month
+    let month = todayDate.toLocaleString('default', { month: 'long' })  
+
+    // current year
+    let year = todayDate.getFullYear();
+
+    var newtodoDate = `${date} ${month} ${year}`;
+
+    console.log(newtodoDate)
+    tasks.find({ userId: req.params.userId, todoDate: newtodoDate })
+        .then((result) => {
+            res.json(result)
+        }).catch((err) => {
+            res.send(err)
+        })
+}
+
+exports.completed_taskread = (req, res) => {
+
+    tasks.find({ userId: req.params.userId ,status : "Completed"})
+        .then((result) => {
+            res.json(result)
+        }).catch((err) => {
+            res.send(err)
+        })
+
+}
+
+exports.not_completed_taskread = (req, res) => {
+
+    tasks.find({ userId: req.params.userId ,status : "Notcompleted"})
+        .then((result) => {
+            res.json(result)
+        }).catch((err) => {
+            res.send(err)
+        })
+        
 }
