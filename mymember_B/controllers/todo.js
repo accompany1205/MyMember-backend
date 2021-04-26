@@ -152,3 +152,35 @@ exports.events_taskread = (req, res) => {
         
 }
 
+exports.business_taskread = (req, res) => {
+
+    tasks.find({ userId: req.params.userId ,tag : "Business"})
+        .then((result) => {
+            res.json(result)
+        }).catch((err) => {
+            res.send(err)
+        })
+        
+}
+
+exports.personal_taskread = (req, res) => {
+
+    tasks.find({ userId: req.params.userId ,tag : "Personal"})
+        .then((result) => {
+            res.json(result)
+        }).catch((err) => {
+            res.send(err)
+        })
+        
+}
+
+exports.appointment_taskread = (req, res) => {
+
+    tasks.find({ userId: req.params.userId ,tag : "Appointment"})
+        .then((result) => {
+            res.json(result)
+        }).catch((err) => {
+            res.send(err)
+        })
+        
+}

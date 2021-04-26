@@ -16,4 +16,9 @@ router.get("/tomorrow_taskread/:userId",verifySchool,todos.tomorrow_taskread)
 router.get("/completed_taskread/:userId",verifySchool,todos.completed_taskread)
 router.get("/not_completed_taskread/:userId",verifySchool,todos.not_completed_taskread)
 
+router.get("/events_taskread/:userId",verifySchool,todos.events_taskread)
+router.get("/business_taskread/:userId",verifySchool,todos.business_taskread)
+router.get("/personal_taskread/:userId",verifySchool,todos.personal_taskread)
+router.get("/appointment_taskread/:userId",verifySchool,todos.appointment_taskread)
+
 module.exports = router;

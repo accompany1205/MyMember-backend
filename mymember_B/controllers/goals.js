@@ -30,6 +30,7 @@ exports.goalread = (req, res) => {
             res.send(err)
         })
 };
+
 exports.goalinfo = (req, res) => {
     const id = req.params.goalId
     goals.findById(id)
@@ -60,6 +61,42 @@ exports.goalremove = (req, res) => {
             res.json("goal has been deleted successfully")
         }).catch((err) => {
             console.log(err)
+            res.send(err)
+        })
+};
+
+exports.weekly_goalread = (req, res) => {
+    goals.find({userId :req.params.userId, goal_category : "Weekly Goal"})
+        .then((result) => {
+            res.json(result)
+        }).catch((err) => {
+            res.send(err)
+        })
+};
+
+exports.monthly_goalread = (req, res) => {
+    goals.find({userId :req.params.userId, goal_category : "Monthly Goal"})
+        .then((result) => {
+            res.json(result)
+        }).catch((err) => {
+            res.send(err)
+        })
+};
+
+exports.quaterly_goalread = (req, res) => {
+    goals.find({userId :req.params.userId, goal_category : "Quaterly Goal"})
+        .then((result) => {
+            res.json(result)
+        }).catch((err) => {
+            res.send(err)
+        })
+};
+
+exports.annual_goalread = (req, res) => {
+    goals.find({userId :req.params.userId, goal_category : "Annual Goal"})
+        .then((result) => {
+            res.json(result)
+        }).catch((err) => {
             res.send(err)
         })
 };
