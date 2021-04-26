@@ -132,7 +132,7 @@ exports.completed_taskread = (req, res) => {
 
 exports.not_completed_taskread = (req, res) => {
 
-    tasks.find({ userId: req.params.userId ,status : "Notcompleted"})
+    tasks.find({ userId: req.params.userId ,status : "Not Completed"})
         .then((result) => {
             res.json(result)
         }).catch((err) => {
@@ -140,3 +140,15 @@ exports.not_completed_taskread = (req, res) => {
         })
         
 }
+
+exports.events_taskread = (req, res) => {
+
+    tasks.find({ userId: req.params.userId ,tag : "Events"})
+        .then((result) => {
+            res.json(result)
+        }).catch((err) => {
+            res.send(err)
+        })
+        
+}
+
