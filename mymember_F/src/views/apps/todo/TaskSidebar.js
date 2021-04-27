@@ -438,11 +438,11 @@ class TaskSidebar extends React.Component {
                   this.setState({
                     Task: {
                       notes: "",
-        status: "",
-        subject: "",
-        tag: "",
-        todoDate: "",
-        todoTime: "",
+                      status: "",
+                      subject: "",
+                      tag: "",
+                      todoDate: "",
+                      todoTime: "",
                     }
                   })
                 }}
@@ -467,11 +467,11 @@ class TaskSidebar extends React.Component {
                   this.setState({
                     Task: {
                       notes: "",
-        status: "",
-        subject: "",
-        tag: "",
-        todoDate: "",
-        todoTime: "",
+                      status: "",
+                      subject: "",
+                      tag: "",
+                      todoDate: "",
+                      todoTime: "",
                     }
                   })
                 }}

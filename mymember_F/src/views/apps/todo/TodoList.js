@@ -103,6 +103,13 @@ class TodoList extends React.Component {
                     />
                     <h6 className="todo-title mt-50 mx-50">{todo.subject}</h6>
                   </div>
+                  
+                {/* </div> */}
+                {/* <div
+                  className={`todo-item-action d-flex ${
+                    routerFilter === "trashed" ? "justify-content-end" : ""
+                  }`}
+                > */}
                   {!!todo.tag  ? (
                     <div className="chip-wrapper">
                      
@@ -111,11 +118,11 @@ class TodoList extends React.Component {
                             <span className="chip-text">
                               <span
                                 className={`bullet bullet-${
-                                  todo.tag === "backend"
+                                  todo.tag === "Events"
+                                    ? "primary"
+                                    : todo.tag === "Business"
                                     ? "warning"
-                                    : todo.tag === "doc"
-                                    ? "success"
-                                    : todo.tag === "bug"
+                                    : todo.tag === "Appointment"
                                     ? "danger"
                                     : "success"
                                 } bullet-xs`}
@@ -128,8 +135,8 @@ class TodoList extends React.Component {
                         </div>
                     </div>
                    ) : null} 
-                </div>
-                <div
+                  </div>
+                  <div
                   className={`todo-item-action d-flex ${
                     routerFilter === "trashed" ? "justify-content-end" : ""
                   }`}
@@ -170,7 +177,7 @@ class TodoList extends React.Component {
                   >
                     <Edit
                       size={17}
-                      className={`${todo.isStarred ? "text-warning" : ""}`}
+                      // className={`${todo.isStarred ? "text-warning" : ""}`}
                     />
                   </div>
                   {routerFilter !== "trashed" ? (
