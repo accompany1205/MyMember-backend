@@ -185,7 +185,7 @@ class TodoList extends React.Component {
                       className="todo-item-delete d-inline-block mr-1 mr-sm-0"
                       onClick={e => {
                         e.stopPropagation()
-                        this.props.trashTask(todo.id)
+                        this.props.trashTask(todo._id)
                       }}
                     >
                       <Trash size={17} />
