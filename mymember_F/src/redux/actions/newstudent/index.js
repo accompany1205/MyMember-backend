@@ -32,7 +32,7 @@ export const starTask = todo => {
 }
 
 export const importantTask = todo => {
-  
+
   return dispatch => {
     Promise.all([
       dispatch({ type: "IMPORTANT_TASK", id: todo.id, value: todo.isImportant })
@@ -325,11 +325,14 @@ export const GET_AFTER_SCHOOL_LIST = (data) => {
 export const ADD_NEW_STUDENT = (data) => {
   // let {memberprofileImage, ...rest} = data;
   let dataEntries = Object.entries(data);
-  let formData = new FormData(); 
+  let formData = new FormData();
+
   dataEntries.map(v => {
     formData.append(v[0], v[1]);
     return v;
-  })
+  });
+
+  console.log(baseUrl);
   return async dispatch => {
     try{
        let response = await axios.post(`${baseUrl}/api/member/add_member/${localStorage.getItem("user_id")}`, formData, {
@@ -344,16 +347,16 @@ export const ADD_NEW_STUDENT = (data) => {
        else{
          console.log("Something went wrong");
        }
-       dispatch(GET_ACTIVE_STUDENT());
+       //dispatch(GET_ACTIVE_STUDENT());
        setTimeout(() => {
-         window.location.href = "/app/student/list";
+         //window.location.href = "/app/student/list";
        },500)
     }
     catch(error){
       console.log(error?.message);
       dispatch(GET_ACTIVE_STUDENT());
       setTimeout(() => {
-        window.location.href = "/app/student/list";
+        //window.location.href = "/app/student/list";
       },500)
     }
   }

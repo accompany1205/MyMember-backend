@@ -15,6 +15,8 @@ import {
 import { history } from "../../../history"
 import "../../../assets/scss/plugins/tables/_agGridStyleOverride.scss"
 import "../../../assets/scss/pages/users.scss"
+const baseUrl = process.env.REACT_APP_BASE_URL;
+
 class UsersList extends React.Component {
   state = {
     rowData: null,
@@ -155,8 +157,9 @@ class UsersList extends React.Component {
   }
 
   async componentDidMount() {
-    await axios.get("api/users/list").then(response => {
+    await axios.get(`${baseUrl}/api/signin`).then(response => {
       let rowData = response.data
+      console.log(rowData);
       this.setState({ rowData })
     })
   }

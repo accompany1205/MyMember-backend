@@ -85,7 +85,7 @@ class UsersLists extends React.Component {
         width: 120,
         cellRendererFramework: params => {
 
-          return (
+          return  params.value === ""|| params.value === null?(
             <div
               className="d-flex align-items-center cursor-pointer"
               onClick={() => history.push({
@@ -97,6 +97,28 @@ class UsersLists extends React.Component {
                 }
               })}
             >
+
+              <img
+                className="rounded-circle mr-50"
+                src="https://storage.googleapis.com/mymember/All-Images/abf577f0-66ca-11eb-b349-7143bfd88acf-download.png"
+                alt="user avatar"
+                height="50"
+                width="50"
+              />
+            </div>
+          ):(
+            <div
+              className="d-flex align-items-center cursor-pointer"
+              onClick={() => history.push({
+                pathname: "/student-info",
+                state: {
+                  userId: params.data.userId,
+                  studentId: params.data._id,
+                  data: params.data
+                }
+              })}
+            >
+
               <img
                 className="rounded-circle mr-50"
                 src={params.value}
@@ -104,7 +126,6 @@ class UsersLists extends React.Component {
                 height="50"
                 width="50"
               />
-              {/* <span>{params.data.name}</span> */}
             </div>
           )
         }
@@ -161,10 +182,10 @@ class UsersLists extends React.Component {
             </div>
           ) : params.value.toLowerCase() === "inactive" ? (
             <div className="badge badge-pill badge-light-grey">
-              None
+              Inactive
             </div>
-          ) : <div className="badge badge-pill badge-light-light">
-                        ---
+          ) : <div className="badge badge-pill badge-light-grey">
+              None
        </div>
         }
       },
@@ -174,7 +195,7 @@ class UsersLists extends React.Component {
         filter: true,
         width: 170
       },
-     
+
       {
         headerName: "Program Category",
         field: "category",
@@ -238,31 +259,10 @@ class UsersLists extends React.Component {
                         ---
        </div>
         }
-       
+
       },
 
-      {
-        headerName: "Belt Rank",
-        field: "belt_rank",
-        filter: true,
-        width: 120,
-        cellRendererFramework: params => {
 
-          return (
-            <div
-              className="">
-              <img
-                className="mr-50"
-                src={params.value}
-                alt="user avatar"
-                height="30"
-                width="40"
-              />
-              {/* <span>{params.data.name}</span> */}
-            </div>
-          )
-        }
-      },
       {
         headerName: "Manage",
         field: "transactions",
@@ -303,7 +303,7 @@ class UsersLists extends React.Component {
       this.setState({
         rowData: this.props.active_student,
         loading: false
-       
+
       })
     }
   }
@@ -505,9 +505,9 @@ class UsersLists extends React.Component {
                     )}
                   </ContextLayout.Consumer>
                 ) : null}
-               
+
                </> ):( <div id="loading-bar">
-           
+
             <Spinner loading={true}/>
           </div>
           )}
