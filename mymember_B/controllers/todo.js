@@ -78,14 +78,14 @@ exports.today_taskread = (req, res) => {
     let date = ("0" + todayDate.getDate()).slice(-2);
 
     // current month
-    let month = todayDate.toLocaleString('default', { month: 'long' })
+   // let month = todayDate.toLocaleString('default', { month: 'long' })
 
-    //let month = ("0" + (todayDate.getMonth() + 1)).slice(-2);
+    let month = ("0" + (todayDate.getMonth() + 1)).slice(-2);
 
     // current year
     let year = todayDate.getFullYear();
 
-    var newtodoDate = `${date} ${month} ${year}`;
+    var newtodoDate = `${year}-${month}-${date}`;
 
     console.log(newtodoDate)
     tasks.find({ userId: req.params.userId, todoDate: newtodoDate })
@@ -103,12 +103,13 @@ exports.tomorrow_taskread = (req, res) => {
     let date = todayDate.getDate() + 1;
 
     // current month
-    let month = todayDate.toLocaleString('default', { month: 'long' })  
+    //let month = todayDate.toLocaleString('default', { month: 'long' })  
+    let month = ("0" + (todayDate.getMonth() + 1)).slice(-2);
 
     // current year
     let year = todayDate.getFullYear();
 
-    var newtodoDate = `${date} ${month} ${year}`;
+    var newtodoDate = `${year}-${month}-${date}`;
 
     console.log(newtodoDate)
     tasks.find({ userId: req.params.userId, todoDate: newtodoDate })
