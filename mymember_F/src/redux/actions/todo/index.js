@@ -209,24 +209,13 @@ export const ADD_NEW_TASK = task => {
 }
 
 
-// export const searchTask = val => {
-//   return dispatch => {
-//     dispatch({
-//       type: "SEARCH_TASK",
-//       val
-//     })
-//   }
-// }
 export const searchTask = val => {
   return dispatch => {
-    axios.get(`${baseUrl}/api/searching_task/${localStorage.getItem("user_id")}`, {val}, {
-     headers : {
-       "Authorization" : `Bearer ${localStorage.getItem("access_token")}`
-     }
-   }).then(res => {
-     dispatch(GET_TODOS());
-   })
- }
+    dispatch({
+      type: "SEARCH_TASK",
+      val
+    })
+  }
 }
 
 export const changeFilter = filter => {

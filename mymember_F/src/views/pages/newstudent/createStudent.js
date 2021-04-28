@@ -29,7 +29,7 @@ class CreateStudent extends React.Component {
     lastName:"",
     status:"Active",
     dob:"",
-    age:"",
+    age:"0",
     gender:"Male",
     email:"",
     primaryPhone:"",
@@ -40,14 +40,14 @@ class CreateStudent extends React.Component {
     zipPostalCode:"",
     notes:"",
     studentBeltSize:"LT",
-    program:"",
+    program:"Little Tigers",
     category:"",
     subcategory:"",
     location:"",
     customId:"",
     leadsTracking:"Walk",
     staff:"Leads Tracking",
-    intrested:"Intrest Type",
+    intrested:"After School",
     school:"",
     memberprofileImage:"",
     memberProfileUrl : "",
@@ -76,9 +76,17 @@ class CreateStudent extends React.Component {
         }
 
       })
-
-      }
     }
+
+    if(e.target.name == "dob"){
+      var dob = new Date(e.target.value).getFullYear();
+      var current = new Date().getFullYear();
+      this.setState({
+        ["age"]: current - dob
+      });
+
+    }
+  }
 
   handleRegister = e => {
     // alert('Your favorite flavor is: ' + this.state.value);
@@ -191,7 +199,7 @@ class CreateStudent extends React.Component {
                     // id="nameMulti"
                     placeholder="Age"
                     value={this.state.age}
-                    onChange={this.changeHandler}
+                    disabled
                     required
 
                   />

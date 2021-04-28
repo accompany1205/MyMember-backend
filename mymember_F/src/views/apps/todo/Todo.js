@@ -37,7 +37,6 @@ class TODO extends React.Component {
       : this.setState({ addTask: false, taskToUpdate: null })
   }
   handleUpdateTask = todo => {
-    console.log('todo', todo);
     const {__v, createdAt, updatedAt, ...rest} = todo;
     if (rest !== undefined) {
       this.setState({ addTask: true, taskToUpdate: rest })

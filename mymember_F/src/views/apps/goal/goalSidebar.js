@@ -57,10 +57,10 @@ class TodoSidebar extends React.Component {
               <ListGroupItem
                 className="border-0"
                 onClick={() => {
-                  this.props.changeFilter("weekly_goal")
+                  this.props.changeFilter("weekly goal")
                 }}
                 active={
-                  this.props.routerProps.location.pathname === "/goal/weekly_goal"
+                  this.props.routerProps.location.pathname === "/goal/weekly goal"
                     ? true
                     : false
                 }
@@ -71,10 +71,10 @@ class TodoSidebar extends React.Component {
               <ListGroupItem
                 className="border-0"
                 onClick={() => {
-                  this.props.changeFilter("monthly_goal")
+                  this.props.changeFilter("monthly goal")
                 }}
                 active={
-                  this.props.routerProps.location.pathname === "/goal/monthly_goal"
+                  this.props.routerProps.location.pathname === "/goal/monthly goal"
                     ? true
                     : false
                 }
@@ -85,10 +85,10 @@ class TodoSidebar extends React.Component {
               <ListGroupItem
                 className="border-0"
                 onClick={() => {
-                  this.props.changeFilter("quarterly_goal")
+                  this.props.changeFilter("quarterly goal")
                 }}
                 active={
-                  this.props.routerProps.location.pathname === "/todo/quarterly_goal"
+                  this.props.routerProps.location.pathname === "/todo/quarterly goal"
                     ? true
                     : false
                 }
@@ -99,10 +99,10 @@ class TodoSidebar extends React.Component {
               <ListGroupItem
                 className="border-0"
                 onClick={() => {
-                  this.props.changeFilter("annual_goal")
+                  this.props.changeFilter("annual goal")
                 }}
                 active={
-                  this.props.routerProps.location.pathname === "/todo/annual_goal"
+                  this.props.routerProps.location.pathname === "/todo/annual goal"
                     ? true
                     : false
                 }
@@ -113,10 +113,10 @@ class TodoSidebar extends React.Component {
               <ListGroupItem
                 className="border-0"
                 onClick={() => {
-                  this.props.changeFilter("all_goals")
+                  this.props.changeFilter("all goals")
                 }}
                 active={
-                  this.props.routerProps.location.pathname === "/todo/all_goals"
+                  this.props.routerProps.location.pathname === "/todo/all goals"
                     ? true
                     : false
                 }

@@ -7,7 +7,7 @@ import { config } from "../../../authServices/firebase/firebaseConfig"
 
 // Init firebase if not already initialized
 if (!firebase.apps.length) {
-    firebase.initializeApp(config)
+  firebase.initializeApp(config)
 }
 
 // let firebaseAuth = firebase.auth()
@@ -180,102 +180,102 @@ const baseUrl = process.env.REACT_APP_BASE_URL;
 // }
 
 export const loginWithJWT = user => {
-    return dispatch => {
-        axios
-            .post(`${baseUrl}/api/signin`, {
-                username: user.username,
-                password: user.password
-            })
-            .then(response => {
-                var loggedInUser
-                if (response.data) {
-                    loggedInUser = response.data.user
-                    dispatch({
-                        type: "LOGIN_WITH_JWT",
-                        payload: { loggedInUser, loggedInWith: "jwt" }
-                    })
+  return dispatch => {
+    axios
+      .post(`${baseUrl}/api/signin`, {
+        username: user.username,
+        password: user.password
+      })
+      .then(response => {
+        var loggedInUser
+        if (response.data) {
+          loggedInUser = response.data.user
+          dispatch({
+            type: "LOGIN_WITH_JWT",
+            payload: { loggedInUser, loggedInWith: "jwt" }
+          })
 
-                    history.push("/app/student/list")
-                }
-            })
-            .catch(err => console.log(err))
-    }
+          history.push("/app/student/list")
+        }
+      })
+      .catch(err => console.log(err))
+  }
 }
 
-export const LOGIN_WITH_JWT = ({ username, password }) => {
-    console.log("username", username);
-    console.log("password", password);
-    return async dispatch => {
-        try {
-            let response = await axios.post(`${baseUrl}/api/signin`, { username, password });
-            if (response.data && response.status === 200) {
-                let loggedInUser = response.data.data;
-                // console.log(">>>>>>>>>>>>>",loggedInUser)
-                localStorage.setItem("user_id", response.data.data._id);
-                localStorage.setItem("access_token", response.data.token);
-                localStorage.setItem("userdata", JSON.stringify(response.data));
-                dispatch({
-                    type: "LOGIN_WITH_JWT",
-                    payload: { loggedInUser, loggedInWith: "jwt" }
-                })
-                window.location.href = loggedInUser.role == 1 ? "/app/member/list" : "/dashboard";
-            }
-
-        } catch (error) {
-            console.log(error);
+export const LOGIN_WITH_JWT = ({username, password}) => {
+  console.log("username", username);
+  console.log("password", password);
+  return async dispatch => {
+    try{
+        let response = await axios.post(`${baseUrl}/api/signin`, { username, password });
+        if(response.data && response.status === 200){
+          let loggedInUser = response.data.data;
+          // console.log(">>>>>>>>>>>>>",loggedInUser)
+          localStorage.setItem("user_id", response.data.data._id);
+          localStorage.setItem("access_token", response.data.token);
+          localStorage.setItem("userdata",JSON.stringify( response.data) );
+          dispatch({
+            type: "LOGIN_WITH_JWT",
+            payload: { loggedInUser, loggedInWith: "jwt" }
+          })
+          window.location.href = loggedInUser.role ==1 ? "/app/member/list" :"/dashboard";
         }
+
     }
+    catch(error){
+      console.log(error);
+    }
+  }
 }
 
 export const logoutWithJWT = () => {
-    return dispatch => {
-        // localStorage.removeItem("access_token");
-        localStorage.clear()
-        dispatch({ type: "LOGOUT_WITH_JWT", payload: {} })
-        history.push("/pages/login")
-    }
+  return dispatch => {
+    // localStorage.removeItem("access_token");
+    localStorage.clear()
+    dispatch({ type: "LOGOUT_WITH_JWT", payload: {} })
+    history.push("/pages/login")
+  }
 }
 
 export const logoutWithFirebase = user => {
-    return dispatch => {
-        dispatch({ type: "LOGOUT_WITH_FIREBASE", payload: {} })
-        history.push("/pages/login")
-    }
+  return dispatch => {
+    dispatch({ type: "LOGOUT_WITH_FIREBASE", payload: {} })
+    history.push("/pages/login")
+  }
 }
 
 export const changeRole = role => {
-    return dispatch => dispatch({ type: "CHANGE_ROLE", userRole: role })
+  return dispatch => dispatch({ type: "CHANGE_ROLE", userRole: role })
 }
 
 export const Get_User_Info = () => {
-    return async dispatch => {
-        try {
-            let response = await axios.get(`${baseUrl}/api/organization_setup_info/${localStorage.getItem("user_id")}`, {
-                headers: {
-                    "Authorization": `Bearer ${localStorage.getItem("access_token")}`
-                }
-            });
-            if (response.data && response.status === 200) {
-                dispatch({
-                    type: "GET_USER_INFO",
-                    payload: response.data
-                })
-            }
-        } catch (error) {
-            console.log("something went wrong");
-        }
-    }
+  return async dispatch => {
+      try{
+          let response = await axios.get(`${baseUrl}/api/organization_setup_info/${localStorage.getItem("user_id")}`, 
+          {headers : {
+              "Authorization" : `Bearer ${localStorage.getItem("access_token")}`}});
+          if(response.data && response.status === 200){
+              dispatch({
+                  type : "GET_USER_INFO",
+                  payload : response.data
+              })
+           }
+      }
+      catch(error){
+          console.log("something went wrong");
+      }
+  }
 }
 
 export const updateUserInfo = (id, task) => {
-    return dispatch => {
-        axios.put(`${baseUrl}/api/update_organization_setup/${localStorage.getItem("user_id")}/${id}`, {...task }, {
-            headers: {
-                "Authorization": `Bearer ${localStorage.getItem("access_token")}`
-            }
-        }).then(res => {
-            dispatch(Get_User_Info());
-        })
-
-    }
+  return dispatch => {
+    axios.put(`${baseUrl}/api/update_organization_setup/${localStorage.getItem("user_id")}/${id}`, {...task}, {
+      headers : {
+        "Authorization" : `Bearer ${localStorage.getItem("access_token")}`
+      }
+    }).then(res => {
+      dispatch(Get_User_Info());
+    })
+    
+  }
 }

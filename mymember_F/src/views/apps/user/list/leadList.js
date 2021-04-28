@@ -36,6 +36,11 @@ import "../../../../assets/scss/plugins/tables/_agGridStyleOverride.scss"
 import "../../../../assets/scss/pages/users.scss"
 import CandidateModal from "./CandidateModal"
 import TestModal from "./TestModal"
+import StudentlistuserEyeModal from "./studentlistuserEyeModal"
+import StudentlistuserEmailModal from "../../../pages/studentlistEmailicon/studentlistuserEmailModal"
+import StusercalliconModal from "../../../pages/studentlisticoncall/stusercalliconModal"
+
+
 
 class UsersList extends React.Component {
   state = {
@@ -70,7 +75,7 @@ class UsersList extends React.Component {
         filter: true,
         width: 120,
         cellRendererFramework: params => {
-  
+
           return (
             <div
               className="d-flex align-items-center cursor-pointer"
@@ -113,7 +118,7 @@ class UsersList extends React.Component {
           return `${params.value[0].toUpperCase()}${params.value.substr(1).toLowerCase()}`;
         }
       },
-     
+
       {
         headerName: "Status",
         field: "status",
@@ -144,8 +149,8 @@ class UsersList extends React.Component {
             <div className="badge badge-pill badge-light-grey">
              None
             </div>
-          ):<div className="badge badge-pill badge-light-light"> 
-           ---
+          ):<div className="badge badge-pill badge-light-grey">
+           None
        </div>
         }
       },
@@ -199,7 +204,7 @@ class UsersList extends React.Component {
             <div className="badge badge-pill badge-light-grey">
             N/A
             </div>
-                     
+
        </div>
         }
       },
@@ -224,7 +229,7 @@ class UsersList extends React.Component {
       //   filter: true,
       //   width: 250
       // },
-      
+
       {
         headerName: "Belt Size",
         field: "studentBeltSize",
@@ -254,7 +259,7 @@ class UsersList extends React.Component {
       //       </div>
       //     ) : null
       //   }
-       
+
       // },
       // {
       //   headerName: "Department",
@@ -269,34 +274,19 @@ class UsersList extends React.Component {
         cellRendererFramework: params => {
           return (
             <div className="actions cursor-pointer">
-              {/* <Edit
+              <Info
                 className="mr-50"
-                size={15}
-                onClick={() => history.push("/app/user/edit")}
+                size={18}
               />
-              <Trash2
-                size={15}
-                onClick={() => {
-                  let selectedData = this.gridApi.getSelectedRows()
-                  this.gridApi.updateRowData({ remove: selectedData })
-                }}
+              <StudentlistuserEyeModal />
+
+              <StudentlistuserEmailModal />
+              <StusercalliconModal />
+              {/* <Phone
+               className="mr-50"
+               size={20}
               /> */}
-              <Info   
-              className="mr-50"
-              size={18}
-              />
-              <Eye
-               className="mr-50"
-               size={18}
-              />
-              <Mail 
-               className="mr-50"
-               size={18} 
-               />
-              <Phone
-               className="mr-50"
-               size={18}
-              />
+
             </div>
           )
         }
@@ -397,8 +387,8 @@ class UsersList extends React.Component {
     const { rowData, columnDefs, defaultColDef, pageSize } = this.state
     return (
       <Row className="app-user-list">
-        
-        
+
+
         <Col sm="12">
         <Breadcrumbs
           breadCrumbTitle="Lead Student"
@@ -406,19 +396,19 @@ class UsersList extends React.Component {
           breadCrumbActive="Lead Student"
         />
           <Card>
-            <CardHeader> 
+            <CardHeader>
               <div className="list-icon">
               <a href="/data-list/add-new-student">
-                <Button 
+                <Button
                 className="btn-lg fides btn waves-effect waves-light"
                 onClick={this.toggleModal}
                 >
                   <Plus size={21} />
                   <br></br>
-                  Add 
+                  Add
                 </Button>
                 </a>
-                
+
                 <Button className="btn-lg fides5 btn waves-effect waves-light">
                   <Phone size={21} />
                   <br></br>
@@ -527,7 +517,7 @@ class UsersList extends React.Component {
                   <ContextLayout.Consumer>
                     {context => (
                       <AgGridReact
-                        
+
                         gridOptions={{}}
                         rowSelection="multiple"
                         defaultColDef={defaultColDef}
@@ -548,7 +538,7 @@ class UsersList extends React.Component {
                   </ContextLayout.Consumer>
                 ) : null}
                 </> ):( <div id="loading-bar">
-           
+
            <Spinner loading={true}/>
          </div>
          )}

@@ -82,10 +82,10 @@ class UsersLists extends React.Component {
         headerName: "Photo",
         field: "memberprofileImage",
         filter: true,
-        width: 120,
+        width: 100,
         cellRendererFramework: params => {
 
-          return  params.value === ""|| params.value === null?(
+          return (
             <div
               className="d-flex align-items-center cursor-pointer"
               onClick={() => history.push({
@@ -97,28 +97,6 @@ class UsersLists extends React.Component {
                 }
               })}
             >
-
-              <img
-                className="rounded-circle mr-50"
-                src="https://storage.googleapis.com/mymember/All-Images/abf577f0-66ca-11eb-b349-7143bfd88acf-download.png"
-                alt="user avatar"
-                height="50"
-                width="50"
-              />
-            </div>
-          ):(
-            <div
-              className="d-flex align-items-center cursor-pointer"
-              onClick={() => history.push({
-                pathname: "/student-info",
-                state: {
-                  userId: params.data.userId,
-                  studentId: params.data._id,
-                  data: params.data
-                }
-              })}
-            >
-
               <img
                 className="rounded-circle mr-50"
                 src={params.value}
@@ -126,6 +104,7 @@ class UsersLists extends React.Component {
                 height="50"
                 width="50"
               />
+              {/* <span>{params.data.name}</span> */}
             </div>
           )
         }
@@ -134,7 +113,7 @@ class UsersLists extends React.Component {
         headerName: "Full Name",
         field: "firstName",
         filter: true,
-        width: 140,
+        width: 180,
         cellRendererFramework: params => {
           return (
             <div className="d-flex align-items-center cursor-pointer">
@@ -148,7 +127,7 @@ class UsersLists extends React.Component {
         headerName: "Last Name",
         field: "lastName",
         filter: true,
-        width: 140,
+        width: 160,
         cellRendererFramework: (params) => {
           return `${params.value[0].toUpperCase()}${params.value.substr(1).toLowerCase()}`;
         }
@@ -158,7 +137,7 @@ class UsersLists extends React.Component {
         headerName: "Status",
         field: "status",
         filter: true,
-        width: 130,
+        width: 150,
         cellRendererFramework: params => {
           return params.value.toLowerCase() === "active" ? (
             <div className="badge badge-pill badge-light-success">
@@ -182,7 +161,7 @@ class UsersLists extends React.Component {
             </div>
           ) : params.value.toLowerCase() === "inactive" ? (
             <div className="badge badge-pill badge-light-grey">
-              Inactive
+              None
             </div>
           ) : <div className="badge badge-pill badge-light-grey">
               None
@@ -193,14 +172,14 @@ class UsersLists extends React.Component {
         headerName: "Primary Phone",
         field: "primaryPhone",
         filter: true,
-        width: 170
+        width: 150
       },
 
       {
         headerName: "Program Category",
         field: "category",
         filter: true,
-        width: 190,
+        width: 150,
         cellRendererFramework: params => {
           return params.value=== "program3" ? (
             <div className="badge badge-pill badge-light-orange">
@@ -222,13 +201,13 @@ class UsersLists extends React.Component {
         headerName: "Start Date",
         field: "createdAt",
         filter: true,
-        width: 150
+        width: 170
       },
       {
         headerName: "Expiry Date",
         field: "createdAt",
         filter: true,
-        width: 150,
+        width: 170,
         // cellRendererFramework: params => {
         //   return params.value.toUpperCase();
         // }
@@ -237,7 +216,7 @@ class UsersLists extends React.Component {
         headerName: "Rating",
         field: "rating",
         filter: true,
-        width: 120,
+        width: 100,
         cellRendererFramework: params => {
           return params.value == 0 ? (
             <div className="badge-light-dangers">
@@ -255,14 +234,12 @@ class UsersLists extends React.Component {
             <div className="badge-light-dangers">
              {params.value}
             </div>
-          ) : <div className="badge badge-pill badge-light-light">
-                        ---
+          ) : <div className="badge badge-pill badge-light-grey">
+                        None
        </div>
         }
 
       },
-
-
       {
         headerName: "Manage",
         field: "transactions",

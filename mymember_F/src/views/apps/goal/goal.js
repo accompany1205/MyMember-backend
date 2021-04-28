@@ -37,23 +37,13 @@ class TODO extends React.Component {
       ? this.setState({ addTask: true })
       : this.setState({ addTask: false, taskToUpdate: null })
   }
-  handleUpdateGoal = todo => {
-    console.log('todo', todo);
+  handleUpdateTask = todo => {
     if (todo !== undefined) {
       this.setState({ addTask: true, taskToUpdate: todo })
     } else {
       this.setState({ taskToUpdate: null })
     }
   }
-
-  // handleUpdateGoal = todo => {
-  //   const {__v, createdAt, updatedAt, ...rest} = todo;
-  //   if (rest !== undefined) {
-  //     this.setState({ addTask: true, taskToUpdate: rest })
-  //   } else {
-  //     this.setState({ taskToUpdate: null })
-  //   }
-  // }
 
   handleUndoChanges = arr => {
     this.setState({
@@ -95,7 +85,7 @@ class TODO extends React.Component {
         </ContextLayout.Consumer>
         <TodoList
           routerProps={this.props}
-          handleUpdateGoal={this.handleUpdateGoal}
+          handleUpdateTask={this.handleUpdateTask}
           mainSidebar={this.onSetSidebarOpen}
           prevState={this.state.prevState}
         />

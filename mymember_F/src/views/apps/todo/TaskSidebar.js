@@ -402,7 +402,7 @@ class TaskSidebar extends React.Component {
               <Input
                 type="textarea"
                 placeholder="Notes"
-                rows="3"
+                rows="2"
                 value={
                   Task.notes
                 }
