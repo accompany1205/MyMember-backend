@@ -1,6 +1,7 @@
 const tasks = require("../models/todo_schema");
 const user = require("../models/user")
 const { errorHandler } = require('../helpers/dbErrorHandler');
+const url = require('url')
 // const todo = require("../models/todo_schema")
 
 
@@ -78,7 +79,7 @@ exports.today_taskread = (req, res) => {
     let date = ("0" + todayDate.getDate()).slice(-2);
 
     // current month
-   // let month = todayDate.toLocaleString('default', { month: 'long' })
+    // let month = todayDate.toLocaleString('default', { month: 'long' })
 
     let month = ("0" + (todayDate.getMonth() + 1)).slice(-2);
 
@@ -122,7 +123,7 @@ exports.tomorrow_taskread = (req, res) => {
 
 exports.completed_taskread = (req, res) => {
 
-    tasks.find({ userId: req.params.userId ,status : "Completed"})
+    tasks.find({ userId: req.params.userId, status: "Completed" })
         .then((result) => {
             res.json(result)
         }).catch((err) => {
@@ -133,55 +134,80 @@ exports.completed_taskread = (req, res) => {
 
 exports.not_completed_taskread = (req, res) => {
 
-    tasks.find({ userId: req.params.userId ,status : "Not Completed"})
+    tasks.find({ userId: req.params.userId, status: "Not Completed" })
         .then((result) => {
             res.json(result)
         }).catch((err) => {
             res.send(err)
         })
-        
+
 }
 
 exports.events_taskread = (req, res) => {
 
-    tasks.find({ userId: req.params.userId ,tag : "Events"})
+    tasks.find({ userId: req.params.userId, tag: "Events" })
         .then((result) => {
             res.json(result)
         }).catch((err) => {
             res.send(err)
         })
-        
+
 }
 
 exports.business_taskread = (req, res) => {
 
-    tasks.find({ userId: req.params.userId ,tag : "Business"})
+    tasks.find({ userId: req.params.userId, tag: "Business" })
         .then((result) => {
             res.json(result)
         }).catch((err) => {
             res.send(err)
         })
-        
+
 }
 
 exports.personal_taskread = (req, res) => {
 
-    tasks.find({ userId: req.params.userId ,tag : "Personal"})
+    tasks.find({ userId: req.params.userId, tag: "Personal" })
         .then((result) => {
             res.json(result)
         }).catch((err) => {
             res.send(err)
         })
-        
+
 }
 
 exports.appointment_taskread = (req, res) => {
 
-    tasks.find({ userId: req.params.userId ,tag : "Appointment"})
+    tasks.find({ userId: req.params.userId, tag: "Appointment" })
         .then((result) => {
             res.json(result)
         }).catch((err) => {
             res.send(err)
         })
-        
+
 }
+
+exports.searching_task = (req, res) => {
+
+    const all = url.parse(req.url, true).query
+    console.log(all)
+    console.log(req.url)
+    console.log(all.q)
+    
+    let searchKeyWord = new RegExp(".*" + all.q + ".*", 'i');
+
+    tasks.find({
+        $and: [{
+            $or: [{ subject: searchKeyWord }, { todoDate: searchKeyWord }, { todoTime: searchKeyWord },
+            { tag: searchKeyWord }, { status: searchKeyWord }, { notes: searchKeyWord }]
+        },
+        { userId: req.params.userId }]
+    })
+        .then((result) => {
+            res.json(result)
+        }).catch((err) => {
+            res.send(err)
+        })
+
+}
+

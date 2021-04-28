@@ -21,4 +21,6 @@ router.get("/business_taskread/:userId",verifySchool,todos.business_taskread)
 router.get("/personal_taskread/:userId",verifySchool,todos.personal_taskread)
 router.get("/appointment_taskread/:userId",verifySchool,todos.appointment_taskread)
 
+router.get("/searching_task/:userId",verifySchool,todos.searching_task)
+
 module.exports = router;
