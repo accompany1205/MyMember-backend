@@ -193,7 +193,7 @@ exports.searching_task = (req, res) => {
     console.log(all)
     console.log(req.url)
     console.log(all.q)
-    
+
     let searchKeyWord = new RegExp(".*" + all.q + ".*", 'i');
 
     tasks.find({
@@ -211,3 +211,43 @@ exports.searching_task = (req, res) => {
 
 }
 
+exports.upcoming_taskread = (req, res) => {
+
+    var element = {}, cart = [];
+
+    var upcomingTask = '';
+
+    for (i = 0; i < 8; i++) {
+
+        var upcomingDate = new Date()
+
+        var todayDate = new Date(upcomingDate)
+
+        todayDate.setDate(todayDate.getDate() + i)
+
+        let date = todayDate.getDate();
+
+        // current month
+        //let month = todayDate.toLocaleString('default', { month: 'long' })  
+        let month = ("0" + (todayDate.getMonth() + 1)).slice(-2);
+
+        // current year
+        let year = todayDate.getFullYear();
+
+        var newtodoDate = `${year}-${month}-${date}`;
+
+        console.log(newtodoDate)
+        tasks.find({ userId: req.params.userId, todoDate: newtodoDate })
+            .then((result) => {
+                if (result) {
+                    console.log(result[0].subject)
+                    element.subject = result[0].subject;
+                    element.todoDate = result[0].todoDate;
+                    cart.push({ element: element });
+                }
+            }).catch((err) => {
+                res.send(err)
+            })
+    }
+    res.json({ cart })
+}

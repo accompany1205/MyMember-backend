@@ -1,29 +1,30 @@
 const goals = require("../models/goal_schema");
 const { errorHandler } = require('../helpers/dbErrorHandler');
+const url = require('url')
 
 exports.goalCreate = (req, res) => {
     const task = new goals(req.body);
     task.save((err, data) => {
         if (err) {
-            res.send({error:'goals is not add'})
+            res.send({ error: 'goals is not add' })
             console.log(err)
         }
-        else{
-            goals.findByIdAndUpdate({_id:data._id},{$set:{userId: req.params.userId}})
-            .exec((err,goalData)=>{
-                if(err){
-                    res.send({error:'user id is not add in goals'})
-                }
-                else{
-                    res.send(task)
-                }
-            })
+        else {
+            goals.findByIdAndUpdate({ _id: data._id }, { $set: { userId: req.params.userId } })
+                .exec((err, goalData) => {
+                    if (err) {
+                        res.send({ error: 'user id is not add in goals' })
+                    }
+                    else {
+                        res.send(task)
+                    }
+                })
         }
     });
 };
 
 exports.goalread = (req, res) => {
-    goals.find({userId :req.params.userId})
+    goals.find({ userId: req.params.userId })
         .then((result) => {
             res.json(result)
         }).catch((err) => {
@@ -66,7 +67,7 @@ exports.goalremove = (req, res) => {
 };
 
 exports.weekly_goalread = (req, res) => {
-    goals.find({userId :req.params.userId, goal_category : "Weekly Goal"})
+    goals.find({ userId: req.params.userId, goal_category: "Weekly Goal" })
         .then((result) => {
             res.json(result)
         }).catch((err) => {
@@ -75,7 +76,7 @@ exports.weekly_goalread = (req, res) => {
 };
 
 exports.monthly_goalread = (req, res) => {
-    goals.find({userId :req.params.userId, goal_category : "Monthly Goal"})
+    goals.find({ userId: req.params.userId, goal_category: "Monthly Goal" })
         .then((result) => {
             res.json(result)
         }).catch((err) => {
@@ -84,7 +85,7 @@ exports.monthly_goalread = (req, res) => {
 };
 
 exports.quaterly_goalread = (req, res) => {
-    goals.find({userId :req.params.userId, goal_category : "Quaterly Goal"})
+    goals.find({ userId: req.params.userId, goal_category: "Quaterly Goal" })
         .then((result) => {
             res.json(result)
         }).catch((err) => {
@@ -93,10 +94,36 @@ exports.quaterly_goalread = (req, res) => {
 };
 
 exports.annual_goalread = (req, res) => {
-    goals.find({userId :req.params.userId, goal_category : "Annual Goal"})
+    goals.find({ userId: req.params.userId, goal_category: "Annual Goal" })
         .then((result) => {
             res.json(result)
         }).catch((err) => {
             res.send(err)
         })
 };
+
+
+exports.searching_goal = (req, res) => {
+
+    const all = url.parse(req.url, true).query
+    console.log(all)
+    console.log(req.url)
+    console.log(all.q)
+
+    let searchKeyWord = new RegExp(".*" + all.q + ".*", 'i');
+
+    goals.find({
+        $and: [{
+            $or: [{ subject: searchKeyWord }, { goal_category: searchKeyWord }, { compeleting_Date: searchKeyWord },
+            { reminder_Date: searchKeyWord }, { tag: searchKeyWord }, { goal_status: searchKeyWord },
+            { notes: searchKeyWord }]
+        },
+        { userId: req.params.userId }]
+    })
+        .then((result) => {
+            res.json(result)
+        }).catch((err) => {
+            res.send(err)
+        })
+
+}
