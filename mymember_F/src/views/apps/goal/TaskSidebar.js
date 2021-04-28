@@ -360,8 +360,8 @@ class TaskSidebar extends React.Component {
                     </DropdownItem>
                   </DropdownMenu>
                 </UncontrolledDropdown>
-              </div> */}
-            </div>
+              </div> 
+            </div>*/}
             <FormGroup>
               <Input
                 type="text"
