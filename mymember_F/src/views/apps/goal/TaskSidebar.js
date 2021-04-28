@@ -176,8 +176,8 @@ class TaskSidebar extends React.Component {
             <div className="task-type-title text-bold-600">
               <h3>
                 {this.props.taskToUpdate && this.props.taskToUpdate._id
-                  ? "Update Task"
-                  : "Add Task"}
+                  ? "Update Goal"
+                  : "Add Goal"}
               </h3>
             </div>
             <div className="close-icon">
@@ -404,7 +404,7 @@ class TaskSidebar extends React.Component {
                       <option>Weekly Goal</option>
                       <option>Monthly Goal</option>
                       <option>Quaterly Goal</option>
-                      <option>Appointment</option>
+                      <option>Annual Goal</option>
               </select>
             </FormGroup>
             <FormGroup>
@@ -434,7 +434,7 @@ class TaskSidebar extends React.Component {
               <Input
                 type="textarea"
                 placeholder="Notes"
-                rows="2"
+                rows="3"
                 name="notes"
                 value={
                   this.state.notes
