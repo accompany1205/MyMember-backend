@@ -16,8 +16,8 @@ server {
 
 ###################################
 server {
-        listen 80;
-        listen [::]:80;
+        listen 5555;
+        listen [::]:5555;
         server_name    localhost;
         root /var/www/html/Mymember_sveltose;
 

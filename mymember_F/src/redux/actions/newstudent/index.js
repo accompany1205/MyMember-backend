@@ -110,6 +110,7 @@ export const GET_ACTIVE_STUDENT = (data) => {
     }
   }
 }
+
 export const GET_ACTIVE_TRAIL_LIST = (data) => {
   return async dispatch => {
     try{
