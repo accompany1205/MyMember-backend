@@ -22,4 +22,7 @@ router.get("/monthly_goal_counter/:userId",verifySchool,goals.monthly_goal_count
 router.get("/quaterly_goal_counter/:userId",verifySchool,goals.quaterly_goal_counter)
 router.get("/annual_goal_counter/:userId",verifySchool,goals.annual_goal_counter)
 
+router.get("/not_completed_goal_counter/:userId",verifySchool,goals.not_completed_goal_counter);
+router.get("/completed_goal_counter/:userId",verifySchool,goals.completed_goal_counter);
+
 module.exports = router;

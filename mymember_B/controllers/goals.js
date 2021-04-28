@@ -197,3 +197,37 @@ exports.annual_goal_counter = (req, res) => {
     })
 
 };
+
+exports.completed_goal_counter = (req, res) => {
+
+    let completedCount = 0
+
+    goals.countDocuments({ userId: req.params.userId, goal_status: "Completed" }, function (
+        err,
+        docCount
+    ) {
+        if (err) {
+            return handleError(err)
+        } 
+        completedCount = docCount
+        res.json({count : completedCount})
+    })
+
+};
+
+exports.not_completed_goal_counter = (req, res) => {
+
+    let notCompletedCount = 0
+
+    goals.countDocuments({ userId: req.params.userId, goal_status: "Not Completed" }, function (
+        err,
+        docCount
+    ) {
+        if (err) {
+            return handleError(err)
+        } 
+        notCompletedCount = docCount
+        res.json({count : notCompletedCount})
+    })
+
+};
