@@ -505,6 +505,7 @@ class TaskSidebar extends React.Component {
                 Cancel
               </Button.Ripple>
             </div> 
+          </div> 
           
         </PerfectScrollbar>
       </div>
