@@ -127,3 +127,73 @@ exports.searching_goal = (req, res) => {
         })
 
 }
+
+/// counters
+exports.weekly_goal_counter = (req, res) => {
+
+    let weeklyCount = 0
+
+    goals.countDocuments({ userId: req.params.userId, goal_category: "Weekly Goal" }, function (
+        err,
+        docCount
+    ) {
+        if (err) {
+            return handleError(err)
+        } 
+        weeklyCount = docCount
+        res.json({count : weeklyCount})
+    })
+
+};
+
+exports.monthly_goal_counter = (req, res) => {
+
+    let monthlyCount = 0
+
+    goals.countDocuments({ userId: req.params.userId, goal_category: "Monthly Goal" }, function (
+        err,
+        docCount
+    ) {
+        if (err) {
+            return handleError(err)
+        } 
+        monthlyCount = docCount
+        res.json({count : monthlyCount})
+    })
+
+};
+
+exports.quaterly_goal_counter = (req, res) => {
+
+    let quaterlyCount = 0
+
+    goals.countDocuments({ userId: req.params.userId, goal_category: "Quaterly Goal" }, function (
+        err,
+        docCount
+    ) {
+        if (err) {
+            return handleError(err)
+        } 
+        quaterlyCount = docCount
+        res.json({count : quaterlyCount})
+    })
+
+};
+
+
+exports.annual_goal_counter = (req, res) => {
+
+    let annualCount = 0
+
+    goals.countDocuments({ userId: req.params.userId, goal_category: "Annual Goal" }, function (
+        err,
+        docCount
+    ) {
+        if (err) {
+            return handleError(err)
+        } 
+        annualCount = docCount
+        res.json({count : annualCount})
+    })
+
+};

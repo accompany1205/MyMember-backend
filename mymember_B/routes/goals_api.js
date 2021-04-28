@@ -17,4 +17,9 @@ router.get("/quaterly_goalread/:userId", verifySchool, goals.quaterly_goalread);
 router.get("/annual_goalread/:userId", verifySchool, goals.annual_goalread);
 router.get("/searching_goal/:userId", verifySchool, goals.searching_goal);
 
+router.get("/weekly_goal_counter/:userId",verifySchool,goals.weekly_goal_counter)
+router.get("/monthly_goal_counter/:userId",verifySchool,goals.monthly_goal_counter)
+router.get("/quaterly_goal_counter/:userId",verifySchool,goals.quaterly_goal_counter)
+router.get("/annual_goal_counter/:userId",verifySchool,goals.annual_goal_counter)
+
 module.exports = router;
