@@ -25,11 +25,7 @@ export const GET_TODOS = (filter) => {
     try{
        let userId = localStorage.getItem("user_id") || "";
        let token = localStorage.getItem("access_token");
-       let response = await axios.get(`${baseUrl}/api/list_of_task/${userId}`, {
-        headers : {
-          "Authorization" : `Bearer ${token}`,
-        }
-      });
+       let response
        if (filter == "today"){
         response = await axios.get(`${baseUrl}/api/today_taskread/${userId}`, {
           headers : {
@@ -88,6 +84,12 @@ export const GET_TODOS = (filter) => {
        }
        else if(filter == "appointment"){
         response = await axios.get(`${baseUrl}/api/appointment_taskread/${userId}`, {
+          headers : {
+            "Authorization" : `Bearer ${token}`,
+          }
+        });
+       }else{
+        response = await axios.get(`${baseUrl}/api/list_of_task/${userId}`, {
           headers : {
             "Authorization" : `Bearer ${token}`,
           }
@@ -209,13 +211,35 @@ export const ADD_NEW_TASK = task => {
 }
 
 
+// export const searchTask = val => {
+//   return dispatch => {
+//     dispatch({
+//       type: "SEARCH_TASK",
+//       val
+//     })
+//   }
+// }
 export const searchTask = val => {
   return dispatch => {
-    dispatch({
-      type: "SEARCH_TASK",
-      val
-    })
-  }
+    axios.get(`${baseUrl}/api/searching_task/${localStorage.getItem("user_id")}?q=${val}`, {
+     headers : {
+       "Authorization" : `Bearer ${localStorage.getItem("access_token")}`
+     }
+   }).then(res => {
+    // if(response.data && response.status === 200){
+      console.log('search res', res)
+
+      dispatch({
+        type : "GET_TODOS_ALL",
+        payload : {
+          todos : res.data,
+          // routeParams : filter
+        },
+      })         
+  //  }
+    //  dispatch(GET_TODOS());
+   })
+ }
 }
 
 export const changeFilter = filter => {

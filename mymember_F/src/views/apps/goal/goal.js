@@ -2,13 +2,13 @@
 import React from "react"
 import Sidebar from "react-sidebar"
 import { ContextLayout } from "../../../utility/context/Layout"
-import TodoSidebar from "./goalSidebar"
-import TodoList from "./goalList"
+import GoalSidebar from "./goalSidebar"
+import GoalList from "./goalList"
 import TaskSidebar from "./TaskSidebar"
 import "../../../assets/scss/pages/app-todo.scss"
 const mql = window.matchMedia(`(min-width: 992px)`)
 
-class TODO extends React.Component {
+class GOAL extends React.Component {
   state = {
     addTask: false,
     sidebarDocked: mql.matches,
@@ -37,13 +37,29 @@ class TODO extends React.Component {
       ? this.setState({ addTask: true })
       : this.setState({ addTask: false, taskToUpdate: null })
   }
-  handleUpdateTask = todo => {
+  handleUpdateGoal = todo => {
+    console.log('todo', todo);
     if (todo !== undefined) {
       this.setState({ addTask: true, taskToUpdate: todo })
     } else {
       this.setState({ taskToUpdate: null })
     }
   }
+
+  // handleUpdateSetting = status => {
+  //   status === "open"
+  //     ? this.setState({ addTask: true })
+  //     : this.setState({ addTask: false, taskToUpdate: null })
+  // }
+
+  // handleUpdateGoal = todo => {
+  //   const {__v, createdAt, updatedAt, ...rest} = todo;
+  //   if (rest !== undefined) {
+  //     this.setState({ addTask: true, taskToUpdate: rest })
+  //   } else {
+  //     this.setState({ taskToUpdate: null })
+  //   }
+  // }
 
   handleUndoChanges = arr => {
     this.setState({
@@ -67,7 +83,7 @@ class TODO extends React.Component {
           {context => (
             <Sidebar
               sidebar={
-                <TodoSidebar
+                <GoalSidebar
                   routerProps={this.props}
                   addTask={this.handleAddTask}
                   mainSidebar={this.onSetSidebarOpen}
@@ -83,9 +99,9 @@ class TODO extends React.Component {
             </Sidebar>
           )}
         </ContextLayout.Consumer>
-        <TodoList
+        <GoalList
           routerProps={this.props}
-          handleUpdateTask={this.handleUpdateTask}
+          handleUpdateGoal={this.handleUpdateGoal}
           mainSidebar={this.onSetSidebarOpen}
           prevState={this.state.prevState}
         />
@@ -102,4 +118,4 @@ class TODO extends React.Component {
   }
 }
 
-export default TODO
+export default GOAL
