@@ -220,28 +220,17 @@ app.use("/api", emailKey);
 app.use("/api", textkey);
 
 // menu middleware
-app.use("/api", student_menu);
+app.use('/api',student_menu)
 
-
-const privateKey1 = fs.readFileSync(
-  "/etc/letsencrypt/live/mymember.com/privkey.pem",
-  "utf8"
-);
-const certificate1 = fs.readFileSync(
-  "/etc/letsencrypt/live/mymember.com/cert.pem",
-  "utf8"
-);
-const ca1 = fs.readFileSync(
-  "/etc/letsencrypt/live/mymember.com/chain.pem",
-  "utf8"
-);
+const privateKey1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/privkey.pem', 'utf8');
+const certificate1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/cert.pem', 'utf8');
+const ca1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/chain.pem', 'utf8');
 
 const credentials1 = {
-  key: privateKey1,
-  cert: certificate1,
-  ca: ca1,
+	key: privateKey1,
+	cert: certificate1,
+	ca: ca1
 };
-
 
 // app.use(function (req, res, next){
 //     res.header("Access-Control-Allow-Origin", "*");
@@ -255,26 +244,11 @@ const credentials1 = {
 
 const port = process.env.PORT || 8080;
 
-// var server = https.createServer(app).listen(port, function () {
-//   console.log("Express server listening on port " + port);
-//   console.log("http://localhost:" + port + "/");
-// });
-
-// const MessagingResponse = require('twilio').twiml.MessagingResponse
-
-// app.post('/sms',(req,res)=>{
-//     // var reply_msg = req.body.Body
-//     console.log(req.body,'run')
-//         const twiml = new MessagingResponse()
-//         twiml.message('hy')
-//         res.writeHead(200,{'Content-Type': 'text/xml'})
-//         res.end(twiml.toString())
-// })
-http.createServer(app).listen(3030, function(){
-    console.log("Express server listening on port " + 3030);
+var server = https.createServer(credentials1, app).listen(port, function(){
+    console.log("Express server listening on port " + port);
 });
 
+
 // app.listen(port, () => {
-//   console.log(`Server is running on port ${port}`);
+//     console.log(`Server is running on port ${port}`);
 // });
-// /fdsfs
