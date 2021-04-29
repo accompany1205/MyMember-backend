@@ -51,7 +51,6 @@ exports.list_std =(req,res)=>{
     })
 }
 
-
 exports.promote_std =(req,res)=>{
     program.findOne({_id:req.params.proId},{usert:true})
     .populate({

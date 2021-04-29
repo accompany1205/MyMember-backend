@@ -31,6 +31,7 @@ const stripe = require("./routes/stripe");
 const manage_stripe = require("./routes/manage_strip")
 const todo_api = require("./routes/todo_apis")
 const adminstrate = require("./routes/administrater_user")
+const goal_settings = require("./routes/goal_setting")
 const goals_api = require("./routes/goals_api");
 const class_schedule = require("./routes/class_schedule")
 const attendence = require("./routes/attendence")
@@ -80,6 +81,8 @@ const text_genral_folder = require("./routes/text_general_folder")
 const text_nurturing = require("./routes/text_nurturing")
 const text_nurturing_folder = require("./routes/text_nurturing_folder")
 const text_nurturing_template = require("./routes/text_nurturing_template")
+const text_Library = require("./routes/text_library") 
+const text_Library_Folder = require("./routes/text_library_folder")
 const document_folder = require("./routes/doc_folder")
 const document_subFolder = require("./routes/doc_subfolder")
 const upload_doc = require("./routes/doc_upload")
@@ -112,13 +115,14 @@ uuidv1()
 // status check expire or not
 
 mongoose
-    .connect(process.env.DATABASE, {
+    .connect('mongodb+srv://tekeshwar810:jMEYAI8IFSeEroFi@test.r0ri0.mongodb.net/MyMember?retryWrites=true&w=majority', {
         useNewUrlParser: true,
         useCreateIndex: true,
         useUnifiedTopology: true
     })
     .then(() => console.log('DB Connected'));
-    // const statusCheck = require("./notice/status")
+  //all cron job  
+ // const statusCheck = require("./notice/status")
 
 // middlewares
 app.use(express.json());
@@ -178,6 +182,7 @@ app.use('/api',all_appoinment)
 app.use('/api',email_compose)
 app.use('/api',email_nurturing)
 app.use('/api',email_library)
+app.use('/api',goal_settings )
 app.use('/api',email_compose_folder)
 app.use('/api',email_nurturing_folder)
 app.use('/api',compose_template)
@@ -191,6 +196,8 @@ app.use('/api',text_genral_folder)
 app.use('/api',text_nurturing)
 app.use('/api',text_nurturing_folder)
 app.use('/api',text_nurturing_template)
+app.use('/api',text_Library)
+app.use('/api',text_Library_Folder)
 app.use('/api',document_folder)
 app.use('/api',document_subFolder)
 app.use('/api',upload_doc)
@@ -238,6 +245,21 @@ const port = process.env.PORT || 8080;
 var server = https.createServer(credentials1, app).listen(port, function(){
     console.log("Express server listening on port " + port);
 });
+
+// const MessagingResponse = require('twilio').twiml.MessagingResponse
+
+// app.post('/sms',(req,res)=>{
+//     // var reply_msg = req.body.Body
+//     console.log(req.body,'run')
+//         const twiml = new MessagingResponse()
+//         twiml.message('hy')
+//         res.writeHead(200,{'Content-Type': 'text/xml'})
+//         res.end(twiml.toString())
+// })
+// http.createServer(app).listen(3030, function(){
+//     console.log("Express server listening on port " + 3030);
+// });
+
 
 // app.listen(port, () => {
 //     console.log(`Server is running on port ${port}`);

@@ -2,18 +2,20 @@ const student = require("../models/addmember")
 const schedule = require("../models/class_schedule")
 const attendance = require("../models/attendence")
 
-exports.create = (req,res)=>{
-    student.findOne({firstName:req.body.studentName})
+exports.create = async(req,res)=>{
+    var schdule_data = await schedule.findOne({_id:req.params.scheduleId})
+    if(schdule_data){
+    student.findOne({firstName:req.params.studentId})
     .exec((err,stdData)=>{
         if(err){
             res.send({error:'student data not find'})
         }
         else{
                 var stdDetails={
-                        firstName:req.body.studentName,
-                        lastName:req.body.lastName,
+                        firstName:stdData.firstName,
+                        lastName:stdData.lastName,
                         image:stdData.memberprofileImage,
-                        class:req.body.class_name,
+                        class:schdule_data.class_name,
                         userId:req.params.userId,
                         time:req.body.time
                     }
@@ -50,6 +52,10 @@ exports.create = (req,res)=>{
             // })  
         }
     })
+}
+else{
+    res.send({msg:'schedule data not come'})
+}
 }
 
 exports.remove = (req,res)=>{
