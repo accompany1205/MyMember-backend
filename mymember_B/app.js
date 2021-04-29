@@ -222,7 +222,7 @@ app.use("/api", textkey);
 // menu middleware
 app.use("/api", student_menu);
 
-/*
+
 const privateKey1 = fs.readFileSync(
   "/etc/letsencrypt/live/mymember.com/privkey.pem",
   "utf8"
@@ -241,7 +241,7 @@ const credentials1 = {
   cert: certificate1,
   ca: ca1,
 };
-*/
+
 
 // app.use(function (req, res, next){
 //     res.header("Access-Control-Allow-Origin", "*");
@@ -270,11 +270,11 @@ const port = process.env.PORT || 8080;
 //         res.writeHead(200,{'Content-Type': 'text/xml'})
 //         res.end(twiml.toString())
 // })
-// http.createServer(app).listen(3030, function(){
-//     console.log("Express server listening on port " + 3030);
-// });
-
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+http.createServer(app).listen(3030, function(){
+    console.log("Express server listening on port " + 3030);
 });
+
+// app.listen(port, () => {
+//   console.log(`Server is running on port ${port}`);
+// });
 // /fdsfs
