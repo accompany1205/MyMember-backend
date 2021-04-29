@@ -13,7 +13,7 @@ import {
 
 } from "reactstrap"
 import { ContextLayout } from "../../../../utility/context/Layout"
-import { GET_ACTIVE_STUDENT } from '../../../../redux/actions/newstudent/index';
+import { GET_CANDIDATE_LIST } from '../../../../redux/actions/newstudent/index';
 import { connect } from 'react-redux';
 import { AgGridReact } from "ag-grid-react"
 import {
@@ -107,13 +107,13 @@ class UsersLists extends React.Component {
           return (
             <div className="d-flex align-items-center cursor-pointer">
               <Input type="select" size="sm">
-              <option>Program1</option>
-              <option>Program2</option>
+                <option>Program1</option>
+                <option>Program2</option>
                       {/* <option>Student Belt Size</option> */}
                       {/* {console.log(">>>>>>",this.props.categories)} */}
 
                       {/* {this.params.categories.map((v,i) => <option value={v.programName} key={v._id}>{v.programName}</option>)} */}
-                    </Input>
+              </Input>
             </div>
           )
         }
@@ -171,7 +171,7 @@ class UsersLists extends React.Component {
 
   componentDidMount() {
 
-    this.props.GET_ACTIVE_STUDENT();
+    this.props.GET_CANDIDATE_LIST();
   }
 
   componentDidUpdate(prevProps) {
@@ -362,4 +362,4 @@ const mapStateToProps = (state) => {
   }
 }
 
-export default connect(mapStateToProps, { GET_ACTIVE_STUDENT })(UsersLists)
+export default connect(mapStateToProps, { GET_CANDIDATE_LIST })(UsersLists)

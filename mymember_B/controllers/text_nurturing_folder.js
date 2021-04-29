@@ -40,7 +40,7 @@ exports.delete_folder = (req,res)=>{
             res.send({error:'text nurturing folder is not remove'})
         }
         else{
-            txtNurturingCat.update(
+            txtNurturingCat.updateOne(
             {"folder":req.params.folderId},
             {$pull:{ "folder":req.params.folderId }},
             (err,data)=>{

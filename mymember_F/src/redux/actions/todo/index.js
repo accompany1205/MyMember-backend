@@ -25,12 +25,80 @@ export const GET_TODOS = (filter) => {
     try{
        let userId = localStorage.getItem("user_id") || "";
        let token = localStorage.getItem("access_token");
-       let response = await axios.get(`${baseUrl}/api/list_of_task/${userId}`, {
-         headers : {
-           "Authorization" : `Bearer ${token}`,
-         }
-       });
+       let response
+       if (filter == "today"){
+        response = await axios.get(`${baseUrl}/api/today_taskread/${userId}`, {
+          headers : {
+            "Authorization" : `Bearer ${token}`,
+          }
+        });
+       }
+       else if(filter == "tomorrow"){
+        response = await axios.get(`${baseUrl}/api/tomorrow_taskread/${userId}`, {
+          headers : {
+            "Authorization" : `Bearer ${token}`,
+          }
+        });
+       }
+       else if(filter == "upcoming"){
+        response = await axios.get(`${baseUrl}/api/upcoming_taskread/${userId}`, {
+          headers : {
+            "Authorization" : `Bearer ${token}`,
+          }
+        });
+       }
+       else if(filter == "completed"){
+        response = await axios.get(`${baseUrl}/api/completed_taskread/${userId}`, {
+          headers : {
+            "Authorization" : `Bearer ${token}`,
+          }
+        });
+       }
+       else if(filter == "notcompleted"){
+        response = await axios.get(`${baseUrl}/api/not_completed_taskread/${userId}`, {
+          headers : {
+            "Authorization" : `Bearer ${token}`,
+          }
+        });
+       }
+       else if(filter == "events"){
+        response = await axios.get(`${baseUrl}/api/events_taskread/${userId}`, {
+          headers : {
+            "Authorization" : `Bearer ${token}`,
+          }
+        });
+       }
+       else if(filter == "business"){
+        response = await axios.get(`${baseUrl}/api/business_taskread/${userId}`, {
+          headers : {
+            "Authorization" : `Bearer ${token}`,
+          }
+        });
+       }
+       else if(filter == "personal"){
+        response = await axios.get(`${baseUrl}/api/personal_taskread/${userId}`, {
+          headers : {
+            "Authorization" : `Bearer ${token}`,
+          }
+        });
+       }
+       else if(filter == "appointment"){
+        response = await axios.get(`${baseUrl}/api/appointment_taskread/${userId}`, {
+          headers : {
+            "Authorization" : `Bearer ${token}`,
+          }
+        });
+       }else{
+        response = await axios.get(`${baseUrl}/api/list_of_task/${userId}`, {
+          headers : {
+            "Authorization" : `Bearer ${token}`,
+          }
+        });
+       }
+       
        if(response.data && response.status === 200){
+          console.log('filter', filter)
+
           dispatch({
             type : "GET_TODOS_ALL",
             payload : {
@@ -70,11 +138,19 @@ export const importantTask = todo => {
 
 export const trashTask = id => {
   return (dispatch, getState) => {
-    const params = getState().todoApp.todo.routeParam
     axios
-      .post("/api/app/todo/trash-todo", id)
-      .then(response => dispatch({ type: "TRASH_TASK", id }))
-      .then(dispatch(getTodos(params)))
+      .delete(`${baseUrl}/api/delete_task/${localStorage.getItem("user_id")}/${id}`, {
+        headers : {
+          "Authorization" : `Bearer ${localStorage.getItem("access_token")}`
+        }
+      })
+      .then(res => {
+        dispatch(GET_TODOS());
+      })
+      // const params = getState().todoApp.todo.routeParam
+      // .post("/api/app/todo/trash-todo", id)
+      // .then(response => dispatch({ type: "TRASH_TASK", id }))
+      // .then(dispatch(getTodos(params)))
   }
 }
 
@@ -135,13 +211,35 @@ export const ADD_NEW_TASK = task => {
 }
 
 
+// export const searchTask = val => {
+//   return dispatch => {
+//     dispatch({
+//       type: "SEARCH_TASK",
+//       val
+//     })
+//   }
+// }
 export const searchTask = val => {
   return dispatch => {
-    dispatch({
-      type: "SEARCH_TASK",
-      val
-    })
-  }
+    axios.get(`${baseUrl}/api/searching_task/${localStorage.getItem("user_id")}?q=${val}`, {
+     headers : {
+       "Authorization" : `Bearer ${localStorage.getItem("access_token")}`
+     }
+   }).then(res => {
+    // if(response.data && response.status === 200){
+      console.log('search res', res)
+
+      dispatch({
+        type : "GET_TODOS_ALL",
+        payload : {
+          todos : res.data,
+          // routeParams : filter
+        },
+      })         
+  //  }
+    //  dispatch(GET_TODOS());
+   })
+ }
 }
 
 export const changeFilter = filter => {

@@ -87,6 +87,35 @@ export const STUD_GET = () => {
   };
 };
 
+export const ADD_STUDENT_TO_CLASS = (scheduleId, id, time) => {
+  return async (dispatch) => {
+    try {
+      let response = await axios.post(
+        `${baseUrl}/api/attendence/create_attendence/${localStorage.getItem(
+          "user_id"
+        )}/${scheduleId}/${id}`,
+        { time },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }
+      );
+
+      console.log(response);
+      if (response.data && response.status === 200) {
+        dispatch({
+          type: "ADD_STUDENT_TO_CLASS",
+          event: response.data,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      console.log("something went wrong");
+    }
+  };
+};
+
 export const handleSidebar = (bool) => {
   console.log("bool", bool);
   return (dispatch) => dispatch({ type: "HANDLE_SIDEBAR", status: bool });

@@ -31,7 +31,7 @@ exports.create = (req, res) => {
                     { public_id: `program/${uniquefilename}`, tags: `program` }, // directory and tags are optional
                     function (err, image) {
                         if (err) return res.send(err)
-                        console.log('file uploaded to Cloudinary')
+                        console.log('file uploaded to Cloudinary',image)
                         const fs = require('fs')
                         fs.unlinkSync(path)
                         program.findByIdAndUpdate({ _id: data._id }, { $set: { program_image: image.url, userId: Id } })

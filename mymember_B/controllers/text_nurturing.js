@@ -46,7 +46,7 @@ exports.removeCategory =(req,res)=>{
     textNuturing.findByIdAndRemove(req.params.categoryId)
     .exec((err,removeCat)=>{
         if(err){
-            res.send({error:'category is not removecategory remove successfully'})
+            res.send({error:'category is not remove'})
         }
         else{
             res.send({error:'category remove successfully'})

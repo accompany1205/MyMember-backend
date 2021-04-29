@@ -4,10 +4,12 @@ const _ = require('lodash')
 
 exports.Create = (req, res) => {
     var appoinemnt = req.body;
+
+    if(appoinemnt.app_type == 'Event'){
     var App = _.extend(appoinemnt,req.params)
     console.log(App)
     const campaigns = new appoint(App);
-    console.log(campaigns)
+    campaigns.app_color ='#ff0000'    
     campaigns.save((err, appdata) => {
         if (err) {
             res.send({error:'appoinment is not add'})        
@@ -17,6 +19,55 @@ exports.Create = (req, res) => {
             res.send(appdata)
         }
         })
+    }
+
+    else if(appoinemnt.app_type == 'Appoinment'){
+        var App = _.extend(appoinemnt,req.params)
+        console.log(App)
+        const campaigns = new appoint(App);
+        campaigns.app_color ='#75c900'    
+        campaigns.save((err, appdata) => {
+            if (err) {
+                res.send({error:'appoinment is not add'})        
+                console.log(err)    
+            }
+            else{
+                res.send(appdata)
+            }
+            })
+          }
+    else if(appoinemnt.app_type == 'Testing'){
+            var App = _.extend(appoinemnt,req.params)
+            console.log(App)
+            const campaigns = new appoint(App);
+            campaigns.app_color ='#b66e7b'    
+            campaigns.save((err, appdata) => {
+                if (err) {
+                    res.send({error:'appoinment is not add'})        
+                    console.log(err)    
+                }
+                else{
+                    res.send(appdata)
+                }
+                })
+        }
+    else if(appoinemnt.app_type == 'Camp'){
+                var App = _.extend(appoinemnt,req.params)
+                console.log(App)
+                const campaigns = new appoint(App);
+                campaigns.app_color ='#b66e7b'    
+                campaigns.save((err, appdata) => {
+                    if (err) {
+                        res.send({error:'appoinment is not add'})        
+                        console.log(err)    
+                    }
+                    else{
+                        res.send(appdata)
+                    }
+                    })
+           }
+
+    
     }
 
 

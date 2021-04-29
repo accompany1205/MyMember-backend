@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X, Tag } from "react-feather";
 import {
   Dropdown,
@@ -18,12 +18,16 @@ import {
 import Flatpickr from "react-flatpickr";
 import DataTable from "react-data-table-component";
 import "../../../assets/scss/pages/users.scss";
-import axios from "axios";
 import { GET_ACTIVE_STUDENT } from "../../../redux/actions/newstudent";
-import { FETCH_ATTENDEE_LIST, STUD_GET } from "../../../redux/actions/calendar";
+import {
+  FETCH_ATTENDEE_LIST,
+  STUD_GET,
+  ADD_STUDENT_TO_CLASS,
+} from "../../../redux/actions/calendar";
 import { connect } from "react-redux";
 import "flatpickr/dist/themes/light.css";
 import "../../../assets/scss/plugins/forms/flatpickr/flatpickr.scss";
+import { ThemeProvider } from "styled-components";
 
 const baseUrl = process.env.REACT_APP_BASE_URL;
 const eventColors = {
@@ -66,6 +70,7 @@ const customStyles = {
     style: {
       background: "#1387b0",
       color: "#fff",
+      height: "100%",
     },
   },
 };
@@ -95,14 +100,34 @@ class AddEvent extends React.Component {
     selectable: true,
   };
 
-  componentDidMount() {
-    let initialStudents = [];
-    //this.props.STUD_GET();
-  }
-
-  handleGetStudents() {
+  // const [value, setvalue] = useState(initialState)
+  async componentDidMount() {
     this.props.STUD_GET();
   }
+
+  // handleGetStudents() {
+  //   this.props.STUD_GET();
+  //   // this.handleGetStudents();
+  // }
+
+  //to add student to list
+  addStudentToClass = (e) => {
+    // this.setState({
+    //   value: e.target.value,
+    // });
+    console.log(this.props.eventInfo?._id);
+    let id = e.target.value;
+    let scheduleId = this.props.eventInfo?._id;
+    let time = Date.now();
+    // let optionElement = e.target.childNodes[index];
+    // console.log("Selected User", e.target.value);
+    // this.props.ADD_STUDENT_TO_CLASS(scheduleId, id);
+    console.log("Selected User", scheduleId, id, time);
+    // console.log("Selected User", optionElement);
+    this.props.ADD_STUDENT_TO_CLASS(scheduleId, id, time);
+    this.props.FETCH_ATTENDEE_LIST();
+    // this.props.calendar.studentList = [];
+  };
 
   handleDateChange = (date) => {
     this.setState({
@@ -143,12 +168,6 @@ class AddEvent extends React.Component {
     });
   };
 
-  getuserlist(e) {
-    console.log("search clicked", e);
-    this.setState(this.props.getstudentlist());
-    const arrayyr = this.props.getstudentlist();
-  }
-
   UNSAFE_componentWillReceiveProps(nextProps) {
     this.setState({
       title: nextProps.eventInfo === null ? "" : nextProps.eventInfo.title,
@@ -172,17 +191,9 @@ class AddEvent extends React.Component {
     let events = this.props.events.map((i) => i.id);
     let lastId = events.pop();
     let newEventId = lastId + 1;
-    // let optionItems = this.props.students.map((student) => (
-    //   <option key={student.id}>{student.firstName}</option>
-    // ));
-    //   const [items] = React.useState([
-    //   {
-    //     label: "Luke Skywalker",
-    //     value: "Luke Skywalker"
-    //   },
-    //   { label: "C-3PO", value: "C-3PO" },
-    //   { label: "R2-D2", value: "R2-D2" }
-    // ]);
+    console.log(this.props);
+    console.log(lastId);
+    // if( this.props.sele)
 
     return (
       <div
@@ -192,15 +203,29 @@ class AddEvent extends React.Component {
         style={{ width: "600px" }}
       >
         <Row style={{ margin: "20px" }}>
+          <h1>{this.props.eventInfo?.class_name}</h1>
+        </Row>
+        <Row style={{ margin: "20px" }}>
           <Col sm="6">
             <div className="filter-actions d-flex">
-              <Input
-                className="w-70 mr-1 mb-1 mb-sm-0"
-                type="text"
-                placeholder="search..."
-                onChange={this.handleGetStudents()}
-                value={this.state.searchVal}
-              />
+              {this.props.calendar ? (
+                <Input
+                  className="w-70 mr-1 mb-1 mb-sm-0"
+                  type="select"
+                  placeholder="search..."
+                  onChange={this.addStudentToClass}
+                >
+                  {this.props.calendar
+                    ? this.props.calendar?.studentList.map((student) => (
+                        <option key={student._id} value={student._id}>
+                          {student.firstName + " " + student.lastName}
+                        </option>
+                      ))
+                    : ""}
+                </Input>
+              ) : (
+                ""
+              )}
               {/* <DropdownToggle caret>Dropdown</DropdownToggle> */}
               {/* <Dropdown isOpen={false} toggle={true}>
                 <DropdownItem header>Select</DropdownItem>
@@ -209,27 +234,27 @@ class AddEvent extends React.Component {
                   <DropdownItem key={Student.id} value={Student.id}>
                     {Student.firstName + " " + Student.lastName}
                   </DropdownItem>
-                ))}
+                ))} 
               </Dropdown> */}
-              <select>
-                {this.props.calendar?.studentList?.map((Student) => (
-                  <option key={Student.id} value={Student.id}>
-                    {Student.firstName + " " + Student.lastName}
+              {/* <select onChange={this.addStudentToClass}>
+                {this.props.calendar?.studentList?.map((student) => (
+                  <option key={student._id} value={student._id}>
+                    {student.firstName + " " + student.lastName}
                   </option>
                 ))}
-              </select>
+              </select> */}
             </div>
           </Col>
           <Col sm="4">
-            <Button color="primary" size="sm">
+            {/* <Button color="primary" size="sm">
               Submit
-            </Button>
+            </Button> */}
           </Col>
         </Row>
         <Card>
           <CardBody className="cd-body-rm pd-body">
             <DataTable
-              data={this.props.calendar && this.props.calendar?.attendeeList}
+              data={this.props.calendar?.attendeeList}
               columns={columns}
               noHeader
               fixedHeader
@@ -245,31 +270,14 @@ class AddEvent extends React.Component {
 }
 
 const mapStateToProps = (state) => {
-  // console.log(state);
+  console.log(state);
   return {
     calendar: state.calendar,
   };
 };
 
-// const mapStateToProps = (state)=>{
-//   return {
-
-//   }
-// }
-
-// const mapDispatchToProps = (dispatch) => ({
-//   FETCH_ATTENDEE_LIST,
-//   HandleGetStudents: () => dispatch(STUD_GET),
-// });
-
-// export default connect(mapStateToProps, mapDispatchToProps)(AddEvent);
 export default connect(mapStateToProps, {
   FETCH_ATTENDEE_LIST,
   STUD_GET,
+  ADD_STUDENT_TO_CLASS,
 })(AddEvent);
-// export default AddEvent
-
-// {
-//   FETCH_ATTENDEE_LIST,
-//   STUD_GET,
-// }

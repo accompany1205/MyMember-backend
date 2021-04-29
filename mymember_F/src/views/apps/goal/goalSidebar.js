@@ -1,10 +1,11 @@
 import React from "react"
 import { Button, ListGroup, ListGroupItem } from "reactstrap"
 import PerfectScrollbar from "react-perfect-scrollbar"
-import { X, Layers, Star, Info, Check, Trash, CheckSquare, Clock, Calendar } from "react-feather"
+import { X, Layers, Star, Info, Check, Trash, CheckSquare, Clock, Calendar, Settings } from "react-feather"
 import { connect } from "react-redux"
 import { changeFilter } from "../../../redux/actions/goal/index"
-class TodoSidebar extends React.Component {
+import ModalForm from "./settingModal"
+class GoalSidebar extends React.Component {
   render() {
     return (
       <React.Fragment>
@@ -49,6 +50,9 @@ class TodoSidebar extends React.Component {
               >
                 <Layers size={22} />
                 <span className="align-middle ml-1">All</span>
+                <div class="badge badge-pill badge-primary mt-25 float-right">
+                  <span class="align-middle">3</span>
+                </div>
               </ListGroupItem>
             </ListGroup>
             <hr />
@@ -57,72 +61,109 @@ class TodoSidebar extends React.Component {
               <ListGroupItem
                 className="border-0"
                 onClick={() => {
-                  this.props.changeFilter("weekly goal")
+                  this.props.changeFilter("weekly_goal")
                 }}
                 active={
-                  this.props.routerProps.location.pathname === "/goal/weekly goal"
+                  this.props.routerProps.location.pathname === "/goal/weekly_goal"
                     ? true
                     : false
                 }
               >
                 <CheckSquare size={22} />
                 <span className="align-middle ml-1">Weekly Goal</span>
+                <div class="badge badge-pill badge-primary mt-25 float-right">
+                  <span class="align-middle">3</span>
+                </div>
               </ListGroupItem>
               <ListGroupItem
                 className="border-0"
                 onClick={() => {
-                  this.props.changeFilter("monthly goal")
+                  this.props.changeFilter("monthly_goal")
                 }}
                 active={
-                  this.props.routerProps.location.pathname === "/goal/monthly goal"
+                  this.props.routerProps.location.pathname === "/goal/monthly_goal"
                     ? true
                     : false
                 }
               >
                 <Clock size={22} />
                 <span className="align-middle ml-1">Monthly Goal</span>
+                <div class="badge badge-pill badge-primary mt-25 float-right">
+                  <span class="align-middle">3</span>
+                </div>
               </ListGroupItem>
               <ListGroupItem
                 className="border-0"
                 onClick={() => {
-                  this.props.changeFilter("quarterly goal")
+                  this.props.changeFilter("quarterly_goal")
                 }}
                 active={
-                  this.props.routerProps.location.pathname === "/todo/quarterly goal"
+                  this.props.routerProps.location.pathname === "/goal/quarterly_goal"
                     ? true
                     : false
                 }
               >
                 <Calendar size={22} />
                 <span className="align-middle ml-1">Quarterly Goal</span>
+                <div class="badge badge-pill badge-primary mt-25 float-right">
+                  <span class="align-middle">3</span>
+                </div>
               </ListGroupItem>
               <ListGroupItem
                 className="border-0"
                 onClick={() => {
-                  this.props.changeFilter("annual goal")
+                  this.props.changeFilter("annual_goal")
                 }}
                 active={
-                  this.props.routerProps.location.pathname === "/todo/annual goal"
+                  this.props.routerProps.location.pathname === "/goal/annual_goal"
                     ? true
                     : false
                 }
               >
                 <Check size={22} />
                 <span className="align-middle ml-1">Annual Goal</span>
+                <div class="badge badge-pill badge-primary mt-25 float-right">
+                  <span class="align-middle">3</span>
+                </div>
               </ListGroupItem>
               <ListGroupItem
                 className="border-0"
                 onClick={() => {
-                  this.props.changeFilter("all goals")
+                  this.props.changeFilter("all_goals")
                 }}
                 active={
-                  this.props.routerProps.location.pathname === "/todo/all goals"
+                  this.props.routerProps.location.pathname === "/goal/all_goals"
                     ? true
                     : false
                 }
               >
                 <Trash size={22} />
                 <span className="align-middle ml-1">All Goals</span>
+                <div class="badge badge-pill badge-primary mt-25 float-right">
+                  <span class="align-middle">3</span>
+                </div>
+              </ListGroupItem>
+            </ListGroup>
+            <hr />
+            <h5 className="mt-2 mb-1 pt-25">Settings</h5>
+            <ListGroup className="font-medium-1">
+              <ListGroupItem
+                className="border-0"
+                onClick={() => {
+                  this.props.changeFilter("all")
+                }}
+                // active={
+                //   this.props.routerProps.location.pathname === "/goal/all"
+                //     ? true
+                //     : false
+                // }
+              >
+                <Settings size={22} />
+                <ModalForm />
+                <span className="align-middle ml-1">Goal Setting</span>
+                {/* <div class="badge badge-pill badge-primary mt-25 float-right">
+                  <span class="align-middle">3</span>
+                </div> */}
               </ListGroupItem>
             </ListGroup>
             {/* <hr />
@@ -192,4 +233,4 @@ class TodoSidebar extends React.Component {
   }
 }
 
-export default connect(null, { changeFilter })(TodoSidebar)
+export default connect(null, { changeFilter })(GoalSidebar)

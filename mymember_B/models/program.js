@@ -6,28 +6,27 @@ const programSchema = new schema(
     {
         programName:{
             type: String,
-            required: true,
+          
             maxlength: 32
         },
         color:{
             type: String,
-            required: true
+          
         },
         lable: {
             type: Number,
-            required:true
-        },
+           },
         total_rank:{
             type: Number,
-            required: true
+            
         },
         progression: {
             type: String,
-            required:true
+            
         },
         type: {
             type: String,
-            required:true
+            
         },
         program_image:{
             type: String

@@ -176,8 +176,8 @@ class TaskSidebar extends React.Component {
             <div className="task-type-title text-bold-600">
               <h3>
                 {this.props.taskToUpdate && this.props.taskToUpdate._id
-                  ? "Update Task"
-                  : "Add Task"}
+                  ? "Update Goal"
+                  : "Add Goal"}
               </h3>
             </div>
             <div className="close-icon">
@@ -188,11 +188,11 @@ class TaskSidebar extends React.Component {
                   this.setState({
                     Task: {
                       notes: "",
-        status: "",
-        subject: "",
-        tag: "",
-        todoDate: "",
-        todoTime: "",
+                      status: "",
+                      subject: "",
+                      tag: "",
+                      todoDate: "",
+                      todoTime: "",
                     }
                   })
                   this.props.addTask("close")}}
@@ -360,8 +360,8 @@ class TaskSidebar extends React.Component {
                     </DropdownItem>
                   </DropdownMenu>
                 </UncontrolledDropdown>
-              </div> */}
-            </div>
+              </div> 
+            </div>*/}
             <FormGroup>
               <Input
                 type="text"
@@ -388,8 +388,8 @@ class TaskSidebar extends React.Component {
             <FormGroup>
               <label>Time</label>
               <Input
-                type="date"
-                placeholder="date"
+                type="time"
+                placeholder="time"
                 name="reminder_Date"
                 value={
                   this.state.reminder_Date
@@ -404,17 +404,17 @@ class TaskSidebar extends React.Component {
                       <option>Weekly Goal</option>
                       <option>Monthly Goal</option>
                       <option>Quaterly Goal</option>
-                      <option>Appointment</option>
+                      <option>Annual Goal</option>
               </select>
             </FormGroup>
             <FormGroup>
               <label>Tag</label>
               <select className="slt" name="tag" value={this.state.tag} onChange={this.changeHandler}>
                       <option>--Select--</option>
-                      <option>Events</option>
-                      <option>Business</option>
-                      <option>Personal</option>
-                      <option>Appointment</option>
+                      <option>On Time</option>
+                      <option>Ongoing</option>
+                      {/* <option>Personal</option>
+                      <option>Appointment</option> */}
               </select>
             </FormGroup>
              
@@ -422,9 +422,9 @@ class TaskSidebar extends React.Component {
               <label>Goal Status</label>
               <select className="slt" name="goal_status" value={this.state.goal_status} onChange={this.changeHandler}>
                     <option>--Select--</option>
-                    <option>Past Due</option>
+                    {/* <option>Past Due</option> */}
                     <option>Pending</option>
-                    <option>Rescheduled</option>
+                    {/* <option>Rescheduled</option> */}
                     <option>Completed</option>
                     <option>Not Completed</option>
               </select>
@@ -434,7 +434,7 @@ class TaskSidebar extends React.Component {
               <Input
                 type="textarea"
                 placeholder="Notes"
-                rows="2"
+                rows="3"
                 name="notes"
                 value={
                   this.state.notes
@@ -505,10 +505,11 @@ class TaskSidebar extends React.Component {
                 Cancel
               </Button.Ripple>
             </div> 
+          </div> 
           
         </PerfectScrollbar>
       </div>
-      </>
+    </>
     )
   }
 }

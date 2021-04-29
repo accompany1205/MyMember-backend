@@ -2,6 +2,7 @@ const birthdayNote = require("../models/birthday_notes");
 const student = require("../models/addmember");
 const user = require("../models/user");
 const _ = require("lodash");
+const memberModal = require("../models/addmember")
 
 exports.create = (req,res)=>{
     student.findById(req.params.studentId).exec((err,studetData)=>{
@@ -88,6 +89,42 @@ exports.updateNote = (req,res)=>{
         }
         else{
             res.send({msg:'birthday notes update successfully'})
+        }
+    })
+}
+
+exports.birth_this_week =(req,res)=>{
+    
+    console.log('run')
+    var cur = new Date()
+    console.log(cur)
+    // { $expr: { $eq: [{ $month: '$DateT' }, { $month: curdat }] } },
+    memberModal.aggregate([
+        {
+            $match: {
+                $and: [{ userId: req.params.userId },
+                { $expr: { $eq: [{ "$month":'$dob' },{"$month":cur}] } }]
+            }
+        }, {
+            $project: {
+                firstName: 1,
+                lastName: 1,
+                memberprofileImage:1,
+                dob: 1,
+                age: 1,
+                day_left: 1,
+                primaryPhone: 1,
+                rank: 1,
+                day_left:1
+            }
+        }
+    ]).exec((err,resp)=>{
+        if(err){
+            res.json({code:400,msg:'this week birthday not found'})
+            console.log(err)
+        }
+        else{
+            res.json({code:200,msg:resp})
         }
     })
 }

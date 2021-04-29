@@ -1,6 +1,6 @@
 import React from "react"
 import { FormGroup, Input } from "reactstrap"
-import { Menu, Search, Check, Info, Star, Trash } from "react-feather"
+import { Menu, Search, Check, Info, Star, Trash, Edit } from "react-feather"
 import PerfectScrollbar from "react-perfect-scrollbar"
 import { connect } from "react-redux"
 import {
@@ -9,11 +9,11 @@ import {
   starTask,
   importantTask,
   trashTask,
-  searchTask
-} from "../../../redux/actions/todo/index"
+  searchTask,
+  GET_GOALS
+} from "../../../redux/actions/goal/index"
 import Checkbox from "../../../components/@vuexy/checkbox/CheckboxesVuexy"
-import {GET_GOALS} from '../../../redux/actions/goal/index';
-class TodoList extends React.Component {
+class GoalList extends React.Component {
   // static getDerivedStateFromProps(props, state) {
   //   if (props.app.todo.routeParam !== state.currentLocation) {
   //     return {
@@ -25,58 +25,65 @@ class TodoList extends React.Component {
   // }
   state = {
     todos: [],
-    handleUpdateTask: null,
+    handleUpdateGoal: null,
     currentLocation: this.props.routerProps.location.pathname,
-    value: "",
-    goals : [],
+    value: ""
   }
-  componentDidMount() {
-    this.props.GET_GOALS();
-    // await this.props.getTodos(this.props.routerProps.match.params)
-    // this.setState({
-    //   todos: this.props.app.todo.todos,
-    //   handleUpdateTask: this.props.handleUpdateTask
-    // })
-  }
-
-  componentDidUpdate(prevProps){
-    if(this.props.filter !== prevProps.filter){
-      console.log(this.props.filter, "!==", prevProps.filter);
-      this.setState({
-        ...this.state,
-        goals : this.props.goal[this.props?.filter?.trim().split(" ")[0]]
-      });
+  async componentDidMount() {
+    if(!["all","today","tomorrow","upcoming","completed","notcompleted"].includes(this.props.routerProps.match.params.filter)){
+        this.props.routerProps.history.push('/goal/all');
+        this.props.GET_GOALS("all");
     }
-    // else if(this.state.goals.length === 0 && this.props.filter === "all"){
-    //     this.setState({
-    //       ...this.state,
-    //       goals : this.props.goal.all
-    //     })
-    // }
+    else{
+      this.props.GET_GOALS(this.props.routerProps.match.params.filter);
+    }
   }
-
+  componentDidUpdate(prevProps, prevState){
+    if(this.props.app?.todo?.todos !== prevProps?.app?.todo?.todos){
+      
+       this.setState({
+         ...this.state,
+         todos : this.props.app.todo.todos
+       })
+     }
+    // else if(this.props.routerProps.match.params.filter !== this.props.app.todo.routeParam){
+    //   console.log(this.props.routerProps.match.params.filter, "---", this.props.app.todo.routeParam);
+    //   this.setState({
+    //     ...this.state,
+    //     todos : this.props.app.todo.todos 
+    //   })
+    // } 
+  }
   handleOnChange = e => {
     this.setState({ value: e.target.value })
     this.props.searchTask(e.target.value)
-  }
-
-  
+  }  
 
   render() {
-    console.log(this.state.goals)
-    const { todos, handleUpdateTask, value } = this.state
-    let routerFilter = this.props.routerProps.match.params.filter
-    let todosArr = value.length ? this.props.app.todo.filteredTodos : todos
+    const { todos, value } = this.state
+    // let routerFilter = this.props.routerProps.match.params.filter
+    let routerFilter = "";
+    // let todosArr = value.length ? this.props.app.todo.filteredTodos : todos
+//     createdAt: "2020-12-23T18:15:13.507Z"
+// notes: "TESTONE WORKS FINE"
+// status: "DONE"
+// subject: "TESTWORK"
+// tag: "TESTchange"
+// todoDate: "23/12/2020"
+// todoTime: "23:44"
+// updatedAt: "2020-12-23T19:46:54.029Z"
+    // let todosArr =  todos;
+    console.log("todos",this.state.todos)
     let renderTodos =
-      todosArr.length > 0 ? (
-        todosArr.map((todo, i) => {
+      this.state.todos.length > 0 ? (
+        this.state.todos?.map((todo, i) => {
           return (
             <li
               className={`todo-item ${todo.isCompleted ? "completed" : ""}`}
               key={i}
-              onClick={() => {
-                handleUpdateTask(todo)
-              }}
+              // onClick={() => {
+              //   this.props.handleUpdateTask(todo)
+              // }}
             >
               <div className="todo-title-wrapper d-flex justify-content-between mb-50">
                 <div className="todo-title-area d-flex align-items-center">
@@ -86,44 +93,50 @@ class TodoList extends React.Component {
                       className="user-checkbox"
                       icon={<Check className="vx-icon" size={12} />}
                       label={""}
-                      checked={todo.isCompleted}
+                      // checked={todo.isCompleted}
                       size="sm"
-                      onClick={e => {
-                        e.stopPropagation()
-                        this.props.completeTask(todo)
-                      }}
-                      onChange={e => e.stopPropagation()}
+                      // onClick={e => {
+                      //   e.stopPropagation()
+                      //   this.props.completeTask(todo)
+                      // }}
+                      // onChange={e => e.stopPropagation()}
                     />
-                    <h6 className="todo-title mt-50 mx-50">{todo.title}</h6>
+                    <h6 className="todo-title mt-50 mx-50">{todo.subject}</h6>
                   </div>
-                  {todo.tags.length > 0 ? (
+                  
+                {/* </div> */}
+                {/* <div
+                  className={`todo-item-action d-flex ${
+                    routerFilter === "trashed" ? "justify-content-end" : ""
+                  }`}
+                > */}
+                  {!!todo.tag  ? (
                     <div className="chip-wrapper">
-                      {todo.tags.map((tag, i) => (
+                     
                         <div className="chip mb-0" key={i}>
                           <div className="chip-body">
                             <span className="chip-text">
                               <span
                                 className={`bullet bullet-${
-                                  tag === "backend"
+                                  todo.tag === "Events"
+                                    ? "primary"
+                                    : todo.tag === "Business"
                                     ? "warning"
-                                    : tag === "doc"
-                                    ? "success"
-                                    : tag === "bug"
+                                    : todo.tag === "Appointment"
                                     ? "danger"
-                                    : "primary"
+                                    : "success"
                                 } bullet-xs`}
                               />
                               <span className="text-capitalize ml-25">
-                                {tag}
+                                {todo.tag}
                               </span>
                             </span>
                           </div>
                         </div>
-                      ))}
                     </div>
-                  ) : null}
-                </div>
-                <div
+                   ) : null} 
+                  </div>
+                  <div
                   className={`todo-item-action d-flex ${
                     routerFilter === "trashed" ? "justify-content-end" : ""
                   }`}
@@ -154,12 +167,25 @@ class TodoList extends React.Component {
                       className={`${todo.isStarred ? "text-warning" : ""}`}
                     />
                   </div>
+                  <div
+                    className="todo-item-favorite d-inline-block mr-1 mr-sm-0"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      this.props.handleUpdateGoal(todo)
+                    }}
+      
+                  >
+                    <Edit
+                      size={17}
+                      // className={`${todo.isStarred ? "text-warning" : ""}`}
+                    />
+                  </div>
                   {routerFilter !== "trashed" ? (
                     <div
                       className="todo-item-delete d-inline-block mr-1 mr-sm-0"
                       onClick={e => {
                         e.stopPropagation()
-                        this.props.trashTask(todo.id)
+                        this.props.trashTask(todo._id)
                       }}
                     >
                       <Trash size={17} />
@@ -167,8 +193,8 @@ class TodoList extends React.Component {
                   ) : null}
                 </div>
               </div>
-              {todo.desc.length > 0 ? (
-                <p className="todo-desc truncate mb-0">{todo.desc}</p>
+              {!!todo.notes ? (
+                <p className="todo-desc truncate mb-0">{todo.notes}</p>
               ) : (
                 ""
               )}
@@ -221,10 +247,9 @@ class TodoList extends React.Component {
   }
 }
 const mapStateToProps = state => {
+  console.log(state.todoApp);
   return {
-    app: state.todoApp,
-    goal : state.goal,
-    filter : state.goal.filter
+    app: state.todoApp
   }
 }
 export default connect(mapStateToProps, {
@@ -235,4 +260,4 @@ export default connect(mapStateToProps, {
   trashTask,
   searchTask,
   GET_GOALS
-})(TodoList)
+})(GoalList)

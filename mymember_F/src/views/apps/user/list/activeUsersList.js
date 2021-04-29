@@ -82,7 +82,7 @@ class UsersLists extends React.Component {
         headerName: "Photo",
         field: "memberprofileImage",
         filter: true,
-        width: 120,
+        width: 100,
         cellRendererFramework: params => {
           return (
             <div
@@ -112,7 +112,7 @@ class UsersLists extends React.Component {
         headerName: "Full Name",
         field: "firstName",
         filter: true,
-        width: 140,
+        width: 180,
         cellRendererFramework: params => {
           return (
             <div className="d-flex align-items-center cursor-pointer">
@@ -125,7 +125,7 @@ class UsersLists extends React.Component {
         headerName: "Last Name",
         field: "lastName",
         filter: true,
-        width: 140,
+        width: 160,
         cellRendererFramework: (params) => {
           return `${params.value[0].toUpperCase()}${params.value.substr(1).toLowerCase()}`;
         }
@@ -135,7 +135,7 @@ class UsersLists extends React.Component {
         headerName: "Status",
         field: "status",
         filter: true,
-        width: 130,
+        width: 150,
         cellRendererFramework: params => {
           return params.value.toLowerCase() === "active" ? (
             <div className="badge badge-pill badge-light-success">
@@ -161,8 +161,8 @@ class UsersLists extends React.Component {
             <div className="badge badge-pill badge-light-grey">
               None
             </div>
-          ) : <div className="badge badge-pill badge-light-light">
-                        ---
+          ) : <div className="badge badge-pill badge-light-grey">
+              None
        </div>
         }
       },
@@ -170,14 +170,14 @@ class UsersLists extends React.Component {
         headerName: "Primary Phone",
         field: "primaryPhone",
         filter: true,
-        width: 170
+        width: 150
       },
-     
+
       {
         headerName: "Program Category",
         field: "category",
         filter: true,
-        width: 190,
+        width: 150,
         cellRendererFramework: params => {
           return params.value=== "program3" ? (
             <div className="badge badge-pill badge-light-orange">
@@ -199,13 +199,13 @@ class UsersLists extends React.Component {
         headerName: "Start Date",
         field: "createdAt",
         filter: true,
-        width: 150
+        width: 170
       },
       {
         headerName: "Expiry Date",
         field: "createdAt",
         filter: true,
-        width: 150,
+        width: 170,
         // cellRendererFramework: params => {
         //   return params.value.toUpperCase();
         // }
@@ -214,7 +214,7 @@ class UsersLists extends React.Component {
         headerName: "Rating",
         field: "rating",
         filter: true,
-        width: 120,
+        width: 100,
         cellRendererFramework: params => {
           return params.value == 0 ? (
             <div className="badge-light-dangers">
@@ -232,34 +232,11 @@ class UsersLists extends React.Component {
             <div className="badge-light-dangers">
              {params.value}
             </div>
-          ) : <div className="badge badge-pill badge-light-light">
-                        ---
+          ) : <div className="badge badge-pill badge-light-grey">
+                        None
        </div>
         }
-       
-      },
 
-      {
-        headerName: "Belt Rank",
-        field: "belt_rank",
-        filter: true,
-        width: 120,
-        cellRendererFramework: params => {
-
-          return (
-            <div
-              className="">
-              <img
-                className="mr-50"
-                src={params.value}
-                alt="user avatar"
-                height="30"
-                width="40"
-              />
-              {/* <span>{params.data.name}</span> */}
-            </div>
-          )
-        }
       },
       {
         headerName: "Manage",
@@ -301,7 +278,7 @@ class UsersLists extends React.Component {
       this.setState({
         rowData: this.props.active_student,
         loading: false
-       
+
       })
     }
   }
@@ -503,9 +480,9 @@ class UsersLists extends React.Component {
                     )}
                   </ContextLayout.Consumer>
                 ) : null}
-               
+
                </> ):( <div id="loading-bar">
-           
+
             <Spinner loading={true}/>
           </div>
           )}

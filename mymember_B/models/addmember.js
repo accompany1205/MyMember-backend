@@ -16,7 +16,6 @@ const addmemberSchema = new schema(
         },
         status:{
             type: String
-            
         },
         days_expire:{
             type:String,
@@ -24,7 +23,6 @@ const addmemberSchema = new schema(
         },
         dob:{
             type:Date
-            
         },
         day_left:{
             type:String,
