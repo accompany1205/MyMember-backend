@@ -76,6 +76,7 @@ exports.category_list =(req,res)=>{
 }
 
 exports.sendEmail = (req,res)=>{
+    console.log(req.body)
         const emailData = {
                 sendgrid_key: process.env.Email_Key,
                 to: req.body.to,
@@ -87,6 +88,7 @@ exports.sendEmail = (req,res)=>{
             emailData.content = req.body.template;
         
             sgMail.send_via_sendgrid(emailData).then(resp=>{
+                console.log(resp)
                var DT = TimeZone() 
                var emailDetail =  new emailSent(req.body)
                emailDetail.sent_date = DT.Date

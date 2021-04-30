@@ -4,6 +4,9 @@ const cloudUrl = require("../gcloud/imageUrl")
 const program = require("../models/program")
 const rank_change = require("../models/change_rank");
 const change_rank = require('../models/change_rank');
+const sentEmail =require("../models/emailSentSave")
+const sgmail = require('sendgrid-v3-node');
+
 // const ManyStudents = require('../std.js');
 // const students = require('../std.js');
 
@@ -20,7 +23,6 @@ const change_rank = require('../models/change_rank');
 //         }
 //     })
 // }
-
 
 exports.bluckStd = async(req,res)=>{
     var List = req.body.data
@@ -121,7 +123,6 @@ exports.bluckStd = async(req,res)=>{
     res.send(error)
 })
 }
-
 
 exports.std_count =async(req,res)=>{
     var resdata = await addmemberModal.find({$and:[{userId:req.params.userId},{studentType:'Camp'}]}).count()
@@ -716,6 +717,17 @@ exports.deletemember = (req, res) => {
     })
 }
 
+exports.delete_multipal_member = (req,res)=>{
+    addmemberModal.deleteMany({_id:req.body.stdIds}).exec((err,resp)=>{
+        if(err){
+            res.json({code:400,msg:'student is not delete'})
+        }
+        else{
+            res.json({code:200,msg:'student delete successfully'})
+        }
+    })
+}
+
 exports.updatemember = (req, res) => {
     var memberID = req.params.memberID;
     console.log(req.body)
@@ -743,6 +755,67 @@ exports.updatemember = (req, res) => {
     })
 }
 
+function TimeZone(){
+    const str = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+    const date_time =str.split(',')
+    console.log(date_time)
+    const date = date_time[0]
+    const time = date_time[1]
+    return { Date:date,Time:time}
+}
+
+exports.send_mail_std = (req,res)=>{
+    console.log(process.env.Email_Key)
+    if(req.body.email_type == 'Email'){
+        const emaildata = {
+            sendgrid_key: process.env.Email_Key,
+            to: req.body.to,
+            from_email: req.body.from,
+            from_name: 'noreply@gmail.com',
+        };
+        
+        emaildata.subject = req.body.subject;
+        emaildata.content = req.body.template;
+        
+        sgmail.send_via_sendgrid(emaildata).then(resp=>{
+            console.log(resp)
+           var DT = TimeZone() 
+           var emailDetail =  new sentEmail(req.body)
+           emailDetail.sent_date = DT.Date
+           emailDetail.sent_time = DT.Time
+           console.log(emailDetail)
+            emailDetail.save((err,resp)=>{
+                res.send({code:200,msg:'email sent successfully'})
+            })
+         }).catch((error)=>{
+            res.send({code:400,msg:'email not send'})
+        })
+    }else if(req.body.email_type == 'Schedule'){
+        
+    }
+}
+
+const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+
+exports.send_sms_std = (req,res)=>{
+    var number = req.body.number
+    var code = '+1'
+    console.log(number)
+    client.messages.create({
+        to: number,
+        from: '+12192445425',
+        body: 'This is the ship that made the Kessel Run in fourteen parsecs?',
+
+    }, function (err, data) {
+        if (err) {
+            res.send({ error: 'msg not set' })
+            console.log(err)
+        }
+        else {
+            res.send({msg:'text sms send successfully'})
+        }
+    })
+}
 
 
 

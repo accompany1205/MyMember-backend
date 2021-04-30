@@ -13,7 +13,6 @@ const userSchema = new schema(
         lastname: {
             type: String,
             trim: true,
-           
             maxlength: 100
         },
         isverify:{
@@ -63,7 +62,6 @@ const userSchema = new schema(
         email: {
             type: String,
             trim: true,
-           
             unique: true
         },
         password: {

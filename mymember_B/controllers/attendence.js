@@ -2,10 +2,25 @@ const student = require("../models/addmember")
 const schedule = require("../models/class_schedule")
 const attendance = require("../models/attendence")
 
+exports.search_std = (req,res)=>{
+    console.log(req.body.search)
+    var regex = new RegExp('^'+req.body.search,'i');
+    console.log(regex)
+    student.find({$and:[{userId:req.params.userId},{firstName:regex}]},{firstName:1,lastName:1,age:1,studentType:1})
+    .exec((err,resp)=>{
+        if(err){
+            res.json({code:400, msg:'list not found'})
+        }
+        else{
+            res.send({code:200,msg:resp})
+        }
+    })
+}
+
 exports.create = async(req,res)=>{
     var schdule_data = await schedule.findOne({_id:req.params.scheduleId})
     if(schdule_data){
-    student.findOne({firstName:req.params.studentId})
+    student.findOne({_id:req.params.studentId})
     .exec((err,stdData)=>{
         if(err){
             res.send({error:'student data not find'})

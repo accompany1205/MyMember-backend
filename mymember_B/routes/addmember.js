@@ -27,7 +27,10 @@ const { addmember,
     listMember,
     next_std_find,
     std_count,
-    bluckStd
+    bluckStd,
+    delete_multipal_member,
+    send_mail_std,
+    send_sms_std
 } = require("../controllers/addmember")
 const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 const upload = require('../handler/multer');
@@ -59,6 +62,7 @@ router.get('/member/member_info/:userId/:StudentId', verifySchool, studentinfo);
 router.post('/member/add_member/:userId',verifySchool,upload.single('memberprofileImage'),addmember); 
 
 router.delete('/member/delete_member/:userId/:memberID', verifySchool, deletemember);
+router.delete('/member/delete_multipal_member/:userId',verifySchool,delete_multipal_member)
 router.put('/member/update_member/:userId/:memberID', upload.single('memberprofileImage'), verifySchool, updatemember);
 
 //student type 
@@ -69,6 +73,10 @@ router.get('/member/Former_student/:userId', verifySchool, Former_Std);
 router.get('/member/Leads/:userId', verifySchool, leads_Std);
 router.get('/member/camp_student/:userId', verifySchool, camp_Std);
 router.get('/member/after_school_student/:userId', verifySchool, after_school_Std);
+
+// email and text sms send perticular student
+router.post('/member/email_send_student',send_mail_std)
+router.post('/member/text_sms_send',send_sms_std)
 
 
 module.exports = router
