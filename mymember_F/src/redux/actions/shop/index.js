@@ -31,12 +31,7 @@ export const getMembership = () => {
 export const createMembership = (data) => {
     const userData = JSON.parse(localStorage.getItem("userdata"))
     let formData = new FormData();
-    // console.log("?????????????????????",data)
-    let dataEntries = Object.entries(data);
-    dataEntries.map((v, i) => {
-        formData.append(v[0], v[1]);
-        return v;
-    })
+    formData = data
     return async dispatch => {
         try {
             let response = await axios.post(`${baseUrl}/api/membership/add_membership/${localStorage.getItem("user_id")}`, formData, {
@@ -45,43 +40,38 @@ export const createMembership = (data) => {
                     "content-type": "multipart/form-data",
                 }
             })
+            console.log("response", response)
             if (response.data && response.status === 200) {
                 dispatch(getMembership())
             }
-            
-           
         }
-        catch(error){
+        catch (error) {
             console.log(error);
             console.log("something went wrong");
         }
     }
-} 
+}
 
-export const editMembership = (data,id) => {
+export const editMembership = (data, id) => {
     const userData = JSON.parse(localStorage.getItem("userdata"))
     let formData = new FormData();
-    let dataEntries = Object.entries(data);
-    dataEntries.map((v,i) => {
-        formData.append(v[0], v[1]);
-        return v;
-    })
+    formData = data
     return async dispatch => {
-        try{
-            if(userData.data.role === 1){
+        try {
+            if (userData.data.role === 1) {
                 let response = await axios.put(`${baseUrl}/api/update_user_membership/${userData.data._id}/${id}`, data, {
-                    headers : {
-                        "Authorization" : `Bearer ${userData.token}`,
-                        "content-type" : "application/json",
+                    headers: {
+                        "Authorization": `Bearer ${userData.token}`,
+                        "content-type": "application/json",
                     }
                 })
                 console.log(response);
-                if(response.data && response.status === 200){
+                if (response.data && response.status === 200) {
                     dispatch(getMembership())
                 }
             }
         }
-        catch(error){
+        catch (error) {
             console.log("something went wrong");
         }
     }
@@ -146,20 +136,20 @@ export const trashMembership = (id) => {
     const userData = JSON.parse(localStorage.getItem("userdata"))
 
     return dispatch => {
-        if(userData.data.role === 1){
+        if (userData.data.role === 1) {
             axios.delete(`${baseUrl}/api/remove_user_membership/${userData.data._id}/${id}`, {
-                headers : {
-                  "Authorization" : `Bearer ${localStorage.getItem("access_token")}`
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem("access_token")}`
                 }
-              }).then(res => {
+            }).then(res => {
                 dispatch(getMembership());
-              })
-        }else{
+            })
+        } else {
             axios.delete(`${baseUrl}/api/membership/delete_membership/${localStorage.getItem("user_id")}/${id}`, {
-                headers : {
-                  "Authorization" : `Bearer ${localStorage.getItem("access_token")}`
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem("access_token")}`
                 }
-              }).then(res => {
+            }).then(res => {
                 dispatch(getMembership());
             })
         }

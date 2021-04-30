@@ -2,6 +2,15 @@ const student = require("../models/addmember");
 const schedule = require("../models/class_schedule");
 const attendance = require("../models/attendence");
 
+function TimeZone() {
+  const str = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+  const date_time = str.split(",");
+  console.log(date_time);
+  const date = date_time[0];
+  const time = date_time[1];
+  return { Date: date, Time: time };
+}
+
 exports.search_std = (req, res) => {
   console.log(req.body.search);
   var regex = new RegExp("^" + req.body.search, "i");
@@ -33,9 +42,12 @@ exports.create = async (req, res) => {
           image: stdData.memberprofileImage,
           class: schdule_data.class_name,
           userId: req.params.userId,
+          class_color: schdule_data.program_color,
           time: req.body.time,
         };
         var attendanceObj = new attendance(stdDetails);
+        var DT = TimeZone();
+        attendanceObj.date = DT.Date;
         attendanceObj.save((err, attendanceData) => {
           if (err) {
             res.send({ error: "addendance is not create" });
@@ -56,7 +68,7 @@ exports.create = async (req, res) => {
                 } else {
                   console.log(attendanceUpdte);
                   student
-                    .update(
+                    .updateOne(
                       { firstName: req.body.studentName },
                       {
                         $set: {
@@ -98,7 +110,7 @@ exports.remove = (req, res) => {
       if (err) {
         res.send({ error: "attendance is not remove" });
       } else {
-        schedule.update(
+        schedule.updateOne(
           { class_attendance: removeAttendance._id },
           { $pull: { class_attendance: removeAttendance._id } },
           function (err, attendeRemove) {
