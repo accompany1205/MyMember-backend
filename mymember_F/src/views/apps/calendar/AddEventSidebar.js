@@ -384,6 +384,11 @@ class AddEvent extends React.Component {
     let newEventId = lastId + 1;
     // console.log(this.props);
     const { rowData, columnDefs, defaultColDef, pageSize } = this.state;
+    let style = {
+      position: "absolute",
+      top: "20px",
+      right: "20px",
+    };
 
     return (
       <div
@@ -394,6 +399,13 @@ class AddEvent extends React.Component {
       >
         <Row style={{ margin: "20px" }}>
           <h1>{this.props.eventInfo?.class_name}</h1>
+          <h4 style={style}>
+            {this.props.calendar?.classStudentList?.data?.class_attendance
+              ? "Total: " +
+                this.props.calendar?.classStudentList?.data?.class_attendance
+                  .length
+              : "Total: " + 0}
+          </h4>
         </Row>
         <Row style={{ margin: "20px" }}>
           <Col sm="6">
