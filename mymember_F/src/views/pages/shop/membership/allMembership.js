@@ -44,7 +44,7 @@ class AllMembershipList extends React.Component {
                         this.props.shop?.membershipList.reverse().map((v, i) => <Col lg="3" md="12" key={v._id}>
 
                             <Card>
-                                <CardHeader style={{ background: `${v.color}`, padding: "5px 10px" }} >
+                                <CardHeader style={{ background: "black", padding: "5px 10px" }} >
                                     <h6 style={{ color: "#fff", margin: "0", fontWeight: "500", fontSize: "16px" }}>{v.membership_name}</h6>
                                     <div>
                                         <EditModal userinfo={v} />
