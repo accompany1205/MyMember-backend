@@ -31,16 +31,18 @@ exports.read = (req, res)=>{
         res.send(err)
     })
 };
-
 exports.class_schedule_Info = (req, res)=>{
+    console.log('run')
     const id = req.params.scheduleId
     class_schedule.findById(id,{upsert: true})
-    .populate("class_attendance")
+    .populate('class_attendance')
         .then((result) => {
-            res.json(result)
+            var r = result.class_attendance
+            var total =r.length
+            res.json({data:result,total:total})
         }).catch((err) => {
             res.send(err)
-        })
+    })
 };
 
 exports.update = (req, res)=>{

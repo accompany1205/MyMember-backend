@@ -84,7 +84,6 @@ class UsersLists extends React.Component {
         filter: true,
         width: 100,
         cellRendererFramework: params => {
-
           return (
             <div
               className="d-flex align-items-center cursor-pointer"
@@ -117,8 +116,7 @@ class UsersLists extends React.Component {
         cellRendererFramework: params => {
           return (
             <div className="d-flex align-items-center cursor-pointer">
-              <span>{params.data.firstName}</span>
-              <span>{params.data.lastName}</span>
+              <span>{params.data.firstName+" "+params.data.lastName}</span>
             </div>
           )
         }

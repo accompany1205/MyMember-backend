@@ -795,7 +795,7 @@ exports.send_mail_std = (req,res)=>{
     }
 }
 
-const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+const client = require('twilio')(process.env.aid, process.env.authkey);
 
 exports.send_sms_std = (req,res)=>{
     var number = req.body.number

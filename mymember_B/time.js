@@ -137,41 +137,41 @@
 // // var mT = moment(date).format('MM/DD/YYYY')    
 // // // console.log(date,mT)
 
-const asid = 'AC95c8e5b269c098f81fac4bbc8ce8f881';
-const authtoken = 'af2e5bd3153fe38cd556686959194c48'
-const msgService = 'ISb21aa5fdf2d5a8c60dd25d5dd7389d7f'
-const client = require('twilio')(asid, authtoken)
+// const asid = 'AC95c8e5b269c098f81fac4bbc8ce8f881';
+// const authtoken = 'af2e5bd3153fe38cd556686959194c48'
+// const msgService = 'ISb21aa5fdf2d5a8c60dd25d5dd7389d7f'
+// const client = require('twilio')(asid, authtoken)
 
-// client.messages.create({
-//   to:'+919893600766',
-//   from:'+12672637681',
-//   body:'hy how are you jio'
+// // client.messages.create({
+// //   to:'+919893600766',
+// //   from:'+12672637681',
+// //   body:'hy how are you jio'
+// // })
+// // .then((message)=>console.log(message))
+// // .catch((error)=>console.log(error))
+
+// var to = ['989-360-0766']
+// var msg ='without +91'
+// var numbers = []; 
+// for(i = 0; i < to.length; i++) 
+// {   
+//     console.log(`${'+91'+to[i]}`)
+//     numbers.push(JSON.stringify({  
+//     binding_type: 'sms', address: `${'+91'+to[i]}`})) 
+// } 
+
+// const notificationOpts = { 
+//   toBinding: numbers, 
+//   body: msg, 
+// }; 
+
+//  client.notify 
+// .services(msgService) 
+// .notifications.create(notificationOpts) 
+// .then((resp)=>{
+//     console.log(resp)
+// }).catch((error)=>{
+//     console.log(error)
 // })
-// .then((message)=>console.log(message))
-// .catch((error)=>console.log(error))
-
-var to = ['989-360-0766']
-var msg ='without +91'
-var numbers = []; 
-for(i = 0; i < to.length; i++) 
-{   
-    console.log(`${'+91'+to[i]}`)
-    numbers.push(JSON.stringify({  
-    binding_type: 'sms', address: `${'+91'+to[i]}`})) 
-} 
-
-const notificationOpts = { 
-  toBinding: numbers, 
-  body: msg, 
-}; 
-
- client.notify 
-.services(msgService) 
-.notifications.create(notificationOpts) 
-.then((resp)=>{
-    console.log(resp)
-}).catch((error)=>{
-    console.log(error)
-})
 
 // from: '+12672637681',

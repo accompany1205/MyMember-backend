@@ -1,6 +1,7 @@
-import React from "react"
-import { X, Tag } from "react-feather"
+import React, { useState, useEffect } from "react";
+import { X, Tag } from "react-feather";
 import {
+  Dropdown,
   UncontrolledDropdown,
   DropdownItem,
   DropdownMenu,
@@ -12,63 +13,82 @@ import {
   Card,
   CardBody,
   Col,
-  Row
-} from "reactstrap"
+  Row,
+} from "reactstrap";
 import Flatpickr from "react-flatpickr";
-import DataTable from "react-data-table-component"
-import "../../../assets/scss/pages/users.scss"
-
-// import 
-import { FETCH_ATTENDEE_LIST } from '../../../redux/actions/calendar';
-import { connect } from "react-redux"
-
+import DataTable from "react-data-table-component";
+import "../../../assets/scss/pages/users.scss";
+import { GET_ACTIVE_STUDENT } from "../../../redux/actions/newstudent";
+import {
+  FETCH_ATTENDEE_LIST,
+  STUD_GET,
+  ADD_STUDENT_TO_CLASS,
+} from "../../../redux/actions/calendar";
+import { connect } from "react-redux";
 import "flatpickr/dist/themes/light.css";
-import "../../../assets/scss/plugins/forms/flatpickr/flatpickr.scss"
+import "../../../assets/scss/plugins/forms/flatpickr/flatpickr.scss";
+import { ThemeProvider } from "styled-components";
 
+const baseUrl = process.env.REACT_APP_BASE_URL;
 const eventColors = {
   business: "chip-success",
   work: "chip-warning",
   personal: "chip-danger",
-  others: "chip-primary"
-}
+  others: "chip-primary",
+};
 
 const columns = [
   {
     name: "Photo",
     selector: "firstphoto",
-    sortable: true
+    sortable: true,
   },
   {
     name: "Name",
     selector: "firstName",
-    sortable: true
+    sortable: true,
   },
   {
     name: "Classes",
     selector: "class",
-    sortable: true
+    sortable: true,
   },
   {
     name: "Date & Time Attended	",
     selector: "date",
-    sortable: true
+    sortable: true,
   },
   {
     name: "Action",
     selector: "id",
-    sortable: true
-  }
-]
+    sortable: true,
+  },
+];
 
 const customStyles = {
-
   headCells: {
     style: {
       background: "#1387b0",
-      color: "#fff"
+      color: "#fff",
+      height: "100%",
     },
-  }
+  },
 };
+
+const students = [];
+
+// const names = [
+//   {label: "My Name", value: "M"},
+//   {label: "Deepak", value: "D"},
+//   {label: "Steve", value: "S"},
+//   {label: "Bred", value: "B"},
+// ]
+
+// const [name, setName] = useState("Select a Name")
+
+// let handleNameChange = (e) =>{
+//   setName(e.target.value)
+// }
 
 class AddEvent extends React.Component {
   state = {
@@ -77,28 +97,58 @@ class AddEvent extends React.Component {
     title: "",
     label: null,
     allDay: true,
-    selectable: true
-  }
-  handleDateChange = date => {
-    this.setState({
-      startDate: date
-    })
+    selectable: true,
+  };
+
+  // const [value, setvalue] = useState(initialState)
+  async componentDidMount() {
+    this.props.STUD_GET();
   }
 
-  handleEndDateChange = date => {
-    this.setState({
-      endDate: date
-    })
-  }
+  // handleGetStudents() {
+  //   this.props.STUD_GET();
+  //   // this.handleGetStudents();
+  // }
 
-  handleLabelChange = label => {
-    this.setState({
-      label
-    })
-  }
+  //to add student to list
+  addStudentToClass = (e) => {
+    // this.setState({
+    //   value: e.target.value,
+    // });
+    console.log(this.props.eventInfo?._id);
+    let id = e.target.value;
+    let scheduleId = this.props.eventInfo?._id;
+    let time = Date.now();
+    // let optionElement = e.target.childNodes[index];
+    // console.log("Selected User", e.target.value);
+    // this.props.ADD_STUDENT_TO_CLASS(scheduleId, id);
+    console.log("Selected User", scheduleId, id, time);
+    // console.log("Selected User", optionElement);
+    this.props.ADD_STUDENT_TO_CLASS(scheduleId, id, time);
+    this.props.FETCH_ATTENDEE_LIST();
+    // this.props.calendar.studentList = [];
+  };
 
-  handleAddEvent = id => {
-    this.props.handleSidebar(false)
+  handleDateChange = (date) => {
+    this.setState({
+      startDate: date,
+    });
+  };
+
+  handleEndDateChange = (date) => {
+    this.setState({
+      endDate: date,
+    });
+  };
+
+  handleLabelChange = (label) => {
+    this.setState({
+      label,
+    });
+  };
+
+  handleAddEvent = (id) => {
+    this.props.handleSidebar(false);
     this.props.addEvent({
       id: id,
       title: this.state.title,
@@ -106,17 +156,17 @@ class AddEvent extends React.Component {
       end: this.state.endDate,
       label: this.state.label === null ? "others" : this.state.label,
       allDay: this.state.allDay,
-      selectable: this.state.selectable
-    })
+      selectable: this.state.selectable,
+    });
     this.setState({
       startDate: new Date(),
       endDate: new Date(),
       title: "",
       label: null,
       allDay: true,
-      selectable: true
-    })
-  }
+      selectable: true,
+    });
+  };
 
   UNSAFE_componentWillReceiveProps(nextProps) {
     this.setState({
@@ -133,51 +183,78 @@ class AddEvent extends React.Component {
       label: nextProps.eventInfo === null ? null : nextProps.eventInfo.label,
       allDay: nextProps.eventInfo === null ? true : nextProps.eventInfo.allDay,
       selectable:
-        nextProps.eventInfo === null ? true : nextProps.eventInfo.selectable
-    })
+        nextProps.eventInfo === null ? true : nextProps.eventInfo.selectable,
+    });
   }
 
-
   render() {
-    let events = this.props.events.map(i => i.id)
-    let lastId = events.pop()
-    let newEventId = lastId + 1
+    let events = this.props.events.map((i) => i.id);
+    let lastId = events.pop();
+    let newEventId = lastId + 1;
+    console.log(this.props);
+    console.log(lastId);
+    // if( this.props.sele)
+
     return (
       <div
         className={`add-event-sidebar ${
           this.props.sidebar ? "show" : "hidden"
-          }`}
-        style={{ width: '600px' }}
+        }`}
+        style={{ width: "600px" }}
       >
-        <Row style={{margin: "20px"}}>
+        <Row style={{ margin: "20px" }}>
+          <h1>{this.props.eventInfo?.class_name}</h1>
+        </Row>
+        <Row style={{ margin: "20px" }}>
           <Col sm="6">
             <div className="filter-actions d-flex">
-              <Input
-                className="w-70 mr-1 mb-1 mb-sm-0"
-                type="text"
-                placeholder="search..."
-              // onChange={e => this.updateSearchQuery(e.target.value)}
-              // value={this.state.searchVal}
-              />
+              {this.props.calendar ? (
+                <Input
+                  className="w-70 mr-1 mb-1 mb-sm-0"
+                  type="select"
+                  placeholder="search..."
+                  onChange={this.addStudentToClass}
+                >
+                  {this.props.calendar
+                    ? this.props.calendar?.studentList.map((student) => (
+                        <option key={student._id} value={student._id}>
+                          {student.firstName + " " + student.lastName}
+                        </option>
+                      ))
+                    : ""}
+                </Input>
+              ) : (
+                ""
+              )}
+              {/* <DropdownToggle caret>Dropdown</DropdownToggle> */}
+              {/* <Dropdown isOpen={false} toggle={true}>
+                <DropdownItem header>Select</DropdownItem>
+
+                {this.props.calendar?.studentList?.map((Student) => (
+                  <DropdownItem key={Student.id} value={Student.id}>
+                    {Student.firstName + " " + Student.lastName}
+                  </DropdownItem>
+                ))} 
+              </Dropdown> */}
+              {/* <select onChange={this.addStudentToClass}>
+                {this.props.calendar?.studentList?.map((student) => (
+                  <option key={student._id} value={student._id}>
+                    {student.firstName + " " + student.lastName}
+                  </option>
+                ))}
+              </select> */}
             </div>
           </Col>
-
           <Col sm="4">
-            <Button
-              color="primary"
-              size="sm"
-
-            >
+            {/* <Button color="primary" size="sm">
               Submit
-            </Button>
+            </Button> */}
           </Col>
         </Row>
-
-
         <Card>
           <CardBody className="cd-body-rm pd-body">
             <DataTable
-              data={this.props.calendar && this.props.calendar ?.attendeeList}
+              data={this.props.calendar?.attendeeList}
               columns={columns}
               noHeader
               fixedHeader
@@ -188,16 +265,19 @@ class AddEvent extends React.Component {
           </CardBody>
         </Card>
       </div>
-    )
+    );
   }
 }
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
+  console.log(state);
   return {
-    calendar: state.calendar
-  }
-}
+    calendar: state.calendar,
+  };
+};
 
-export default connect(mapStateToProps, { FETCH_ATTENDEE_LIST })(AddEvent)
-
-// export default AddEvent
+export default connect(mapStateToProps, {
+  FETCH_ATTENDEE_LIST,
+  STUD_GET,
+  ADD_STUDENT_TO_CLASS,
+})(AddEvent);
