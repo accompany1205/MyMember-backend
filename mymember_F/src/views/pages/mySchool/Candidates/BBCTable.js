@@ -1,4 +1,4 @@
-import React from "react"
+import React from "react";
 import {
   Card,
   CardBody,
@@ -9,21 +9,14 @@ import {
   DropdownMenu,
   DropdownItem,
   DropdownToggle,
-} from "reactstrap"
-import axios from "axios"
-import { ContextLayout } from "../../../../utility/context/Layout"
-import { AgGridReact } from "ag-grid-react"
-import {
-  ChevronDown,
-  Info,
-  Mail,
-  Phone,
-  Eye,
-
-} from "react-feather"
-import { history } from "../../../../history"
-import "../../../../assets/scss/plugins/tables/_agGridStyleOverride.scss"
-import "../../../../assets/scss/pages/users.scss"
+} from "reactstrap";
+import axios from "axios";
+import { ContextLayout } from "../../../../utility/context/Layout";
+import { AgGridReact } from "ag-grid-react";
+import { ChevronDown, Info, Mail, Phone, Eye } from "react-feather";
+import { history } from "../../../../history";
+import "../../../../assets/scss/plugins/tables/_agGridStyleOverride.scss";
+import "../../../../assets/scss/pages/users.scss";
 class UsersList extends React.Component {
   state = {
     rowData: null,
@@ -38,7 +31,7 @@ class UsersList extends React.Component {
     department: "All",
     defaultColDef: {
       sortable: true,
-      resizable:true
+      resizable: true,
     },
     searchVal: "",
     columnDefs: [
@@ -49,14 +42,14 @@ class UsersList extends React.Component {
         // filter: false,
         checkboxSelection: true,
         headerCheckboxSelectionFilteredOnly: true,
-        headerCheckboxSelection: true
+        headerCheckboxSelection: true,
       },
       {
         headerName: "Photo",
         field: "username",
         // filter: false,
         width: 120,
-        cellRendererFramework: params => {
+        cellRendererFramework: (params) => {
           return (
             <div
               className="d-flex align-items-center cursor-pointer"
@@ -71,42 +64,36 @@ class UsersList extends React.Component {
               />
               {/* <span>{params.data.name}</span> */}
             </div>
-          )
-        }
+          );
+        },
       },
       {
         headerName: "Full Name",
         field: "name",
         // filter: false,
-        width: 200
+        width: 200,
       },
       {
         headerName: "Status",
         field: "status",
         // filter: false,
         width: 150,
-        cellRendererFramework: params => {
+        cellRendererFramework: (params) => {
           return params.value === "active" ? (
-            <div className="badge badge-pill badge-light-danger">
-             None
-            </div>
+            <div className="badge badge-pill badge-light-danger">None</div>
           ) : params.value === "blocked" ? (
-            <div className="badge badge-pill badge-light-danger">
-              None
-            </div>
+            <div className="badge badge-pill badge-light-danger">None</div>
           ) : params.value === "deactivated" ? (
-            <div className="badge badge-pill badge-light-danger">
-               None
-            </div>
-          ) : null
-        }
+            <div className="badge badge-pill badge-light-danger">None</div>
+          ) : null;
+        },
       },
-      
+
       {
         headerName: "Primary Phone",
         field: "country",
         // filter: false,
-        width: 200
+        width: 200,
       },
       // {
       //   headerName: "Email",
@@ -119,65 +106,54 @@ class UsersList extends React.Component {
         field: "status",
         // filter: false,
         width: 200,
-        cellRendererFramework: params => {
+        cellRendererFramework: (params) => {
           return params.value === "active" ? (
-            <div className="badge badge-pill badge-light-success">
-             Regular
-            </div>
+            <div className="badge badge-pill badge-light-success">Regular</div>
           ) : params.value === "blocked" ? (
             <div className="badge badge-pill badge-light-danger">
               {/* {params.value} */}
               N/A
-
             </div>
           ) : params.value === "deactivated" ? (
             <div className="badge badge-pill badge-light-warning">
               {params.value}
             </div>
-          ) : null
-        }
+          ) : null;
+        },
       },
       {
         headerName: "Belt Rank",
         field: "",
         // filter: false,
-        width: 150
+        width: 150,
       },
       {
         headerName: "Start Date",
         field: "",
         // filter: false,
-        width: 150
+        width: 150,
       },
       {
         headerName: "Expire Date",
         field: "",
         // filter: false,
-        width: 150
+        width: 150,
       },
 
-      
       {
         headerName: "Rating",
         field: "",
         // filter: false,
         width: 125,
-        cellRendererFramework: params => {
+        cellRendererFramework: (params) => {
           return params.value === "active" ? (
-            <div className="badge badge-pill badge-light-warning">
-             876
-            </div>
+            <div className="badge badge-pill badge-light-warning">876</div>
           ) : params.value === "blocked" ? (
-            <div className="badge badge-pill badge-light-warning">
-              8768
-            </div>
+            <div className="badge badge-pill badge-light-warning">8768</div>
           ) : params.value === "deactivated" ? (
-            <div className="badge badge-pill badge-light-warning">
-               786
-            </div>
-          ) : null
-        }
-       
+            <div className="badge badge-pill badge-light-warning">786</div>
+          ) : null;
+        },
       },
       // {
       //   headerName: "Department",
@@ -189,7 +165,7 @@ class UsersList extends React.Component {
         headerName: "Manage",
         field: "transactions",
         width: 150,
-        cellRendererFramework: params => {
+        cellRendererFramework: (params) => {
           return (
             <div className="actions cursor-pointer">
               {/* <Edit
@@ -204,115 +180,102 @@ class UsersList extends React.Component {
                   this.gridApi.updateRowData({ remove: selectedData })
                 }}
               /> */}
-              <Info   
-              className="mr-50"
-              size={20}
-              />
-              <Eye
-               className="mr-50"
-               size={20}
-              />
-              <Mail 
-               className="mr-50"
-               size={20} 
-               />
-              <Phone
-               className="mr-50"
-               size={20}
-              />
+              <Info className="mr-50" size={20} />
+              <Eye className="mr-50" size={20} />
+              <Mail className="mr-50" size={20} />
+              <Phone className="mr-50" size={20} />
             </div>
-          )
-        }
-      }
+          );
+        },
+      },
     ],
     getRowHeight: function (params) {
       return 70;
-    }
-  }
+    },
+  };
 
   async componentDidMount() {
-    await axios.get("api/users/list").then(response => {
-      let rowData = response.data
-      this.setState({ rowData })
-    })
+    await axios.get("api/users/list").then((response) => {
+      let rowData = response.data;
+      this.setState({ rowData });
+    });
   }
 
-  onGridReady = params => {
-    this.gridApi = params.api
-    this.gridColumnApi = params.columnApi
-  }
+  onGridReady = (params) => {
+    this.gridApi = params.api;
+    this.gridColumnApi = params.columnApi;
+  };
 
   filterData = (column, val) => {
-    var filter = this.gridApi.getFilterInstance(column)
-    var modelObj = null
+    var filter = this.gridApi.getFilterInstance(column);
+    var modelObj = null;
     if (val !== "all") {
       modelObj = {
         type: "equals",
-        filter: val
-      }
+        filter: val,
+      };
     }
-    filter.setModel(modelObj)
-    this.gridApi.onFilterChanged()
-  }
+    filter.setModel(modelObj);
+    this.gridApi.onFilterChanged();
+  };
 
-  filterSize = val => {
+  filterSize = (val) => {
     if (this.gridApi) {
-      this.gridApi.paginationSetPageSize(Number(val))
+      this.gridApi.paginationSetPageSize(Number(val));
       this.setState({
-        pageSize: val
-      })
+        pageSize: val,
+      });
     }
-  }
-  updateSearchQuery = val => {
-    this.gridApi.setQuickFilter(val)
+  };
+  updateSearchQuery = (val) => {
+    this.gridApi.setQuickFilter(val);
     this.setState({
-      searchVal: val
-    })
-  }
+      searchVal: val,
+    });
+  };
 
   refreshCard = () => {
-    this.setState({ reload: true })
+    this.setState({ reload: true });
     setTimeout(() => {
       this.setState({
         reload: false,
         role: "All",
         selectStatus: "All",
         verified: "All",
-        department: "All"
-      })
-    }, 500)
-  }
+        department: "All",
+      });
+    }, 500);
+  };
 
   toggleCollapse = () => {
-    this.setState(state => ({ collapse: !state.collapse }))
-  }
+    this.setState((state) => ({ collapse: !state.collapse }));
+  };
   onEntered = () => {
-    this.setState({ status: "Opened" })
-  }
+    this.setState({ status: "Opened" });
+  };
   onEntering = () => {
-    this.setState({ status: "Opening..." })
-  }
+    this.setState({ status: "Opening..." });
+  };
 
   onEntered = () => {
-    this.setState({ status: "Opened" })
-  }
+    this.setState({ status: "Opened" });
+  };
   onExiting = () => {
-    this.setState({ status: "Closing..." })
-  }
+    this.setState({ status: "Closing..." });
+  };
   onExited = () => {
-    this.setState({ status: "Closed" })
-  }
+    this.setState({ status: "Closed" });
+  };
   removeCard = () => {
-    this.setState({ isVisible: false })
-  }
+    this.setState({ isVisible: false });
+  };
 
   render() {
-    const { rowData, columnDefs, defaultColDef, pageSize } = this.state
+    const { rowData, columnDefs, defaultColDef, pageSize } = this.state;
     return (
       <Row className="app-user-list">
-        
         <Col sm="12">
-         <Card>
+          <Card>
             <CardBody>
               <div className="ag-theme-material ag-grid-table">
                 <div className="ag-grid-actions d-flex justify-content-between flex-wrap mb-1">
@@ -355,17 +318,15 @@ class UsersList extends React.Component {
                       className="w-70 mr-1 mb-1 mb-sm-0"
                       type="text"
                       placeholder="search..."
-                      onChange={e => this.updateSearchQuery(e.target.value)}
+                      onChange={(e) => this.updateSearchQuery(e.target.value)}
                       value={this.state.searchVal}
                     />
-                    
                   </div>
                 </div>
                 {this.state.rowData !== null ? (
                   <ContextLayout.Consumer>
-                    {context => (
+                    {(context) => (
                       <AgGridReact
-                        
                         gridOptions={{}}
                         rowSelection="multiple"
                         defaultColDef={defaultColDef}
@@ -390,8 +351,8 @@ class UsersList extends React.Component {
           </Card>
         </Col>
       </Row>
-    )
+    );
   }
 }
 
-export default UsersList
+export default UsersList;

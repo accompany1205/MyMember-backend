@@ -5,8 +5,22 @@ const _ = require('lodash')
 require("dotenv").config();
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.email);
-const client = require('twilio')(process.env.ACCOUNT_SID, process.env.AUTH_TOKEN);
-const VoiceResponse = require('twilio').twiml
+const client = require('twilio')(process.env.aid, process.env.authkey);
+// const VoiceResponse = require('twilio').twiml
+// const accountSid = process.env.TWILIO_ACCOUNT_SID;
+// const authToken = process.env.TWILIO_AUTH_TOKEN;
+// const client = require('twilio')(accountSid, authToken);
+
+
+exports.voiceCall = (req, res) =>{
+    client.calls
+      .create({
+         twiml: '<Response><Say>hy kaushal and mohit how are you</Say></Response>',
+         to: req.body.to,
+         from: '+12192445425'
+       })
+      .then(call => res.send(call)).catch(error=> res.send(error))
+}
 
 exports.create = (req, res) => {
     student.findById(req.params.studentId).exec((err, std_data) => {
@@ -114,17 +128,3 @@ exports.send_sms = (req, res) => {
     })
 }
 
-exports.voiceCall = (req, res) =>{
-    client.calls.create({
-        url: 'http://demo.twilio.com/docs/voice.xml',
-        to: req.body.number,
-        from: '12192445425'
-    },function (err, call) {
-        if (err) {
-            res.send(err)
-        }
-        else {
-            res.send(call)
-        }
-    })
-}

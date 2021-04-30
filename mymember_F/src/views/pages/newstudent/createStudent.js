@@ -24,13 +24,13 @@ class CreateStudent extends React.Component {
     this.myRef = React.createRef();
   }
   state = {
-    studentType:"",
+    studentType:"Active Student",
     firstName:"",
     lastName:"",
-    status:"",
+    status:"Active",
     dob:"",
-    age:"",
-    gender:"",
+    age:"0",
+    gender:"Male",
     email:"",
     primaryPhone:"",
     secondaryNumber:"",
@@ -39,31 +39,31 @@ class CreateStudent extends React.Component {
     state:"",
     zipPostalCode:"",
     notes:"",
-    studentBeltSize:"",
-    program:"",
+    studentBeltSize:"LT",
+    program:"Little Tigers",
     category:"",
     subcategory:"",
     location:"",
     customId:"",
-    leadsTracking:"",
-    staff:"",
-    intrested:"",
+    leadsTracking:"Walk",
+    staff:"Leads Tracking",
+    intrested:"After School",
     school:"",
     memberprofileImage:"",
     memberProfileUrl : "",
     programColor: ""
-  
+
     }
 
   componentDidMount(){
     this.props.GET_CATEGORIES();
-  }  
-  
+  }
+
   imageHandler = e => {
     this.setState({...this.state, memberprofileImage : e.target.files[0], memberProfileUrl : URL.createObjectURL(e.target.files[0])});
-  } 
+  }
 
-  changeHandler = e => { 
+  changeHandler = e => {
     // console.log(e.target.name, e.target.value)
     this.setState({...this.state, [e.target.name] : e.target.value});
     // console.log(this.state.category)
@@ -74,19 +74,27 @@ class CreateStudent extends React.Component {
           console.log(item)
           this.setState({...this.state, [e.target.name] : e.target.value});
         }
-        
-      })
 
-      }
+      })
     }
-  
+
+    if(e.target.name == "dob"){
+      var dob = new Date(e.target.value).getFullYear();
+      var current = new Date().getFullYear();
+      this.setState({
+        ["age"]: current - dob
+      });
+
+    }
+  }
+
   handleRegister = e => {
     // alert('Your favorite flavor is: ' + this.state.value);
     e.preventDefault()
     // console.log("new student", this.state);
     // this.props.addNewStudent({...this.state});
     const {memberProfileUrl, ...rest} = this.state;
-    
+
     this.props.ADD_NEW_STUDENT({...rest});
   }
 
@@ -106,8 +114,8 @@ class CreateStudent extends React.Component {
                 </h5>
                 <Label>Type </Label>
                 <FormGroup>
-                    <Input 
-                      type="select" 
+                    <Input
+                      type="select"
                       // id="exampleSelect"
                       name="studentType"
                       value={this.state.studentType}
@@ -147,8 +155,8 @@ class CreateStudent extends React.Component {
                 </FormGroup>
                 <Label> Select Status </Label>
                 <FormGroup>
-                    <Input 
-                      type="select" 
+                    <Input
+                      type="select"
                       // id="exampleSelect"
                       name={"status"}
                       value={this.state.status}
@@ -172,7 +180,7 @@ class CreateStudent extends React.Component {
                 </FormGroup>
                 <Label> Gender </Label>
                 <FormGroup>
-                    <Input 
+                    <Input
                     type="select"
                     // id="exampleSelect"
                     name={"gender"}
@@ -191,9 +199,9 @@ class CreateStudent extends React.Component {
                     // id="nameMulti"
                     placeholder="Age"
                     value={this.state.age}
-                    onChange={this.changeHandler}
+                    disabled
                     required
-                    
+
                   />
                 </FormGroup>
                 <Label>Email Address </Label>
@@ -252,10 +260,10 @@ class CreateStudent extends React.Component {
                     placeholder="Address"
                     name={"address"}
                     value={this.state.address}
-                    onChange={this.changeHandler} 
+                    onChange={this.changeHandler}
                     required
                   />
-              </FormGroup>  
+              </FormGroup>
                 <Label>State</Label>
               <FormGroup className="form-label-group">
                   <Input
@@ -264,10 +272,10 @@ class CreateStudent extends React.Component {
                     placeholder="State"
                     name={"state"}
                     value={this.state.state}
-                    onChange={this.changeHandler} 
+                    onChange={this.changeHandler}
                     required
                   />
-              </FormGroup>  
+              </FormGroup>
                 <Label>Country</Label>
               <FormGroup className="form-label-group">
                   <Input
@@ -276,15 +284,15 @@ class CreateStudent extends React.Component {
                     placeholder="Country"
                     name={"country"}
                     value={this.state.country}
-                    onChange={this.changeHandler} 
+                    onChange={this.changeHandler}
                     required
                   />
-              </FormGroup>  
+              </FormGroup>
                 <Label>Category </Label>
               <FormGroup className="form-label-group">
-              <Input 
-                      type="select" 
-                      name="category" 
+              <Input
+                      type="select"
+                      name="category"
                       // id="exampleSelect"
                       value={this.state.category}
                       onChange={this.changeHandler}
@@ -295,7 +303,7 @@ class CreateStudent extends React.Component {
 
                       {this.props.categories.map((v,i) => <option value={v.programName} key={v._id}>{v.programName}</option>)}
                     </Input>
-              </FormGroup>  
+              </FormGroup>
               {/* <Label> Program color </Label> */}
               {/* {console.log("result>>>",this.props.categories.programName)} */}
                 {/* <FormGroup className="form-label-group">
@@ -316,7 +324,7 @@ class CreateStudent extends React.Component {
                     placeholder="Sub Category"
                     name={"subcategory"}
                     value={this.state.subcategory}
-                    onChange={this.changeHandler} 
+                    onChange={this.changeHandler}
                   />
               </FormGroup>
               <Label>Notes </Label>
@@ -332,16 +340,16 @@ class CreateStudent extends React.Component {
                   />
                 </FormGroup>
               </Col>
-              <Col  md="6" sm="12">  
+              <Col  md="6" sm="12">
               <h5>
                   <Users/>
                   Membership Info
                 </h5>
               <Label>Student Belt Size </Label>
                 <FormGroup>
-                    <Input 
-                      type="select" 
-                      name="studentBeltSize" 
+                    <Input
+                      type="select"
+                      name="studentBeltSize"
                       // id="exampleSelect"
                       value={this.state.studentBeltSize}
                       onChange={this.changeHandler}
@@ -357,9 +365,9 @@ class CreateStudent extends React.Component {
               </FormGroup>
               <Label>Program </Label>
                 <FormGroup>
-                    <Input 
-                      type="select" 
-                      name="program" 
+                    <Input
+                      type="select"
+                      name="program"
                       // id="exampleSelect"
                       value={this.state.program}
                       onChange={this.changeHandler}
@@ -372,7 +380,7 @@ class CreateStudent extends React.Component {
                       <option value="Tean & Adult">Tean & Adult</option>
                     </Input>
               </FormGroup>
-             
+
                 <Label>Location </Label>
                 <FormGroup className="form-label-group">
                   <Input
@@ -399,18 +407,18 @@ class CreateStudent extends React.Component {
                 </FormGroup>
                 <Label>Leads Tracking </Label>
                 <FormGroup>
-                    <Input 
-                      type="select" 
-                      name="leadsTracking" 
+                    <Input
+                      type="select"
+                      name="leadsTracking"
                       // id="exampleSelect"
                       value={this.state.leadsTracking}
                       onChange={this.changeHandler}
                       defaultValue="Walk"
                       >
                     {/* <option >Leads Tracking</option> */}
-									  <option value="Walk" >Walk</option>	
+									  <option value="Walk" >Walk</option>
 									  <option value="Fair">Fair</option>
-									  <option value="Google">Google</option>	
+									  <option value="Google">Google</option>
 									  <option value="Referral">Referral</option>
 									  <option value="Website">Website</option>
 									  <option value="Tv">Tv</option>
@@ -420,30 +428,30 @@ class CreateStudent extends React.Component {
 									  <option value="Birthday">Birthday</option>
 									  <option value="Facebook">Facebook</option>
 									  <option value="Donation">Donation</option>
-							
+
                     </Input>
               </FormGroup>
               <Label>Staff </Label>
                   <FormGroup>
-                      <Input 
-                          type="select" 
-                          name="staff" 
+                      <Input
+                          type="select"
+                          name="staff"
                           // id="exampleSelect"
                           value={this.state.staff}
                           onChange={this.changeHandler}
                       >
                       <option value="Leads Tracking" defaultValue="Leads Tracking">Leads Tracking</option>
-								  	  <option value="Walk">Walk</option>	
-                
+								  	  <option value="Walk">Walk</option>
+
                       </Input>
                   </FormGroup>
-              
+
               <Label>Interested</Label>
-               
+
                  <FormGroup>
-                    <Input 
-                      type="select" 
-                      name="intrested" 
+                    <Input
+                      type="select"
+                      name="intrested"
                       // id="exampleSelect"
                       value={this.state.intrested}
                       onChange={this.changeHandler}
@@ -490,18 +498,18 @@ class CreateStudent extends React.Component {
                 <FormGroup>
                   <Label>Member Profile Image</Label>
                   <div className="my-2">
-                  {this.state.memberProfileUrl ? 
-                   <img src={this.state.memberProfileUrl} alt="select image" width="100" height="100"/> : <File size="32"/>  
+                  {this.state.memberProfileUrl ?
+                   <img src={this.state.memberProfileUrl} alt="select image" width="100" height="100"/> : <File size="32"/>
                 }
-                  </div>        
+                  </div>
                   <input style={{display : "none"}} type={"file"}
                    ref={this.myRef} onChange={this.imageHandler}
                    />
-                  <Button 
+                  <Button
                    color="outline-primary"
                    type="button"
                    size="sm"
-                   onClick={() => { this.myRef.current.click()}}                  
+                   onClick={() => { this.myRef.current.click()}}
                    >
                    <Upload size={12} style={{
                      margin : "0 0.5em 0 0"
@@ -519,9 +527,9 @@ class CreateStudent extends React.Component {
                   </Button.Ripple>
                 </FormGroup>
               </Col>
-              
+
               {/* <Col sm="12"> */}
-               
+
               {/* </Col> */}
             </Row>
           </Form>
@@ -533,7 +541,7 @@ class CreateStudent extends React.Component {
 const mapStateToProps = state => {
   return {
     values: state.auth.register,
-    categories : state.program.categoryList 
+    categories : state.program.categoryList
   }
 }
 export default connect(mapStateToProps,{ ADD_NEW_STUDENT, GET_CATEGORIES })(CreateStudent)

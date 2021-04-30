@@ -131,10 +131,10 @@ class TodoSidebar extends React.Component {
               <ListGroupItem
                 className="border-0"
                 onClick={() => {
-                  this.props.changeFilter("frontend")
+                  this.props.changeFilter("events")
                 }}
                 active={
-                  this.props.routerProps.location.pathname === "/todo/frontend"
+                  this.props.routerProps.location.pathname === "/todo/events"
                     ? true
                     : false
                 }
@@ -145,10 +145,10 @@ class TodoSidebar extends React.Component {
               <ListGroupItem
                 className="border-0"
                 onClick={() => {
-                  this.props.changeFilter("backend")
+                  this.props.changeFilter("business")
                 }}
                 active={
-                  this.props.routerProps.location.pathname === "/todo/backend"
+                  this.props.routerProps.location.pathname === "/todo/business"
                     ? true
                     : false
                 }
@@ -159,10 +159,10 @@ class TodoSidebar extends React.Component {
               <ListGroupItem
                 className="border-0"
                 onClick={() => {
-                  this.props.changeFilter("doc")
+                  this.props.changeFilter("personal")
                 }}
                 active={
-                  this.props.routerProps.location.pathname === "/todo/doc"
+                  this.props.routerProps.location.pathname === "/todo/personal"
                     ? true
                     : false
                 }
@@ -173,10 +173,10 @@ class TodoSidebar extends React.Component {
               <ListGroupItem
                 className="border-0"
                 onClick={() => {
-                  this.props.changeFilter("bug")
+                  this.props.changeFilter("appointment")
                 }}
                 active={
-                  this.props.routerProps.location.pathname === "/todo/bug"
+                  this.props.routerProps.location.pathname === "/todo/appointment"
                     ? true
                     : false
                 }

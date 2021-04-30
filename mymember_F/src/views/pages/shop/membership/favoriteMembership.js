@@ -8,9 +8,6 @@ import BuyNowModal from "./buyNowModal"
 import {Edit,Trash,Trash2 } from "react-feather"
 
 
-
-
-
 class ActiveStudent extends React.Component {
     render() {
     return (

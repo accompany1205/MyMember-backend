@@ -13,7 +13,6 @@ const userSchema = new schema(
         lastname: {
             type: String,
             trim: true,
-           
             maxlength: 100
         },
         isverify:{
@@ -63,7 +62,6 @@ const userSchema = new schema(
         email: {
             type: String,
             trim: true,
-           
             unique: true
         },
         password: {
@@ -147,7 +145,52 @@ const userSchema = new schema(
         missYouCall_appoinment_history:[{
             type:schema.Types.ObjectId,
             ref:'missYouCallAppoinment'
-        }]
+        }],
+        fullName: {
+            type: String,
+        },
+        // userName: {
+        //     type: String,
+        // },
+        user_type:{
+            type:String
+        },
+        // phone: {
+        //     type: String,
+        // },
+        // email: {
+        //     type: String,
+        // },
+        // password: {
+        //     type: String,
+
+        // },
+        // status: {
+        //     type: String,
+
+        // },
+        profile_type: {
+            type: String,
+
+        },
+        profile_image: {
+            type: String
+        },
+        schoolId:{
+            type:String
+        },
+         reset_code: {
+            type: String,
+            default: ''
+        },
+        resetPasswordToken:{
+            type:String,
+            default:''
+        },
+        resetPasswordExpires:{
+            type:String,
+            default:''
+        }
     },
     { timestamps: true }
 );

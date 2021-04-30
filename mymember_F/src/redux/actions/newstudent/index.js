@@ -110,6 +110,7 @@ export const GET_ACTIVE_STUDENT = (data) => {
     }
   }
 }
+
 export const GET_ACTIVE_TRAIL_LIST = (data) => {
   return async dispatch => {
     try{
@@ -284,6 +285,36 @@ export const GET_AFTER_SCHOOL_LIST = (data) => {
        console.log(error);
        dispatch({
         type : "GET_AFTER_SCHOOL_STUDENT",
+        payload : []
+      })
+    }
+  }
+}
+// Candidate Part...............
+export const GET_CANDIDATE_LIST = (data) =>{
+  return async dispatch => {
+    try{
+      let response = await axios.get(`${baseUrl}/api/candidates/list_candidiate/${localStorage.getItem("user_id")}`, {
+        headers : {
+          "Authorization" : `Bearer ${localStorage.getItem("access_token")}`
+        }});
+        if(response.data && response.status === 200 && !response.data.msg){
+          dispatch({
+            type : "GET_CANDIDATE_LIST",
+            payload : response.data
+          })
+        }
+        else{
+          dispatch({
+            type : "GET_CANDIDATE_LIST",
+            payload : []
+          })
+        }
+    }
+    catch(error){
+       console.log(error);
+       dispatch({
+        type : "GET_CANDIDATE_LIST",
         payload : []
       })
     }

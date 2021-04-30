@@ -20,7 +20,7 @@ import {GET_CAMP_LIST} from '../../../../redux/actions/newstudent/index';
 import {connect} from 'react-redux';
 import { AgGridReact } from "ag-grid-react"
 import {
-  
+
   ChevronDown,
   Printer,
   Download,
@@ -38,6 +38,10 @@ import CandidateModal from "./CandidateModal"
 import TestModal from "./TestModal"
 import Spinner from "../../../../components/@vuexy/spinner/Loading-spinner"
 import StudentlistuserEyeModal from "./studentlistuserEyeModal"
+import StudentlistuserEmailModal from "../../../pages/studentlistEmailicon/studentlistuserEmailModal"
+import StusercalliconModal from "../../../pages/studentlisticoncall/stusercalliconModal"
+
+
 
 class UsersLists extends React.Component {
   state = {
@@ -72,7 +76,7 @@ class UsersLists extends React.Component {
         filter: true,
         width: 120,
         cellRendererFramework: params => {
-  
+
           return (
             <div
               className="d-flex align-items-center cursor-pointer"
@@ -115,7 +119,7 @@ class UsersLists extends React.Component {
           return `${params.value[0].toUpperCase()}${params.value.substr(1).toLowerCase()}`;
         }
       },
-     
+
       {
         headerName: "Status",
         field: "status",
@@ -146,8 +150,8 @@ class UsersLists extends React.Component {
             <div className="badge badge-pill badge-light-grey">
              None
             </div>
-          ):<div className="badge badge-pill badge-light-light"> 
-           ---
+          ):<div className="badge badge-pill badge-light-grey">
+           None
        </div>
         }
       },
@@ -209,7 +213,7 @@ class UsersLists extends React.Component {
       //   filter: true,
       //   width: 250
       // },
-      
+
       {
         headerName: "Belt Size",
         field: "studentBeltSize",
@@ -226,19 +230,19 @@ class UsersLists extends React.Component {
         cellRendererFramework: params => {
           return (
             <div className="actions cursor-pointer">
-              <Info   
-              className="mr-50"
-              size={18}
+              <Info
+                className="mr-50"
+                size={18}
               />
-              <StudentlistuserEyeModal/>
-              <Mail 
+              <StudentlistuserEyeModal />
+
+              <StudentlistuserEmailModal />
+              <StusercalliconModal />
+              {/* <Phone
                className="mr-50"
-               size={18} 
-               />
-              <Phone
-               className="mr-50"
-               size={18}
-              />
+               size={20}
+              /> */}
+
             </div>
           )
         }
@@ -339,8 +343,8 @@ class UsersLists extends React.Component {
     const { rowData, columnDefs, defaultColDef, pageSize } = this.state
     return (
       <Row className="app-user-list">
-        
-        
+
+
         <Col sm="12">
         <Breadcrumbs
           breadCrumbTitle="Camp Student"
@@ -348,19 +352,19 @@ class UsersLists extends React.Component {
           breadCrumbActive="Camp Student"
         />
           <Card>
-            <CardHeader> 
+            <CardHeader>
               <div className="list-icon">
               <a href="/data-list/add-new-student">
-                <Button 
+                <Button
                 className="btn-lg fides btn waves-effect waves-light"
                 onClick={this.toggleModal}
                 >
                   <Plus size={21} />
                   <br></br>
-                  Add 
+                  Add
                 </Button>
                 </a>
-                
+
                 <Button className="btn-lg fides5 btn waves-effect waves-light">
                   <Phone size={21} />
                   <br></br>
@@ -443,7 +447,7 @@ class UsersLists extends React.Component {
                   <ContextLayout.Consumer>
                     {context => (
                       <AgGridReact
-                        
+
                         gridOptions={{}}
                         rowSelection="multiple"
                         defaultColDef={defaultColDef}
@@ -464,7 +468,7 @@ class UsersLists extends React.Component {
                   </ContextLayout.Consumer>
                 ) : null}
                  </> ):( <div id="loading-bar">
-           
+
            <Spinner loading={true}/>
          </div>
          )}

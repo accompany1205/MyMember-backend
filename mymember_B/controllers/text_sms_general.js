@@ -11,6 +11,10 @@ require('dotenv').config()
 //  res.writeHead(200,{'Content-Type':'text/xml'})
 //  res.end(twiml.toString())
 // }
+// const asid = 'AC95c8e5b269c098f81fac4bbc8ce8f881';
+// const authtoken = 'af2e5bd3153fe38cd556686959194c48'
+// const msgService = 'ISb21aa5fdf2d5a8c60dd25d5dd7389d7f'
+// const client = require('twilio')(asid, authtoken)
 
 exports.send_sms =(req,res)=>{
     function sendBulkMessages(msg,to,textKey){

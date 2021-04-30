@@ -15,8 +15,8 @@ const addmemberSchema = new schema(
             
         },
         status:{
-            type: String
-            
+            type: String,
+            default:'Inactive'
         },
         days_expire:{
             type:String,
@@ -24,7 +24,6 @@ const addmemberSchema = new schema(
         },
         dob:{
             type:Date
-            
         },
         day_left:{
             type:String,

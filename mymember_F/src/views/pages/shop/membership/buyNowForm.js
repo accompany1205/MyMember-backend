@@ -10,7 +10,7 @@ import {
     Card,
     CardBody,
     CardTitle,
-    CardHeader, Form, Button, Jumbotron
+    CardHeader, Form, Button, Jumbotron, Table
 } from "reactstrap"
 // import Checkbox from "../../../../../checkbox/CheckboxesVuexy"
 import "../../../../assets/scss/pages/users.scss"
@@ -35,61 +35,47 @@ class WizardIcons extends React.Component {
             register_fees: 0,
             expiry_date: expiry_date.toISOString().split('T')[0],
             totalp: props.memberShipDetail.total_price,
-            balance:parseInt(props.memberShipDetail.total_price)-parseInt(props.memberShipDetail.down_payment),
+            balance: parseInt(props.memberShipDetail.total_price) - parseInt(props.memberShipDetail.down_payment),
             dpayment: props.memberShipDetail.down_payment,
             ptype: "cash",
             payment_time: parseInt(props.memberShipDetail.payment_time),
             payment_type: props.memberShipDetail.payment_type,
-            payment_money: parseInt(props.memberShipDetail.balance)/parseInt(props.memberShipDetail.payment_time),
+            payment_money: parseInt(props.memberShipDetail.balance) / parseInt(props.memberShipDetail.payment_time),
             due_every: props.memberShipDetail.due_every,
             due_every_month: due_every_month.toISOString().split('T')[0],
             pay_inout: "in house",
             pay_latter: "cash",
-            membership_name: props.memberShipDetail.membership_name
+            membership_name: props.memberShipDetail.membership_name,
         }
         // this.onsubmit = this.onsubmit.bind(this);
 
     }
     changeHandler = (e) => {
-        this.setState({ ...this.state, [e.target.name]: e.target.value,},()=>{
-            
+        this.setState({ ...this.state, [e.target.name]: e.target.value, }, () => {
+
             let { balance, payment_time, payment_money, register_fees, dpayment, totalp } = this.state;
             balance = parseInt(totalp) - (parseInt(register_fees) + parseInt(dpayment))
             payment_money = (parseInt(balance) / parseInt(payment_time)) // money to dive
-            
-            this.setState({balance, payment_money})
+
+            this.setState({ balance, payment_money })
         })
     }
 
-    // form = {
-    //     steps: [
-    //         {
-    //             title: 1,
-    //             content: <Row></Row>
-    //         },
-    //         {
-    //             title: 2,
-    //             content: <Row></Row>
-    //         }
-    //     ]
-    // }
-
     onSubmit = (e) => {
         e.preventDefault();
-        if(this.props.type == "student profile"){
-            this.props.buyStudentMembership(this.state, this.props.info.studentId, this.props.type);
-        }else{
-            this.props.buyStudentMembership(this.state, null, this.props.type);
+        if (this.props.type === "student profile") {
+            buyStudentMembership(this.state, this.props.info.studentId, this.props.type);
+            
+        } else {
+            buyStudentMembership(this.state, null, this.props.type);
         }
     }
 
     render() {
-        // const { steps } = this.form;
         const { memberShipDetail } = this.props
         return (
             <Card>
                 <CardBody>
-
                     <Row>
                         <Col md="12" sm="12">
                             <Form >
@@ -105,13 +91,13 @@ class WizardIcons extends React.Component {
                                             <FormGroup>
                                                 <Label> Membership Name </Label>
                                                 <Input
-                                                type="texr"
-                                                name="membership_name"
-                                                value={this.state.membership_name}
-                                                disabled
-                                                id="durationVertical"
-                                                placeholder="Member Ship Name"
-                                            />
+                                                    type="texr"
+                                                    name="membership_name"
+                                                    value={this.state.membership_name}
+                                                    disabled
+                                                    id="durationVertical"
+                                                    placeholder="Member Ship Name"
+                                                />
                                             </FormGroup>
                                             :
                                             <FormGroup>
@@ -363,11 +349,6 @@ class WizardIcons extends React.Component {
                             </Form>
                         </Col>
                     </Row>
-                    {/* <Wizard
-                        steps={steps}
-                    />
- */}
-
                 </CardBody>
             </Card>
         )
@@ -376,11 +357,95 @@ class WizardIcons extends React.Component {
 
 
 // export default WizardIcons
-
 const mapStateToProps = (state) => {
     return {
-
+        memberShipDetail: state.memberShipDetail
     };
 }
 
-export default connect(mapStateToProps, { buyStudentMembership })(WizardIcons);
+const connectedComponent = connect(mapStateToProps, { buyStudentMembership })(WizardIcons)
+
+export { connectedComponent as WizardIcons };
+
+export default class Steps extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            steps: [{
+                title: "1",
+                content: <WizardIcons {...props} />
+            }, {
+                title: "2",
+                content: <PaymentSummary {...props} />
+            }
+            ]
+        }
+    }
+
+    render() {
+        const { steps } = this.state
+        return (
+            steps.length >= 1 &&
+            <Card>
+                <CardBody>
+                    <Wizard
+                        steps={steps}
+                        className={"class"}
+                    />
+                </CardBody>
+            </Card>
+        )
+    }
+
+}
+
+export class PaymentSummary extends React.Component {
+
+    constructor(props) {
+        super(props)
+        const currentDate = new Date()
+        let due_every_month = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, currentDate.getDate() + 1);
+        this.state = {
+            memberShipDetail: this.props.memberShipDetail,
+            student_name: this.props.student_name,
+            due_every_month: due_every_month.toISOString().split('T')[0],
+            balance: this.props.memberShipDetail.balance.toFixed(2)
+        }
+    }
+
+    render() {
+        return (
+            <Card>
+                <h1>{this.state.student_name}</h1>
+                <CardBody>
+                    <Table striped>
+                        <thead>
+                            <tr >
+                                <th style={{ columnWidth: "50rem" }}>Description</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr >
+                                <td>{this.state.memberShipDetail.payments_types === "month" ? "Months(Monthly)" : "Weeks(Weekly)"}</td>
+                                <td>{this.state.memberShipDetail.duration_time}</td>
+                            </tr>
+                            <tr >
+                                <td>Down Payment</td>
+                                <td>{this.state.memberShipDetail.down_payment}</td>
+                            </tr>
+                            <tr >
+                                <td style={{ color: "red" }}>Balance</td>
+                                <td>{this.state.balance}</td>
+                            </tr>
+                            <tr>
+                                <td>{`${this.state.memberShipDetail.payment_time} payments of ${this.state.memberShipDetail.pay} due every ${this.state.memberShipDetail.due_every} of the month.
+                                Next Payment on ${this.state.due_every_month}`}</td>
+                            </tr>
+                        </tbody>
+                    </Table>
+                </CardBody>
+            </Card >
+        )
+    }
+}
