@@ -205,6 +205,7 @@ exports.signin = (req, res) => {
         error: "User with that email does not exist. Please signup",
       });
     } else {
+      console.log('data',data)
       if (data.password == req.body.password) {
         if (data.role == 0) {
           if (data.status == "Active") {

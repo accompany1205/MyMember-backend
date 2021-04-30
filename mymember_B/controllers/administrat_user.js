@@ -1,4 +1,4 @@
-const administrate = require("../models/administrate_user");
+const administrate = require("../models/user");
 const { errorHandler } = require('../helpers/dbErrorHandler');
 const expressJwt = require('express-jwt'); // for authorization check
 const jwt = require('jsonwebtoken'); // to generate signed token

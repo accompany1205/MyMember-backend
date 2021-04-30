@@ -6,41 +6,27 @@ const userSchema = new mongoose.Schema(
     {
         fullName: {
             type: String,
-            trim: true,
-            required: true,
-            maxlength: 32
         },
         userName: {
             type: String,
-            trim: true,
-            required: true,
-            maxlength: 32
         },
 
         phone: {
             type: String,
-            trim: true,
-            required: true,
-            maxlength: 32
         },
         email: {
             type: String,
-            trim: true,
-            required: true,
-            unique: true
         },
         password: {
             type: String,
-            required: true
+
         },
         status: {
             type: String,
-            trim: true,
-            required: true
+
         },
         profile_type: {
             type: String,
-            required: true
         },
         profile_image: {
             type: String

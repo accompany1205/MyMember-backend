@@ -17,6 +17,9 @@ const attendenceSchema = schema({
         type:String,
         required:true
     },
+    class_color:{
+        type:String
+    },
     userId:{
         type:schema.Types.ObjectId
     },
@@ -25,7 +28,6 @@ const attendenceSchema = schema({
     },
     date:{
         type:String,
-        default: new Date().toLocaleDateString()
     },
     time:{
         type:String,
