@@ -55,7 +55,7 @@ const membershipSchema = new mongoose.Schema({
         required:true
     },
     membership_profile:{
-        type:String,
+        type:Object,
     },
     isfavorite:{
         type:Number,

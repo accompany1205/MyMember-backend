@@ -23,7 +23,6 @@ class ModalForm extends React.Component {
   render() {
     return (
       <React.Fragment>
-
         <Button.Ripple
           color="success"
           size="sm"
@@ -32,7 +31,6 @@ class ModalForm extends React.Component {
         >
           Buy Now
             </Button.Ripple>
-
         <Modal
           isOpen={this.state.modal}
           toggle={this.toggleModal}
@@ -42,7 +40,7 @@ class ModalForm extends React.Component {
             Buy Membership
                 </ModalHeader>
           <ModalBody>
-            <BuyNowForm memberShipDetail={this.props.memberShipDetail} studentList={this.props.studentList} type={this.props.type} info={this.props.info} />
+            <BuyNowForm memberShipDetail={this.props.memberShipDetail} studentList={this.props.studentList} type={"student profile"} info={this.props.info} />
           </ModalBody>
 
         </Modal>
