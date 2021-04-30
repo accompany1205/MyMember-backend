@@ -14,7 +14,6 @@ import {
 } from "reactstrap"
 // import Checkbox from "../../../../../checkbox/CheckboxesVuexy"
 import "../../../../assets/scss/pages/users.scss"
-import "react-credit-cards/lib/styles.scss";
 import img from "../../../../assets/img/pages/1-apex.png"
 import { booleanLiteral } from "@babel/types"
 import { buyStudentMembership } from "../../../../redux/actions/shop"
