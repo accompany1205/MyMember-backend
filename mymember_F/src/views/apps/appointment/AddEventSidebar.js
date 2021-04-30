@@ -33,9 +33,9 @@ class AddEvent extends React.Component {
     app_type: null,
     title: "",
     start_date: new Date(),
-    start_time: "",
+    start_time: Date.now() / 1000,
     end_date: new Date(),
-    end_time: "",
+    end_time: Date.now() / 1000,
     allDay: true,
     selectable: true,
   };
@@ -72,6 +72,7 @@ class AddEvent extends React.Component {
     this.setState({
       end_time: time,
     });
+    console.log(time);
   };
   // handleAppTypeChange = (app_type) => {
   //   this.setState({
@@ -109,12 +110,16 @@ class AddEvent extends React.Component {
       app_type: null,
       title: "",
       start_date: new Date(),
-      start_time: null,
+      start_time: "",
       end_date: new Date(),
-      end_time: null,
+      end_time: "",
       allDay: true,
       selectable: true,
     });
+  };
+
+  changeHandler = (e) => {
+    this.setState({ ...this.state, [e.target.name]: e.target.value });
   };
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -256,11 +261,12 @@ class AddEvent extends React.Component {
             </FormGroup>
             <FormGroup>
               <Label for="exampleTime">Start Time</Label>
-              <Input
+              <input
                 type="time"
                 name="starttime"
+                className="form-control"
                 id="startTime"
-                placeholder="time placeholder"
+                value={this.state.start_time}
                 onChange={(time) => this.handleStartTimeChange(time)}
               />
             </FormGroup>
@@ -280,30 +286,31 @@ class AddEvent extends React.Component {
             </FormGroup>
             <FormGroup>
               <Label for="exampleTime">End Time</Label>
-              <Input
+              <input
                 type="time"
+                className="form-control"
                 name="endtime"
                 id="endTime"
-                placeholder="time placeholder"
-                onChange={(time) => this.handleEndTimeChange(time)}
+                value={this.state.end_time}
+                onChange={(time) => this.handleEndDateChange(time)}
               />
             </FormGroup>
           </div>
           <hr className="my-2" />
           <div className="add-event-actions text-right">
             <Button.Ripple
-              disabled={this.state.title.length > 0 ? false : true}
+              disabled={this.state?.title?.length > 0 ? false : true}
               color="primary"
               onClick={() => {
                 this.props.handleSidebar(false);
                 if (
-                  this.props.eventInfo === null ||
-                  this.props.eventInfo.title.length <= 0
+                  this.props?.eventInfo === null ||
+                  this.props?.eventInfo.title.length <= 0
                 )
                   this.handleAddEvent(newEventId);
                 else {
                   this.props.updateEvent({
-                    id: this.props.eventInfo.id,
+                    id: this.props?.eventInfo.id,
                     title: this.state.title,
                     app_type: this.state.app_type,
                     start: this.state.start_date,
@@ -315,8 +322,8 @@ class AddEvent extends React.Component {
                 }
               }}
             >
-              {this.props.eventInfo !== null &&
-              this.props.eventInfo.title.length > 0
+              {this.props?.eventInfo !== null &&
+              this.props.eventInfo?.title?.length > 0
                 ? "Update Event"
                 : "Add Event"}
             </Button.Ripple>

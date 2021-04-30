@@ -4,6 +4,8 @@ const initialState = {
   selectedEvent: null,
   attendeeList: [],
   studentList: [],
+  classStudentList: [],
+  filterStudents: [],
   studentInfo: null,
 };
 
@@ -48,13 +50,13 @@ const calenderReducer = (state = initialState, action) => {
     case "FETCH_ATTENDEE_LIST":
       return { ...state, attendeeList: action.event };
     case "STUD_GET":
-      // console.log(action);
-      //let getStudent = action.event
       return { ...state, studentList: action.event };
+    case "FETCH_CLASS_STUDENTS":
+      return { ...state, classStudentList: action.event };
     case "ADD_STUDENT_TO_CLASS":
-      console.log(action);
-      //let getStudent = action.event
       return { ...state, studentInfo: action.event };
+    case "RENDER_STUDENT":
+      return { ...state, filterStudents: action.event };
     default:
       return state;
   }

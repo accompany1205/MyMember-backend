@@ -23,6 +23,7 @@ import {
   updateEvent,
   updateDrag,
   updateResize,
+  FETCH_CLASS_STUDENTS,
 } from "../../../redux/actions/calendar/index";
 import { ChevronLeft, ChevronRight } from "react-feather";
 
@@ -217,16 +218,22 @@ class CalendarApp extends React.Component {
 
   handleSelectEvent = (event) => {
     let filteredState = this.state.events.filter((i) => i.id === event.id);
+    // console.log(event);
+    // console.log(this.state.events);
+    // console.log(filteredState);
     this.props.handleSidebar(true);
-    this.props.handleSelectedEvent(filteredState[0]);
+    // this.props.handleSelectedEvent(filteredState[0]);
+    this.props.handleSelectedEvent(event);
+    // console.log(event._id);
+    this.props.FETCH_CLASS_STUDENTS(event._id);
     this.setState({
-      eventInfo: filteredState[0],
+      eventInfo: event,
     });
   };
 
   render() {
     const { events, views, sidebar } = this.state;
-
+    // console.log(this.props);
     return (
       <div className="app-calendar position-relative">
         <div
@@ -322,4 +329,5 @@ export default connect(mapStateToProps, {
   updateEvent,
   updateDrag,
   updateResize,
+  FETCH_CLASS_STUDENTS,
 })(CalendarApp);

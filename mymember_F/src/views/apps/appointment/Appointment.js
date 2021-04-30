@@ -253,9 +253,10 @@ class CalendarApp extends React.Component {
               </CardBody>
             </Card>
           </Col>
-          <Col lg="4" sm="12">
+
+          {/* <Col lg="4" sm="12">
             <Tablesidebar />
-          </Col>
+          </Col> */}
         </Row>
         <AddEventSidebar
           sidebar={sidebar}
