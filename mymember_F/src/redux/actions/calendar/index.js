@@ -36,6 +36,32 @@ export const fetchEvents = () => {
   };
 };
 
+export const FETCH_CLASS_STUDENTS = (scheduleId) => {
+  return async (dispatch) => {
+    try {
+      let response = await axios.get(
+        `${baseUrl}/api/class_schedule_by_id/${localStorage.getItem(
+          "user_id"
+        )}/${scheduleId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }
+      );
+      console.log(response);
+      if (response.data && response.status === 200) {
+        dispatch({
+          type: "FETCH_CLASS_STUDENTS",
+          event: response.data,
+        });
+      }
+    } catch (error) {
+      console.log("something went wrong in fetching class student");
+    }
+  };
+};
+
 export const FETCH_ATTENDEE_LIST = () => {
   return async (dispatch) => {
     try {
@@ -116,6 +142,35 @@ export const ADD_STUDENT_TO_CLASS = (scheduleId, id, time) => {
   };
 };
 
+export const RENDER_STUDENT = (search = "a") => {
+  return async (dispatch) => {
+    try {
+      let response = await axios.post(
+        `${baseUrl}/api//attendence/search_student/${localStorage.getItem(
+          "user_id"
+        )}`,
+        { search },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }
+      );
+
+      console.log(response);
+      if (response.data && response.status === 200) {
+        dispatch({
+          type: "RENDER_STUDENT",
+          event: response.data.msg,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      console.log("something went wrong");
+    }
+  };
+};
+
 export const handleSidebar = (bool) => {
   console.log("bool", bool);
   return (dispatch) => dispatch({ type: "HANDLE_SIDEBAR", status: bool });
@@ -145,5 +200,6 @@ export const updateResize = (event) => {
 };
 
 export const handleSelectedEvent = (event) => {
+  console.log(event);
   return (dispatch) => dispatch({ type: "HANDLE_SELECTED_EVENT", event });
 };

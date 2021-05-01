@@ -2,29 +2,32 @@ const student = require("../models/addmember");
 const schedule = require("../models/class_schedule");
 const attendance = require("../models/attendence");
 
-function TimeZone(){
-  const str = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-  const date_time =str.split(',')
-  console.log(date_time)
-  const date = date_time[0]
-  const time = date_time[1]
-  return { Date:date,Time:time}
+function TimeZone() {
+  const str = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+  const date_time = str.split(",");
+  console.log(date_time);
+  const date = date_time[0];
+  const time = date_time[1];
+  return { Date: date, Time: time };
 }
 
-exports.search_std = (req,res)=>{
-  console.log(req.body.search)
-  var regex = new RegExp('^'+req.body.search,'i');
-  console.log(regex)
-  student.find({$and:[{userId:req.params.userId},{firstName:regex}]},{firstName:1,lastName:1,age:1,studentType:1})
-  .exec((err,resp)=>{
-      if(err){
-          res.json({code:400, msg:'list not found'})
+exports.search_std = (req, res) => {
+  console.log(req.body.search);
+  var regex = new RegExp("^" + req.body.search, "i");
+  console.log(regex);
+  student
+    .find(
+      { $and: [{ userId: req.params.userId }, { firstName: regex }] },
+      { firstName: 1, lastName: 1, age: 1, studentType: 1 }
+    )
+    .exec((err, resp) => {
+      if (err) {
+        res.json({ code: 400, msg: "list not found" });
+      } else {
+        res.send({ code: 200, msg: resp });
       }
-      else{
-          res.send({code:200,msg:resp})
-      }
-  })
-}
+    });
+};
 
 exports.create = async (req, res) => {
   var schdule_data = await schedule.findOne({ _id: req.params.scheduleId });
@@ -39,12 +42,12 @@ exports.create = async (req, res) => {
           image: stdData.memberprofileImage,
           class: schdule_data.class_name,
           userId: req.params.userId,
-          class_color:schdule_data.program_color,
+          class_color: schdule_data.program_color,
           time: req.body.time,
         };
         var attendanceObj = new attendance(stdDetails);
-        var DT = TimeZone() 
-        attendanceObj.date = DT.Date
+        var DT = TimeZone();
+        attendanceObj.date = DT.Date;
         attendanceObj.save((err, attendanceData) => {
           if (err) {
             res.send({ error: "addendance is not create" });

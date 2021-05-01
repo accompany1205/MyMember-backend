@@ -37,26 +37,44 @@ exports.create_candidate = async (req, res) => {
 
 exports.create_candidateStripe = async(req,res)=>{
     var stripeName = req.body.stripeName;
-    var candidate = await candidateModal.findOne({_id:req.params.candidateId})
+    var candidate = await candidateModal.findOneAndUpdate({_id:req.params.candidateId,candidate_status:stripeName})
     if(candidate){
     console.log(candidate)
-    
+    if(candidate.candidate_status == ' '){
     var cStripe = new candidate_stripe(candidate)
     cStripe.candidate_status = stripeName
     cStripe.current_stripe =`${stripeName}`+'#'+'0'
     cStripe.next_stripe =`${stripeName}`+'#'+'1'
     cStripe.userId = req.params.userId
     console.log(cStripe)
+
     candidate_stripe.insertMany(cStripe).then((resp)=>{
         res.send({msg:'candidate  add in stripe'})
     }).catch((error)=>{
         res.send({error:'candidate not add in stripe'})
     })
+    }else{ 
+        var infoData = await candidate_stripe.findOne({_id:req.params.candidateId})
+        var cs = infoData.current_stripe
+        var ns = infoData.next_stripe
+        var split_ns = ns.split("#")
+        var split_cs= cs.split("#")
+        var u_cs = `${stripeName}`+'#'+split_cs[1]
+        var u_ns = `${stripeName}`+'#'+split_ns[1]
+        console.log(u_cs,u_ns)
 
-
-    }else{
-        res.send({error:'candidate id not found'})
+       var update_candidate = await candidate_stripe.updateOne({_id:req.params.candidateId},{$set:{candidate_status:stripeName ,current_stripe:u_cs, next_stripe:u_ns}})
+       if(update_candidate){
+           res.send({msg:'candidate stripe update successfully'})
+       }else{
+        res.send({error:'candidate stripe is not update successfully'})
+       }
     }
+    }
+    else{
+        res.send({error:'candidate id not found'})
+      }
+
     
 
 //    candidateModal.findByIdAndUpdate(req.params.candidateId,{$set:{candidate_status : stripeName, current_stripe:cs, next_stripe:ns}})          
