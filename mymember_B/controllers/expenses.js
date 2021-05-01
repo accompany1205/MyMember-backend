@@ -51,6 +51,8 @@ exports.read = (req,res)=>{
 exports.Create = (req,res)=>{
     var userID = mongo.Types.ObjectId(req.params.userId)
     const exp = new Expenses(req.body)
+    exp.dateM = req.body.date
+    console.log(exp)
     exp.save((err,expData)=>{
         console.log(expData)
         if(err){

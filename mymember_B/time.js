@@ -175,3 +175,15 @@
 // })
 
 // from: '+12672637681',
+
+
+function TimeZone(){
+    const str = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+    const date_time =str.split(',')
+    console.log(date_time)
+    const date = date_time[0]
+    const time = date_time[1]
+    return { Date:date,Time:time}
+  }
+  
+  TimeZone()

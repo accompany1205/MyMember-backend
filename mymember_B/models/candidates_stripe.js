@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const schema = mongoose.Schema;
 
-const candidateSchema = new schema({
+const candidatestripeSchema = new schema({
     firstName:{
         type:String
     },
@@ -18,10 +18,13 @@ const candidateSchema = new schema({
         type:String,
         default:' '
     },
-    memberprofileImage:{
-        type:String
+    current_stripe:{
+        type:String,
     },
-    expiry_date:{
+    next_stripe:{
+        type:String,
+    },
+    memberprofileImage:{
         type:String
     },
     userId:{
@@ -29,4 +32,4 @@ const candidateSchema = new schema({
     }
 })
 
-module.exports = mongoose.model('candidate',candidateSchema)
+module.exports = mongoose.model('candidate_stripe',candidatestripeSchema)

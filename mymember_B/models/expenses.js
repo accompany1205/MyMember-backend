@@ -31,6 +31,9 @@ const expenseSchema = new schema(
             type:Date,
             required:true
         },
+        dateM:{
+            type:String
+        },
         userId:{
             type:schema.Types.ObjectId
         }
