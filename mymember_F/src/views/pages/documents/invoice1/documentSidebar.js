@@ -23,7 +23,7 @@ class CollapseUncontrolled extends React.Component {
         <Card style={{ paddingBottom: "3rem", backgroundColor: "#c1c1c126", paddingTop: "0.5rem" }}>
           <Row style={{ justifyContent: "space-around", textAlign: "center", marginTop: "10px", alignItems: "center" }} >
             <div>
-              <p>Folders</p>
+              <p><NewFolder /></p>
             </div>
 
 
