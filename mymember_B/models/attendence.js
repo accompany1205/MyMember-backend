@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const schema =  mongoose.Schema
 const attendenceSchema = schema({
+    
     image:{
         type:String,
         // required:true

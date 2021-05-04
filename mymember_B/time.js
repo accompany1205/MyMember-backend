@@ -183,7 +183,7 @@ function TimeZone(){
     console.log(date_time)
     const date = date_time[0]
     const time = date_time[1]
-    return { Date:date,Time:time}
+    console.log({Date:date,Time:time})
   }
   
   TimeZone()
