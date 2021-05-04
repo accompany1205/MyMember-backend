@@ -18,6 +18,12 @@ const candidateSchema = new schema({
         type:String,
         default:' '
     },
+    current_stripe:{
+        type:String,
+    },
+    next_stripe:{
+        type:String,
+    },
     memberprofileImage:{
         type:String
     },

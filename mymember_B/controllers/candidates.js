@@ -37,24 +37,35 @@ exports.create_candidate = async (req, res) => {
 
 exports.create_candidateStripe = async(req,res)=>{
     var stripeName = req.body.stripeName;
-    var candidate = await candidateModal.findOneAndUpdate({_id:req.params.candidateId,candidate_status:stripeName})
+    var cs = `${stripeName}`+'#'+'0'
+    var ns = `${stripeName}`+'#'+'1'
+    var candidate = await candidateModal.findOne({_id:req.params.candidateId})
     if(candidate){
     console.log(candidate)
     if(candidate.candidate_status == ' '){
     var cStripe = new candidate_stripe(candidate)
     cStripe.candidate_status = stripeName
-    cStripe.current_stripe =`${stripeName}`+'#'+'0'
-    cStripe.next_stripe =`${stripeName}`+'#'+'1'
+    cStripe.current_stripe = cs
+    cStripe.next_stripe = ns
     cStripe.userId = req.params.userId
     console.log(cStripe)
 
-    candidate_stripe.insertMany(cStripe).then((resp)=>{
-        res.send({msg:'candidate  add in stripe'})
+    candidate_stripe.insertMany(cStripe).then(async(resp)=>{
+        var candidateUpdate = await candidateModal.findOneAndUpdate({_id:req.params.candidateId},{$set:{current_stripe:cs,next_stripe:ns,candidate_status:stripeName}})
+        if(candidateUpdate){        
+        res.send({msg:'candidate add in stripe'})
+        }
+        else{
+            res.send({error:'candidate not asign stripe'})
+        }
     }).catch((error)=>{
         res.send({error:'candidate not add in stripe'})
     })
     }else{ 
+        var infoDataCan = await candidateModal.findOne({_id:req.params.candidateId})
+        if(infoDataCan.candidate_status != stripeName){
         var infoData = await candidate_stripe.findOne({_id:req.params.candidateId})
+        if(infoData){
         var cs = infoData.current_stripe
         var ns = infoData.next_stripe
         var split_ns = ns.split("#")
@@ -65,10 +76,44 @@ exports.create_candidateStripe = async(req,res)=>{
 
        var update_candidate = await candidate_stripe.updateOne({_id:req.params.candidateId},{$set:{candidate_status:stripeName ,current_stripe:u_cs, next_stripe:u_ns}})
        if(update_candidate){
+        var tab_candidate = await candidateModal.updateOne({_id:req.params.candidateId},{$set:{candidate_status:stripeName ,current_stripe:u_cs, next_stripe:u_ns}})
            res.send({msg:'candidate stripe update successfully'})
        }else{
         res.send({error:'candidate stripe is not update successfully'})
        }
+     }else{
+        var infoDataC = await candidateModal.findOne({_id:req.params.candidateId})
+        var cS = infoDataC.current_stripe
+        var nS = infoDataC.next_stripe
+        var split_nS = nS.split("#")
+        var split_cS= cS.split("#")
+        var u_cS = `${stripeName}`+'#'+split_cS[1]
+        var u_nS = `${stripeName}`+'#'+split_nS[1]
+        console.log(infoDataC,'res')
+        if(infoDataC){
+            var cStripeObj = new candidate_stripe({
+                _id:infoDataC._id,
+                candidate_status :stripeName,
+                firstName:infoDataC.firstName,
+                lastName:infoDataC.lastName,
+                program:infoDataC.program,
+                category:infoDataC.category,
+                memberprofileImage:infoDataC.memberprofileImage,
+                userId:infoDataC.userId,
+                current_stripe:u_cS,
+                next_stripe:u_nS
+            })
+            console.log(cStripeObj,'not sure')
+            candidate_stripe.insertMany(cStripeObj).then((resp1)=>{
+                res.send({msg:'candidate status update success'})
+            }).catch((error)=>{
+                res.send({error:'candidate status not update '})
+            })
+        }
+     }
+    }else{
+        res.send({error:'this stripe already asgined this student'})
+    }
     }
     }
     else{
@@ -157,15 +202,26 @@ exports.promote_stripe = (req,res)=>{
     var next_cur_stripe =  stripe_split[0]+'#'+`${n_change_no.toString()}`
     console.log(update_cur_stripe,next_cur_stripe)
     candidate_stripe.findByIdAndUpdate({_id: req.params.candidateId},{$set:{current_stripe: update_cur_stripe,next_stripe:next_cur_stripe}})
-    .exec((err,promote)=>{
+    .exec(async(err,promote)=>{
         if(err){
             res.send({error:'stripe is not promote'})
         }
         else{
-            res.send({msg:'stripe is promote'})
+          var can =  await candidateModal.findByIdAndUpdate({_id: req.params.candidateId},{$set:{current_stripe: update_cur_stripe,next_stripe:next_cur_stripe}})
+          if(can){
+            res.send({msg:'candidate and stripe promote both'})
+        }
+        else{
+            res.send({error:'stripe not promote candidate'})
+        }
         }
     })
 }
+
+exports.cadidate_stripe_update =(req,res)=>{
+    
+}
+
 
 //delete candidate in candidate section
 exports.delete_candidate = (req,res)=>{
