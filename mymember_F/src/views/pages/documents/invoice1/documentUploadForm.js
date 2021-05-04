@@ -23,7 +23,8 @@ class FloatingLabels extends React.Component {
     state = {
         document: "",
         document_name: "",
-        subFolder: []
+        subFolder: [],
+        rowData: [],
     }
     componentDidMount() {
         this.props.Get_DocFolder_LIST();
@@ -43,28 +44,25 @@ class FloatingLabels extends React.Component {
         e.preventDefault();
         const { document, ...rest } = this.state;
         this.props.Create_DocSubFolder({ ...rest });
-
-
-
     }
     componentDidUpdate(prevProps) {
         if (prevProps.folderList !== this.props.folderList) {
             this.setState({
                 rowData: this.props.folderList,
                 loading: false,
-                subFolder: this.props.folderList[0]
+                subFolder: this.props.folderList[0].subFolder,
             })
         }
     }
     SelectMainFolder = e => {
-        this.setState({ subFolder: this.props.folderList[e.target.value] });
+        this.setState({ subFolder: this.props.folderList[e.target.value].subFolder });
     }
     SelectSubFolder = e => {
         this.setState({ ...this.state, selectedSubFolder: e.target.value });
       }
 
     render() {
-        const { rowData, subFolder } = this.state
+        const { rowData, subFolder } = this.state;
 
         return (
             <Card>
@@ -100,7 +98,7 @@ class FloatingLabels extends React.Component {
                             </Col>
                             <Col sm="12">
                                 <FormGroup className="form-label-group">
-                                    <Label for="nameFloating">Folder Name</Label>
+                                    <Label for="mainfolder">Folder Name</Label>
                                     <Input
                                         defaultValue={this.state.document_name}
                                         onChange={this.SelectMainFolder}
@@ -108,9 +106,9 @@ class FloatingLabels extends React.Component {
                                         name="selectedFolder"
                                         id="mainfolder"
                                     >
-                                        {rowData?.map((collapseItem, id) => {
+                                        {rowData.map((collapseItem, id) => {
                                             return (
-                                                <option key={id} value={id}>{collapseItem.document_name}</option>
+                                                <option key={id} value={id}>{collapseItem.folderName}</option>
                                             )
                                         })}
                                     </Input>
@@ -118,7 +116,7 @@ class FloatingLabels extends React.Component {
                             </Col>
                             <Col sm="12">
                                 <FormGroup className="form-label-group">
-                                    <Label for="nameFloating">Sub Folder Name</Label>
+                                    <Label for="subfolder">Sub Folder Name</Label>
                                     <Input
                                         defaultValue={this.state.selectedSubFolder}
                                         type="select"
@@ -128,10 +126,10 @@ class FloatingLabels extends React.Component {
                                     >
                                         <option
                                             value={""}>Not Seleced </option>
-                                        {subFolder.folder?.map((subfolder, id) => {
+                                        {subFolder.map((subfolder, id) => {
                                             return (
                                                 <option
-                                                    key={id} value={subfolder._id}>{subfolder.folderName}</option>
+                                                    key={id} value={subfolder._id}>{subfolder.subFolderName}</option>
                                             )
                                         })}
                                     </Input>
@@ -147,7 +145,7 @@ class FloatingLabels extends React.Component {
                                     // onClick={e => e.preventDefault()}
                                     >
                                         Save
-                  </Button.Ripple>
+                                    </Button.Ripple>
                                     <Button.Ripple
                                         outline
                                         color="warning"
@@ -155,7 +153,7 @@ class FloatingLabels extends React.Component {
                                         className="mb-1"
                                     >
                                         Delete
-                  </Button.Ripple>
+                                    </Button.Ripple>
                                 </FormGroup>
                             </Col>
                         </Row>
@@ -167,7 +165,7 @@ class FloatingLabels extends React.Component {
 }
 const mapStateToProps = (state) => {
     return {
-        folderList: state.documentFolderList
+        folderList: state.document.documentFolderList
     };
 }
 export default connect(mapStateToProps, { Create_DocSubFolder, Get_DocFolder_LIST })(FloatingLabels);

@@ -17,6 +17,7 @@ class CollapseUncontrolled extends React.Component {
   }
 
   render() {
+    console.log('current documents: ', this.props.documentFolderList);
     return (
       <React.Fragment>
         <Card style={{ paddingBottom: "3rem", backgroundColor: "#c1c1c126", paddingTop: "0.5rem" }}>
@@ -28,8 +29,8 @@ class CollapseUncontrolled extends React.Component {
             <NewFolder />
           </Row>
 
-          {this.props.documentFolderList?.documentFolderList.length > 0 &&
-            this.props.documentFolderList?.documentFolderList.reverse().map((v, i) =>
+          {this.props.documentFolderList.documentFolderList.length > 0 &&
+            this.props.documentFolderList.documentFolderList.reverse().map((v, i) =>
 
               <div className="vx-collapse collapse-bordered collapse-icon accordion-icon-rotate" >
                 <CardHeader id={v.folderName} style={{ paddingTop: "0.6rem" }}>
@@ -39,26 +40,26 @@ class CollapseUncontrolled extends React.Component {
                   </CardTitle>
                 </CardHeader>
                 <UncontrolledCollapse toggler={`#${v.folderName}`}>
-                
+
                   <CardBody style={{ padding: "0" }} >
                       <ul style={{marginBottom:"0"}}>
-                      {v.subFolder?.map((subFolder, _i) => 
+                      {v.subFolder?.map((subFolder, _i) =>
                         <li style={{ listStyle: "none", paddingBottom: "10px" }}>
                           <FolderMinus size="14" /> {subFolder.subFolderName}
                         </li>
-                        
+
                         )}
-                      
-                        <NewSubFolder  
+
+                        <NewSubFolder
                          isSubFolder={true}
                          mainFolder={v}
                         />
                       </ul>
 
-                   
+
                   </CardBody>
-                   
-                   
+
+
                 </UncontrolledCollapse>
 
               </div>

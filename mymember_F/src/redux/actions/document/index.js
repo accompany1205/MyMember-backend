@@ -13,7 +13,7 @@ const baseUrl = process.env.REACT_APP_BASE_URL;
           })
         }
       }
-  
+
       export const Get_DocFolder_LIST = (data) => {
         return async dispatch => {
           try{
@@ -21,6 +21,7 @@ const baseUrl = process.env.REACT_APP_BASE_URL;
               headers : {
                 "Authorization" : `Bearer ${localStorage.getItem("access_token")}`
               }});
+              console.log('response: ', response.data);
               if(response.data && response.status === 200 && !response.data.msg){
                 dispatch({
                   type : "Get_Document_List",
@@ -74,10 +75,9 @@ const baseUrl = process.env.REACT_APP_BASE_URL;
       //   }
       // }
     export const Create_DocSubFolder = (data, folderId, type) => {
-       
+
         return async dispatch => {
             try {
-              console.log("????????????????????????????",data)
                 let response = await axios.post(`${baseUrl}/api/document_subfolder/create_subfolder/${localStorage.getItem("user_id")}/${folderId._id}`, data, {
                     headers: {
                         "Authorization": `Bearer ${localStorage.getItem("access_token")}`
@@ -85,6 +85,7 @@ const baseUrl = process.env.REACT_APP_BASE_URL;
                 });
                 if (response.data && response.status === 200) {
                     console.log(response.data);
+                    dispatch(Get_DocFolder_LIST());
                 }
             }
             catch (error) {

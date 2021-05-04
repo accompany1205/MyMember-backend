@@ -10,8 +10,12 @@ import NewCategory from "./createFolderForm"
 
 class ModalForm extends React.Component {
   state = {
+    
     modal: false
   }
+
+
+
   toggleModal = () => {
     this.setState(prevState => ({
       modal: !prevState.modal
@@ -27,7 +31,7 @@ class ModalForm extends React.Component {
                   onClick={this.toggleModal}
                   style={{padding:"0.6rem 1rem", marginLeft:"10px"}}
                 >
-                Add Folder
+                Add Folder  
             </Button.Ripple>
           
             <Modal
