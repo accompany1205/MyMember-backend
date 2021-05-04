@@ -17,6 +17,7 @@ import {
   CardBody,
   Col,
   Row,
+  Table
 } from "reactstrap";
 import { ChevronDown, Info, Mail, Phone, Eye } from "react-feather";
 import Flatpickr from "react-flatpickr";
@@ -103,6 +104,7 @@ class AddEvent extends React.Component {
     allDay: true,
     selectable: true,
     toGetStudents: [],
+    searchString: "",
     defaultColDef: {
       sortable: true,
       resizable: true,
@@ -269,20 +271,16 @@ class AddEvent extends React.Component {
   async componentDidMount() {
     this.props.RENDER_STUDENT();
     this.props.STUD_GET();
-    this.searchStudents("");
     this.handleInterface();
   }
 
   handleInterface() {
-    console.log(this.props.calendar?.filterStudents);
     let k = this.props.calendar?.filterStudents.map((student) => {
       let option = [];
       option.name = student.firstName + " " + student.lastName;
       option.value = student._id;
-      console.log(option);
       return option;
     });
-    console.log(k);
   }
 
   // handleGetStudents() {
@@ -319,23 +317,16 @@ class AddEvent extends React.Component {
     });
   };
 
-  handleSelect = (e) => {
-    console.log(e);
-    // selectedValue
-  };
+  handleSearchChanged = (e) => {
+    this.setState({searchString : e.target.value});
+    this.props.RENDER_STUDENT(this.state.searchString);
+  }
 
   handleSearch = (e) => {
-    // let searchWord = "b"
-    console.log(e);
-    this.props.RENDER_STUDENT();
-  };
-  testOnclick = (id = "aa") => {
-    console.log("test", id);
-  };
-
-  searchStudents = (e) => {
-    console.log(e);
-    console.log("e.target.value", e.target?.values);
+    if(this.state.searchString) {
+      console.log("this.state.searchString", this.state.searchString);
+      this.props.RENDER_STUDENT(this.state.searchString);
+    }
   };
 
   handleAddEvent = (id) => {
@@ -382,13 +373,58 @@ class AddEvent extends React.Component {
     let events = this.props.events.map((i) => i.id);
     let lastId = events.pop();
     let newEventId = lastId + 1;
-    // console.log(this.props);
     const { rowData, columnDefs, defaultColDef, pageSize } = this.state;
     let style = {
       position: "absolute",
       top: "20px",
       right: "20px",
     };
+
+    let suggestionsListComponent;
+    if (this.props.calendar && this.state.searchString) {
+      if (this.props?.calendar && this.props.calendar.filterStudents) {
+      console.log("this.props.calendar", this.props.calendar);
+        suggestionsListComponent = (
+          <div id="demo12114">  
+              <Table>
+                <tbody>
+                  <tr class="tab_str22">
+                    <th class="ss_hed">Name</th>
+                    <th class="ss_hed">Type</th>
+                    <th class="ss_hed">Age</th>
+                    <th class="ss_hed">Rank</th>
+                  </tr>
+                    {this.props.calendar.filterStudents.map((student) => {
+                      return ( 
+                        <tr className="tab_str33">
+                          <td>
+                            {student.firstName + " " + student.lastName}
+                          </td>
+                          <td>
+                            
+                          </td>
+                          <td>
+                            
+                          </td>
+                          <td>
+                            
+                          </td>
+                        </tr>
+                      );
+                    })}
+              </tbody>
+            </Table>
+          </div>
+        );
+      } else {
+        suggestionsListComponent = (
+          <div class="no-suggestions">
+            <em>No suggestions!</em>
+          </div>
+        );
+      }
+    }
+
 
     return (
       <div
@@ -409,7 +445,7 @@ class AddEvent extends React.Component {
         </Row>
         <Row style={{ margin: "20px" }}>
           <Col sm="6">
-            <div className="filter-actions d-flex">
+            {/* <div className="filter-actions d-flex">
               {this.props.calendar ? (
                 <Input
                   className="w-70 mr-1 mb-1 mb-sm-0"
@@ -428,7 +464,7 @@ class AddEvent extends React.Component {
               ) : (
                 ""
               )}
-            </div>
+            </div>*/}
             <div className="filter-actions d-flex">
               {/* <SelectSearch
                 options={options}
@@ -436,30 +472,18 @@ class AddEvent extends React.Component {
                 name="language"
                 placeholder="Choose your language"
               /> */}
-              <SelectSearch
-                options={this.props.calendar?.filterStudents?.map((student) => {
-                  let option = [];
-                  option.name = student.firstName + " " + student.lastName;
-                  option.value = student._id;
-                  return option;
-                })}
-                values={this.state.value}
-                onChange={this.handleSearch}
-                search
-                emptyMessage={() => (
-                  <div style={{ textAlign: "center", fontSize: "0.8em" }}>
-                    Not found
-                  </div>
-                )}
+              <Input
                 placeholder="Scan or Type Student Here"
+                onChange={this.handleSearchChanged.bind(this)}
               />
             </div>
           </Col>
-          <Col sm="4">
+          <Col sm="4" className="mb-1">
             <Input id="time" name="time" type="time" />
+            {suggestionsListComponent} 
           </Col>
           <Col sm="4">
-            <Button color="primary" size="sm">
+            <Button color="primary" size="sm" onClick={this.handleSearch}>
               Submit
             </Button>
           </Col>

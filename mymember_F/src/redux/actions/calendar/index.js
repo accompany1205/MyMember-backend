@@ -145,19 +145,15 @@ export const ADD_STUDENT_TO_CLASS = (scheduleId, id, time) => {
 export const RENDER_STUDENT = (search = "a") => {
   return async (dispatch) => {
     try {
-      let response = await axios.post(
-        `${baseUrl}/api//attendence/search_student/${localStorage.getItem(
-          "user_id"
-        )}`,
-        { search },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
+      let response = await axios.post(`${baseUrl}/api/attendence/search_student/${localStorage.getItem("user_id")}`, {search}, 
+      {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
+          'content-type': 'application/json'
         }
-      );
+      })
 
-      console.log(response);
+      console.log(response, " == RENDER_STUDENT response");
       if (response.data && response.status === 200) {
         dispatch({
           type: "RENDER_STUDENT",
