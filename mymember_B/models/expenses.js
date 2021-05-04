@@ -21,7 +21,7 @@ const expenseSchema = new schema(
             required: true
         },
         description: {
-            type: String,
+            type: String
         },
         expense_image:{
             type:String,

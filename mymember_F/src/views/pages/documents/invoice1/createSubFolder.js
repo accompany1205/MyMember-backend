@@ -21,16 +21,16 @@ class FloatingLabels extends React.Component {
   constructor(props){
     super(props);
     this.state = {
-      subFolderName : ""  
+      subFolderName : ""
     }
     this.changeHandler = this.changeHandler.bind(this);
     this.onsubmit = this.onsubmit.bind(this);
   }
 
   changeHandler(e){
-      
+
       this.setState({...this.state, [e.target.name] : e.target.value});
-      
+
   }
 
   onsubmit(e){
@@ -43,9 +43,6 @@ class FloatingLabels extends React.Component {
       }
 
     }
-    
-    
-    
   }
   render() {
 
