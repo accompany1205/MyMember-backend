@@ -26,7 +26,8 @@ class CollapseUncontrolled extends React.Component {
               <p>Folders</p>
             </div>
 
-            <NewFolder />
+
+            
           </Row>
 
           {this.props.documentFolderList.documentFolderList.length > 0 &&
