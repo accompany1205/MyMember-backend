@@ -2,6 +2,9 @@ const mongoose = require('mongoose');
 const schema = mongoose.Schema;
 
 const candidateSchema = new schema({
+    stdId:{
+        type:String
+    },
     firstName:{
         type:String
     },

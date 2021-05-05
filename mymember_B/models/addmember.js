@@ -97,6 +97,12 @@ const addmemberSchema = new schema(
             type:String,
             default:""
         },
+        current_stripe:{
+            type:Number
+        },
+        last_stripe_given_date:{
+            type:String
+        },
         category:{
             type:String    
         },

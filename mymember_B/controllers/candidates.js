@@ -2,6 +2,7 @@ const candidateModal = require("../models/candidates");
 const candidate_stripe = require("../models/candidates_stripe")
 const addmemberModal = require("../models/addmember");
 const User = require("../models/user")
+const member = require("../models/addmember")
 const stripe = require("../models/stripe");
 const mongo = require('mongoose')
 
@@ -13,6 +14,7 @@ exports.create_candidate = async (req, res) => {
     await Promise.all(std.map(async (item) => {
         var obj ={}
         obj.firstName = item.firstName
+        obj.stdId = item._id
         obj.lastName = item.lastName
         obj.program = item.program
         obj.category = item.category
@@ -23,7 +25,7 @@ exports.create_candidate = async (req, res) => {
             var expiry_date = row.expiry_date;
         }
         obj.expiry_date = expiry_date
-        ary.push(obj)
+        ary.push(obj) 
     })).then((resp)=>{
         candidateModal.insertMany(ary).then((result)=>{
         res.send(result)
@@ -34,6 +36,17 @@ exports.create_candidate = async (req, res) => {
         res.send(err)
     })
 }
+
+function TimeZone(){
+    const str = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+    const date_time =str.split(',')
+    console.log(date_time)
+    const date = date_time[0]
+    const time = date_time[1]
+    return ({Date:date,Time:time})
+  }
+  
+  
 
 exports.create_candidateStripe = async(req,res)=>{
     var stripeName = req.body.stripeName;
@@ -52,7 +65,9 @@ exports.create_candidateStripe = async(req,res)=>{
 
     candidate_stripe.insertMany(cStripe).then(async(resp)=>{
         var candidateUpdate = await candidateModal.findOneAndUpdate({_id:req.params.candidateId},{$set:{current_stripe:cs,next_stripe:ns,candidate_status:stripeName}})
-        if(candidateUpdate){        
+        if(candidateUpdate){  
+            var lastdateStripe = TimeZone() 
+        await member.updateOne({_id:candidateUpdate.stdId},{$set:{current_stripe:0, last_stripe_given_date:lastdateStripe.Date}})     
         res.send({msg:'candidate add in stripe'})
         }
         else{
@@ -201,6 +216,7 @@ exports.promote_stripe = (req,res)=>{
     var update_cur_stripe =  stripe_split[0]+'#'+`${change_no.toString()}`
     var next_cur_stripe =  stripe_split[0]+'#'+`${n_change_no.toString()}`
     console.log(update_cur_stripe,next_cur_stripe)
+
     candidate_stripe.findByIdAndUpdate({_id: req.params.candidateId},{$set:{current_stripe: update_cur_stripe,next_stripe:next_cur_stripe}})
     .exec(async(err,promote)=>{
         if(err){
@@ -209,6 +225,11 @@ exports.promote_stripe = (req,res)=>{
         else{
           var can =  await candidateModal.findByIdAndUpdate({_id: req.params.candidateId},{$set:{current_stripe: update_cur_stripe,next_stripe:next_cur_stripe}})
           if(can){
+            var stripe = next_cur_stripe
+            var s_stripe = stripe.split("#")
+            var c_std_stripe = s_stripe[1]
+            var lastdateStripe = TimeZone()
+            await member.updateOne({_id:can.stdId},{$set:{current_stripe:c_std_stripe, last_stripe_given_date:lastdateStripe.Date}})     
             res.send({msg:'candidate and stripe promote both'})
         }
         else{
