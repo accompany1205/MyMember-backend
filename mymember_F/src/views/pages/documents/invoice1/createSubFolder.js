@@ -13,7 +13,7 @@ import {
 } from "reactstrap"
 
 // import img from "../../../../assets/img/pages/1-apex.png"
-import { Create_DocSubFolder } from '../../../../redux/actions/document';
+import { Create_DocSubFolder } from '../../../../redux/actions/document/document';
 import {connect} from 'react-redux';
 
 class FloatingLabels extends React.Component {

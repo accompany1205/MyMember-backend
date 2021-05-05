@@ -2,7 +2,7 @@ import React from "react"
 import { UncontrolledCollapse, Card, CardHeader, CardTitle, CardBody, Row } from "reactstrap"
 import { Plus, FolderMinus, FolderPlus } from "react-feather"
 import NewFolder from "./createFolderModal"
-import { Get_DocFolder_LIST } from '../../../../redux/actions/document';
+import { Get_DocFolder_LIST } from '../../../../redux/actions/document/document';
 import { connect } from 'react-redux';
 import NewSubFolder from './createSubFolderModal'
 
@@ -10,14 +10,12 @@ import NewSubFolder from './createSubFolderModal'
 
 class CollapseUncontrolled extends React.Component {
 
-
   componentDidMount() {
     this.props.Get_DocFolder_LIST();
 
   }
 
   render() {
-    console.log('current documents: ', this.props.documentFolderList);
     return (
       <React.Fragment>
         <Card style={{ paddingBottom: "3rem", backgroundColor: "#c1c1c126", paddingTop: "0.5rem" }}>
@@ -30,8 +28,8 @@ class CollapseUncontrolled extends React.Component {
             <NewFolder />
           </Row>
 
-          {this.props.documentFolderList.documentFolderList.length > 0 &&
-            this.props.documentFolderList.documentFolderList.reverse().map((v, i) =>
+          {this.props.documentFolderList && this.props.documentFolderList.length > 0 &&
+            this.props.documentFolderList.reverse().map((v, i) =>
 
               <div className="vx-collapse collapse-bordered collapse-icon accordion-icon-rotate" >
                 <CardHeader id={v.folderName} style={{ paddingTop: "0.6rem" }}>
@@ -74,7 +72,7 @@ class CollapseUncontrolled extends React.Component {
 }
 const mapStateToProps = (state) => {
   return {
-    documentFolderList: state.document
+    ...state.document
   }
 }
 // export default CollapseUncontrolled
