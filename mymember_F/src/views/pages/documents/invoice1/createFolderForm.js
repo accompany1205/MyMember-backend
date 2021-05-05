@@ -12,7 +12,7 @@ import {
   Button,
   Label
 } from "reactstrap"
-import { Create_DocFolder } from '../../../../redux/actions/document';
+import { Create_DocFolder } from '../../../../redux/actions/document/document';
 import {connect} from 'react-redux';
 
 class FloatingLabels extends React.Component {

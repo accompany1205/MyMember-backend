@@ -20,6 +20,7 @@ import { dashboardReducer } from "./dashboard/index";
 import { userInfoReducer } from "./user/userinfo";
 import { EmailComposeMarketing } from "./compose";
 import { EmailLibraryMarketing } from "./library";
+import { documentReducer } from "./document";
 
 const rootReducer = combineReducers({
   calendar: calenderReducer,
@@ -43,6 +44,7 @@ const rootReducer = combineReducers({
   userinfo: userInfoReducer,
   EmailComposeMarketing: EmailComposeMarketing,
   EmailLibraryMarketing: EmailLibraryMarketing,
+  document: documentReducer,
 });
 
 export default rootReducer;

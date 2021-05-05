@@ -11,7 +11,7 @@ import {
     Button,
     Label
 } from "reactstrap"
-import { Create_DocSubFolder, Get_DocFolder_LIST } from '../../../../redux/actions/document';
+import { Create_DocSubFolder, Get_DocFolder_LIST } from '../../../../redux/actions/document/document';
 import { Upload, File } from "react-feather"
 import { connect } from 'react-redux';
 
