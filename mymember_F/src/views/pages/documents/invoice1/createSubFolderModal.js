@@ -7,7 +7,7 @@ import {
 import {Plus} from "react-feather"
 import NewCategory from "./createSubFolder"
 import { connect } from 'react-redux';
-import { Get_DocFolder_LIST } from '../../../../redux/actions/document';
+import { Get_DocFolder_LIST } from '../../../../redux/actions/document/document';
 
 class ModalForm extends React.Component {
   state = {
