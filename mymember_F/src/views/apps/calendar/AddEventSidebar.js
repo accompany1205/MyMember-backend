@@ -81,6 +81,13 @@ const columns = [
     name: "Action",
     selector: "id",
     sortable: true,
+    cell: (row) => (
+      <img
+        src={require("../../../assets/img/delete.png")}
+        alt="user delete"
+        id={row._id}
+      />
+    ),
   },
 ];
 
@@ -105,6 +112,10 @@ class AddEvent extends React.Component {
     selectable: true,
     toGetStudents: [],
     searchString: "",
+    searchStringIsOpen: false,
+    currentSearchInput: "",
+    searchInputValue: "",
+    searchSelectTime: "",
     defaultColDef: {
       sortable: true,
       resizable: true,
@@ -283,51 +294,50 @@ class AddEvent extends React.Component {
     });
   }
 
-  // handleGetStudents() {
-  //   this.props.STUD_GET();
-  //   // this.handleGetStudents();
-
   addStudentToClass = (e) => {
     console.log(this.props.eventInfo?._id);
-    let id = e.target.value;
+    let id = e.target.parentElement.getAttribute("value");
+    let studentName = e.target.parentElement.getAttribute("text");
     let scheduleId = this.props.eventInfo?._id;
     let time = Date.now();
 
-    console.log("Selected User", scheduleId, id, time);
-    this.props.ADD_STUDENT_TO_CLASS(scheduleId, id, time);
+    this.setState({
+      searchStringIsOpen: false,
+      currentSearchInput: studentName,
+      searchInputValue: id
+    });
 
-    // this.props.FETCH_CLASS_STUDENTS(scheduleId);
+    this.props.FETCH_CLASS_STUDENTS(scheduleId);
   };
 
-  handleDateChange = (date) => {
-    this.setState({
-      startDate: date,
-    });
-  };
-
-  handleEndDateChange = (date) => {
-    this.setState({
-      endDate: date,
-    });
-  };
-
-  handleLabelChange = (label) => {
-    this.setState({
-      label,
-    });
+  handleDeleteStudent = (e) => {
+    console.log("handleDeleteStudent >>", e.target.parentElement.getAttribute("id"));
   };
 
   handleSearchChanged = (e) => {
-    this.setState({searchString : e.target.value});
-    this.props.RENDER_STUDENT(this.state.searchString);
+    if(this.state.value) {
+      this.setState({
+        searchStringIsOpen: true,
+        currentSearchInput: e.target.value,
+        searchString: e.target.value
+      });
+      this.props.RENDER_STUDENT(this.state.searchString);
+    } else {
+      this.setState({searchStringIsOpen: false}); 
+    }
   }
 
   handleSearch = (e) => {
-    if(this.state.searchString) {
-      console.log("this.state.searchString", this.state.searchString);
-      this.props.RENDER_STUDENT(this.state.searchString);
+    const scheduleId = this.props.eventInfo?._id;
+    const { searchInputValue, searchSelectTime } = this.state;
+    if (searchSelectTime && searchSelectTime) {
+      this.props.ADD_STUDENT_TO_CLASS(scheduleId, searchInputValue, searchSelectTime);
     }
   };
+
+  onTimeChange = (e) => {
+    this.setState({searchSelectTime: e.target.value});
+  }
 
   handleAddEvent = (id) => {
     this.props.handleSidebar(false);
@@ -381,7 +391,8 @@ class AddEvent extends React.Component {
     };
 
     let suggestionsListComponent;
-    if (this.props.calendar && this.state.searchString) {
+    console.log(this.state.searchStringIsOpen, " << searchStringIsOpen");
+    if (this.props.calendar && this.state.searchStringIsOpen) {
       if (this.props?.calendar && this.props.calendar.filterStudents) {
       console.log("this.props.calendar", this.props.calendar);
         suggestionsListComponent = (
@@ -396,18 +407,21 @@ class AddEvent extends React.Component {
                   </tr>
                     {this.props.calendar.filterStudents.map((student) => {
                       return ( 
-                        <tr className="tab_str33">
+                        <tr key={student._id}
+                          value={student._id}
+                          text={student.firstName + " " + student.lastName}
+                          className="tab_str33" onClick={this.addStudentToClass}>
                           <td>
                             {student.firstName + " " + student.lastName}
                           </td>
                           <td>
-                            
+                            {student.studentType}
                           </td>
                           <td>
-                            
+                            {student.age}
                           </td>
                           <td>
-                            
+
                           </td>
                         </tr>
                       );
@@ -444,46 +458,31 @@ class AddEvent extends React.Component {
           </h4>
         </Row>
         <Row style={{ margin: "20px" }}>
-          <Col sm="6">
-            {/* <div className="filter-actions d-flex">
-              {this.props.calendar ? (
-                <Input
-                  className="w-70 mr-1 mb-1 mb-sm-0"
-                  type="select"
-                  placeholder="search..."
-                  onChange={this.addStudentToClass}
-                >
-                  {this.props?.calendar
-                    ? this.props?.calendar?.filterStudents?.map((student) => (
-                        <option key={student._id} value={student._id}>
-                          {student.firstName + " " + student.lastName}
-                        </option>
-                      ))
-                    : ""}
-                </Input>
-              ) : (
-                ""
-              )}
-            </div>*/}
+          <Col sm="7">
             <div className="filter-actions d-flex">
-              {/* <SelectSearch
-                options={options}
-                value="sv"
-                name="language"
-                placeholder="Choose your language"
-              /> */}
               <Input
+                value={this.state.currentSearchInput}
                 placeholder="Scan or Type Student Here"
-                onChange={this.handleSearchChanged.bind(this)}
+                onChange={this.handleSearchChanged}
               />
+              {suggestionsListComponent} 
             </div>
           </Col>
-          <Col sm="4" className="mb-1">
-            <Input id="time" name="time" type="time" />
-            {suggestionsListComponent} 
+          <Col sm="2">
+            &nbsp;
           </Col>
-          <Col sm="4">
-            <Button color="primary" size="sm" onClick={this.handleSearch}>
+          <Col sm="3" className="mb-1">
+            <Input id="time" name="time"
+              className="pr-1"
+              type="time"
+              value={this.state.searchSelectTime}
+              onChange={this.onTimeChange}
+            />
+          </Col>
+        </Row>
+        <Row style={{ margin: "20px" }}>
+          <Col sm="12" className="text-right">
+            <Button color="primary" onClick={this.handleSearch}>
               Submit
             </Button>
           </Col>
