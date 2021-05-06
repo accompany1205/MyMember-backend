@@ -76,6 +76,11 @@ const columns = [
     name: "Date & Time Attended	",
     selector: "date",
     sortable: true,
+    cell: (row) => (
+      <span>
+        {row.date} {row.time}
+      </span>
+    )
   },
   {
     name: "Action",
