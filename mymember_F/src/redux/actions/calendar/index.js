@@ -134,6 +134,8 @@ export const ADD_STUDENT_TO_CLASS = (scheduleId, id, time) => {
           type: "ADD_STUDENT_TO_CLASS",
           event: response.data,
         });
+
+        dispatch(FETCH_CLASS_STUDENTS(scheduleId))
       }
     } catch (error) {
       console.log(error);
