@@ -36,6 +36,34 @@ export const fetchEvents = () => {
   };
 };
 
+export const ATTENDENCE_STUDENTS_REMOVE = (attendenceId, scheduleId) => {
+  return async (dispatch) => {
+    try {
+      let response = await axios.delete(
+        `${baseUrl}/api/attendence/remove_attendence/${localStorage.getItem(
+          "user_id"
+        )}/${attendenceId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }
+      );
+      if (response.data && response.status === 200) {
+        dispatch({
+          type: "ATTENDENCE_STUDENTS_REMOVE",
+          event: response.data,
+        });
+
+        dispatch(FETCH_CLASS_STUDENTS(scheduleId));
+
+      }
+    } catch (error) {
+      console.log("something went wrong in fetching class student");
+    }
+  };
+};
+
 export const FETCH_CLASS_STUDENTS = (scheduleId) => {
   return async (dispatch) => {
     try {
@@ -128,7 +156,7 @@ export const ADD_STUDENT_TO_CLASS = (scheduleId, id, time) => {
         }
       );
 
-      console.log(response);
+      console.log(response, "<< ADD_STUDENT_TO_CLASS");
       if (response.data && response.status === 200) {
         dispatch({
           type: "ADD_STUDENT_TO_CLASS",
