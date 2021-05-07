@@ -177,13 +177,16 @@
 // from: '+12672637681',
 
 
-function TimeZone(){
-    const str = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-    const date_time =str.split(',')
-    console.log(date_time)
-    const date = date_time[0]
-    const time = date_time[1]
-    console.log({Date:date,Time:time})
-  }
+// function TimeZone(){
+//     const str = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+//     const date_time =str.split(',')
+//     console.log(date_time)
+//     const date = date_time[0]
+//     const time = date_time[1]
+//     console.log({Date:date,Time:time})
+//   }
   
-  TimeZone()
+//   TimeZone()
+
+var newD = new Date()
+console.log(newD)

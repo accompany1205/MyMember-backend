@@ -222,7 +222,6 @@ app.use("/api", textkey);
 // menu middleware
 app.use("/api", student_menu);
 
-
 const privateKey1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/privkey.pem', 'utf8');
 const certificate1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/cert.pem', 'utf8');
 const ca1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/chain.pem', 'utf8');
@@ -249,7 +248,6 @@ var server = https.createServer(credentials1, app).listen(port, function(){
     console.log("Express server listening on port " + port);
 });
  
-
 // app.listen(port, () => {
 //   console.log(`Server is running on port ${port}`);
 // });
