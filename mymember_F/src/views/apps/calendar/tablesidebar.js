@@ -4,10 +4,11 @@ import DataTable from "react-data-table-component";
 import "../../../assets/scss/pages/users.scss";
 
 // import
-import { FETCH_ATTENDEE_LIST } from "../../../redux/actions/calendar";
+import { FETCH_ATTENDEE_LIST, ATTENDENCE_STUDENTS_REMOVE } from "../../../redux/actions/calendar";
 import { connect } from "react-redux";
+import memoize from 'memoize-one';
 
-const columns = [
+const columns = memoize(handleDeleteStudentAction => [
   {
     name: "Photo",
     selector: "image",
@@ -31,6 +32,17 @@ const columns = [
     name: "Classes",
     selector: "class",
     sortable: true,
+    cell: (row) => (
+      <div style={{
+        background: `${row.class_color}`, 
+        color: `white`,
+        textAlign: `center`,
+        padding: `2px`,
+        borderRadius: `6px`
+      }}>
+        {row.class}
+      </div>
+    )
   },
   {
     name: "Date & Time Attended	",
@@ -51,10 +63,12 @@ const columns = [
         src={require("../../../assets/img/delete.png")}
         alt="user delete"
         id={row._id}
+        onClick={handleDeleteStudentAction}
+        style={{cursor: 'pointer' }}
       />
     ),
   },
-];
+]);
 
 const customStyles = {
   headCells: {
@@ -70,17 +84,27 @@ class DataTableFixedHeader extends React.Component {
     this.props.FETCH_ATTENDEE_LIST();
   }
 
+  handleDeleteStudent = (e) => {
+    let attendanceId = e.currentTarget.getAttribute("id");
+    if (attendanceId) {
+      this.props.ATTENDENCE_STUDENTS_REMOVE(attendanceId);
+    }
+    this.props.FETCH_ATTENDEE_LIST();
+  };
+
   render() {
+    console.log("tablesidebar >> ", this.props.calendar && this.props.calendar?.attendeeList);
     return (
       <Card>
         <CardBody className="cd-body-rm pd-body">
           <DataTable
             data={this.props.calendar && this.props.calendar?.attendeeList}
-            columns={columns}
+            columns={columns(this.handleDeleteStudent)}
             noHeader
             fixedHeader
             fixedHeaderScrollHeight="300px"
             customStyles={customStyles}
+            onSelectedRowsChange={this.handleDeleteStudent}
           />
         </CardBody>
       </Card>
@@ -94,7 +118,10 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default connect(mapStateToProps, { FETCH_ATTENDEE_LIST })(
+export default connect(mapStateToProps, { 
+  FETCH_ATTENDEE_LIST,
+  ATTENDENCE_STUDENTS_REMOVE
+})(
   DataTableFixedHeader
 );
 
