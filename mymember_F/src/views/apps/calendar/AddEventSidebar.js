@@ -31,6 +31,7 @@ import {
   ADD_STUDENT_TO_CLASS,
   FETCH_CLASS_STUDENTS,
   RENDER_STUDENT,
+  ATTENDENCE_STUDENTS_REMOVE
 } from "../../../redux/actions/calendar";
 import { connect } from "react-redux";
 import "flatpickr/dist/themes/light.css";
@@ -38,6 +39,7 @@ import "../../../assets/scss/plugins/forms/flatpickr/flatpickr.scss";
 import { ThemeProvider } from "styled-components";
 import { data } from "jquery";
 import axios from "axios";
+import memoize from 'memoize-one';
 
 const baseUrl = process.env.REACT_APP_BASE_URL;
 const eventColors = {
@@ -47,7 +49,7 @@ const eventColors = {
   others: "chip-primary",
 };
 
-const columns = [
+const columns = memoize(handleDeleteStudentAction => [
   {
     name: "Photo",
     selector: "image",
@@ -95,18 +97,21 @@ const columns = [
   },
   {
     name: "Action",
-    selector: "id",
+    selector: "_id",
     sortable: true,
     cell: (row) => (
       <img
-        data-tag="allowRowEvents"
         src={require("../../../assets/img/delete.png")}
         alt="user delete"
         id={row._id}
+        onClick={handleDeleteStudentAction}
+        style={{cursor: 'pointer' }}
       />
     ),
+    ignoreRowClick: true,
+    allowOverflow: true
   },
-];
+]);
 
 const customStyles = {
   headCells: {
@@ -312,7 +317,6 @@ class AddEvent extends React.Component {
   }
 
   addStudentToClass = (e) => {
-    console.log(this.props.eventInfo?._id);
     let id = e.target.parentElement.getAttribute("value");
     let studentName = e.target.parentElement.getAttribute("text");
     let scheduleId = this.props.eventInfo?._id;
@@ -328,7 +332,11 @@ class AddEvent extends React.Component {
   };
 
   handleDeleteStudent = (e) => {
-    console.log("handleDeleteStudent >>", e.target.parentElement.getAttribute("id"));
+    let attendanceId = e.currentTarget.getAttribute("id");
+    if (attendanceId) {
+      const scheduleId = this.props.eventInfo?._id;
+      this.props.ATTENDENCE_STUDENTS_REMOVE(attendanceId, scheduleId);
+    }
   };
 
   handleSearchChanged = (e) => {
@@ -377,11 +385,6 @@ class AddEvent extends React.Component {
     });
   };
 
-  handleChange = (e) => {
-    console.log(e.selectedRows);
-    console.log(e);
-  }
-
   UNSAFE_componentWillReceiveProps(nextProps) {
     this.setState({
       title: nextProps.eventInfo === null ? "" : nextProps.eventInfo.title,
@@ -413,10 +416,8 @@ class AddEvent extends React.Component {
     };
 
     let suggestionsListComponent;
-    console.log(this.state.searchStringIsOpen, " << searchStringIsOpen");
     if (this.props.calendar && this.state.searchStringIsOpen) {
       if (this.props?.calendar && this.props.calendar.filterStudents) {
-      console.log("this.props.calendar", this.props.calendar);
         suggestionsListComponent = (
           <div id="demo12114">  
               <Table>
@@ -515,14 +516,14 @@ class AddEvent extends React.Component {
               data={
                 this.props.calendar?.classStudentList?.data?.class_attendance
               }
-              columns={columns}
+              columns={columns(this.handleDeleteStudent)}
               noHeader
               fixedHeader
               fixedHeaderScrollHeight="500px"
               customStyles={customStyles}
               width="800px"
               style={{ height: 732 }}
-              onSelectedRowsChange={this.handleChange}
+              onSelectedRowsChange={this.handleDeleteStudent}
             />
           </CardBody>
         </Card>
@@ -532,7 +533,6 @@ class AddEvent extends React.Component {
 }
 
 const mapStateToProps = (state) => {
-  console.log(state);
   return {
     calendar: state.calendar,
   };
@@ -543,5 +543,6 @@ export default connect(mapStateToProps, {
   STUD_GET,
   ADD_STUDENT_TO_CLASS,
   FETCH_CLASS_STUDENTS,
+  ATTENDENCE_STUDENTS_REMOVE,
   RENDER_STUDENT,
 })(AddEvent);

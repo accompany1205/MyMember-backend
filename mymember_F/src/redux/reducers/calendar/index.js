@@ -7,6 +7,7 @@ const initialState = {
   classStudentList: [],
   filterStudents: [],
   studentInfo: null,
+  attendenceStudentRemove: ""
 };
 
 const calenderReducer = (state = initialState, action) => {
@@ -57,6 +58,8 @@ const calenderReducer = (state = initialState, action) => {
       return { ...state, studentInfo: action.event };
     case "RENDER_STUDENT":
       return { ...state, filterStudents: action.event };
+    case "ATTENDENCE_STUDENTS_REMOVE":
+      return { ...state, attendenceStudentRemove: action.event }
     default:
       return state;
   }
