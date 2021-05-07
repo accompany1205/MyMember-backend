@@ -55,8 +55,11 @@ export const ATTENDENCE_STUDENTS_REMOVE = (attendenceId, scheduleId) => {
           event: response.data,
         });
 
-        dispatch(FETCH_CLASS_STUDENTS(scheduleId));
+        if (scheduleId) {
+          dispatch(FETCH_CLASS_STUDENTS(scheduleId));
+        }
 
+        dispatch(FETCH_ATTENDEE_LIST);
       }
     } catch (error) {
       console.log("something went wrong in fetching class student");
