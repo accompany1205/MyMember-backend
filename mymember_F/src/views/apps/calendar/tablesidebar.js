@@ -36,11 +36,23 @@ const columns = [
     name: "Date & Time Attended	",
     selector: "date",
     sortable: true,
+    cell: (row) => (
+      <span>
+        {row.date} {row.time}
+      </span>
+    )
   },
   {
     name: "Action",
     selector: "id",
     sortable: true,
+    cell: (row) => (
+      <img
+        src={require("../../../assets/img/delete.png")}
+        alt="user delete"
+        id={row._id}
+      />
+    ),
   },
 ];
 

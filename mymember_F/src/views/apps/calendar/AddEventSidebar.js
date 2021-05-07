@@ -71,11 +71,27 @@ const columns = [
     name: "Classes",
     selector: "class",
     sortable: true,
+    cell: (row) => (
+      <div style={{
+        background: `${row.class_color}`, 
+        color: `white`,
+        textAlign: `center`,
+        padding: `2px`,
+        borderRadius: `6px`
+      }}>
+        {row.class}
+      </div>
+    )
   },
   {
     name: "Date & Time Attended	",
     selector: "date",
     sortable: true,
+    cell: (row) => (
+      <span>
+        {row.date} {row.time}
+      </span>
+    )
   },
   {
     name: "Action",
@@ -83,6 +99,7 @@ const columns = [
     sortable: true,
     cell: (row) => (
       <img
+        data-tag="allowRowEvents"
         src={require("../../../assets/img/delete.png")}
         alt="user delete"
         id={row._id}
@@ -360,6 +377,11 @@ class AddEvent extends React.Component {
     });
   };
 
+  handleChange = (e) => {
+    console.log(e.selectedRows);
+    console.log(e);
+  }
+
   UNSAFE_componentWillReceiveProps(nextProps) {
     this.setState({
       title: nextProps.eventInfo === null ? "" : nextProps.eventInfo.title,
@@ -500,6 +522,7 @@ class AddEvent extends React.Component {
               customStyles={customStyles}
               width="800px"
               style={{ height: 732 }}
+              onSelectedRowsChange={this.handleChange}
             />
           </CardBody>
         </Card>
