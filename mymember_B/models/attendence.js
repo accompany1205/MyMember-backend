@@ -19,7 +19,8 @@ const attendenceSchema = schema({
         required:true
     },
     class_color:{
-        type:String
+        type:String,
+        default:""
     },
     userId:{
         type:schema.Types.ObjectId
