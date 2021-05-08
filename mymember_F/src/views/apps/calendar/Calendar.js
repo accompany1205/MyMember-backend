@@ -140,11 +140,13 @@ class CalendarApp extends React.Component {
       props.app.selectedEvent !== state.eventInfo
     ) {
       let dateToObj = props.app.events?.map((event) => {
+        console.log(event, " << event");
         event.start = new Date(event.start_date);
         event.end = new Date(event.end_date);
 
         event.title = event.class_name;
         event.allDay = true;
+
         // event.start = new Date(`${event.start_date}, ${event.start_time}`)
         // event.end = new Date(`${event.end_date}, ${event.end_time}`)
         // event.start = moment(event.start).format("DD/MM/YYYY HH:mm")
@@ -180,7 +182,15 @@ class CalendarApp extends React.Component {
   }
 
   handleEventColors = (event) => {
-    return { className: eventColors[event.label] };
+    console.log(event, " << handleEventColors");
+    var style = {
+      backgroundColor: event.program_color
+    }
+
+    return { 
+      style: style,
+      className: eventColors[event.label] 
+    };
   };
 
   moveEvent = ({ event, start, end, isAllDay: droppedOnAllDaySlot }) => {
