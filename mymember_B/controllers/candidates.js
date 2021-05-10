@@ -6,6 +6,76 @@ const member = require("../models/addmember")
 const stripe = require("../models/stripe");
 const mongo = require('mongoose')
 
+exports.join_notjoin = async(req,res)=>{
+    var candidateInfo = await candidate_stripe.findOne({_id:req.params.candidateId})
+    var c_stripe_name = candidateInfo.current_stripe
+    var c_split_stripe = c_stripe_name.split('#')
+    var update_stripe = c_split_stripe[0]+'#'+req.body.status
+    console.log(update_stripe)
+    if(req.body.status == 'Join'){
+    var updateStd = await candidate_stripe.updateOne({_id:req.params.candidateId},{$set:{current_stripe:update_stripe}})
+    if(updateStd){
+        await candidateModal.updateOne({_id:req.params.candidateId},{$set:{current_stripe:update_stripe}})
+        res.send({msg:'candidate stripe is join'})
+    }else{
+        res.send({error:'candidate stripe not update'})
+    }
+    }else if(req.body.status == 'Not Join'){
+
+    var updateStd = await candidate_stripe.updateOne({_id:req.params.candidateId},{$set:{current_stripe:update_stripe}})
+    if(updateStd){
+        await candidateModal.updateOne({_id:req.params.candidateId},{$set:{current_stripe:update_stripe}})
+        res.send({msg:'candidate stripe is not join'})
+    }else{
+        res.send({error:'candidate stripe not update'})
+      }
+    }
+}
+
+exports.stripe_report = async (req,res)=>{
+    var sCount = await candidate_stripe.find({$and:[{userId:req.params.userId},{candidate_status:req.body.stName}]}).count()
+    var sDetails = await candidate_stripe.find({$and:[{userId:req.params.userId},{candidate_status:req.body.stName}]})
+    res.send({student_count:sCount,student_details:sDetails})
+}
+
+exports.count_stripe = async(req,res)=>{
+    var obj ={z:0,f:1,s:2,t:3,fo:4,fi:5}
+    var sn = await stripe.find({},{stripeName:1,color:1})
+    console.log(sn,'stripename')
+    var ary= []
+    Promise.all(sn.map(async(item)=>{
+        var stName = item.stripeName
+        var stripe_color = item.color
+        var stId = item._id
+        var stZero = stName+'#'+obj.z
+        var stOne = stName+'#'+obj.f
+        var stTwo = stName+'#'+obj.s
+        var stThree = stName+'#'+obj.t
+        var stFor = stName+'#'+obj.fo
+        var stFive = stName+'#'+obj.fi
+        console.log(stThree)
+
+        var o = {}
+        var st0 = await candidate_stripe.find({$and:[{userId:req.params.userId},{current_stripe:stZero}]}).count()
+        var st1 = await candidate_stripe.find({$and:[{userId:req.params.userId},{current_stripe:stOne}]}).count()
+        var st2 = await candidate_stripe.find({$and:[{userId:req.params.userId},{current_stripe:stTwo}]}).count()
+        var st3 = await candidate_stripe.find({$and:[{userId:req.params.userId},{current_stripe:stThree}]}).count()
+        var st4 = await candidate_stripe.find({$and:[{userId:req.params.userId},{current_stripe:stFor}]}).count()
+        var st5 = await candidate_stripe.find({$and:[{userId:req.params.userId},{current_stripe:stFive}]}).count()
+        var join = await candidate_stripe.find({$and:[{userId:req.params.userId},{current_stripe:'join'}]}).count() 
+        var not_join = await candidate_stripe.find({$and:[{userId:req.params.userId},{current_stripe:'not join'}]}).count() 
+
+        o.count = [{'0':st0},{'1':st1},{'2':st2},{'3':st3},{'4':st4},{'5':st5},{'join':join},{'not join':not_join}]
+        o.stName = stName
+        o.stripe_color= stripe_color
+        o.stId = stId
+        ary.push(o)
+        
+    })).then((resp)=>{
+        res.send({Report:ary})
+    })
+}
+
 exports.create_candidate = async (req, res) => {
     var ary = []
     var std = await addmemberModal.find({_id:req.body.studentId},{firstName:1,lastName:1,program:1,category:1,memberprofileImage:1})
@@ -44,20 +114,20 @@ function TimeZone(){
     const date = date_time[0]
     const time = date_time[1]
     return ({Date:date,Time:time})
-  }
-  
-  
+}
 
 exports.create_candidateStripe = async(req,res)=>{
     var stripeName = req.body.stripeName;
     var cs = `${stripeName}`+'#'+'0'
     var ns = `${stripeName}`+'#'+'1'
+    var sdetail = await stripe.findOne({stripeName:stripeName})
     var candidate = await candidateModal.findOne({_id:req.params.candidateId})
     if(candidate){
     console.log(candidate)
     if(candidate.candidate_status == ' '){
     var cStripe = new candidate_stripe(candidate)
     cStripe.candidate_status = stripeName
+    cStripe.stripe_color = sdetail.color
     cStripe.current_stripe = cs
     cStripe.next_stripe = ns
     cStripe.userId = req.params.userId
@@ -82,6 +152,7 @@ exports.create_candidateStripe = async(req,res)=>{
         var infoData = await candidate_stripe.findOne({_id:req.params.candidateId})
         if(infoData){
         var cs = infoData.current_stripe
+        var sColor = sdetail.color
         var ns = infoData.next_stripe
         var split_ns = ns.split("#")
         var split_cs= cs.split("#")
@@ -89,9 +160,9 @@ exports.create_candidateStripe = async(req,res)=>{
         var u_ns = `${stripeName}`+'#'+split_ns[1]
         console.log(u_cs,u_ns)
 
-       var update_candidate = await candidate_stripe.updateOne({_id:req.params.candidateId},{$set:{candidate_status:stripeName ,current_stripe:u_cs, next_stripe:u_ns}})
+       var update_candidate = await candidate_stripe.updateOne({_id:req.params.candidateId},{$set:{candidate_status:stripeName,stripe_color:sColor ,current_stripe:u_cs, next_stripe:u_ns}})
        if(update_candidate){
-        var tab_candidate = await candidateModal.updateOne({_id:req.params.candidateId},{$set:{candidate_status:stripeName ,current_stripe:u_cs, next_stripe:u_ns}})
+             await candidateModal.updateOne({_id:req.params.candidateId},{$set:{candidate_status:stripeName, stripe_color:sColor, current_stripe:u_cs, next_stripe:u_ns}})
            res.send({msg:'candidate stripe update successfully'})
        }else{
         res.send({error:'candidate stripe is not update successfully'})
@@ -109,6 +180,7 @@ exports.create_candidateStripe = async(req,res)=>{
             var cStripeObj = new candidate_stripe({
                 _id:infoDataC._id,
                 candidate_status :stripeName,
+                stripe_color :sdetail.color,
                 firstName:infoDataC.firstName,
                 lastName:infoDataC.lastName,
                 program:infoDataC.program,
@@ -173,7 +245,7 @@ exports.candidate_List = (req,res)=>{
                         let:{userId:"_id"},
                         pipeline:[
                              {$match:{$expr:{$eq:['userId','userId']}}},
-                             {$project:{stripeName:1}}
+                             {$project:{stripeName:1,color:1}}
                         ]
                     },   
                 },
@@ -240,9 +312,7 @@ exports.promote_stripe = (req,res)=>{
 }
 
 exports.cadidate_stripe_update =(req,res)=>{
-    
 }
-
 
 //delete candidate in candidate section
 exports.delete_candidate = (req,res)=>{

@@ -15,9 +15,6 @@ const appointSchema = new schema(
         app_color:{
             type:String
         },
-        select_One: {
-            type: String,
-        },
         start_date: {
             type: String,
             required: true

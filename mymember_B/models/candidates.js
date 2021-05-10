@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const schema = mongoose.Schema;
-
 const candidateSchema = new schema({
     stdId:{
         type:String
@@ -21,6 +20,9 @@ const candidateSchema = new schema({
         type:String,
         default:' '
     },
+    stripe_color:{
+        type:String
+    },
     current_stripe:{
         type:String,
     },
@@ -37,5 +39,4 @@ const candidateSchema = new schema({
         type:schema.Types.ObjectId
     }
 })
-
 module.exports = mongoose.model('candidate',candidateSchema)

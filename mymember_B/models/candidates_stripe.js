@@ -18,6 +18,9 @@ const candidatestripeSchema = new schema({
         type:String,
         default:' '
     },
+    stripe_color:{
+        type:String
+    },
     current_stripe:{
         type:String,
     },

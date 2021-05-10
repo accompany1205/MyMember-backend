@@ -111,6 +111,7 @@ const addmemberSchema = new schema(
         },
         belt_rank_img:{
             type:String
+            
         },
         belt_rank_name:{
             type:String
