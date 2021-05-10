@@ -140,10 +140,9 @@ class CalendarApp extends React.Component {
       props.app.selectedEvent !== state.eventInfo
     ) {
       let dateToObj = props.app.events?.map((event) => {
-        console.log(event, " << event");
+
         event.start = new Date(event.start_date);
         event.end = new Date(event.end_date);
-
         event.title = event.class_name;
         event.allDay = true;
 
@@ -228,9 +227,6 @@ class CalendarApp extends React.Component {
 
   handleSelectEvent = (event) => {
     let filteredState = this.state.events.filter((i) => i.id === event.id);
-    // console.log(event);
-    // console.log(this.state.events);
-    // console.log(filteredState);
     this.props.handleSidebar(true);
     // this.props.handleSelectedEvent(filteredState[0]);
     this.props.handleSelectedEvent(event);

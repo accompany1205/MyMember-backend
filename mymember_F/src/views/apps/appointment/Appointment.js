@@ -8,7 +8,6 @@ import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
 import moment from "moment";
 import { connect } from "react-redux";
 import {
-  fetchEvents,
   handleSidebar,
   addEvent,
   handleSelectedEvent,
@@ -16,6 +15,11 @@ import {
   updateDrag,
   updateResize,
 } from "../../../redux/actions/calendar/index";
+
+import {
+  FETCH_EVENTS
+} from "../../../redux/actions/appointment/index";
+
 import { ChevronLeft, ChevronRight } from "react-feather";
 
 import "react-big-calendar/lib/addons/dragAndDrop/styles.scss";
@@ -130,11 +134,16 @@ class CalendarApp extends React.Component {
       props.app.sidebar !== state.sidebar ||
       props.app.selectedEvent !== state.eventInfo
     ) {
-      let dateToObj = props.app.events.map((event) => {
-        event.start = new Date(event.start);
-        event.end = new Date(event.end);
+      let dateToObj = props.app.events.map((event) => {        
+        event.title = event.title;
+        // event.allDay = event.allDay ? event.allDay : false;
+        // event.allDay = true;
+        event.start = new Date(event.start_date);
+        event.end = new Date(event.end_date);
+        
         return event;
       });
+
       return {
         events: dateToObj,
         sidebar: props.app.sidebar,
@@ -158,11 +167,17 @@ class CalendarApp extends React.Component {
   }
 
   async componentDidMount() {
-    await this.props.fetchEvents();
+    await this.props.FETCH_EVENTS();
   }
 
   handleEventColors = (event) => {
-    return { className: eventColors[event.label] };
+    let style = {
+      backgroundColor: event.app_color
+    };
+    return { 
+      style: style,
+      className: eventColors[event.title] 
+    };
   };
 
   moveEvent = ({ event, start, end, isAllDay: droppedOnAllDaySlot }) => {
@@ -199,7 +214,7 @@ class CalendarApp extends React.Component {
   };
 
   handleSelectEvent = (event) => {
-    let filteredState = this.state.events.filter((i) => i.id === event.id);
+    let filteredState = this.state.events.filter((i) => i._id === event._id);
     this.props.handleSidebar(true);
     this.props.handleSelectedEvent(filteredState[0]);
     this.setState({
@@ -209,6 +224,7 @@ class CalendarApp extends React.Component {
 
   render() {
     const { events, views, sidebar } = this.state;
+    console.log(this.state, " == this.state Appointment");
     return (
       <div className="app-calendar position-relative">
         <div
@@ -253,10 +269,6 @@ class CalendarApp extends React.Component {
               </CardBody>
             </Card>
           </Col>
-
-          {/* <Col lg="4" sm="12">
-            <Tablesidebar />
-          </Col> */}
         </Row>
         <AddEventSidebar
           sidebar={sidebar}
@@ -274,17 +286,19 @@ class CalendarApp extends React.Component {
 }
 
 const mapStateToProps = (state) => {
+  console.log(state, " << state");
   return {
     app: state.calendar,
+    appointment: state.appointment
   };
 };
 
 export default connect(mapStateToProps, {
-  fetchEvents,
+  FETCH_EVENTS,
   handleSidebar,
   addEvent,
   handleSelectedEvent,
   updateEvent,
   updateDrag,
-  updateResize,
+  updateResize
 })(CalendarApp);

@@ -15,7 +15,7 @@ import Flatpickr from "react-flatpickr";
 
 import "flatpickr/dist/themes/light.css";
 import "../../../assets/scss/plugins/forms/flatpickr/flatpickr.scss";
-import { ADD_APPOINTMENT } from "../../../redux/actions/appointment";
+import { ADD_APPOINTMENT, UPDATE_APPOINTMENT, APPOINTMENT_REMOVE } from "../../../redux/actions/appointment";
 // import { connect } from "formik";
 import { connect } from "react-redux";
 
@@ -35,9 +35,10 @@ class AddEvent extends React.Component {
     start_date: new Date(),
     start_time: Date.now() / 1000,
     end_date: new Date(),
-    end_time: Date.now() / 1000,
+    end_time: "",
     allDay: true,
     selectable: true,
+    notes: " "
   };
 
   handleLabelChange = (app_type) => {
@@ -48,37 +49,41 @@ class AddEvent extends React.Component {
     });
   };
 
-  handleDateChange = (date) => {
-    this.setState({
-      start_date: date,
-    });
-    console.log(date);
+  handleDateChange = (e) => {
+    this.setState({start_date: e.target.value});
+  };
+
+  handleNotesChange = (e) => {
+    this.setState({notes: e.target.value});
   };
 
   handleStartTimeChange = (time) => {
     this.setState({
-      start_time: time,
+      start_time: time.target.value,
     });
-    console.log(time);
   };
 
   handleEndDateChange = (date) => {
     this.setState({
-      end_date: date,
+      end_date: date.target.value,
     });
   };
 
   handleEndTimeChange = (time) => {
     this.setState({
-      end_time: time,
+      end_time: time.target.value,
     });
-    console.log(time);
   };
-  // handleAppTypeChange = (app_type) => {
-  //   this.setState({
-  //     app_type,
-  //   });
-  // };
+
+  handleDeleteEvent = (e) => {
+    let eventId = e.currentTarget.getAttribute("id");
+    if (eventId) {
+      const scheduleId = this.props.eventInfo?._id;
+      this.props.APPOINTMENT_REMOVE(eventId);
+    }
+
+    this.props.handleSidebar(false);
+  };
 
   handleAddEvent = (id) => {
     dropdownOpen = true;
@@ -93,19 +98,26 @@ class AddEvent extends React.Component {
       end_time: this.state.end_time,
       allDay: this.state.allDay,
       selectable: this.state.selectable,
+      notes: this.state.notes
     });
+
     let appointment = {
       title: this.state.title,
       app_type: this.state.app_type === null ? "others" : this.state.app_type,
-      start: this.state.start_date,
-      start_time: "7:30",
-      end: this.state.end_date,
-      end_time: "13:30",
+      start_date: this.state.start_date,
+      end_date: this.state.end_date,
+      start_time: this.state.start_time,
+      end_time: this.state.end_time,
       allDay: this.state.allDay,
-      selectable: this.state.selectable,
+      notes: this.state.notes
     };
-    console.log(appointment);
-    this.props.ADD_APPOINTMENT(appointment);
+
+    if(this.props.eventInfo !== null && this.props.eventInfo.title?.length > 0 ) {
+      this.props.UPDATE_APPOINTMENT(appointment, this.props.eventInfo._id);
+    } else {
+      this.props.ADD_APPOINTMENT(appointment);
+    }
+
     this.setState({
       app_type: null,
       title: "",
@@ -124,28 +136,39 @@ class AddEvent extends React.Component {
 
   UNSAFE_componentWillReceiveProps(nextProps) {
     this.setState({
-      title: nextProps.eventInfo === null ? "" : nextProps.eventInfo.title,
+      title: nextProps.eventInfo === null ? "" : (nextProps.eventInfo.title ? nextProps.eventInfo.title : ""),
       url: nextProps.eventInfo === null ? "" : nextProps.eventInfo.url,
       start_date:
         nextProps.eventInfo === null
-          ? new Date()
-          : new Date(nextProps.eventInfo.start),
+          ? ""
+          : nextProps.eventInfo.start_date,
       end_date:
         nextProps.eventInfo === null
-          ? new Date()
-          : new Date(nextProps.eventInfo.end),
+          ? ""
+          : nextProps.eventInfo.end_date,
+      start_time:
+        nextProps.eventInfo === null
+          ? ""
+          : nextProps.eventInfo.start_time,
+      end_time:
+        nextProps.eventInfo === null
+          ? ""
+          : nextProps.eventInfo.end_time,
       app_type:
         nextProps.eventInfo === null ? null : nextProps.eventInfo.app_type,
       allDay: nextProps.eventInfo === null ? true : nextProps.eventInfo.allDay,
       selectable:
         nextProps.eventInfo === null ? true : nextProps.eventInfo.selectable,
+      notes:
+        nextProps.eventInfo === null ? "" : nextProps.eventInfo.notes,
     });
   }
 
   render() {
-    let events = this.props.events.map((i) => i.id);
+    let events = this.props.events.map((i) => i._id);
     let lastId = events.pop();
     let newEventId = lastId + 1;
+    
     return (
       <div
         className={`add-event-sidebar ${
@@ -167,74 +190,18 @@ class AddEvent extends React.Component {
           </div>
         </div>
         <div className="add-event-body">
-          <div className="category-action d-flex justify-content-between my-50">
-            <div className="event-category">
-              {this.state.app_type !== null ? (
-                <div className={`chip ${eventColors[this.state.app_type]}`}>
-                  <div className="chip-body">
-                    <div className="chip-text text-capitalize">
-                      {this.state.app_type}
-                    </div>
-                  </div>
-                </div>
-              ) : null}
-            </div>
-            <div className="category-dropdown">
-              <UncontrolledDropdown>
-                <Dropdown isOpen={dropdownOpen}>
-                  <DropdownToggle tag="div" className="cursor-pointer">
-                    <Tag size={18} />
-                  </DropdownToggle>
-                  <DropdownMenu tag="ul" right>
-                    <DropdownItem
-                      tag="li"
-                      onClick={() => this.handleLabelChange("Event")}
-                    >
-                      <span className="bullet bullet-success bullet-sm mr-50"></span>
-                      <span>Event</span>
-                    </DropdownItem>
-                    <DropdownItem
-                      tag="li"
-                      onClick={() => this.handleLabelChange("Appoinment")}
-                    >
-                      <span className="bullet bullet-warning bullet-sm mr-50"></span>
-                      <span>Appointment</span>
-                    </DropdownItem>
-                    <DropdownItem
-                      tag="li"
-                      onClick={() => this.handleLabelChange("Testing")}
-                    >
-                      <span className="bullet bullet-danger bullet-sm mr-50"></span>
-                      <span>Testing</span>
-                    </DropdownItem>
-                    <DropdownItem
-                      tag="li"
-                      onClick={() => this.handleLabelChange("Camp")}
-                    >
-                      <span className="bullet bullet-primary bullet-sm mr-50"></span>
-                      <span>Camp</span>
-                    </DropdownItem>
-                  </DropdownMenu>
-                </Dropdown>
-              </UncontrolledDropdown>
-            </div>
-          </div>
-          {/* <div className="add-event-fields mt-2">
-            <Label for="EventAppType">Event Type</Label>
-            <Input
-              type="select"
-              id="EventAppType"
-              placeholder="Event Type"
-              value={this.state.title}
-              onChange={(e) => this.setState({ app_type: e.target.value })}
-            >
-              <option value="Event">Event</option>
-              <option value="Appointment">Appointment</option>
-              <option value="Test">Testing</option>
-              <option value="Camping">Camp</option>
-            </Input>
-          </div> */}
           <div className="add-event-fields mt-2">
+            {this.props.eventInfo !== null && 
+              <div><img
+                src={require("../../../assets/img/delete.png")}
+                id={this.props.eventInfo._id}
+                alt="Remove Event"
+                onClick={this.handleDeleteEvent}
+                style={{cursor: 'pointer' }}
+                className="mb-2"
+              /> Delete Event </div>
+            }
+            <Label for="EventTitle">Event Title</Label>
             <FormGroup className="form-label-group">
               <Input
                 type="text"
@@ -243,20 +210,32 @@ class AddEvent extends React.Component {
                 value={this.state.title}
                 onChange={(e) => this.setState({ title: e.target.value })}
               />
-              <Label for="EventTitle">Event Title</Label>
             </FormGroup>
-            <FormGroup>
+            
+            <div className="add-event-fields mt-2">
+              <Label for="EventAppType">Event Type</Label>
+              <Input
+                type="select"
+                id="EventAppType"
+                placeholder="Event Type"
+                value={this.state.app_type}
+                onChange={(e) => this.setState({ app_type: e.target.value })}
+              >
+                <option value="Event">Event</option>
+                <option value="Appoinment">Appointment</option>
+                <option value="Testing">Testing</option>
+                <option value="Camp">Camp</option>
+              </Input>
+            </div>
+
+            <FormGroup className="mt-2">
               <Label for="start_date">Start Date</Label>
-              <Flatpickr
+              <Input
+                type="date"
                 id="start_date"
                 className="form-control"
                 value={this.state.start_date}
-                onChange={(date) => this.handleDateChange(date)}
-                options={{
-                  altInput: true,
-                  altFormat: "F j, Y",
-                  dateFormat: "Y-m-d",
-                }}
+                onChange={this.handleDateChange}
               />
             </FormGroup>
             <FormGroup>
@@ -267,21 +246,17 @@ class AddEvent extends React.Component {
                 className="form-control"
                 id="startTime"
                 value={this.state.start_time}
-                onChange={(time) => this.handleStartTimeChange(time)}
+                onChange={this.handleStartTimeChange}
               />
             </FormGroup>
             <FormGroup>
               <Label for="end_date">End Date</Label>
-              <Flatpickr
+              <input
                 id="end_date"
+                type="date"
                 className="form-control"
                 value={this.state.end_date}
-                onChange={(date) => this.handleEndDateChange(date)}
-                options={{
-                  altInput: true,
-                  altFormat: "F j, Y",
-                  dateFormat: "Y-m-d",
-                }}
+                onChange={this.handleEndDateChange}
               />
             </FormGroup>
             <FormGroup>
@@ -292,9 +267,21 @@ class AddEvent extends React.Component {
                 name="endtime"
                 id="endTime"
                 value={this.state.end_time}
-                onChange={(time) => this.handleEndDateChange(time)}
+                onChange={this.handleEndTimeChange}
               />
             </FormGroup>
+
+            <FormGroup>
+              <Label for="exampleTime">Notes</Label>
+              <Input
+                type="textarea"
+                className="form-control"
+                name="notes"
+                value={this.state.notes}
+                onChange={this.handleNotesChange}
+              />
+            </FormGroup>
+
           </div>
           <hr className="my-2" />
           <div className="add-event-actions text-right">
@@ -303,23 +290,7 @@ class AddEvent extends React.Component {
               color="primary"
               onClick={() => {
                 this.props.handleSidebar(false);
-                if (
-                  this.props?.eventInfo === null ||
-                  this.props?.eventInfo.title.length <= 0
-                )
-                  this.handleAddEvent(newEventId);
-                else {
-                  this.props.updateEvent({
-                    id: this.props?.eventInfo.id,
-                    title: this.state.title,
-                    app_type: this.state.app_type,
-                    start: this.state.start_date,
-                    end: this.state.end_date,
-                    allDay: true,
-                    selectable: true,
-                  });
-                  // this.props.ADD_APPOINTMENT();
-                }
+                this.handleAddEvent(newEventId);
               }}
             >
               {this.props?.eventInfo !== null &&
@@ -355,4 +326,6 @@ const mapStateToProps = (state) => {
 
 export default connect(mapStateToProps, {
   ADD_APPOINTMENT,
+  UPDATE_APPOINTMENT,
+  APPOINTMENT_REMOVE,
 })(AddEvent);

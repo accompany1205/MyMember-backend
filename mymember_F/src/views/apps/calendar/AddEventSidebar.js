@@ -4,11 +4,6 @@ import SelectSearch from "react-select-search";
 import { X, Tag } from "react-feather";
 import "./style.css";
 import {
-  Dropdown,
-  UncontrolledDropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownToggle,
   FormGroup,
   Input,
   Label,
