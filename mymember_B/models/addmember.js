@@ -189,7 +189,12 @@ const addmemberSchema = new schema(
             ref:'birthdaycheckList'
         }],
         last_contact_missCall:{
-            type:Date
+            type:Date,
+            default:""
+        },
+        last_contact_renewal:{
+            type:Date,
+            default:""
         },
         missYouCall_notes:[{
             type:schema.Types.ObjectId,

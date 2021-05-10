@@ -112,7 +112,7 @@ exports.sendEmail = (req,res)=>{
                    }
                })
             }).catch(err=>{
-                res.send({error:'email not send'})
+                res.send({error:'email not send',error:err})
                 console.log({err})
             })
  

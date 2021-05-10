@@ -1,8 +1,12 @@
 const class_schedule = require("../models/class_schedule");
+const Prog = require("../models/program")
 const { errorHandler } = require('../helpers/dbErrorHandler');
 
-exports.Create = (req, res)=>{
+exports.Create = async(req, res)=>{
+    var proDetail = await Prog.findOne({programName:req.body.program_name})
+    if(proDetail){
     const task = new class_schedule(req.body);
+    task.program_color = proDetail.color
     console.log(task)
     task.save((err, data)=>{
         if(err){
@@ -21,6 +25,9 @@ exports.Create = (req, res)=>{
            })
         }
     });
+}else{
+    res.send({error:'program details not found'})
+}
 };
 
 exports.read = (req, res)=>{

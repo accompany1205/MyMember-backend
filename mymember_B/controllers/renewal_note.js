@@ -92,3 +92,32 @@ exports.updateNote = (req,res)=>{
     })
 }
     
+exports.expireStd = async(req,res)=>{
+    try{
+    var dataExpire = await student.find({status:"expired"},{firstName:1,lastName:1,age:1,memberprofileImage:1,last_contact_renewal:1})
+    res.send(dataExpire)
+    }catch(e){
+        res.send({error:'expire student data not fount'})
+        console.log(e)
+    }
+}
+
+exports.expire_thirty_std = async(req,res)=>{
+    try{
+        var dataExpire = await student.find({days_expire:"30"},{firstName:1,lastName:1,age:1,memberprofileImage:1,last_contact_renewal:1})
+        res.send(dataExpire)
+        }catch(e){
+            res.send({error:'expire student data not fount'})
+            console.log(e)
+        }
+}
+
+exports.expire_sixty_std = async(req,res)=>{
+    try{
+        var dataExpire = await student.find({days_expire:"60"},{firstName:1,lastName:1,age:1,memberprofileImage:1,last_contact_renewal:1})
+        res.send(dataExpire)
+        }catch(e){
+            res.send({error:'expire student data not fount'})
+            console.log(e)
+        }
+}
