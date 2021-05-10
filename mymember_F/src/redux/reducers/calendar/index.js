@@ -46,7 +46,6 @@ const calenderReducer = (state = initialState, action) => {
     case "HANDLE_SIDEBAR":
       return { ...state, sidebar: action.status };
     case "HANDLE_SELECTED_EVENT":
-      console.log(action.event);
       return { ...state, selectedEvent: action.event };
     case "FETCH_ATTENDEE_LIST":
       return { ...state, attendeeList: action.event };
