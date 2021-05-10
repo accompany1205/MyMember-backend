@@ -192,13 +192,12 @@ class AddEvent extends React.Component {
         <div className="add-event-body">
           <div className="add-event-fields mt-2">
             {this.props.eventInfo !== null && 
-              <div><img
+              <div className="mb-2"><img
                 src={require("../../../assets/img/delete.png")}
                 id={this.props.eventInfo._id}
                 alt="Remove Event"
                 onClick={this.handleDeleteEvent}
                 style={{cursor: 'pointer' }}
-                className="mb-2"
               /> Delete Event </div>
             }
             <Label for="EventTitle">Event Title</Label>
