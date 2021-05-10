@@ -106,19 +106,19 @@ class Toolbar extends React.Component {
           <div className="event-tags d-none d-sm-flex justify-content-end mt-1">
             <div className="tag mr-1">
               <span className="bullet bullet-success bullet-sm mr-50"></span>
-              <span>Business</span>
+              <span>Event</span>
             </div>
             <div className="tag mr-1">
               <span className="bullet bullet-warning bullet-sm mr-50"></span>
-              <span>Work</span>
+              <span>Appointment</span>
             </div>
             <div className="tag mr-1">
               <span className="bullet bullet-danger bullet-sm mr-50"></span>
-              <span>Personal</span>
+              <span>Testing</span>
             </div>
             <div className="tag">
               <span className="bullet bullet-primary bullet-sm mr-50"></span>
-              <span>Others</span>
+              <span>Camp</span>
             </div>
           </div>
         </div>

@@ -45,7 +45,7 @@ export const ADD_APPOINTMENT = (appointment) => {
           event: response.data,
         });
 
-        dispatch(FETCH_EVENTS);
+        dispatch(FETCH_EVENTS());
       }
     } catch (error) {
       console.log(error);
@@ -73,7 +73,7 @@ export const UPDATE_APPOINTMENT = (appointment, appointmentId) => {
           event: response.data,
         });
 
-        dispatch(FETCH_EVENTS);
+        dispatch(FETCH_EVENTS());
       }
     } catch (error) {
       console.log(error);
@@ -100,6 +100,8 @@ export const APPOINTMENT_REMOVE = (appointmentId) => {
           type: "APPOINTMENT_REMOVE",
           event: response.data,
         });
+
+        dispatch(FETCH_EVENTS());
       }
     } catch (error) {
       console.log("something went wrong in fetching class student");
