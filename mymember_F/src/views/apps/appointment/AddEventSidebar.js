@@ -200,6 +200,26 @@ class AddEvent extends React.Component {
                 style={{cursor: 'pointer' }}
               /> Delete Event </div>
             }
+
+            <div className="event-tags d-inline-block d-sm-flex justify-content-start mt-1 mb-1 w-100">
+              <div className="tag mr-1">
+                <span className="bullet bullet-success bullet-sm mr-50"></span>
+                <span>Event</span>
+              </div>
+              <div className="tag mr-1">
+                <span className="bullet bullet-warning bullet-sm mr-50"></span>
+                <span>Appointment</span>
+              </div>
+              <div className="tag mr-1">
+                <span className="bullet bullet-danger bullet-sm mr-50"></span>
+                <span>Testing</span>
+              </div>
+              <div className="tag">
+                <span className="bullet bullet-primary bullet-sm mr-50"></span>
+                <span>Camp</span>
+              </div>
+            </div>
+
             <Label for="EventTitle">Event Title</Label>
             <FormGroup className="form-label-group">
               <Input
