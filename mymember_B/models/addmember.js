@@ -67,7 +67,8 @@ const addmemberSchema = new schema(
             type:String    
         },
         programColor:{
-            type:String
+            type:String,
+            default:""
         },
         programID:{
             type:String

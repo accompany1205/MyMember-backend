@@ -23,6 +23,10 @@ const TestSchema = new schema({
     program:{
         type:String
     },
+    programColor:{
+        type:String,
+
+    },
     programId:{
         type:String
     },

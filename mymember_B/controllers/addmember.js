@@ -232,9 +232,11 @@ exports.studentCount = (req, res) => {
 };
 
 exports.addmember = async (req, res) => {
+  var pDetail  = await program.findOne({programName:req.body.program})
   var memberdetails = req.body;
   var memberObj = new addmemberModal(memberdetails);
   memberObj.userId = req.params.userId;
+  memberObj.programColor = pDetail.color
   memberObj.save(function (err, data) {
     if (err) {
       console.log(err);

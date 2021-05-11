@@ -11,6 +11,7 @@ exports.create = (req,res)=>{
    .select('studentBeltSize')
    .select('category')
    .select('program')
+   .select('programColor')
    .select('memberprofileImage')
    .populate('manage_change_rank')
    .exec((err,data)=>{
@@ -18,22 +19,38 @@ exports.create = (req,res)=>{
            res.send(err)
        }
        else{
-           console.log(data)
-           TestModal.insertMany(data).then((result)=>{
-                    async.eachSeries(result, function updateObject (obj, done) {
-                    TestModal.update({_id: obj._id },{ $set : {userId: req.params.userId,start_date:req.body.start_date }}, done);
-                    }, function allDone (error) {
-                        if(error){
-                            res.send(error)
-                        }
-                          else{
-                                res.send({msg:'student add in test'})
-                            }
-                });
-           }).catch((err)=>{
-               res.send({error:"student is already exist in test"})
-           })
            
+        //    TestModal.insertMany(data).then((result)=>{
+        //             async.eachSeries(result, function updateObject (obj, done) {
+                    
+        //             TestModal.updateOne({_id: obj._id },{ $set : {userId: req.params.userId,start_date:req.body.start_date  }}, done);
+        //             }, function allDone (error) {
+        //                 if(error){
+        //                     res.send(error)
+        //                 }
+        //                   else{
+        //                         res.send({msg:'student add in test'})
+        //                     }
+                            
+                
+        //     }) 
+        //    }).catch((err)=>{
+        //        res.send({error:"student is already exist in test"})
+        //    })
+
+        // await Promise.all(std.map(async (item) => {
+
+        TestModal.insertMany(data).then(async(result)=>{
+          await Promise.all(data.map(async(item)=>{
+             var pDetail = await program.findOne({programName:item.program}) 
+             console.log(pDetail.color)
+             var testUpdate = await TestModal.updateOne({_id: item._id },{ $set : {userId: req.params.userId,start_date:req.body.start_date,programColor:pDetail.color  }});
+          })).then((respT)=>{
+              res.send({msg:'student add in test section'})
+          })
+   }).catch((err)=>{
+       res.send({error:"student is already exist in test"})
+   })
        }
    })
 }

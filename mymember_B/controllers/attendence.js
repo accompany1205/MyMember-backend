@@ -54,22 +54,13 @@ exports.create = async (req, res) => {
             console.log(err);
           } else {
             console.log(attendanceData);
-            schedule
-              .findByIdAndUpdate(
-                { _id: req.params.scheduleId },
-                { $push: { class_attendance: attendanceData._id } }
-              )
+            schedule.findByIdAndUpdate({ _id: req.params.scheduleId },{ $push: { class_attendance: attendanceData._id } }              )
               .exec((err, attendanceUpdte) => {
                 if (err) {
-                  res.send({
-                    error: "student addendance is not add in class",
-                    Error: err,
-                  });
+                  res.send({error: "student addendance is not add in class",Error: err});
                 } else {
                   console.log(attendanceUpdte);
-                  student
-                    .updateOne(
-                      { firstName: req.body.studentName },
+                  student.updateOne({ _id: req.params.studentId },
                       {
                         $set: {
                           rating: 0,

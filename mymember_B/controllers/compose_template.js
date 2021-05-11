@@ -21,7 +21,7 @@ function timefun(sd,st){
     console.log(y,mo,d,h,mi,se,mil)
     return  curdat = new Date(y,mo,d,h,mi,se,mil)
    
- }
+}
 
 exports.getData = (req,res)=>{
 let options = {
