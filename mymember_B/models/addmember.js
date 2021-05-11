@@ -73,18 +73,16 @@ const addmemberSchema = new schema(
         programID:{
             type:String
         },
-        manage_change_rank:[{
-            type:schema.Types.ObjectId,
-            ref:'manage_change_rank'
-        }],
         next_rank_id:{
             type:String
         },
         next_rank_name:{
-            type:String
+            type:String,
+            default:""
         },
         next_rank_img:{
-            type:String
+            type:String,
+            default:""
         },
         current_rank_name:{
             type:String,

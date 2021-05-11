@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const schema = mongoose.Schema
 
-const TestSchema = new schema({
+const TestRegisterSchema = new schema({
     firstName:{
         type:String,
     },
@@ -9,12 +9,6 @@ const TestSchema = new schema({
         type:String,
     },
     memberprofileImage:{
-        type:String
-    },
-    date_of_exam:{
-        type:String
-    },
-    studentBeltSize:{
         type:String
     },
     category:{
@@ -30,9 +24,6 @@ const TestSchema = new schema({
     programId:{
         type:String
     },
-    start_date:{
-        type:String
-    },
     date_paid:{
         type:String,
         default:""
@@ -44,11 +35,13 @@ const TestSchema = new schema({
     current_rank_img:{
         type:String,
         default:""
+
     },
     current_rank_name:{
         type:String,
         default:""
     },
+
     next_rank_name:{
         type:String,
         default:""
@@ -65,12 +58,11 @@ const TestSchema = new schema({
         type:String,
         default:""
     },
-  
     userId:{
         type:String
     }
 
 })
 
-module.exports = mongoose.model("test_info", TestSchema);
+module.exports = mongoose.model("test_reg", TestRegisterSchema);
 
