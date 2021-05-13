@@ -19,7 +19,6 @@ const TestRegisterSchema = new schema({
     },
     programColor:{
         type:String,
-
     },
     programId:{
         type:String
@@ -35,13 +34,11 @@ const TestRegisterSchema = new schema({
     current_rank_img:{
         type:String,
         default:""
-
-    },
+   },
     current_rank_name:{
         type:String,
         default:""
     },
-
     next_rank_name:{
         type:String,
         default:""
@@ -61,7 +58,6 @@ const TestRegisterSchema = new schema({
     userId:{
         type:String
     }
-
 })
 
 module.exports = mongoose.model("test_reg", TestRegisterSchema);

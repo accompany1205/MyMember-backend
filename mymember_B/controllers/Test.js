@@ -54,6 +54,7 @@ exports.list_std = async(req,res)=>{
 exports.testReg = async(req,res)=>{
     var testData = await TestModal.findOne({_id:req.body.stdId})
     if(testData){   
+        if(req.body.p_type == 'Cash'){
         var testReg = new TestReg(testData)
         console.log(testReg)
         testReg.save((err,resp)=>{
@@ -63,11 +64,10 @@ exports.testReg = async(req,res)=>{
                 res.send({msg:'student add in test register section'})
             }
         })
-
-    }else{
+    }
+     }else{
         res.send({error:'student id not get'})
     }
-
 }
 
 exports.testReg_list = async(req,res)=>{
@@ -101,7 +101,6 @@ exports.testregStd_remove = (req,res)=>{
         }
     })
 }
-
 
 exports.promote_std =(req,res)=>{
     program.findOne({_id:req.params.proId},{usert:true})
@@ -142,3 +141,5 @@ exports.promote_std =(req,res)=>{
                    }
             })
 }
+
+

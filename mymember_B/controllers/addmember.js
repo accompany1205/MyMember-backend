@@ -142,7 +142,7 @@ exports.bluckStd = async (req, res) => {
 
 exports.std_count = async (req, res) => {
   var resdata = await addmemberModal
-    .find({ $and: [{ userId: req.params.userId }, { studentType: "Camp" }] })
+    .find({ $and: [{ userId: req.params.userId }, { intrested: "Camp" }] })
     .count();
   var resdata1 = await addmemberModal
     .find({
@@ -156,17 +156,17 @@ exports.std_count = async (req, res) => {
     .count();
   var resdata3 = await addmemberModal
     .find({
-      $and: [{ userId: req.params.userId }, { studentType: "Former Trail" }],
-    })
+      $and: [{ userId: req.params.userId }, { studentType: "Former Trial" }],
+    })      
     .count();
   var resdata4 = await addmemberModal
     .find({
-      $and: [{ userId: req.params.userId }, { studentType: "Active Trail" }],
+      $and: [{ userId: req.params.userId }, { studentType: "Active Trials" }],
     })
     .count();
   var resdata5 = await addmemberModal
     .find({
-      $and: [{ userId: req.params.userId }, { studentType: "After School" }],
+      $and: [{ userId: req.params.userId }, { intrested: "After School" }],
     })
     .count();
   var resdata6 = await addmemberModal
