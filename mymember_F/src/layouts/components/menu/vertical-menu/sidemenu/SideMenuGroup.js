@@ -4,6 +4,9 @@ import { Badge } from "reactstrap"
 import classnames from "classnames"
 import { ChevronRight } from "react-feather"
 import { FormattedMessage } from "react-intl"
+import axios from "axios"
+
+const baseUrl = process.env.REACT_APP_BASE_URL;
 
 class SideMenuGroup extends React.Component {
   constructor(props) {
@@ -14,13 +17,35 @@ class SideMenuGroup extends React.Component {
   }
   state = {
     isOpen: false,
-    activeItem: this.props.activePath
+    activeItem: this.props.activePath,
+    student : {
+      active: 0,
+      active_trial: 0,
+      after_school: 0,
+      camp: 0,
+      former: 0,
+      former_trail: 0,
+      leads: 0,
+      total: 0
+    }
   }
 
   handleActiveItem = url => {
     this.setState({
       activeItem: url
     })
+  }
+
+  async componentDidMount() {
+    let _state = this;
+    let response = await axios.get(`${baseUrl}/api/memeber/std_count/${localStorage.getItem("user_id")}`, 
+      {headers : {
+          "Authorization" : `Bearer ${localStorage.getItem("access_token")}`}});
+      if(response.data && response.status === 200) {
+        let data = response.data;
+        _state.setState({student: data});
+      }
+    return;
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -37,6 +62,25 @@ class SideMenuGroup extends React.Component {
       } else if (this.props.parentArr.includes(this.parentArray)) {
         this.props.parentArr.splice(0, this.props.parentArr.length)
       }
+    }
+  }
+
+  handleTitleDisplay(title) {
+
+    if(title == "Students") {
+      return "(" + this.state.student.active +")";
+    } else if(title == "Active Trials") {
+      return "(" + this.state.student.active_trial +")";
+    } else if(title == "Lead") {
+      return "(" + this.state.student.leads +")";
+    } else if(title == "Former Student") {
+      return "(" + this.state.student.former +")";
+    } else if(title == "Former Trial") {
+      return "(" + this.state.student.former_trail +")";
+    } else if(title == "After School") {
+      return "(" + this.state.student.after_school +")";
+    } else if(title == "Camp") {
+      return "(" + this.state.student.camp +")";
     }
   }
 
@@ -123,8 +167,8 @@ class SideMenuGroup extends React.Component {
                       target={child.newTab ? "_blank" : undefined}>
                       <div className="menu-text">
                         {child.icon}
-                        <span className="menu-item menu-title">
-                          <FormattedMessage id={child.title} />
+                        <span className="menu-item menu-title" title={child.title}>
+                          <FormattedMessage id={child.title} /> {this.handleTitleDisplay(child.title)}
                         </span>
                       </div>
                       {child.badge ? (
