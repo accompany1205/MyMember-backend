@@ -16,11 +16,10 @@ import {
 import Breadcrumbs from "../../../../components/@vuexy/breadCrumbs/BreadCrumb"
 // import axios from "axios"
 import { ContextLayout } from "../../../../utility/context/Layout"
-import { GET_ACTIVE_STUDENT } from '../../../../redux/actions/newstudent/index';
+import { GET_ACTIVE_STUDENT, STUDENTS_REMOVE } from '../../../../redux/actions/newstudent/index';
 import { connect } from 'react-redux';
 import { AgGridReact } from "ag-grid-react"
 import {
-
   ChevronDown,
   Printer,
   Download,
@@ -28,6 +27,7 @@ import {
   // Mail,
   Phone,
   // Eye,
+  Delete,
   Plus
 } from "react-feather"
 // import classnames from "classnames"
@@ -53,6 +53,7 @@ import StusercalliconModal from "../../../pages/studentlisticoncall/stusercallic
 
 class UsersLists extends React.Component {
   state = {
+    checkboxSelectionIds: [],
     rowData: null,
     pageSize: 20,
     isVisible: true,
@@ -76,7 +77,7 @@ class UsersLists extends React.Component {
         width: 50,
         checkboxSelection: true,
         headerCheckboxSelectionFilteredOnly: true,
-        headerCheckboxSelection: true
+        headerCheckboxSelection: true,
       },
       {
         headerName: "Photo",
@@ -352,8 +353,29 @@ class UsersLists extends React.Component {
     this.setState({ isVisible: false })
   }
 
+  handleDeleteStudent = () => {
+    const studentIds = this.state.checkboxSelectionIds;
+    
+
+    this.props.STUDENTS_REMOVE(studentIds);
+    console.log(studentIds, " << handleDeleteStudent");
+  }
+
+  onSelectionChanged() {
+    var selectedRows = this.gridApi.getSelectedRows();
+    let checkboxSelectionIds = [];
+    console.log(selectedRows);
+    selectedRows.forEach(function(selectedRow, index) {
+      let paymentslistobject = selectedRow["_id"];
+      checkboxSelectionIds.push(paymentslistobject);
+    });
+
+    this.setState({ checkboxSelectionIds: checkboxSelectionIds });
+  }
+
   render() {
-    const { rowData, columnDefs, defaultColDef, pageSize } = this.state
+    const { rowData, columnDefs, defaultColDef, pageSize, checkboxSelectionIds } = this.state
+
     return (
       <Row className="app-user-list">
 
@@ -393,7 +415,7 @@ class UsersLists extends React.Component {
                 {/* <Button className="btn-lg fides3 btn waves-effect waves-light">
                   <Plus size={21} />
                   <br></br>
-                  Test
+                  Test dsd
                 </Button> */}
                 <Button className="btn-lg fides2 btn waves-effect waves-light">
                   <Printer size={21} />
@@ -405,6 +427,15 @@ class UsersLists extends React.Component {
                   <br></br>
                   Export
                 </Button>
+
+                {checkboxSelectionIds.length ? 
+                  <Button className="btn-lg fides1 btn waves-effect waves-danger" onClick={this.handleDeleteStudent}>
+                    <Delete size={21} />
+                    <br></br>
+                    Delete
+                  </Button>
+                  : ''
+                }
               </div>
             </CardHeader>
             <CardBody style={{padding:"0.5rem 1rem"}}>
@@ -460,7 +491,6 @@ class UsersLists extends React.Component {
                   <ContextLayout.Consumer>
                     {context => (
                       <AgGridReact
-
                         gridOptions={{}}
                         rowSelection="multiple"
                         defaultColDef={defaultColDef}
@@ -476,6 +506,7 @@ class UsersLists extends React.Component {
                         resizable={true}
                         getRowHeight={this.state.getRowHeight}
                         enableRtl={context.state.direction === "rtl"}
+                        onSelectionChanged={this.onSelectionChanged.bind(this)}
                       />
                     )}
                   </ContextLayout.Consumer>
@@ -502,4 +533,4 @@ const mapStateToProps = (state) => {
   }
 }
 
-export default connect(mapStateToProps, { GET_ACTIVE_STUDENT })(UsersLists)
+export default connect(mapStateToProps, { GET_ACTIVE_STUDENT, STUDENTS_REMOVE })(UsersLists)
