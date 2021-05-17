@@ -82,5 +82,4 @@ router.post('/member/text_sms_send',send_sms_std)
 // student by program
 router.get("/member/list_student_by_program/:userId",std_program)
 
-
 module.exports = router
