@@ -77,8 +77,6 @@ export const updateLabel = (id, label) => {
   }
 }
 
-
-
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 export const GET_ACTIVE_STUDENT = (data) => {
@@ -110,6 +108,28 @@ export const GET_ACTIVE_STUDENT = (data) => {
     }
   }
 }
+
+export const STUDENTS_REMOVE = (stdIds) => {
+  return async (dispatch) => {
+    
+    try {
+      let response = await axios.delete(`${baseUrl}/api/member/delete_multipal_member/${localStorage.getItem("user_id")}`, {
+        headers : {
+         "Authorization" : `Bearer ${localStorage.getItem("access_token")}`
+        },
+        data: { "stdIds" : stdIds }
+      });
+
+      console.log(response, " response");
+
+      if (response.data && response.status === 200) {
+        dispatch(GET_ACTIVE_STUDENT());
+      }
+    } catch (error) {
+      console.log("something went wrong in fetching class student");
+    }
+  };
+};
 
 export const GET_ACTIVE_TRAIL_LIST = (data) => {
   return async dispatch => {
@@ -361,6 +381,7 @@ export const ADD_NEW_STUDENT = (data) => {
     formData.append(v[0], v[1]);
     return v;
   })
+
   return async dispatch => {
     try{
        let response = await axios.post(`${baseUrl}/api/member/add_member/${localStorage.getItem("user_id")}`, formData, {

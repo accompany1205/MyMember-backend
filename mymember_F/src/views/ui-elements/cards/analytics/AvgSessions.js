@@ -7,6 +7,9 @@ import {
   Col,
   Progress
 } from "reactstrap"
+import axios from "axios"
+
+const baseUrl = process.env.REACT_APP_BASE_URL;
 
 class AvgSessions extends React.Component {
   state = {
@@ -57,8 +60,31 @@ class AvgSessions extends React.Component {
         name: "Sessions",
         data: [75, 125, 225, 175, 125, 75, 25]
       }
-    ]
+    ],
+    student : {
+      active: 0,
+      active_trial: 0,
+      after_school: 0,
+      camp: 0,
+      former: 0,
+      former_trail: 0,
+      leads: 0,
+      total: 0
+    }
   }
+
+  async componentDidMount() {
+    let _state = this;
+    let response = await axios.get(`${baseUrl}/api/memeber/std_count/${localStorage.getItem("user_id")}`, 
+      {headers : {
+          "Authorization" : `Bearer ${localStorage.getItem("access_token")}`}});
+      if(response.data && response.status === 200) {
+        let data = response.data;
+        _state.setState({student: data});
+      }
+    return;
+  }
+
   render() {
     return (
       <Card>
@@ -79,26 +105,26 @@ class AvgSessions extends React.Component {
           <Row className="pt-50">
             <Col md="6" sm="12">
             <a href="/app/users/list">
-              <p className="mb-0">Active Students: 102</p>
-              <Progress className="mt-25" value="50" />
+              <p className="mb-0">Active Students: {this.state.student.active}</p>
+              <Progress className="mt-25" value={this.state.student.active} />
               </a>
             </Col>
             <Col md="6" sm="12">
             <a href="/app/student/active-trail/list">
-              <p className="mb-0">Active Trail: 100</p>
-              <Progress className="mt-25" color="warning" value="60" />
+              <p className="mb-0">Active Trail: {this.state.student.active_trial}</p>
+              <Progress className="mt-25" color="warning" value={this.state.student.active_trial} />
               </a>
             </Col>
             <Col md="6" sm="12">
             <a href="/app/student/former-student/list">
-              <p className="mb-0">Former Students: 12</p>
-              <Progress className="mt-25" color="danger" value="70" />
+              <p className="mb-0">Former Students: {this.state.student.former}</p>
+              <Progress className="mt-25" color="danger" value={this.state.student.former} />
               </a>
             </Col>
             <Col md="6" sm="12">
             <a href="/app/student/lead-list/list">
-              <p className="mb-0">Lead Students: 5</p>
-              <Progress className="mt-25" color="success" value="80" />
+              <p className="mb-0">Lead Students: {this.state.student.leads}</p>
+              <Progress className="mt-25" color="success" value={this.state.student.leads} />
             </a>
             </Col>
           </Row>
