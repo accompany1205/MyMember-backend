@@ -188,5 +188,60 @@
   
 //   TimeZone()
 
-var newD = new Date()
-console.log(newD)
+// var newD = new Date()
+// console.log(newD)
+
+// let date = new Date();
+// date.setMonth(date.getMonth() - 1);
+// let dateInput = date.toISOString();
+// console.log(dateInput)
+
+// var today = new Date()
+// var priorDate = new Date().setDate(today.getDate()-30)
+// var th = new Date(priorDate)
+// console.log(th)
+
+
+
+// var axios = require('axios');
+// var FormData = require('form-data');
+// var data = new FormData();
+// data.append('app_id', '464DA39FCFB44D54F6C1D22CEF9098E5');
+// data.append('auth_token', '8E1DDE8DE369812732E88C583B14D0C4');
+// data.append('auth_key', '15B8BCFDB337428792608354A1444050');
+// data.append('uid', '1234567890');
+// data.append('mtype', '0200');
+// data.append('amount', '11.00');
+// data.append('pan', '4111111111111111');
+// data.append('expiry_date', '1223');
+// data.append('card_holder_name', 'ABUBACKER N');
+// data.append('address', '3636 33rd st');
+// data.append('zip', '11106');
+// data.append('epi', '2104714588');
+// data.append('tip', '');
+// data.append('custom_fee', '');
+// data.append('cvv', '999');
+// data.append('surchargeIndicator', '1');
+
+// var config = {
+//   method: 'post',
+//   url: 'https://vt.isoaccess.com:4430',
+//   headers: { 
+//     ...data.getHeaders()
+//   },
+//   data : data
+// };
+
+// axios(config)
+// .then(function (response) {
+//     console.log('success',response)
+    
+//   console.log(JSON.stringify(response.data));
+// })
+// .catch(function (error) {
+//     console.log('error')
+//   console.log(error);
+// });
+
+
+

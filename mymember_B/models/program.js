@@ -45,6 +45,9 @@ const programSchema = new schema(
         userId:{
             type:String,
         },
+        status:{
+            type:String
+        }
     },
     { timestamps: true }
 );

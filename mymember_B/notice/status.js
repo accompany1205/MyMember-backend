@@ -68,6 +68,7 @@ module.exports = corn.schedule("00 24 17 * * 0-6", function () {
     })
 })
 
+
 //student rating update
 module.exports = corn.schedule("00 12 19 * * 0-6", function () {
     addmemberModal.find({ attendence_status: false }).exec((err, notattend) => {

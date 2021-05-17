@@ -106,7 +106,8 @@ const addmemberSchema = new schema(
             type:String    
         },
         subcategory:{
-            type:String    
+            type:String ,
+            default:""   
         },
         belt_rank_img:{
             type:String

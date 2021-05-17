@@ -24,6 +24,37 @@ const sgmail = require("sendgrid-v3-node");
 //     })
 // }
 
+exports.std_program = async (req,res)=>{
+  // {userId:req.params.userId}
+  program.find({$or:[{userId:req.params.userId},{status:'Admin'}]})
+  .select('programName')
+  .exec((err,resp)=>{
+    if(err){
+      res.send({'error':'program details not found'})
+    }else{
+      var ary = []
+      console.log(resp)
+      var list = resp
+      Promise.all(list.map(async(item)=>{
+        var obj ={}
+        var stdInfo = await addmemberModal.find({program:item.programName},{firstName:1,lastName:1,status:1,primaryPhone:1,program:1,programColor:1,category:1,subcategory:1,current_rank_name:1,current_rank_img:1,rating:1}).populate('membership_details')
+        var stdCount = await addmemberModal.find({program:item.programName}).count()
+        obj.std_count = stdCount
+        obj.program = item.programName
+        obj.std_info = stdInfo
+        ary.push(obj)
+      })).then((resp)=>{
+        res.send({data:ary})
+      }).catch((err)=>{
+        res.send({error:'data not found'})
+        console.log(err)
+      })
+    }
+  })
+
+}
+
+
 exports.bluckStd = async (req, res) => {
   var List = req.body.data;
   await Promise.all(

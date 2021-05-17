@@ -30,7 +30,8 @@ const { addmember,
     bluckStd,
     delete_multipal_member,
     send_mail_std,
-    send_sms_std
+    send_sms_std,
+    std_program
 } = require("../controllers/addmember")
 const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 const upload = require('../handler/multer');
@@ -77,6 +78,9 @@ router.get('/member/after_school_student/:userId', verifySchool, after_school_St
 // email and text sms send perticular student
 router.post('/member/email_send_student',send_mail_std)
 router.post('/member/text_sms_send',send_sms_std)
+
+// student by program
+router.get("/member/list_student_by_program/:userId",std_program)
 
 
 module.exports = router

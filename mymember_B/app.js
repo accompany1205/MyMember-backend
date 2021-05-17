@@ -23,6 +23,10 @@ const productRoutes = require("./routes/product");
 const braintreeRoutes = require("./routes/braintree");
 const orderRoutes = require("./routes/order");
 
+//ttl
+const TTL = require("./routes/attl")
+
+
 //shivani's
 const administrate_user = require("./routes/administrater_user");
 const programRoutes = require("./routes/program");
@@ -135,6 +139,9 @@ app.use(morgan("dev"));
 app.use(cookieParser());
 app.use(expressValidator());
 app.use(cors());
+
+app.use('/api',TTL)
+
 app.use("/api", authRoutes);
 app.use("/api", userRoutes);
 app.use("/api", categoryRoutes);
