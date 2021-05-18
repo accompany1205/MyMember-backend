@@ -9,11 +9,11 @@ const collapseItems = [
     id: 1,
     title: "Lead",
     content:<>
-        <div style={{marginLeft:"10px"}}><Folder size="10"/><a href="/email/inbox"> upon entry </a> </div>
-        <div style={{marginLeft:"10px"}}><Folder size="10"/>Demo </div>
-        <div style={{marginLeft:"10px"}}><Folder size="10"/>SDFDSFDSF </div>
-        <div style={{marginLeft:"10px"}}><Folder size="10"/>Demo </div>
-        <div style={{marginLeft:"10px"}}><Folder size="10"/>Demo </div>
+        <div style={{marginLeft:"10px"}}><Folder size="14" style={{marginRight:"10px"}}/><a href="/email/inbox"> upon entry </a> </div>
+        <div style={{marginLeft:"10px"}}><Folder size="14" style={{marginRight:"10px"}}/>Demo </div>
+        <div style={{marginLeft:"10px"}}><Folder size="14" style={{marginRight:"10px"}}/>SDFDSFDSF </div>
+        <div style={{marginLeft:"10px"}}><Folder size="14" style={{marginRight:"10px"}}/>Demo </div>
+        <div style={{marginLeft:"10px"}}><Folder size="14" style={{marginRight:"10px"}}/>Demo </div>
         <div style={{marginLeft:"10px"}}><NewFolder/> </div>
         </>
   },
@@ -21,33 +21,33 @@ const collapseItems = [
     id: 2,
     title: "Active Trial",
     content:<>
-    <div style={{marginLeft:"10px"}}><Folder size="10"/><a href="/email/inbox"> upon entry </a> </div>
-    <div style={{marginLeft:"10px"}}><Folder size="10"/>Demo </div>
-    <div style={{marginLeft:"10px"}}><Folder size="10"/>SDFDSFDSF </div>
-    <div style={{marginLeft:"10px"}}><Folder size="10"/>Demo </div>
-    <div style={{marginLeft:"10px"}}><Folder size="10"/>Demo </div>
+    <div style={{marginLeft:"10px"}}><Folder size="14" style={{marginRight:"10px"}}/><a href="/email/inbox"> upon entry </a> </div>
+        <div style={{marginLeft:"10px"}}><Folder size="14" style={{marginRight:"10px"}}/>Demo </div>
+        <div style={{marginLeft:"10px"}}><Folder size="14" style={{marginRight:"10px"}}/>SDFDSFDSF </div>
+        <div style={{marginLeft:"10px"}}><Folder size="14" style={{marginRight:"10px"}}/>Demo </div>
+        <div style={{marginLeft:"10px"}}><Folder size="14" style={{marginRight:"10px"}}/>Demo </div>
     </>
       },
   {
     id: 3,
     title: "Former Trial",
     content:<>
-    <div style={{marginLeft:"10px"}}><Folder size="10"/><a href="/email/inbox"> upon entry </a> </div>
-    <div style={{marginLeft:"10px"}}><Folder size="10"/>Demo </div>
-    <div style={{marginLeft:"10px"}}><Folder size="10"/>SDFDSFDSF </div>
-    <div style={{marginLeft:"10px"}}><Folder size="10"/>Demo </div>
-    <div style={{marginLeft:"10px"}}><Folder size="10"/>Demo </div>
+   <div style={{marginLeft:"10px"}}><Folder size="14" style={{marginRight:"10px"}}/><a href="/email/inbox"> upon entry </a> </div>
+        <div style={{marginLeft:"10px"}}><Folder size="14" style={{marginRight:"10px"}}/>Demo </div>
+        <div style={{marginLeft:"10px"}}><Folder size="14" style={{marginRight:"10px"}}/>SDFDSFDSF </div>
+        <div style={{marginLeft:"10px"}}><Folder size="14" style={{marginRight:"10px"}}/>Demo </div>
+        <div style={{marginLeft:"10px"}}><Folder size="14" style={{marginRight:"10px"}}/>Demo </div>
     </>
 },
   {
     id: 4,
     title: "Former Student",
     content:<>
-    <div style={{marginLeft:"10px"}}><Folder size="10"/><a href="/email/inbox"> upon entry </a> </div>
-    <div style={{marginLeft:"10px"}}><Folder size="10"/>Demo </div>
-    <div style={{marginLeft:"10px"}}><Folder size="10"/>SDFDSFDSF </div>
-    <div style={{marginLeft:"10px"}}><Folder size="10"/>Demo </div>
-    <div style={{marginLeft:"10px"}}><Folder size="10"/>Demo </div>
+    <div style={{marginLeft:"10px"}}><Folder size="14" style={{marginRight:"10px"}}/><a href="/email/inbox"> upon entry </a> </div>
+        <div style={{marginLeft:"10px"}}><Folder size="14" style={{marginRight:"10px"}}/>Demo </div>
+        <div style={{marginLeft:"10px"}}><Folder size="14" style={{marginRight:"10px"}}/>SDFDSFDSF </div>
+        <div style={{marginLeft:"10px"}}><Folder size="14" style={{marginRight:"10px"}}/>Demo </div>
+        <div style={{marginLeft:"10px"}}><Folder size="14" style={{marginRight:"10px"}}/>Demo </div>
     </>  },
   {
     id: 5,
@@ -78,7 +78,7 @@ class Accordion extends React.Component {
               <CardHeader>
                 <CardTitle className="lead collapse-title collapsed">
                  
-                  <FolderPlus size="18"/>
+                  <FolderPlus size="18" style={{marginRight:"8px"}}/>
                   {collapseItem.title}
                 </CardTitle>
               </CardHeader>

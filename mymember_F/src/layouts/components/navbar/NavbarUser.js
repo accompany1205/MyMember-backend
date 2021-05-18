@@ -270,12 +270,12 @@ class NavbarUser extends React.PureComponent {
       <ul className="nav navbar-nav navbar-nav-user float-right">
        
        
-          <UncontrolledDropdown className="walletdropdown nav-item tp-hdr-menu">
+          <UncontrolledDropdown className="walletdropdown nav-item tp-hdr-menu rs-l">
               <DropdownToggle tag="a" className="nav-link dropdown-user-link">
                 <div className="user-nav d-sm-flex d-none pt_mar">
                 <Icon.CreditCard size={20} color="blue" />
 
-                 <span className="user-status text_span_tp"> Wallet</span> 
+                 <span className="user-status text_span_tp rs-left"> Wallet</span> 
                 </div>
 
               </DropdownToggle>
@@ -295,7 +295,7 @@ class NavbarUser extends React.PureComponent {
 
             </div>
         <UncontrolledDropdown tag="li" className="dropdown-user nav-item">
-          <DropdownToggle tag="a" className="nav-link dropdown-user-link">
+          <DropdownToggle tag="a" className="nav-link dropdown-user-link rs-userpro">
             <div className="user-nav d-sm-flex d-none">
               <span className="user-name text-bold-600">
                 

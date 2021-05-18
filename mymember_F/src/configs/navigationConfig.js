@@ -282,14 +282,14 @@ const SchoolNavigationConfig = [
         type: "collapse",
         icon: <Icon.Mail size={12} color="black" />,
         children: [
-          // {
-          //   id: "text",
-          //   title: "Text",
-          //   type: "item",
-          //   icon: <Icon.Circle size={10} color="green" />,
-          //   permissions: ["admin", "editor"],
-          //   navLink: "/app/marketing/email/compose"
-          // },
+        {
+            id: "text1",
+            title: "Text",
+            type: "item",
+            icon: <Icon.Circle size={10} color="green" />,
+            permissions: ["admin", "editor"],
+            navLink: "/company/marketing/text/chat"
+          },
           {
             id: "library",
             title: "Nurturing",

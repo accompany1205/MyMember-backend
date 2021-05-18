@@ -108,6 +108,10 @@ const MymoneyFinanceAddForcast = lazy(() => import("./views/pages/myMoney/financ
 const MymoneyFinanceAddTesting = lazy(() => import("./views/pages/myMoney/finance/testing/testingMain"))
 const MymoneyFinanceAddccexpiring = lazy(() => import("./views/pages/myMoney/finance/ccexpiring/ccexpiringMain"))
 
+// chat-text
+const TextChat = lazy(() => import("./views/pages/marketing/text/chat/Chat"))
+
+
 const MarketingNurting = lazy(() => import("./views/pages/marketing/email/nurturing/nurturingMain"))
 const MarketingSytems = lazy(() => import("./views/pages/marketing/email/system/system"))
 // const MarketingLibrary = lazy(() => import("./views/pages/marketing/email/library/libraryMain"))
@@ -383,7 +387,8 @@ class AppRouter extends React.Component {
           <AppRoute path="/app/statistics/former-trail" component={StatisticsformerTrail} />
           <AppRoute path="/app/statistics/after-school" component={StatisticsafterSchool} />
           <AppRoute path="/company/documents" component={invoice1} />
-          
+           
+          <AppRoute path="/company/marketing/text/chat" component={TextChat} />
           
 
           <AppRoute path="/ui-element/grid" component={grid} />
