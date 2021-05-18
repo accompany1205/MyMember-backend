@@ -14,8 +14,6 @@ class ModalForm extends React.Component {
     modal: false
   }
 
-  
-
   toggleModal = () => {
     this.setState(prevState => ({
       modal: !prevState.modal
@@ -40,11 +38,10 @@ class ModalForm extends React.Component {
               className="modal-dialog-centered modal-lg"
             >
                 <ModalHeader toggle={this.toggleModal}>
-                The following student have been selected for promoption.Please promote rank.
+                    The following student have been selected for promoption. Please promote rank.
                 </ModalHeader>
                 <ModalBody>
-                <TestTabs/>
-                 
+                <TestTabs />
                 </ModalBody>
             </Modal>
             

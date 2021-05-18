@@ -415,7 +415,7 @@ class UsersLists extends React.Component {
                 {/* <Button className="btn-lg fides3 btn waves-effect waves-light">
                   <Plus size={21} />
                   <br></br>
-                  Test dsd
+                  Test
                 </Button> */}
                 <Button className="btn-lg fides2 btn waves-effect waves-light">
                   <Printer size={21} />
