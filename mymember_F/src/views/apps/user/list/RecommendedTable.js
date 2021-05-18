@@ -9,8 +9,7 @@ import {
   UncontrolledButtonDropdown,
   DropdownMenu,
   DropdownItem,
-  DropdownToggle,
-
+  DropdownToggle
 } from "reactstrap"
 import axios from "axios"
 import { ContextLayout } from "../../../../utility/context/Layout"
@@ -24,6 +23,7 @@ import {
 } from "react-feather"
 import "../../../../assets/scss/plugins/tables/_agGridStyleOverride.scss"
 import "../../../../assets/scss/pages/users.scss"
+
 class UsersList extends React.Component {
   state = {
     rowData: null,
@@ -53,9 +53,12 @@ class UsersList extends React.Component {
       
       {
         headerName: "Full Name",
-        field: "name",
+        field: "firstName",
         filter: true,
-        width: 200
+        width: 200,
+        cellRendererFramework: params => {
+          return params ? params.firstName : "";
+        }
       },
       {
         headerName: "Date of Exam",
@@ -81,13 +84,13 @@ class UsersList extends React.Component {
       
       {
         headerName: "Current Rank",
-        field: "country",
+        field: "current_rank_name",
         filter: true,
         width: 200
       },
       {
         headerName: "Next Rank",
-        field: "status",
+        field: "next_rank_name",
         filter: true,
         width: 200,
         cellRendererFramework: params => {
@@ -110,13 +113,13 @@ class UsersList extends React.Component {
       },
       {
         headerName: "Belt Size",
-        field: "",
+        field: "studentBeltSize",
         filter: true,
         width: 150
       },
       {
         headerName: "Program Type",
-        field: "",
+        field: "program",
         filter: true,
         width: 150
       },
@@ -126,8 +129,6 @@ class UsersList extends React.Component {
         filter: true,
         width: 150
       },
-
-      
       {
         headerName: "Register",
         field: "",
@@ -184,11 +185,23 @@ class UsersList extends React.Component {
   }
 
   async componentDidMount() {
-    await axios.get("api/users/list").then(response => {
-      let rowData = response.data
-      console.log(rowData);
-      this.setState({ rowData })
-    })
+
+    const baseUrl = process.env.REACT_APP_BASE_URL;
+
+    await axios.get(
+      `${baseUrl}/api/test/student_list/${localStorage.getItem(
+        "user_id"
+      )}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      }
+    ).then(response => {
+      if (response.data && response.status === 200) {
+        this.setState({ rowData: response.data.list })
+      } 
+    });
   }
 
   onGridReady = params => {
@@ -262,6 +275,7 @@ class UsersList extends React.Component {
 
   render() {
     const { rowData, columnDefs, defaultColDef, pageSize } = this.state
+    console.log(this.state.rowData, " << this.state.rowData");
     return (
       <Row className="app-user-list">
         

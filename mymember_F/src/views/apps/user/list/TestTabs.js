@@ -33,8 +33,6 @@ class UserEdit extends React.Component {
     render() {
         return (
             <div>
-               
-              
                 <Row>
                     <Col sm="12">
                         <Card>
@@ -62,7 +60,6 @@ class UserEdit extends React.Component {
                                                 this.toggle("2")
                                             }}
                                         >
-                                            {/* <User size={16} /> */}
                                             <span className="align-middle ml-50">Test Registered</span>
                                         </NavLink>
                                     </NavItem>
