@@ -32,11 +32,12 @@ exports.std_program = async (req,res)=>{
     if(err){
       res.send({'error':'program details not found'})
     }else{
+      if(resp.length>0){
       var ary = []
       console.log(resp)
       var list = resp
       Promise.all(list.map(async(item)=>{
-        var obj ={}
+        var obj = {}
         var stdInfo = await addmemberModal.find({program:item.programName},{firstName:1,lastName:1,status:1,primaryPhone:1,program:1,programColor:1,category:1,subcategory:1,current_rank_name:1,current_rank_img:1,rating:1}).populate('membership_details')
         var stdCount = await addmemberModal.find({program:item.programName}).count()
         obj.std_count = stdCount
@@ -49,9 +50,11 @@ exports.std_program = async (req,res)=>{
         res.send({error:'data not found'})
         console.log(err)
       })
+    }else{
+      res.send({msg:'programs list not found'})
+    }
     }
   })
-
 }
 
 

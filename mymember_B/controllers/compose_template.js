@@ -253,7 +253,7 @@ exports.add_template = async(req,res)=>{
             }
 
 
-             var emailDetail =  new all_temp(obj)
+          var emailDetail =  new all_temp(obj)
           console.log(emailDetail) 
           emailDetail.save(async(err,emailSave)=>{
               if(err){

@@ -244,4 +244,14 @@
 // });
 
 
+// var ary = [1,2,3]
+// var a = ary.map(myfunction) 
+
+// console.log(a)
+
+// function myfunction(val){
+//     if(val>2){
+//         return val
+//     }
+// }
 
