@@ -76,6 +76,7 @@ class Chat extends React.Component {
   }
 
   render() {
+
     return (
       <div className="chat-application position-relative">
         <div
@@ -133,6 +134,7 @@ class Chat extends React.Component {
       </div>
     )
   }
+
 }
 
 export default Chat

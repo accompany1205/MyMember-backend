@@ -16,18 +16,18 @@ import Checkbox from "../../../../components/@vuexy/checkbox/CheckboxesVuexy"
 import { Check } from "react-feather"
 import { User, Clock } from "react-feather"
 import img from "../../../../assets/img/pages/1-apex.png"
-
+import "../../../../assets/scss/pages/users.scss"
 
 class HorizontalForm extends React.Component {
   render() {
     return (
 
       <Row>
-        <div className="col-lg-6">
+        <div className="col-lg-5">
           <Card>
             <CardHeader>
               <CardTitle>
-                <User size="18" />
+                <User size="18" style={{marginRight:"10px"}} />
             Organization Setup
           </CardTitle>
             </CardHeader>
@@ -257,11 +257,11 @@ class HorizontalForm extends React.Component {
             </CardBody>
           </Card>
         </div>
-        <div className="col-lg-6">
+        <div className="col-lg-7">
           <Card>
             <CardHeader>
               <CardTitle>
-                <Clock size="18" />
+                    <Clock size="18" style={{marginRight:"10px"}} />
                   Operational Hours
                 </CardTitle>
             </CardHeader>
@@ -285,14 +285,14 @@ class HorizontalForm extends React.Component {
                 </Col>
                 <Col md="9" style={{ border: "1px solid #c7c7c7", backgroundColor: "#f5f5f5", height: "45px" }}>
                   <Row style={{ marginTop: "10px" }}>
-                    <Col md="6">
+                    <Col md="6" className="mdr">
                       <Row>
-                        <Col md="6">
+                        <Col md="5">
                           <h4 style={{ fontSize: "0.8rem" }}>
                             Start time:
                           </h4>
                         </Col>
-                        <Col md="6">
+                        <Col md="7">
                           <input type="time" />
                         </Col>
                       </Row>
@@ -300,12 +300,12 @@ class HorizontalForm extends React.Component {
                     </Col>
                     <Col md="6">
                       <Row>
-                        <Col md="6">
+                        <Col md="5">
                           <h4 style={{ fontSize: "0.8rem" }}>
                             End time:
                           </h4>
                         </Col>
-                        <Col md="6">
+                        <Col md="7">
                           <input type="time" />
                         </Col>
                       </Row>
@@ -335,12 +335,12 @@ class HorizontalForm extends React.Component {
                   <Row style={{ marginTop: "10px" }}>
                     <Col md="6">
                       <Row>
-                        <Col md="6">
+                        <Col md="5">
                           <h4 style={{ fontSize: "0.8rem" }}>
                             Start time:
                           </h4>
                         </Col>
-                        <Col md="6">
+                        <Col md="7">
                           <input type="time" />
                         </Col>
                       </Row>
@@ -348,12 +348,12 @@ class HorizontalForm extends React.Component {
                     </Col>
                     <Col md="6">
                       <Row>
-                        <Col md="6">
+                        <Col md="5">
                           <h4 style={{ fontSize: "0.8rem" }}>
                             End time:
                           </h4>
                         </Col>
-                        <Col md="6">
+                        <Col md="7">
                           <input type="time" />
                         </Col>
                       </Row>
@@ -383,12 +383,12 @@ class HorizontalForm extends React.Component {
                   <Row style={{ marginTop: "10px" }}>
                     <Col md="6">
                       <Row>
-                        <Col md="6">
+                        <Col md="5">
                           <h4 style={{ fontSize: "0.8rem" }}>
                             Start time:
                           </h4>
                         </Col>
-                        <Col md="6">
+                        <Col md="7">
                           <input type="time" />
                         </Col>
                       </Row>
@@ -396,12 +396,12 @@ class HorizontalForm extends React.Component {
                     </Col>
                     <Col md="6">
                       <Row>
-                        <Col md="6">
+                        <Col md="5">
                           <h4 style={{ fontSize: "0.8rem" }}>
                             End time:
                           </h4>
                         </Col>
-                        <Col md="6">
+                        <Col md="7">
                           <input type="time" />
                         </Col>
                       </Row>
@@ -431,12 +431,12 @@ class HorizontalForm extends React.Component {
                   <Row style={{ marginTop: "10px" }}>
                     <Col md="6">
                       <Row>
-                        <Col md="6">
+                        <Col md="5">
                           <h4 style={{ fontSize: "0.8rem" }}>
                             Start time:
                           </h4>
                         </Col>
-                        <Col md="6">
+                        <Col md="7">
                           <input type="time" />
                         </Col>
                       </Row>
@@ -444,12 +444,12 @@ class HorizontalForm extends React.Component {
                     </Col>
                     <Col md="6">
                       <Row>
-                        <Col md="6">
+                        <Col md="5">
                           <h4 style={{ fontSize: "0.8rem" }}>
                             End time:
                           </h4>
                         </Col>
-                        <Col md="6">
+                        <Col md="7">
                           <input type="time" />
                         </Col>
                       </Row>
@@ -479,12 +479,12 @@ class HorizontalForm extends React.Component {
                   <Row style={{ marginTop: "10px" }}>
                     <Col md="6">
                       <Row>
-                        <Col md="6">
+                        <Col md="5">
                           <h4 style={{ fontSize: "0.8rem" }}>
                             Start time:
                           </h4>
                         </Col>
-                        <Col md="6">
+                        <Col md="7">
                           <input type="time" />
                         </Col>
                       </Row>
@@ -492,12 +492,12 @@ class HorizontalForm extends React.Component {
                     </Col>
                     <Col md="6">
                       <Row>
-                        <Col md="6">
+                        <Col md="5">
                           <h4 style={{ fontSize: "0.8rem" }}>
                             End time:
                           </h4>
                         </Col>
-                        <Col md="6">
+                        <Col md="7">
                           <input type="time" />
                         </Col>
                       </Row>
@@ -527,12 +527,12 @@ class HorizontalForm extends React.Component {
                   <Row style={{ marginTop: "10px" }}>
                     <Col md="6">
                       <Row>
-                        <Col md="6">
+                        <Col md="5">
                           <h4 style={{ fontSize: "0.8rem" }}>
                             Start time:
                           </h4>
                         </Col>
-                        <Col md="6">
+                        <Col md="7">
                           <input type="time" />
                         </Col>
                       </Row>
@@ -540,12 +540,12 @@ class HorizontalForm extends React.Component {
                     </Col>
                     <Col md="6">
                       <Row>
-                        <Col md="6">
+                        <Col md="5">
                           <h4 style={{ fontSize: "0.8rem" }}>
                             End time:
                           </h4>
                         </Col>
-                        <Col md="6">
+                        <Col md="7">
                           <input type="time" />
                         </Col>
                       </Row>
@@ -575,12 +575,12 @@ class HorizontalForm extends React.Component {
                   <Row style={{ marginTop: "10px" }}>
                     <Col md="6">
                       <Row>
-                        <Col md="6">
+                        <Col md="5">
                           <h4 style={{ fontSize: "0.8rem" }}>
                             Start time:
                           </h4>
                         </Col>
-                        <Col md="6">
+                        <Col md="7">
                           <input type="time" />
                         </Col>
                       </Row>
@@ -588,12 +588,12 @@ class HorizontalForm extends React.Component {
                     </Col>
                     <Col md="6">
                       <Row>
-                        <Col md="6">
+                        <Col md="5">
                           <h4 style={{ fontSize: "0.8rem" }}>
                             End time:
                           </h4>
                         </Col>
-                        <Col md="6">
+                        <Col md="7">
                           <input type="time" />
                         </Col>
                       </Row>

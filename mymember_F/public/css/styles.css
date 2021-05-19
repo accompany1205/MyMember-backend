@@ -1999,3 +1999,9 @@ a:hover.back-to-top {
 .service{
 	color: #fff;
 }
+
+/* rs css */
+
+a.btn-solid-lg.page-scroll.btn2:hover {
+    color: #fff;
+}
