@@ -113,8 +113,8 @@ const sample_doc = require("./routes/admin/upload_sample_file");
 
 const app = express();
 // app.use(fileUpload({ safeFileNames: true, preserveExtension: true }))
-const uuidv1 = require("uuid/v1");
-uuidv1();
+// const uuidv1 = require('uuid');
+// uuidv1();
 // status check expire or not
 
 mongoose
@@ -128,6 +128,7 @@ mongoose
   )
   .then(() => console.log("DB Connected"));
 //all cron job
+
 // const statusCheck = require("./notice/status")
 
 // middlewares
@@ -229,6 +230,43 @@ app.use("/api", textkey);
 // menu middleware
 app.use("/api", student_menu);
 
+// recieve sms api 
+function TimeZone(){
+  const str = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+  const date_time =str.split(',')
+  console.log(date_time)
+  const date = date_time[0]
+  const time = date_time[1]
+  return { Date:date,Time:time}
+}
+const std_Details = require("./models/textSentSave")
+app.post("/recieve_sms", async(req,res)=>{
+  console.log(req.body,'runit')
+  var fromNo = req.body.From
+  var recieve_sms = req.body.Body
+  console.log(fromNo,recieve_sms)
+  var info = await std_Details.findOne({primaryPhone:fromNo})
+  if(info){
+    var Time_Date = TimeZone()
+    var query= {
+      'smsType':'recieve',
+      'smsId':Date.now().toString(),
+      'smsTxt':recieve_sms,
+      'date':Time_Date.Date,
+      'time':Time_Date.Time
+    }
+    console.log(query)
+    var receiveSms = await std_Details.updateOne({primaryPhone:fromNo},{$push:{sent_recieve_sms:query}})
+    if(receiveSms){
+      console.log({msg:'sms recieve successfully'})
+    }else{
+      console.log({error:'sms recieve details not update'})
+    }
+  }else{
+    console.log({error:'student details not get'})
+  }
+})
+
 const privateKey1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/privkey.pem', 'utf8');
 const certificate1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/cert.pem', 'utf8');
 const ca1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/chain.pem', 'utf8');
@@ -239,15 +277,17 @@ const credentials1 = {
 	ca: ca1
 };
 
-// app.use(function (req, res, next){
-//     res.header("Access-Control-Allow-Origin", "*");
-//     res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE");
-//     res.header(
-//       "Access-Control-Allow-Headers",
-//       "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-//     );
-//     next();
-//   });
+app.use(function (req, res, next){
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE");
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+    );
+    next();
+  });
+
+
 
 const port = process.env.PORT || 8080;
 

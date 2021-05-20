@@ -137,18 +137,13 @@
 // // var mT = moment(date).format('MM/DD/YYYY')    
 // // // console.log(date,mT)
 
-// const asid = 'AC95c8e5b269c098f81fac4bbc8ce8f881';
-// const authtoken = 'af2e5bd3153fe38cd556686959194c48'
-// const msgService = 'ISb21aa5fdf2d5a8c60dd25d5dd7389d7f'
-// const client = require('twilio')(asid, authtoken)
-
-// // client.messages.create({
-// //   to:'+919893600766',
-// //   from:'+12672637681',
-// //   body:'hy how are you jio'
-// // })
-// // .then((message)=>console.log(message))
-// // .catch((error)=>console.log(error))
+// client.messages.create({
+//   to:'+919893600766',
+//   from:'+12672637681',
+//   body:'hy how are you jio'
+// })
+// .then((message)=>console.log(message))
+// .catch((error)=>console.log(error))
 
 // var to = ['989-360-0766']
 // var msg ='without +91'
@@ -283,11 +278,32 @@
 //     if (i === 4) { break; }
 //     console.log(i)
 //   }
-var array = [1,2,3,4,5]
-array.forEach(function(val, i){
-    if (val === 2) {
-      // how do we stop?
-      return true;
-    }
-    console.log(val); // your code
-  });
+// var array = [1,2,3,4,5]
+// array.forEach(function(val, i){
+//     if (val === 2) {
+//       // how do we stop?
+//       return true;
+//     }
+//     console.log(val); // your code
+//   });
+
+// console.log(Date.now().toString())
+
+
+var obj = {
+    name:'ram'
+}
+
+async function b(data1, callback){
+    callback(data1)
+}
+
+async function a(data){
+  await b(data, async function(m){
+    console.log('run')
+    console.log(m)
+    
+  })
+}
+
+a(obj)

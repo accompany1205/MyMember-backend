@@ -6,6 +6,8 @@ const rank_change = require("../models/change_rank");
 const change_rank = require("../models/change_rank");
 const sentEmail = require("../models/emailSentSave");
 const sgmail = require("sendgrid-v3-node");
+const client = require("twilio")(process.env.aid, process.env.authkey);
+
 
 // const ManyStudents = require('../std.js');
 // const students = require('../std.js');
@@ -56,7 +58,6 @@ exports.std_program = async (req,res)=>{
     }
   })
 }
-
 
 exports.bluckStd = async (req, res) => {
   var List = req.body.data;
@@ -891,7 +892,7 @@ exports.send_mail_std = (req, res) => {
   }
 };
 
-const client = require("twilio")(process.env.aid, process.env.authkey);
+
 
 exports.send_sms_std = (req, res) => {
   var number = req.body.number;

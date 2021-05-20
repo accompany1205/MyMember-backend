@@ -3,13 +3,12 @@ function clourUrl(){
     this.imageUrl = (file) => {
         console.log(file)
         const { Storage } = require("@google-cloud/storage")
-        var uid = require("uuid")
-        var uidv1 = uid.v1
+        var uid = Date.now()
         require("dotenv").config()
         const storage = new Storage({ projectId: process.env.GCLOUD_PROJECT, credentials: { client_email: process.env.GCLOUD_CLIENT_EMAIL, private_key: process.env.GCLOUD_PRIVATE_KEY } })
         const bucket = storage.bucket(process.env.GCS_BUCKET)
 
-        const newFileName = uidv1() + "-" + file.originalname
+        const newFileName = uid + "-" + file.originalname
         const doc = bucket.file('All-Images/' + newFileName)
         const blogStream = doc.createWriteStream({ resumable: false })
 

@@ -5,8 +5,6 @@ const sampleFile = require("../models/admin/upload_sample_file")
 const std = require("../models/addmember")
 
 
-var uid = require("uuid")
-var uidv1 = uid.v1
 require("dotenv").config()
 const storage = new Storage({projectId: process.env.GCLOUD_PROJECT,credentials:{client_email:process.env.GCLOUD_CLIENT_EMAIL,private_key:process.env.GCLOUD_PRIVATE_KEY}})
 const bucket = storage.bucket(process.env.GCS_BUCKET)
@@ -14,7 +12,8 @@ const bucket = storage.bucket(process.env.GCS_BUCKET)
 exports.docupload =(req,res)=>{
     console.log('run')
     console.log(req.file)
-    const newFileName = uidv1() + "-" + req.file.originalname
+    var uid = Date.now()
+    const newFileName = uid + "-" + req.file.originalname
     const doc = bucket.file('All-Images/'+newFileName)
     const blogStream =  doc.createWriteStream({resumable:false})
     
