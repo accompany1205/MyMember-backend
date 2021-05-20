@@ -254,4 +254,40 @@
 //         return val
 //     }
 // }
+// const sendgrid = require('sendgrid-v3-node');
 
+// const mailOptions = {
+//     sendgrid_key: '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',
+//     from_email: 'info.xpresscure@gmail.com',
+//     from_name: 'kumar',
+//     to: 'tekeshwardevelopersveltosest@gmail.com' // REQUIRED: `string` email
+// };
+
+// mailOptions.subject = 'SUBJECT';
+// mailOptions.content = 'CONTENT';
+// sendgrid.send_via_sendgrid(mailOptions).then(response => {
+//     console.log('success',response);
+// }).catch((error)=>{
+//     console.log(error)
+// });
+
+
+// var cart = [{
+//     pid:[{objectId}],
+//     qty:1,
+//     total_qty:5,
+//     userId:"xyz"
+// }]
+
+// for (i = 0; i < 10; i++) {
+//     if (i === 4) { break; }
+//     console.log(i)
+//   }
+var array = [1,2,3,4,5]
+array.forEach(function(val, i){
+    if (val === 2) {
+      // how do we stop?
+      return true;
+    }
+    console.log(val); // your code
+  });
