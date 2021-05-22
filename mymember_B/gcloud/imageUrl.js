@@ -1,5 +1,4 @@
 function clourUrl(){
-    
     this.imageUrl = (file) => {
         console.log(file)
         const { Storage } = require("@google-cloud/storage")
