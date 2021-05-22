@@ -83,9 +83,13 @@ exports.programs_detail = (req, res) => {
     var id = req.params.proId
     console.log(id)
     program.findById(id)
-        .populate('program_category')
-        .populate('program_rank')
-        .exec((err, data) => {
+        .populate([{
+            path:"program_category",
+            populate: {
+                path: 'program_subcategory',
+                model: 'psubcat'
+            },
+        }]).exec((err, data) => {
             if (err) {
                 console.log(err)
                 res.send({ error: 'category is not populate' })

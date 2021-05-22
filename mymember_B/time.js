@@ -290,20 +290,42 @@
 // console.log(Date.now().toString())
 
 
-var obj = {
-    name:'ram'
-}
+// var obj = {
+//     name:'ram'
+// }
 
-async function b(data1, callback){
-    callback(data1)
-}
+// async function b(data1, callback){
+//     callback(data1)
+// }
 
-async function a(data){
-  await b(data, async function(m){
-    console.log('run')
-    console.log(m)
+// async function a(data){
+//   await b(data, async function(m){
+//     console.log('run')
+//     console.log(m)
     
-  })
+//   })
+// }
+
+// a(obj)
+
+// var newd = new Date()
+// var old = new Date()
+// console.log(old,newd)
+
+// var sub = (newd.getTime()-old.getTime())
+
+// console.log(sub)
+
+function ab (){
+let x = 11 
+var age  = 18
+if(age>x){
+    let y = 12
+    console.log(x,y)
+     y = 13
+console.log(y)
 }
 
-a(obj)
+}
+
+ab()

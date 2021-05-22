@@ -5,7 +5,7 @@ const { requireSignin, isAuth,verifySchool } = require("../controllers/auth");
 
 router.get("/programCategory_list/:userId",verifySchool,catList)
 router.get("/programCategory_details/:categoryId",requireSignin,read)
-router.post("/program_createCategory/:userId",requireSignin,create)
+router.post("/program_createCategory/:userId/:pId",requireSignin,create)
 router.put("/program_updateCategory/:categoryId",requireSignin,update)
 router.delete("/program_deleteCategory/:categoryId",requireSignin,remove)
 

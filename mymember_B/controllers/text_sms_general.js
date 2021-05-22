@@ -31,6 +31,19 @@ function TimeZone(){
     return { Date:date,Time:time}
 }
 
+exports.all_chat_list = (req,res)=>{
+    textSentSave.find({userId:req.params.userId})
+    .select({ "sent_recieve_sms": { "$slice": -1 }})
+    .exec(function(err,doc) {
+        if(err){
+            console.log(err)
+            res.send({error:'all chat list not found'})
+        }else{
+            res.send({msg:doc})
+        }
+    })
+}
+
 exports.searchStd_chat = (req,res)=>{
     console.log(req.body.search);
   var regex = new RegExp("^" + req.body.search, "i");

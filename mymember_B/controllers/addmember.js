@@ -61,9 +61,9 @@ exports.std_program = async (req,res)=>{
 
 exports.bluckStd = async (req, res) => {
   var List = req.body.data;
-  await Promise.all(
-    List.map(async (item) => {
-      var memberdetails = item;
+  await Promise.all(List.map(async (item) =>
+   {
+         var memberdetails = item;
       var memberObj = new addmemberModal(memberdetails);
       memberObj.userId = req.params.userId;
       memberObj.save(function (err, data) {

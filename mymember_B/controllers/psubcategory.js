@@ -1,41 +1,59 @@
-const psubcategory = require("../models/psubcategory");
+const sub = require("../models/psubcategory");
 const pcategory = require("../models/pcategory");
-const { deleteOne, $where } = require("../models/psubcategory");
 
-exports.create = (req, res) => {
-    console.log(req.body)
+
+exports.create = async(req, res) => {
     var categoryId = req.params.catId;
-    var category = req.body.category;
-    var subcategoryDetails = category.subcatdetails;
-
-    for (let row of subcategoryDetails) {
-        obj = {
-            subcategory: row.subcategoryname,
-            color: row.color,
-            lable: row.lable,
-            category: category.name
+    var subcategoryDetails = req.body.subcatdetails;
+     Promise.all(subcategoryDetails.map(async (item)=>{
+        var obj = {subcategory:item.subcategory,
+            color:item.color,
+            lable:item.lable,
+            pName:req.body.pName,
+            cId:categoryId
         }
-        var psubcategoryObj = new psubcategory(obj)
-        console.log(psubcategoryObj)
-        psubcategoryObj.save((err, data) => {
-            if (err) {
+      var subCat = new sub(obj)
+      var d = await subCat.save()
+      console.log(d)
+      await pcategory.findOneAndUpdate({_id:categoryId},{$push:{ program_subcategory: d._id}})
+     
+   })).then((resp)=>{
+       res.send({msg:'subcategory add successfully'})
+   }).catch((err)=>{
+       console.log(err)
+       res.send({error:'subcategory add successfully'})
+   })    
+    
 
-                res.send({ error: 'subcategory not add' })
-            }
-            else{
+
+    // for (let row of subcategoryDetails) {
+    //     obj = {
+    //         subcategory: row.subcategoryname,
+    //         color: row.color,
+    //         lable: row.lable,
+    //         category: category.name
+    //     }
+    //     var psubcategoryObj = new psubcategory(obj)
+    //     console.log(psubcategoryObj)
+    //     psubcategoryObj.save((err, data) => {
+    //         if (err) {
+
+    //             res.send({ error: 'subcategory not add' })
+    //         }
+    //         else{
                 
-                pcategory.findByIdAndUpdate({ _id: categoryId }, { $push: { program_subcategory: data._id } })
-                    .exec((err, data) => {
-                        if (err) {
-                            res.send({ error: 'subcategory not push in category' })
-                        }
-                        else {
-                            res.send({ msg: 'subcategory add successfully',data })
-                        }
-                    })
-            }
-        })
-    }
+    //             pcategory.findByIdAndUpdate({ _id: categoryId }, { $push: { program_subcategory: data._id } })
+    //                 .exec((err, data) => {
+    //                     if (err) {
+    //                         res.send({ error: 'subcategory not push in category' })
+    //                     }
+    //                     else {
+    //                         res.send({ msg: 'subcategory add successfully',data })
+    //                     }
+    //                 })
+    //         }
+    //     })
+    // }
 }
 
 exports.update = (req, res) => {
