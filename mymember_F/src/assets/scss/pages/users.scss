@@ -585,8 +585,9 @@ button.cnfn-btn.btn.btn-secondary {
   height: 340px !important;
 }
 [dir] .tp-hdr-menu {
-  margin: 0px 12px;
-  padding-top: 20px;
+  // margin: 0px 12px;
+  margin-right: 12px;
+  // padding-top: 20px;
 }
 span.user-status.text_span_tp {
   font-size: 14px;
@@ -921,10 +922,26 @@ ol {
 span.user-status.text_span_tp.rs-left {
   margin-left: 5px;
 }
-.walletdropdown.nav-item.tp-hdr-menu.rs-l.dropdown {
-  margin-right: -6px;
-  padding-top: 17px;
-}
+
 a.nav-link.dropdown-user-link.rs-userpro {
-  margin-top: 6px;
+  padding: 20px 15px !important;
+  height: 100%;
+}
+
+a.nav-link.dropdown-user-link.rs-l {
+  padding: 20px 0px;
+  margin-top: 4px;
+}
+
+a.rs-sup {
+  padding: 20px 0px;
+}
+
+// .srol-y.card-body {
+//   overflow-y: unset!important;
+// }
+
+// forfootercss
+footer.footer.footer-light.ft-pd.footer-static {
+  padding: 1rem 21.2rem;
 }

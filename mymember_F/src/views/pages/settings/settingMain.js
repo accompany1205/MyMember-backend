@@ -30,6 +30,10 @@ import CreateStudentBilling from "./settingbillingModal/createStudentBilling"
 // import generalForm from "./general/generalForm"
 import General1Form from "./general1/general1Form"
 import AddLocation from "./location/generalForm"
+import RankTable from "./Program/manageRank/ranksTable"
+import StripRankTable from "../settings/strip/manageRank/ranksTable"
+
+
 
 
 
@@ -193,9 +197,11 @@ class UserEdit extends React.Component {
                                     <TabPane tabId="4">
                                       <ProgramTable />
                                       <CategoryTable/>
+                                      <RankTable/>
                                     </TabPane>
                                     <TabPane tabId="5">
                                       <StripTable />
+                                      <StripRankTable/>
                                     </TabPane>
                                     <TabPane tabId="6">
                                       <Billing1Table/>

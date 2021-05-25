@@ -270,8 +270,8 @@ class NavbarUser extends React.PureComponent {
       <ul className="nav navbar-nav navbar-nav-user float-right">
        
        
-          <UncontrolledDropdown className="walletdropdown nav-item tp-hdr-menu rs-l">
-              <DropdownToggle tag="a" className="nav-link dropdown-user-link">
+          <UncontrolledDropdown className="walletdropdown nav-item tp-hdr-menu">
+              <DropdownToggle tag="a" className="nav-link dropdown-user-link rs-l">
                 <div className="user-nav d-sm-flex d-none pt_mar">
                 <Icon.CreditCard size={20} color="blue" />
 
@@ -282,7 +282,7 @@ class NavbarUser extends React.PureComponent {
           < WalletDropdown {...this.props} />
         </UncontrolledDropdown >
          <div className="user-nav d-sm-flex d-none tp-hdr-menu">
-             <a href="pages/navsupport">
+             <a href="pages/navsupport" className="rs-sup">
              
                <Icon.CheckCircle size={20} color="green" />
                <span className="user-status text_span_tp"> Support</span> 

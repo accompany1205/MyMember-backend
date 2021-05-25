@@ -3,12 +3,13 @@ import ScrollToTop from "react-scroll-up"
 import { Button } from "reactstrap"
 import { Heart, ArrowUp } from "react-feather"
 import classnames from "classnames"
+import "../../../assets/scss/pages/users.scss"
 
 const Footer = props => {
   let footerTypeArr = ["sticky", "static", "hidden"]
   return (
     <footer
-      className={classnames("footer footer-light", {
+      className={classnames("footer footer-light ft-pd", {
         "footer-static": props.footerType === "static" || !footerTypeArr.includes(props.footerType),
         "d-none": props.footerType === "hidden"
       })}

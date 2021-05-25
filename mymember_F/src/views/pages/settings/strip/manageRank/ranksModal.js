@@ -34,7 +34,7 @@ class ModalForm extends React.Component {
                   outline
                   onClick={this.toggleModal}
                 >
-                 Manage Rank
+                 Add Stripe
             </Button.Ripple>
           
             <Modal
@@ -43,7 +43,7 @@ class ModalForm extends React.Component {
               className="modal-dialog-centered"
             >
                 <ModalHeader toggle={this.toggleModal}>
-                   Manage Rank
+                  Manage Stripe Rules
                 </ModalHeader>
                 <ModalBody>
                    <UserCreateForm toggle={this.toggleModal}/>

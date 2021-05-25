@@ -254,7 +254,7 @@ class UrgentCallList extends React.Component {
         
         <Col sm="12">
             <CardHeader>
-             <h5 style={{fontSize:"20px"}}>Program Ranks</h5>
+             <h5 style={{fontSize:"20px"}}>Stripe System</h5>
             </CardHeader>
          <Card>
             <CardBody className="srol-y">
