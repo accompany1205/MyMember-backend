@@ -43,7 +43,7 @@ class HorizontalForm extends React.Component {
                       type="text"
                       name="name"
                       id="merch"
-                      placeholder="wantaghcma"
+                      placeholder="Name"
                     />
                   </Col>
                 </FormGroup>
