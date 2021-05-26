@@ -28,14 +28,14 @@ class TaskSidebar extends React.Component {
     // taskStatus : false,
     // taskStarred : false,
     // taskImportant  : false,
-        
+
     Task: {
-        notes: "",
-        status: "",
-        subject: "",
-        tag: "",
-        todoDate: "",
-        todoTime: "",
+      notes: "",
+      status: "",
+      subject: "",
+      tag: "",
+      todoDate: "",
+      todoTime: "",
       // title: "",
       // desc: "",
       // tags: [],
@@ -45,36 +45,36 @@ class TaskSidebar extends React.Component {
 
     }
   }
-   
+
 
 
   componentDidUpdate(prevProps, prevState) {
-  //   // if(
-  //   //   (this.props.taskToUpdate !== null && this.state.taskToUpdate !== this.props.taskToUpdate) || 
-  //   //   (this.props.taskToUpdate !== null && this.state.taskStatus !== this.props.taskToUpdate.isCompleted) ||
-  //   //   (this.props.taskToUpdate !== null && this.state.taskStarred !== this.props.taskToUpdate.isStarred) ||
-  //   //   (this.props.taskToUpdate !== null && this.state.taskImportant !== this.props.taskToUpdate.isImportant) 
-  //   //   ){
-  //   //   this.setState({ 
-  //   //     taskToUpdate : this.props.taskToUpdate, 
-  //   //     taskTitle :  this.props.taskToUpdate.title,
-  //   //     taskDesc :  this.props.taskToUpdate.desc,
-  //   //     taskStatus : this.props.taskToUpdate.isCompleted,
-  //   //     taskStarred : this.props.taskToUpdate.isStarred,
-  //   //     taskImportant : this.props.taskToUpdate.isImportant
-  //   //   })
-  //   // }
-  //   // else{
-  //   //   return 
-  //   // }
+    //   // if(
+    //   //   (this.props.taskToUpdate !== null && this.state.taskToUpdate !== this.props.taskToUpdate) || 
+    //   //   (this.props.taskToUpdate !== null && this.state.taskStatus !== this.props.taskToUpdate.isCompleted) ||
+    //   //   (this.props.taskToUpdate !== null && this.state.taskStarred !== this.props.taskToUpdate.isStarred) ||
+    //   //   (this.props.taskToUpdate !== null && this.state.taskImportant !== this.props.taskToUpdate.isImportant) 
+    //   //   ){
+    //   //   this.setState({ 
+    //   //     taskToUpdate : this.props.taskToUpdate, 
+    //   //     taskTitle :  this.props.taskToUpdate.title,
+    //   //     taskDesc :  this.props.taskToUpdate.desc,
+    //   //     taskStatus : this.props.taskToUpdate.isCompleted,
+    //   //     taskStarred : this.props.taskToUpdate.isStarred,
+    //   //     taskImportant : this.props.taskToUpdate.isImportant
+    //   //   })
+    //   // }
+    //   // else{
+    //   //   return 
+    //   // }
 
-   if(!!this.props.taskToUpdate && prevProps.taskToUpdate !== this.props.taskToUpdate){
-       let {_id, ...todo} = this.props.taskToUpdate;
-       this.setState({Task : { ...this.state.Task, ...todo}});
-     }
-    
+    if (!!this.props.taskToUpdate && prevProps.taskToUpdate !== this.props.taskToUpdate) {
+      let { _id, ...todo } = this.props.taskToUpdate;
+      this.setState({ Task: { ...this.state.Task, ...todo } });
+    }
+
   }
-  
+
 
 
   handleNewTaskTags = tag => {
@@ -88,6 +88,7 @@ class TaskSidebar extends React.Component {
       ...this.state.newTask,
       tags: tag
     })
+
   }
 
   renderTags = taskArr => {
@@ -96,15 +97,14 @@ class TaskSidebar extends React.Component {
         <div className="chip-body">
           <span className="chip-text">
             <span
-              className={`bullet bullet-${
-                tag === "backend"
-                  ? "warning"
-                  : tag === "doc"
+              className={`bullet bullet-${tag === "backend"
+                ? "warning"
+                : tag === "doc"
                   ? "success"
                   : tag === "bug"
-                  ? "danger"
-                  : "primary"
-              } bullet-xs`}
+                    ? "danger"
+                    : "primary"
+                } bullet-xs`}
             />
             <span className="text-capitalize ml-25">{tag}</span>
           </span>
@@ -113,14 +113,14 @@ class TaskSidebar extends React.Component {
     ))
   }
 
-  render() {
+  render() {  
+
     const { Task } = this.state
 
     return (
       <div
-        className={`task-sidebar ${
-          this.props.addTaskState === true ? "show" : ""
-        }`}
+        className={`task-sidebar ${this.props.addTaskState === true ? "show" : ""
+          }`}
       >
         <div className="task-header">
           <div className="d-flex justify-content-between">
@@ -146,11 +146,13 @@ class TaskSidebar extends React.Component {
                       todoTime: "",
                     }
                   })
-                  this.props.addTask("close")}}
+                  this.props.addTask("close")
+                }}
               />
             </div>
           </div>
         </div>
+        
         <PerfectScrollbar>
           <div className="task-body">
             {/* <div className="d-flex justify-content-between mb-2">
@@ -318,15 +320,17 @@ class TaskSidebar extends React.Component {
                 type="text"
                 placeholder="subject"
                 value={
-                   Task.subject
+                  Task.subject
                 }
                 onChange={e => {
-                  
-                    this.setState({ Task : {
+
+                  this.setState({
+                    Task: {
                       ...this.state.Task,
-                      subject : e.target.value
-                    } })
-                  
+                      subject: e.target.value
+                    }
+                  })
+
                 }}
               />
             </FormGroup>
@@ -336,14 +340,16 @@ class TaskSidebar extends React.Component {
                 type="date"
                 placeholder="Date"
                 value={
-                   Task.todoDate
+                  Task.todoDate
                 }
                 onChange={e => {
-                    this.setState({ Task : {
+                  this.setState({
+                    Task: {
                       ...this.state.Task,
-                      todoDate : e.target.value
-                    } })
-               }}
+                      todoDate: e.target.value
+                    }
+                  })
+                }}
               />
             </FormGroup>
             <FormGroup>
@@ -352,15 +358,17 @@ class TaskSidebar extends React.Component {
                 type="time"
                 placeholder="time"
                 value={
-                Task.todoTime
+                  Task.todoTime
                 }
                 onChange={e => {
-                 
-                    this.setState({ Task : {
+
+                  this.setState({
+                    Task: {
                       ...this.state.Task,
-                      todoTime : e.target.value
-                    } })
-                 
+                      todoTime: e.target.value
+                    }
+                  })
+
                 }}
               />
             </FormGroup>
@@ -368,33 +376,37 @@ class TaskSidebar extends React.Component {
             <FormGroup>
               <label>Tag</label>
               <select className="slt" value={Task.tag} onChange={(e) => {
-                this.setState({Task : {
-                  ...this.state.Task,
-                  tag : e.target.value
-                }})
-              } }>
-                      <option>--Select--</option>
-                      <option>Events</option>
-                      <option>Business</option>
-                      <option>Personal</option>
-                      <option>Appointment</option>
+                this.setState({
+                  Task: {
+                    ...this.state.Task,
+                    tag: e.target.value
+                  }
+                })
+              }}>
+                <option>--Select--</option>
+                <option>Events</option>
+                <option>Business</option>
+                <option>Personal</option>
+                <option>Appointment</option>
               </select>
             </FormGroup>
-             
+
             <FormGroup>
               <label>status</label>
               <select className="slt" value={Task.status} onChange={(e) => {
-                this.setState({Task : {
-                  ...this.state.Task,
-                  status : e.target.value
-                }})
-              } }>
-                    <option>--Select--</option>
-                    <option>Past Due</option>
-                    <option>Pending</option>
-                    <option>Rescheduled</option>
-                    <option>Completed</option>
-                    <option>Not Completed</option>
+                this.setState({
+                  Task: {
+                    ...this.state.Task,
+                    status: e.target.value
+                  }
+                })
+              }}>
+                <option>--Select--</option>
+                <option>Past Due</option>
+                <option>Pending</option>
+                <option>Rescheduled</option>
+                <option>Completed</option>
+                <option>Not Completed</option>
               </select>
             </FormGroup>
 
@@ -407,11 +419,13 @@ class TaskSidebar extends React.Component {
                   Task.notes
                 }
                 onChange={e => {
-                    this.setState({ Task : {
+                  this.setState({
+                    Task: {
                       ...this.state.Task,
-                      notes : e.target.value
-                    } })
-                  
+                      notes: e.target.value
+                    }
+                  })
+
                 }}
               />
             </FormGroup>
@@ -432,9 +446,13 @@ class TaskSidebar extends React.Component {
                   if (this.props.taskToUpdate !== null) {
                     this.props.updateTask(this.props.taskToUpdate._id, this.state.Task)
                   } else {
+
                     this.props.ADD_NEW_TASK(this.state.Task)
+
                   }
+
                   this.props.addTask("close")
+
                   this.setState({
                     Task: {
                       notes: "",
@@ -445,17 +463,20 @@ class TaskSidebar extends React.Component {
                       todoTime: "",
                     }
                   })
+
+
                 }}
+
                 disabled={false}
-                // disabled={
-                //   taskTitle.length > 0 || newTask.title.length > 0
-                //     ? false
-                //     : true
-                // }
+              // disabled={
+              //   taskTitle.length > 0 || newTask.title.length > 0
+              //     ? false
+              //     : true
+              // }
               >
                 {this.props.taskToUpdate &&
-                this.props.taskToUpdate._id &&
-                this.props.taskToUpdate !== null
+                  this.props.taskToUpdate._id &&
+                  this.props.taskToUpdate !== null
                   ? "Update"
                   : "Add"}
               </Button.Ripple>
@@ -463,7 +484,10 @@ class TaskSidebar extends React.Component {
                 color="light"
                 outline
                 onClick={() => {
-                  this.props.addTask("close")
+
+                 
+                  
+
                   this.setState({
                     Task: {
                       notes: "",
@@ -474,14 +498,19 @@ class TaskSidebar extends React.Component {
                       todoTime: "",
                     }
                   })
+
+                  this.props.addTask("close")
                 }}
               >
                 Cancel
               </Button.Ripple>
-            </div> 
+            </div>
           </div>
+         
         </PerfectScrollbar>
+       
       </div>
+
     )
   }
 }
