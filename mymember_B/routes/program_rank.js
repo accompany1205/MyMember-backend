@@ -7,7 +7,7 @@ const upload = require('../handler/multer')
 
 router.get("/program_rank_info/:user_Id/:program_rank_id",requireSignin,program.program_Info);
 router.post("/add_program_rank/:user_Id/:pId",requireSignin,upload.single("rank_image"),program.create);
-//router.get("/list_of_program_rank/:user_id",requireSignin,program.read);
+// router.get("/list_of_program_rank/:user_id",requireSignin,program.read);
 router.put("/update_program_rank/:user_Id/:program_rank_id",upload.single("rank_image"),requireSignin,program.update);
 router.delete("/delete_program_rank/:user_Id/:program_rank_id",requireSignin,program.remove);
 
