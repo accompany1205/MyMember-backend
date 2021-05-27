@@ -46,7 +46,7 @@ exports.all_chat_list = (req,res)=>{
 
 exports.searchStd_chat = (req,res)=>{
     console.log(req.body.search);
-  var regex = new RegExp("^" + req.body.search, "i");
+  var regex = new RegExp("^" + req.body.search);
   console.log(regex);
   std.find(
       { $and: [{ userId: req.params.userId }, { firstName: regex }] },

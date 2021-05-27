@@ -37,7 +37,7 @@ exports.create = (req, res) => {
                     res.send({error:'image is not add in manage stripe'})
                    }
                    else{
-                    stripe.updateOne({stripeName:req.body.stripeName},{$push:{ manage_stripe : data._id }})
+                    stripe.updateOne({_id:req.params.sId},{$push:{ manage_stripe : data._id }})
                     .exec((err,data)=>{
                         if(err){
                             res.send({error:'manage stripe is not add in stripe'})
@@ -52,7 +52,7 @@ exports.create = (req, res) => {
             );
          }
              else{
-                stripe.updateOne({stripeName:req.body.stripeName},{$push:{ manage_stripe : data._id }})
+                stripe.updateOne({_id:req.params.sId},{$push:{ manage_stripe : data._id }})
                 .exec((err,stripe_data)=>{
                     if(err){
                         res.send({error:'manage stripe is not add in stripe'})

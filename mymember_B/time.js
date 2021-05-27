@@ -316,16 +316,49 @@
 
 // console.log(sub)
 
-function ab (){
-let x = 11 
-var age  = 18
-if(age>x){
-    let y = 12
-    console.log(x,y)
-     y = 13
-console.log(y)
-}
+// function ab (){
+// let x = 11 
+// var age  = 18
+// if(age>x){
+//     let y = 12
+//     console.log(x,y)
+//      y = 13
+// console.log(y)
+// }
 
-}
+// }
 
-ab()
+// ab()
+
+// var ary = ['a','b','c']
+
+// const result =ary.reduce((accumlator,ary)=>{
+//     return accumlator+ary 
+// })
+// console.log(result)
+
+// var ary = [{name:'a'},{name:'b'}]
+
+// var result = ary.reduce(myfunc)
+
+// function myfunc(accumlator,ar){
+//     return accumlator+ar
+// }
+// console.log(result)
+
+// var myGirls = [{"name":"Cecilie"}];
+// var myBoys = [{"userId":"123"}];
+// var myChildren = myGirls.concat(myBoys);
+
+// console.log(myChildren)
+
+// var ary = ['a','b','c','d']
+
+// console.log(ary)
+// var res = ary.slice(1,3)
+// console.log(res)
+// getName()
+// var x =9
+// function getName(){
+// console.log(x)
+// }
