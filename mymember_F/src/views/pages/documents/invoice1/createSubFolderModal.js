@@ -29,12 +29,12 @@ class ModalForm extends React.Component {
   render() {
     return (
       <React.Fragment>
-        
-            
-            <li 
-              style={{ 
-                listStyle: "none", paddingBottom: "10px", cursor:"pointer"}} 
-                onClick={this.toggleModal} 
+
+
+            <li
+              style={{
+                listStyle: "none", paddingBottom: "10px", cursor:"pointer"}}
+                onClick={this.toggleModal}
                 >
 
                   <Plus size="14" /> New
@@ -49,15 +49,15 @@ class ModalForm extends React.Component {
                 Sub Folder Management
                 </ModalHeader>
                 <ModalBody>
-                   <NewCategory 
-                   toggle={this.toggleModal} 
+                   <NewCategory
+                   toggle={this.toggleModal}
                    mainFolder={this.props.mainFolder}
-                   isSubFolder={this.props.isSubFolder} 
+                   isSubFolder={this.props.isSubFolder}
                    />
                 </ModalBody>
-               
+
             </Modal>
-            
+
         </React.Fragment>
     )
   }

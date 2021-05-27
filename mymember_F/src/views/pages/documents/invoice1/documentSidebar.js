@@ -2,7 +2,7 @@ import React from "react"
 import { UncontrolledCollapse, Card, CardHeader, CardTitle, CardBody, Row } from "reactstrap"
 import { Plus, FolderMinus, FolderPlus } from "react-feather"
 import NewFolder from "./createFolderModal"
-import { Get_DocFolder_LIST } from '../../../../redux/actions/document/document';
+import { Get_DocFolder_LIST, LIST_DOCUMENTS } from '../../../../redux/actions/document/document';
 import { connect } from 'react-redux';
 import NewSubFolder from './createSubFolderModal'
 
@@ -15,6 +15,10 @@ class CollapseUncontrolled extends React.Component {
 
   }
 
+  viewDocumentList(folderId) {
+    LIST_DOCUMENTS(folderId);
+  }
+
   render() {
     return (
       <React.Fragment>
@@ -23,8 +27,6 @@ class CollapseUncontrolled extends React.Component {
             <div>
               <p>Folders</p>
             </div>
-
-
             <NewFolder />
           </Row>
 
@@ -32,7 +34,7 @@ class CollapseUncontrolled extends React.Component {
             this.props.documentFolderList.reverse().map((v, i) =>
 
               <div className="vx-collapse collapse-bordered collapse-icon accordion-icon-rotate" >
-                <CardHeader id={v.folderName} style={{ paddingTop: "0.6rem" }}>
+                <CardHeader id={v.folderName} style={{ paddingTop: "0.6rem" }} onClick={this.viewDocumentList(v._id)}>
                   <CardTitle className="lead collapse-title collapsed">
 
                     <FolderPlus size="18" /> {v.folderName}
@@ -43,7 +45,7 @@ class CollapseUncontrolled extends React.Component {
                   <CardBody style={{ padding: "0" }} >
                       <ul style={{marginBottom:"0"}}>
                       {v.subFolder?.map((subFolder, _i) =>
-                        <li style={{ listStyle: "none", paddingBottom: "10px" }}>
+                        <li style={{ listStyle: "none", paddingBottom: "10px" }} onClick={this.viewDocumentList(subFolder._id)}>
                           <FolderMinus size="14" /> {subFolder.subFolderName}
                         </li>
 

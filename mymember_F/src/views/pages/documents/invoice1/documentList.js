@@ -9,10 +9,16 @@ import DocImg from "../../../../assets/img/pages/box11.svg"
 import StudentModal from "./studentListModal"
 import SampleDocxButton from "./sampleDocx"
 import UploadDocxButton from "./documentUploadModal"
+import {connect} from "react-redux";
+import {LIST_DOCUMENTS} from "../../../../redux/actions/document/document";
 
 
-class AllMembershipList extends React.Component {
+class DocumentsList extends React.Component {
+  componentDidMount() {
+    console.log("PROPS: ", this.props);
+    this.props.LIST_DOCUMENTS();
 
+  }
   render() {
     return (
       <React.Fragment>
@@ -50,6 +56,10 @@ class AllMembershipList extends React.Component {
   }
 }
 
+const mapStateToProps = (state) => {
+  return {
+    ...state.document
+  }
+}
 
-
-export default AllMembershipList;
+export default connect(mapStateToProps, { LIST_DOCUMENTS })(DocumentsList);
