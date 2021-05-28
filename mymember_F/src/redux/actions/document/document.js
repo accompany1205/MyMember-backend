@@ -155,3 +155,48 @@ export const LIST_DOCUMENTS = (folderId) => {
     }
   }
 }
+
+// Upload Document API Call
+export const UPLOAD_DOCUMENT = (folderId, document, documentName) => {
+  return async dispatch => {
+    try{
+      console.log("folderId: ", folderId);
+      console.log("document: ", document);
+      console.log("documentName: ", documentName);
+      console.log("Auth: ", `Bearer ${localStorage.getItem("access_token")}`);
+      let bodyFormData = new FormData();
+      bodyFormData.append('document', document,documentName);
+      bodyFormData.append('document_name', documentName);
+      bodyFormData.append('subFolder', folderId);
+
+      let response = await axios({
+        method: 'post',
+        url: `${baseUrl}/api/upload_document/${localStorage.getItem("user_id")}`,
+        data: bodyFormData,
+        headers: {
+          "Authorization" : `Bearer ${localStorage.getItem("access_token")}`
+        },
+      });
+      console.log('Upload response: ', response.data);
+      if(response.data && response.status === 200 && !response.data.msg){
+        dispatch({
+          type : "Get_Sub_Document_List",
+          payload : response.data
+        })
+      }
+      else{
+        dispatch({
+          type : "Get_Sub_Document_List",
+          payload : []
+        })
+      }
+    }
+    catch(error){
+      console.log(error);
+      dispatch({
+        type : "Get_Sub_Document_List",
+        payload : []
+      })
+    }
+  }
+}

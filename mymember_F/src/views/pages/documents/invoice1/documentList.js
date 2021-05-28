@@ -15,7 +15,6 @@ import {LIST_DOCUMENTS} from "../../../../redux/actions/document/document";
 
 class DocumentsList extends React.Component {
   componentDidMount() {
-    console.log("PROPS: ", this.props);
     this.props.LIST_DOCUMENTS();
 
   }

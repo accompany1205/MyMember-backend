@@ -11,7 +11,7 @@ import {
     Button,
     Label
 } from "reactstrap"
-import { Create_DocSubFolder, Get_DocFolder_LIST } from '../../../../redux/actions/document/document';
+import { Create_DocSubFolder, Get_DocFolder_LIST, UPLOAD_DOCUMENT } from '../../../../redux/actions/document/document';
 import { Upload, File } from "react-feather"
 import { connect } from 'react-redux';
 
@@ -25,13 +25,14 @@ class FloatingLabels extends React.Component {
         document_name: "",
         subFolder: [],
         rowData: [],
+        selectedSubFolder: "",
     }
     componentDidMount() {
         this.props.Get_DocFolder_LIST();
     }
 
-    imageHandler = e => {
-        this.setState({ ...this.state, memberprofileImage: e.target.files[0], document: URL.createObjectURL(e.target.files[0]) });
+    fileHandler = e => {
+        this.setState({ ...this.state, document: e.target.files[0], document_name: e.target.files[0].name });
     }
 
     changeHandler(e) {
@@ -42,8 +43,9 @@ class FloatingLabels extends React.Component {
     onsubmit(e) {
         // console.log(">>>>>>>>>>>>>>",this.state)
         e.preventDefault();
-        const { document, ...rest } = this.state;
-        this.props.Create_DocSubFolder({ ...rest });
+        //const { document, ...rest } = this.state;
+        //this.props.Create_DocSubFolder({ ...rest });
+      this.props.UPLOAD_DOCUMENT(this.state.selectedSubFolder, this.state.document, this.state.document_name);
     }
     componentDidUpdate(prevProps) {
         if (prevProps.folderList !== this.props.folderList) {
@@ -70,7 +72,7 @@ class FloatingLabels extends React.Component {
                     {/* <CardTitle>Vertical Form With Floating Labels</CardTitle> */}
                 </CardHeader>
                 <CardBody>
-                    <Form className="mt-10" onSubmit={this.onsubmit}>
+                    <Form className="mt-10" onSubmit={this.onsubmit.bind(this)}>
                         <Row>
                             <Col sm="12">
                                 <FormGroup>
@@ -81,7 +83,7 @@ class FloatingLabels extends React.Component {
                                         }
                                     </div>
                                     <input style={{ display: "none" }} type={"file"}
-                                        ref={this.myRef} onChange={this.imageHandler}
+                                        ref={this.myRef} onChange={this.fileHandler}
                                     />
                                     <Button
                                         color="outline-primary"
@@ -168,4 +170,4 @@ const mapStateToProps = (state) => {
         folderList: state.document.documentFolderList
     };
 }
-export default connect(mapStateToProps, { Create_DocSubFolder, Get_DocFolder_LIST })(FloatingLabels);
+export default connect(mapStateToProps, { Create_DocSubFolder, Get_DocFolder_LIST, UPLOAD_DOCUMENT })(FloatingLabels);

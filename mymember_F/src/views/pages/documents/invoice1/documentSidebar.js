@@ -12,11 +12,10 @@ class CollapseUncontrolled extends React.Component {
 
   componentDidMount() {
     this.props.Get_DocFolder_LIST();
-
   }
 
   viewDocumentList(folderId) {
-    LIST_DOCUMENTS(folderId);
+    this.props.LIST_DOCUMENTS(folderId);
   }
 
   render() {
@@ -34,7 +33,7 @@ class CollapseUncontrolled extends React.Component {
             this.props.documentFolderList.reverse().map((v, i) =>
 
               <div className="vx-collapse collapse-bordered collapse-icon accordion-icon-rotate" >
-                <CardHeader id={v.folderName} style={{ paddingTop: "0.6rem" }} onClick={this.viewDocumentList(v._id)}>
+                <CardHeader id={v.folderName} style={{ paddingTop: "0.6rem" }}>
                   <CardTitle className="lead collapse-title collapsed">
 
                     <FolderPlus size="18" /> {v.folderName}
@@ -45,7 +44,7 @@ class CollapseUncontrolled extends React.Component {
                   <CardBody style={{ padding: "0" }} >
                       <ul style={{marginBottom:"0"}}>
                       {v.subFolder?.map((subFolder, _i) =>
-                        <li style={{ listStyle: "none", paddingBottom: "10px" }} onClick={this.viewDocumentList(subFolder._id)}>
+                        <li style={{ listStyle: "none", paddingBottom: "10px" }} onClick={() => this.viewDocumentList(subFolder._id)}>
                           <FolderMinus size="14" /> {subFolder.subFolderName}
                         </li>
 
@@ -78,4 +77,4 @@ const mapStateToProps = (state) => {
   }
 }
 // export default CollapseUncontrolled
-export default connect(mapStateToProps, { Get_DocFolder_LIST })(CollapseUncontrolled);
+export default connect(mapStateToProps, { Get_DocFolder_LIST, LIST_DOCUMENTS })(CollapseUncontrolled);
