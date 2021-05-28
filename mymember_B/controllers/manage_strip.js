@@ -117,6 +117,7 @@ exports.update = (req, res) => {
             res.send(err);
         });
 }
+
 exports.manage_stripe_detail =(req, res) => {
     const manage_stripeId = req.params.manage_stripeId
     manageStripe.findById(manage_stripeId)
