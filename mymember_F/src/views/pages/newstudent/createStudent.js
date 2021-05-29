@@ -316,7 +316,9 @@ class CreateStudent extends React.Component {
                     {/* <option>Student Belt Size</option> */}
                     {/* {console.log(">>>>>>",this.props.categories)} */}
 
-                    {this.props.categories.map((v, i) => <option value={v.programName} key={v._id}>{v.programName}</option>)}
+                    {this.props.categories.length >0 && this.props.categories.map((v, i) => (
+                    <option value={v.programName} key={v._id}>{v.programName}</option>
+                    ))}
                   </Input>
                 </FormGroup>
                 {/* <Label> Program color </Label> */}

@@ -362,3 +362,13 @@
 // function getName(){
 // console.log(x)
 // }
+
+// var ary = [1,2,3,3]
+
+// var res = ary.filter((ele)=>{
+//     if(ele>2){
+//         return ele;
+//     }
+// })
+
+// console.log(res)

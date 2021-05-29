@@ -220,10 +220,14 @@ class UsersList extends React.Component {
   }
 
   async componentDidMount() {
-    await axios.get("api/users/list").then(response => {
+
+    
+    // await axios.get("api/test/student_list").then(response => {
+     await axios.get("api/users/list").then(response => {
       let rowData = response.data
       this.setState({ rowData })
     })
+  
   }
 
   onGridReady = params => {
