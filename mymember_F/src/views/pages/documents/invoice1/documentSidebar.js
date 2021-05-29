@@ -44,7 +44,7 @@ class CollapseUncontrolled extends React.Component {
                   <CardBody style={{ padding: "0" }} >
                       <ul style={{marginBottom:"0"}}>
                       {v.subFolder?.map((subFolder, _i) =>
-                        <li style={{ listStyle: "none", paddingBottom: "10px" }} onClick={() => this.viewDocumentList(subFolder._id)}>
+                        <li style={{ listStyle: "none", paddingBottom: "10px", cursor: "pointer" }} onClick={() => this.viewDocumentList(subFolder._id)}>
                           <FolderMinus size="14" /> {subFolder.subFolderName}
                         </li>
 
