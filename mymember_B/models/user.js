@@ -174,7 +174,8 @@ const userSchema = new schema(
 
         },
         profile_image: {
-            type: String
+            type: String,
+            default:"https://storage.googleapis.com/mymember/All-Images/abf577f0-66ca-11eb-b349-7143bfd88acf-download.png"
         },
         schoolId:{
             type:String

@@ -19,10 +19,12 @@ exports.signup = (req, res) => {
         error: "Email is taken",
       });
     }
+    else{
     user.salt = undefined;
     user.hashed_password = undefined;
     navbar_custom(user.id);
     res.json({ user });
+  }
   });
 };
 exports.forgetpasaword = (req, res) => {
