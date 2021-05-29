@@ -5,38 +5,43 @@ const program = require("../models/program")
 const manage_change_rank = require("../models/change_rank")
 var async = require('async')
 
+
 exports.create = (req,res)=>{
-   student.find({_id:req.body.stdList})
-   .select('firstName')
-   .select('lastName')
-   .select('studentBeltSize')
-   .select('category')
-   .select('program')
-   .select('programColor')
-   .select('memberprofileImage')
-   .select('current_rank_name')
-   .select('current_rank_img')
-   .select('next_rank_id')
-   .select('next_rank_name')
-   .select('next_rank_img')
-   .exec((err,data)=>{
-       if(err){
-           res.send(err)
-       }
-       else{
-        TestModal.insertMany(data).then(async(result)=>{
-          await Promise.all(data.map(async(item)=>{
-             var pDetail = await program.findOne({programName:item.program}) 
-             console.log(pDetail.color)
-             var testUpdate = await TestModal.updateOne({_id: item._id },{ $set : {userId: req.params.userId,start_date:req.body.start_date,programColor:pDetail.color,programId:pDetail._id  }});
-          })).then((respT)=>{
-              res.send({msg:'student add in test section'})
-          })
-   }).catch((err)=>{
-       res.send({error:"student is already exist in test"})
-   })
-       }
-   })
+    req.body.forEach((element) => {
+        student.find({_id:element.stdList})
+        .select('firstName')
+        .select('lastName')
+        .select('studentBeltSize')
+        .select('category')
+        .select('program')
+        .select('programColor')
+        .select('memberprofileImage')
+        .select('current_rank_name')
+        .select('current_rank_img')
+        .select('next_rank_id')
+        .select('next_rank_name')
+        .select('next_rank_img')
+        .exec((err,data)=>{
+            if(err){
+                res.send(err)
+            }
+            else{
+             TestModal.insertMany(data).then(async(result)=>{
+               await Promise.all(data.map(async(item)=>{
+                  var pDetail = await program.findOne({programName:item.program}) 
+                  console.log(pDetail.color)
+                  var testUpdate = await TestModal.updateOne({_id: item._id },{ $set : {userId: req.params.userId,start_date:req.body.start_date,programColor:pDetail.color,programId:pDetail._id  }});
+                  console.log('tttttttt', testUpdate)
+               })).then((respT)=>{
+                   res.send({msg:'student add in test section'})
+               })
+        }).catch((err)=>{
+            res.send({error:"student is already exist in test"})
+        })
+            }
+        })
+    });
+   
 }
 
 exports.list_std = async(req,res)=>{

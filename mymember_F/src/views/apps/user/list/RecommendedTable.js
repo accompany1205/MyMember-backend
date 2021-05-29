@@ -9,7 +9,8 @@ import {
   UncontrolledButtonDropdown,
   DropdownMenu,
   DropdownItem,
-  DropdownToggle
+  DropdownToggle,
+  Button
 } from "reactstrap"
 import axios from "axios"
 import { ContextLayout } from "../../../../utility/context/Layout"
@@ -53,33 +54,35 @@ class UsersList extends React.Component {
       
       {
         headerName: "Full Name",
-        field: "firstName",
+        field: "lastName",
         filter: true,
         width: 200,
-        cellRendererFramework: params => {
-          return params ? params.firstName : "";
-        }
+        // cellRendererFramework: params => {
+        //   return params ? params.firstName : "";
+        // }
       },
       {
         headerName: "Date of Exam",
         field: "status",
         filter: true,
         width: 150,
-        cellRendererFramework: params => {
-          return params.value === "active" ? (
-            <div className="badge badge-pill badge-light-danger">
-             None
-            </div>
-          ) : params.value === "blocked" ? (
-            <div className="badge badge-pill badge-light-danger">
-              None
-            </div>
-          ) : params.value === "deactivated" ? (
-            <div className="badge badge-pill badge-light-danger">
-               None
-            </div>
-          ) : null
-        }
+        // cellRendererFramework: params => {
+        //   if(params) {
+        //     return params.value === "active" ? (
+        //       <div className="badge badge-pill badge-light-danger">
+        //        None
+        //       </div>
+        //     ) : params.value === "blocked" ? (
+        //       <div className="badge badge-pill badge-light-danger">
+        //         None
+        //       </div>
+        //     ) : params.value === "deactivated" ? (
+        //       <div className="badge badge-pill badge-light-danger">
+        //          None
+        //       </div>
+        //     ) : null
+        //   }
+        // }
       },
       
       {
@@ -93,23 +96,25 @@ class UsersList extends React.Component {
         field: "next_rank_name",
         filter: true,
         width: 200,
-        cellRendererFramework: params => {
-          return params.value === "active" ? (
-            <div className="badge badge-pill badge-light-success">
-             Regular
-            </div>
-          ) : params.value === "blocked" ? (
-            <div className="badge badge-pill badge-light-danger">
-              {/* {params.value} */}
-              N/A
-
-            </div>
-          ) : params.value === "deactivated" ? (
-            <div className="badge badge-pill badge-light-warning">
-              {params.value}
-            </div>
-          ) : null
-        }
+        // cellRendererFramework: params => {
+        //   if(params){
+        //     return params.value === "active" ? (
+        //       <div className="badge badge-pill badge-light-success">
+        //        Regular
+        //       </div>
+        //     ) : params.value === "blocked" ? (
+        //       <div className="badge badge-pill badge-light-danger">
+        //         {/* {params.value} */}
+        //         N/A
+  
+        //       </div>
+        //     ) : params.value === "deactivated" ? (
+        //       <div className="badge badge-pill badge-light-warning">
+        //         {params.value}
+        //       </div>
+        //     ) : null
+        //   }
+        //   }   
       },
       {
         headerName: "Belt Size",
@@ -134,49 +139,52 @@ class UsersList extends React.Component {
         field: "",
         filter: true,
         width: 125,
-        cellRendererFramework: params => {
-          return params.value === "active" ? (
-            <div className="badge badge-pill badge-light-warning">
-             876
-            </div>
-          ) : params.value === "blocked" ? (
-            <div className="badge badge-pill badge-light-warning">
-              8768
-            </div>
-          ) : params.value === "deactivated" ? (
-            <div className="badge badge-pill badge-light-warning">
-               786
-            </div>
-          ) : null
-        }
-       
+        // cellRendererFramework: params => {
+        //   if(params){
+        //     return params.value === "active" ? (
+        //       <div className="badge badge-pill badge-light-warning">
+        //        876
+        //       </div>
+        //     ) : params.value === "blocked" ? (
+        //       <div className="badge badge-pill badge-light-warning">
+        //         8768
+        //       </div>
+        //     ) : params.value === "deactivated" ? (
+        //       <div className="badge badge-pill badge-light-warning">
+        //          786
+        //       </div>
+        //     ) : null
+        //   }
+        //   }
       },
       {
         headerName: "Delete",
         field: "transactions",
         width: 150,
-        cellRendererFramework: params => {
-          return (
-            <div className="actions cursor-pointer">
-              <Info   
-              className="mr-50"
-              size={20}
-              />
-              <Eye
-               className="mr-50"
-               size={20}
-              />
-              <Mail 
-               className="mr-50"
-               size={20} 
-               />
-              <Phone
-               className="mr-50"
-               size={20}
-              />
-            </div>
-          )
-        }
+        // cellRendererFramework: params => {
+        // if(params){
+          // return (
+            // <div className="actions cursor-pointer">
+            //   <Info   
+            //   className="mr-50"
+            //   size={20}
+            //   />
+            //   <Eye
+            //    className="mr-50"
+            //    size={20}
+            //   />
+            //   <Mail 
+            //    className="mr-50"
+            //    size={20} 
+            //    />
+            //   <Phone
+            //    className="mr-50"
+            //    size={20}
+            //   />
+            // </div>
+          // )
+        // }
+        // }
       }
     ],
     getRowHeight: function (params) {

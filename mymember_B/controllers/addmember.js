@@ -400,6 +400,7 @@ exports.Former_Std = (req, res) => {
 
 exports.active_Std = (req, res) => {
   addmemberModal
+    // .find({ studentType: "Active Student" })
     .find({ userId: req.params.userId, studentType: "Active Student" })
     .populate("membership_details")
     .exec((err, active_std) => {

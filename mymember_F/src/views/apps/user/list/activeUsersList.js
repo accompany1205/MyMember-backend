@@ -36,6 +36,7 @@ import "../../../../assets/scss/plugins/tables/_agGridStyleOverride.scss"
 import "../../../../assets/scss/pages/users.scss"
 import CandidateModal from "./CandidateModal"
 import TestModal from "./TestModal"
+import Contact from "./Contact"
 // import Spinner from ""
 import Spinner from "../../../../components/@vuexy/spinner/Loading-spinner"
 
@@ -54,6 +55,7 @@ import StusercalliconModal from "../../../pages/studentlisticoncall/stusercallic
 class UsersLists extends React.Component {
   state = {
     checkboxSelectionIds: [],
+    checkedTestStudents:[],
     rowData: null,
     pageSize: 20,
     isVisible: true,
@@ -364,13 +366,16 @@ class UsersLists extends React.Component {
   onSelectionChanged() {
     var selectedRows = this.gridApi.getSelectedRows();
     let checkboxSelectionIds = [];
+    let checkedTestStudents = [];
     console.log(selectedRows);
     selectedRows.forEach(function(selectedRow, index) {
       let paymentslistobject = selectedRow["_id"];
       checkboxSelectionIds.push(paymentslistobject);
+      checkedTestStudents.push(selectedRow);
     });
-
+    // console.log('---9-9-99-9-9-9-9',checkedTestStudents);
     this.setState({ checkboxSelectionIds: checkboxSelectionIds });
+    this.setState({ checkedTestStudents: checkedTestStudents });
   }
 
   render() {
@@ -400,18 +405,19 @@ class UsersLists extends React.Component {
                 </Button>
                 </a>
 
-                <Button className="btn-lg fides5 btn waves-effect waves-light">
+                {/* <Button className="btn-lg fides5 btn waves-effect waves-light">
                   <Phone size={21} />
                   <br></br>
                   Contact
-                </Button>
+                </Button> */}
+                <Contact testStudents={this.state.checkedTestStudents}/>
                 {/* <Button className="btn-lg fides4 btn waves-effect waves-light">
                   <User size={21} />
                   <br></br>
                   Candidate
                 </Button> */}
                 <CandidateModal />
-                <TestModal />
+                <TestModal  testStudents={this.state.checkedTestStudents}/>
                 {/* <Button className="btn-lg fides3 btn waves-effect waves-light">
                   <Plus size={21} />
                   <br></br>
