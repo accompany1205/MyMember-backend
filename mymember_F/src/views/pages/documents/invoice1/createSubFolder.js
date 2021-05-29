@@ -28,8 +28,10 @@ class FloatingLabels extends React.Component {
   }
 
   changeHandler(e){
+    // Remove space from folder name
+    let value = e.target.value.replace(/\s+/g, ' ').trim();
 
-      this.setState({...this.state, [e.target.name] : e.target.value});
+    this.setState({...this.state, [e.target.name] : value});
 
   }
 

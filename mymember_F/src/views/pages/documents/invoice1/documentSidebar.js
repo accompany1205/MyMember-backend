@@ -30,7 +30,7 @@ class CollapseUncontrolled extends React.Component {
           </Row>
 
           {this.props.documentFolderList && this.props.documentFolderList.length > 0 &&
-            this.props.documentFolderList.reverse().map((v, i) =>
+            this.props.documentFolderList.sort().map((v, i) =>
 
               <div className="vx-collapse collapse-bordered collapse-icon accordion-icon-rotate" >
                 <CardHeader id={v.folderName} style={{ paddingTop: "0.6rem" }}>
@@ -73,7 +73,7 @@ class CollapseUncontrolled extends React.Component {
 }
 const mapStateToProps = (state) => {
   return {
-    ...state.document
+    ...state.document,
   }
 }
 // export default CollapseUncontrolled

@@ -20,16 +20,18 @@ class FloatingLabels extends React.Component {
   constructor(props){
     super(props);
     this.state = {
-      folderName : ""  
+      folderName : ""
     }
     this.changeHandler = this.changeHandler.bind(this);
     this.onsubmit = this.onsubmit.bind(this);
   }
 
   changeHandler(e){
-    
-      this.setState({...this.state, [e.target.name] : e.target.value});
-      
+      // Remove space from folder name
+      let value = e.target.value.replace(/\s+/g, ' ').trim();
+
+      this.setState({...this.state, [e.target.name] : value});
+
   }
 
   onsubmit(e){

@@ -30,25 +30,37 @@ class DocumentsList extends React.Component {
           </Col>
 
         </Row>
-            <Row>
-                <Col sm="2">
-                  <Card style={{padding:"1rem",backgroundColor:"rgb(140 139 139 / 24%)",textAlign:"center"}}>
-                    <img src={DocImg} />
+        <div style={{
+          justifyContent: 'center',
+          alignItems: 'center',
+          flex: 1,
+        }}>
+          <div style={{
+            flex: 1,
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+          }}>
+            {this.props.uploadDocument && this.props.uploadDocument.length > 0 &&
+              this.props.uploadDocument.map((doc) => {
+              return(<Card style={{
+                padding:"1rem",
+                backgroundColor:"rgb(140 139 139 / 24%)",
+                width: 160,
+                marginLeft: 12,
+                marginRight: 12,
+                marginBottom: 51,
+              }}
+                    onClick={() => {
+                      window.open(doc.document , "_blank");
+                    }}
+              >
+                <img src={DocImg} />
+                <span style={{textAlign: 'center'}}>{doc.document_name}</span>
+              </Card>);
+            })}
+          </div>
 
-                    {/* <Button.Ripple className='btn-icon' color='flat-secondary'>
-                    <img src={MergeImg} width="14px"/>
-                        Merge
-                    </Button.Ripple> */}
-                    <StudentModal />
-                  </Card>
-                </Col>
-                <Col sm="2">
-                  <Card style={{padding:"1rem",backgroundColor:"rgb(140 139 139 / 24%)"}}>
-                    <img src={DocImg} />
-                    <StudentModal />
-                  </Card>
-                </Col>
-            </Row>
+        </div>
 
         </React.Fragment>
     )
