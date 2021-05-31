@@ -53,7 +53,7 @@ exports.removeSubFolder = (req,res)=>{
             res.send({error:'sub folder is not remove'})
         }
         else{
-            DocFolder.update({"subFolder":removeFolder._id},{$pull:{"subFolder":removeFolder._id}},
+            DocFolder.updateOne({"subFolder":removeFolder._id},{$pull:{"subFolder":removeFolder._id}},
             function(err,data){
                 if(err){
                     res.send({error:'subfolder is not remove in folder'})

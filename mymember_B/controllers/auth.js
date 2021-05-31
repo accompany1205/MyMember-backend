@@ -6,6 +6,8 @@ const { errorHandler } = require("../helpers/dbErrorHandler");
 const sgMail = require("@sendgrid/mail");
 sgMail.setApiKey(process.env.email);
 const navbar = require("../models/navbar.js");
+const email_sms = require("../email_sms")
+
 
 exports.signup = (req, res) => {
   console.log("req.body", req.body);
@@ -23,7 +25,13 @@ exports.signup = (req, res) => {
     user.salt = undefined;
     user.hashed_password = undefined;
     navbar_custom(user.id);
-    res.json({ user });
+    console.log(req.body.email)
+    email_sms.sendEmailReg(req.body.email).then((respEmail)=>{
+      res.json({ msg:'user signup and email sent successfully','data':user });
+    }).catch((error)=>{
+      res.json({ msg:'user signup successfully but email not sent','data':user });
+    })
+    
   }
   });
 };

@@ -372,3 +372,85 @@
 // })
 
 // console.log(res)
+
+// const fs = require('fs')
+// const path = require('path')
+// const p  = path.join(__dirname, 'new.txt')
+// console.log(p)
+
+// var file = fs.readFileSync(p)
+// console.log(file.toString())
+// console.log('run')
+
+// const EventEmitter = require('events')
+// const myEmitter = new EventEmitter();
+
+// function c1() {
+//     console.log('an event occurred!');
+//  }
+ 
+//  function c2() {
+//     console.log('yet another event occurred!');
+//  }
+
+
+ 
+
+// myEmitter.on('eventOne', c1); // Register for eventOne
+// // myEmitter.on('eventOne', c2); // Register for eventOne
+
+// myEmitter.emit('eventOne');
+
+
+// console.log('Batman begins');
+
+// process.on('exit', function(code) {
+//     return console.log(`About to exit with code ${code}`);
+// });
+
+
+// console.log('Batman beginfdss');
+// if(x == undefined){
+//    x=10
+// console.log(x)
+// }
+// var x = 2
+
+// console.log(x)
+// var ary = [1,2,3,2,2,6]
+
+// var result = ary.find(checkNum)
+// console.log(result)
+
+// function checkNum(val){
+//    console.log(val)
+//    if(val==2){
+//       return val
+//    }
+// }
+
+// var ary = [1,2,3,2,2,6]
+// var result = ary.includes(12)
+// console.log(result)
+
+
+// ES6 rest parameter
+// function fun(...input){
+//     console.log(input,'in')
+//     let sum = 0;
+//     for(let i of input){
+//         sum+=i;
+//     }
+//     return sum;
+// }
+  
+// console.log(fun(1,2)); // 3
+// console.log(fun(1,2,3)); // 6 
+// console.log(fun(1,2,3,4,5)); 
+
+// var ary = [1,2,4,3,4,5,6] 
+
+// var result = ary.slice(2,-2)
+// "use strict";
+x = 3.14; 
+console.log(x)

@@ -5,11 +5,11 @@ const Finance_infoSchema = new schema(
     {
         card_type:{
             type: String,
-            required: true
+            
         },
         holder_name:{
             type: String,
-            required: true
+            
         },
         notes:{
             type: String,
@@ -20,34 +20,32 @@ const Finance_infoSchema = new schema(
         },
         status:{
             type: String,
-            required: true
         }, 
         credit_Card_type: {
             type: String,
-            required: true
+            
         },
         credit_Card_Number: {
             type: String,
-            required: true
+            
         },
          credit_cvv:{
             type: String,
-            required: true
+            
         },
         cardExpiry:{
             type:Date,
-            require:true
+            
         },
         expiry_month: {
             type: Number,
-            required: true
+            
         },
          expiry_year: {
             type: Number,
-            required: true
+            
         }, 
         billing_address: {
-            type: String,
         },
          country: {
             type: String,

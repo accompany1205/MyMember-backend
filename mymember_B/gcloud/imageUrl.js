@@ -13,9 +13,11 @@ function clourUrl(){
 
 
         return new Promise((resolve, reject) => {
-            blogStream.on("error", err => reject(err))
+            blogStream.on("error", err =>{ reject(err)
+                        console.log(err)})
             blogStream.on("finish", () => {
                 const publicUrl = `https://storage.googleapis.com/${process.env.GCS_BUCKET}/${doc.name}`
+                console.log(publicUrl)
                 resolve(publicUrl)
             })
             blogStream.end(file.buffer)
