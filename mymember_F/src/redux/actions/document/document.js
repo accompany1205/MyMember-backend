@@ -16,7 +16,6 @@ export const Create_DocFolder = task => {
 }
 
 export const Get_DocFolder_LIST = () => {
-  console.log("Auth: ", `Bearer ${localStorage.getItem("access_token")}`);
   return async dispatch => {
     try{
       let response = await axios.get(
@@ -29,19 +28,9 @@ export const Get_DocFolder_LIST = () => {
       );
       console.log('Subfolder response: ', response.data);
       if(response.data && response.status === 200 && !response.data.msg){
-        // Workaround need to update once subfolder can accept space
-        let finalData = [];
-        response.data.forEach((value) => {
-        let gotSpace = value.folderName.indexOf(' ') >= 0 ? true : false;
-          if (!gotSpace) {
-            finalData.push(value);
-          }
-        });
-        // End of Workaround
-
         dispatch({
           type : "Get_Document_List",
-          payload : finalData,
+          payload : response.data,
         })
       }
       else{

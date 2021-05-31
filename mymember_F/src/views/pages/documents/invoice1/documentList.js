@@ -25,7 +25,6 @@ class DocumentsList extends React.Component {
           <Col sm="4" style={{display:"flex", justifyContent:"space-around"}}>
 
             <UploadDocxButton />
-
             <SampleDocxButton/>
           </Col>
 

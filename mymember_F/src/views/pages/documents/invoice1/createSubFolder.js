@@ -28,10 +28,8 @@ class FloatingLabels extends React.Component {
   }
 
   changeHandler(e){
-    // Remove space from folder name
-    let value = e.target.value.replace(/\s+/g, ' ').trim();
 
-    this.setState({...this.state, [e.target.name] : value});
+    this.setState({...this.state, [e.target.name] : e.target.value});
 
   }
 
@@ -41,7 +39,8 @@ class FloatingLabels extends React.Component {
     const { ...rest } = this.state;
     if(this.state.subFolderName != ""){
       if (this.props.isSubFolder) {
-        this.props.Create_DocSubFolder({ subFolderName: this.state.subFolderName}, this.props.mainFolder);
+        this.props.Create_DocSubFolder({ subFolderName: this.state.subFolderName.trim()}, this.props.mainFolder);
+        this.props.toggle();
       }
 
     }

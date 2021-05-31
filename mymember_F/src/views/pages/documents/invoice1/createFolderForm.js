@@ -27,20 +27,18 @@ class FloatingLabels extends React.Component {
   }
 
   changeHandler(e){
-      // Remove space from folder name
-      let value = e.target.value.replace(/\s+/g, ' ').trim();
 
-      this.setState({...this.state, [e.target.name] : value});
+      this.setState({...this.state, [e.target.name] : e.target.value});
 
   }
 
   onsubmit(e){
-    // console.log(">>>>>>>>>>>>>>",this.state)
     e.preventDefault();
-    this.props.Create_DocFolder(this.state);
-    // setTimeout(() => {
-    //   this.props.toggle();
-    // }, 600)
+    let createFolderData = {
+      folderName: this.state.folderName.trim(),
+    }
+    this.props.Create_DocFolder(createFolderData);
+    this.props.toggle();
   }
   render() {
 
@@ -81,8 +79,9 @@ class FloatingLabels extends React.Component {
                     color="warning"
                     type="reset"
                     className="mb-1"
+                    onClick={() => this.props.toggle()}
                   >
-                   Delete
+                   Cancel
                   </Button.Ripple>
                 </FormGroup>
               </Col>
