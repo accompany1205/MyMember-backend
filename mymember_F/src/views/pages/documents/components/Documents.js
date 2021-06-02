@@ -6,10 +6,10 @@ import {
 } from "reactstrap"
 import Breadcrumbs from "../../../../components/@vuexy/breadCrumbs/BreadCrumb"
 import DocumentsSidebar from "./documentSidebar"
-import "../../../../assets/scss/pages/invoice.scss"
+import "../../../../assets/scss/pages/documents.scss"
 import DocumnetListing from "./documentList"
 
-class Nurturing extends React.Component {
+class Documents extends React.Component {
   render() {
     return (
       <React.Fragment>
@@ -19,10 +19,10 @@ class Nurturing extends React.Component {
           breadCrumbActive="Documents"
         />
         <Row>
-          <Col sm="3">
+          <Col sm="12" md="6" lg="5" xl="4">
             <DocumentsSidebar/>
           </Col>
-          <Col sm="9">
+          <Col sm="12" md="6" lg="7" xl="8">
 
             <DocumnetListing />
           </Col>
@@ -32,4 +32,4 @@ class Nurturing extends React.Component {
   }
 }
 
-export default Nurturing
+export default Documents

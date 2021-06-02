@@ -13,6 +13,7 @@ import {
   VerticalPositionRelativeFrom
 } from "docx";
 import {Button} from "reactstrap"
+import {Download, Upload} from "react-feather";
 
 class SampleDocx extends React.Component {
   constructor(props) {
@@ -22,7 +23,7 @@ class SampleDocx extends React.Component {
     };
   }
 
-  
+
 
   async generateFromUrl() {
     const doc = new Document();
@@ -33,7 +34,7 @@ class SampleDocx extends React.Component {
     const image1 = Media.addImage(doc);
 
     doc.addSection({
-      children: 
+      children:
       [
         new Paragraph("name=${name}, 	belt size=${belt_size}, program=${program}, email=${email}, phone= ${primary_no}, DOB= ${DOB},Current rank=${current_rank}, Next rank=${next_rank}, Age=${age}")
       ]
@@ -49,14 +50,15 @@ class SampleDocx extends React.Component {
   render() {
     return (
       <div>
-           <Button.Ripple
-                  color='relief-secondary'
-                  style={{padding:"1rem",padding:"0.6rem 1rem", marginLeft:"10px"}}
-                  onClick={this.generateFromUrl}
-                >
-                  Sample
-                </Button.Ripple>
-       
+        <Button
+          color="info"
+          style={{padding:"0.6rem 1rem", marginLeft:"10px", fontWeight: 700}}
+          onClick={this.generateFromUrl}
+        >
+          <Download size={15} strokeWidth={3} style={{marginRight: 10,}}/>
+          Download Sample Doc
+        </Button>
+
       </div>
     );
   }

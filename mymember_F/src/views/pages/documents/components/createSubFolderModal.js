@@ -11,7 +11,8 @@ import { Get_DocFolder_LIST } from '../../../../redux/actions/document/document'
 
 class ModalForm extends React.Component {
   state = {
-    modal: false
+    modal: false,
+    hover: false,
   }
 
   componentDidMount() {
@@ -32,12 +33,14 @@ class ModalForm extends React.Component {
 
 
             <li
+              onMouseEnter={() => this.setState({hover: true})}
+              onMouseLeave={() => this.setState({hover: false})}
               style={{
-                listStyle: "none", paddingBottom: "10px", cursor:"pointer"}}
+                listStyle: "none", marginBottom: 4, marginRight: 24, paddingTop: 4, cursor:"pointer", color: `${this.state.hover ? "#00A6E1" : "#626262"}`}}
                 onClick={this.toggleModal}
                 >
 
-                  <Plus size="14" /> New
+              <Plus size="14" strokeWidth={5} style={{paddingBottom: "4px", height: "25px"}}/> <span style={{fontWeight: 700}}>New Sub Folder</span>
 
             </li>
             <Modal

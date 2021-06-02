@@ -13,7 +13,7 @@ class ModalForm extends React.Component {
     modal: false
   }
 
-  
+
 
 
   toggleModal = () => {
@@ -25,15 +25,16 @@ class ModalForm extends React.Component {
   render() {
     return (
       <React.Fragment>
-            
-            <Button.Ripple
-                  color='relief-secondary'
-                  style={{padding:"1rem",padding:"0.6rem 1rem", marginLeft:"10px"}}
-                  onClick={this.toggleModal} 
+
+            <Button
+
+                  color="primary"
+                  style={{padding:"0.6rem 1rem", marginLeft:"10px", fontWeight: 700}}
+                  onClick={this.toggleModal}
                 >
-                  
-                Upload  
-            </Button.Ripple>
+                <Upload size={15} strokeWidth={3} style={{marginRight: 10,}}/>
+                Upload Document
+            </Button>
             <Modal
               isOpen={this.state.modal}
               toggle={this.toggleModal}
@@ -43,13 +44,13 @@ class ModalForm extends React.Component {
                   Upload Documents Management
                 </ModalHeader>
                 <ModalBody>
-                   <NewCategory 
-                   toggle={this.toggleModal} 
+                   <NewCategory
+                   toggle={this.toggleModal}
                    />
                 </ModalBody>
-               
+
             </Modal>
-            
+
         </React.Fragment>
     )
   }

@@ -2,7 +2,8 @@ import React from "react"
 import {
   Card,
   CardHeader,
-  CardBody,Row,Col,Button
+  CardBody,Row,Col,Button,
+  Breadcrumb, BreadcrumbItem
 } from "reactstrap"
 import DocImg from "../../../../assets/img/pages/box11.svg"
 // import MergeImg from "../../../../assets/img/pages/marge.png"
@@ -10,19 +11,51 @@ import StudentModal from "./studentListModal"
 import SampleDocxButton from "./sampleDocx"
 import UploadDocxButton from "./documentUploadModal"
 import {connect} from "react-redux";
-import {LIST_DOCUMENTS} from "../../../../redux/actions/document/document";
+import {Get_DocFolder_LIST, LIST_DOCUMENTS} from "../../../../redux/actions/document/document";
+import {Trash} from "react-feather";
 
 
 class DocumentsList extends React.Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      rootFolder: "",
+    };
+  }
   componentDidMount() {
     this.props.LIST_DOCUMENTS();
-
   }
+
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    if (this.props.documentSubFolderList){
+      if (prevProps.documentSubFolderList) {
+        if (prevProps.documentSubFolderList._id !== this.props.documentSubFolderList._id) {
+          // Update only if subfolder changes
+          let subFolderId = this.props.documentSubFolderList._id;
+          this.props.documentFolderList.forEach((folder) => {
+            folder.subFolder.forEach((subFolder) => {
+              if (subFolder._id === subFolderId) {
+                this.setState({
+                  rootFolder: folder.folderName,
+                });
+              }
+            });
+          });
+        }
+      }
+    }
+  }
+
   render() {
     return (
       <React.Fragment>
+        <Breadcrumb>
+          <BreadcrumbItem>All Folders</BreadcrumbItem>
+          <BreadcrumbItem>{this.state.rootFolder}</BreadcrumbItem>
+          <BreadcrumbItem>{this.props.documentSubFolderList.subFolderName}</BreadcrumbItem>
+        </Breadcrumb>
         <Row  style={{paddingBottom:"30px",paddingTop:"1rem"}}>
-          <Col sm="4" style={{display:"flex", justifyContent:"space-around"}}>
+          <Col sm="12" md="6" lg="7" xl="9" style={{display:"flex", justifyContent:"flex-start"}}>
 
             <UploadDocxButton />
             <SampleDocxButton/>
@@ -68,7 +101,7 @@ class DocumentsList extends React.Component {
 
 const mapStateToProps = (state) => {
   return {
-    ...state.document
+    ...state.document,
   }
 }
 
