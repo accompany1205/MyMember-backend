@@ -10,7 +10,7 @@ import {
   Packer,
   Paragraph,
   VerticalPositionAlign,
-  VerticalPositionRelativeFrom
+  VerticalPositionRelativeFrom,
 } from "docx";
 import {Button} from "reactstrap"
 import {Download, Upload} from "react-feather";
@@ -52,11 +52,11 @@ class SampleDocx extends React.Component {
       <div>
         <Button
           color="info"
-          style={{padding:"0.6rem 1rem", marginLeft:"10px", fontWeight: 700}}
+          style={{padding:"0.6rem 1rem", marginLeft:"10px", fontWeight: 700, display: "flex", justifyContent: "space-between", alignItems: "center"}}
           onClick={this.generateFromUrl}
         >
           <Download size={15} strokeWidth={3} style={{marginRight: 10,}}/>
-          Download Sample Doc
+          Download Sample Document
         </Button>
 
       </div>

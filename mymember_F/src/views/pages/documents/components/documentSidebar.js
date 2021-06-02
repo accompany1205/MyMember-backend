@@ -12,7 +12,7 @@ import {
 } from "reactstrap"
 import { Plus, FolderMinus, FolderPlus, Folder, Trash, Edit} from "react-feather"
 import NewFolder from "./createFolderModal";
-import { Get_DocFolder_LIST, LIST_DOCUMENTS } from '../../../../redux/actions/document/document';
+import { Get_DocFolder_LIST, LIST_DOCUMENTS, DOCUMENTS_LOADING } from '../../../../redux/actions/document/document';
 import { connect } from 'react-redux';
 import NewSubFolder from './createSubFolderModal'
 
@@ -30,6 +30,7 @@ class CollapseUncontrolled extends React.Component {
   }
 
   viewDocumentList(folderId) {
+    this.props.DOCUMENTS_LOADING(true);
     this.props.LIST_DOCUMENTS(folderId);
   }
 
@@ -199,4 +200,4 @@ const mapStateToProps = (state) => {
   }
 }
 // export default CollapseUncontrolled
-export default connect(mapStateToProps, { Get_DocFolder_LIST, LIST_DOCUMENTS })(CollapseUncontrolled);
+export default connect(mapStateToProps, { Get_DocFolder_LIST, LIST_DOCUMENTS, DOCUMENTS_LOADING })(CollapseUncontrolled);

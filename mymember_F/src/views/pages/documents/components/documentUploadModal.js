@@ -29,7 +29,7 @@ class ModalForm extends React.Component {
             <Button
 
                   color="primary"
-                  style={{padding:"0.6rem 1rem", marginLeft:"10px", fontWeight: 700}}
+                  style={{padding:"0.6rem 1rem", marginLeft:"10px", fontWeight: 700, display: "flex", justifyContent: "space-between", alignItems: "center"}}
                   onClick={this.toggleModal}
                 >
                 <Upload size={15} strokeWidth={3} style={{marginRight: 10,}}/>

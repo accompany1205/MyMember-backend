@@ -120,6 +120,16 @@ export const REMOVE_FOLDER = (data, folderId) => {
   }
 }
 
+// List Documents Loading
+export const DOCUMENTS_LOADING = (isLoading) => {
+  return async dispatch => {
+    dispatch({
+      type: 'GET_DOCUMENTS_LOADING',
+      payload: isLoading,
+    })
+  }
+}
+
 // List Documents API Call
 export const LIST_DOCUMENTS = (folderId) => {
   return async dispatch => {
@@ -135,23 +145,35 @@ export const LIST_DOCUMENTS = (folderId) => {
       console.log('List response: ', response.data);
       if(response.data && response.status === 200 && !response.data.msg){
         dispatch({
-          type : "Get_Sub_Document_List",
+          type : "GET_DOCUMENTS_LIST",
           payload : response.data
-        })
+        });
+        dispatch({
+          type : "GET_DOCUMENTS_LOADING",
+          payload : false
+        });
       }
       else{
         dispatch({
-          type : "Get_Sub_Document_List",
+          type : "GET_DOCUMENTS_LIST",
           payload : []
-        })
+        });
+        dispatch({
+          type : "GET_DOCUMENTS_LOADING",
+          payload : false
+        });
       }
     }
     catch(error){
       console.log(error);
       dispatch({
-        type : "Get_Sub_Document_List",
+        type : "GET_DOCUMENTS_LIST",
         payload : []
-      })
+      });
+      dispatch({
+        type : "GET_DOCUMENTS_LOADING",
+        payload : false
+      });
     }
   }
 }
@@ -180,13 +202,13 @@ export const UPLOAD_DOCUMENT = (folderId, document, documentName) => {
       console.log('Upload response: ', response.data);
       if(response.data && response.status === 200 && !response.data.msg){
         dispatch({
-          type : "Get_Sub_Document_List",
+          type : "GET_DOCUMENTS_LIST",
           payload : response.data
         })
       }
       else{
         dispatch({
-          type : "Get_Sub_Document_List",
+          type : "GET_DOCUMENTS_LIST",
           payload : []
         })
       }
@@ -194,7 +216,7 @@ export const UPLOAD_DOCUMENT = (folderId, document, documentName) => {
     catch(error){
       console.log(error);
       dispatch({
-        type : "Get_Sub_Document_List",
+        type : "GET_DOCUMENTS_LIST",
         payload : []
       })
     }
