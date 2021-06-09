@@ -9,14 +9,12 @@ const Footer = props => {
   let footerTypeArr = ["sticky", "static", "hidden"]
   return (
     <footer
-      className={classnames("footer footer-light ft-pd", {
-        "footer-static": props.footerType === "static" || !footerTypeArr.includes(props.footerType),
-        "d-none": props.footerType === "hidden"
-      })}
+      style={{display: "flex", justifyContent: "center", alignItems: "center"}}
+      className={classnames("footer footer-light ft-pd")}
     >
       <p className="mb-0 clearfix">
         <span className="float-md-left d-block d-md-inline-block mt-25">
-          COPYRIGHT © {new Date().getFullYear()}
+          Copyright © {new Date().getFullYear()}
           <a
             href=""
             target="_blank"
@@ -24,7 +22,7 @@ const Footer = props => {
           >
             MY Member,
           </a>
-          All rights reserved
+          All rights reserved.
         </span>
         {/* <span className="float-md-right d-none d-md-block">
           <span className="align-middle">Hand-crafted & Made with</span>{" "}

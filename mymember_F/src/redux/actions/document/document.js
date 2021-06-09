@@ -26,7 +26,6 @@ export const Get_DocFolder_LIST = () => {
           }
         }
       );
-      console.log('Subfolder response: ', response.data);
       if(response.data && response.status === 200 && !response.data.msg){
         dispatch({
           type : "Get_Document_List",
@@ -62,7 +61,6 @@ export const Create_DocSubFolder = (data, folderId) => {
         }
       );
       if (response.data && response.status === 200) {
-        console.log(response.data);
         dispatch(Get_DocFolder_LIST());
       }
     }
@@ -86,7 +84,6 @@ export const EDIT_FOLDER = (data, folderId) => {
         }
       );
       if (response.data && response.status === 200) {
-        console.log(response.data);
         dispatch(Get_DocFolder_LIST());
       }
     }
@@ -110,7 +107,6 @@ export const REMOVE_FOLDER = (data, folderId) => {
         }
       );
       if (response.data && response.status === 200) {
-        console.log(response.data);
         dispatch(Get_DocFolder_LIST());
       }
     }
@@ -142,7 +138,6 @@ export const LIST_DOCUMENTS = (folderId) => {
           }
         }
       );
-      console.log('List response: ', response.data);
       if(response.data && response.status === 200 && !response.data.msg){
         dispatch({
           type : "GET_DOCUMENTS_LIST",
@@ -182,10 +177,6 @@ export const LIST_DOCUMENTS = (folderId) => {
 export const UPLOAD_DOCUMENT = (folderId, document, documentName) => {
   return async dispatch => {
     try{
-      console.log("folderId: ", folderId);
-      console.log("document: ", document);
-      console.log("documentName: ", documentName);
-      console.log("Auth: ", `Bearer ${localStorage.getItem("access_token")}`);
       let bodyFormData = new FormData();
       bodyFormData.append('document', document,documentName);
       bodyFormData.append('document_name', documentName);
@@ -199,7 +190,6 @@ export const UPLOAD_DOCUMENT = (folderId, document, documentName) => {
           "Authorization" : `Bearer ${localStorage.getItem("access_token")}`
         },
       });
-      console.log('Upload response: ', response.data);
       if(response.data && response.status === 200 && !response.data.msg){
         dispatch({
           type : "GET_DOCUMENTS_LIST",

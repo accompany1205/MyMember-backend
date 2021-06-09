@@ -27,7 +27,7 @@ class Login extends React.Component {
   }
   render() {
     return (
-      
+
       <div className="bg-full-screen-image1">
         <div className="flexbox-container">
         <Row className="m-0 justify-content-center">
@@ -114,7 +114,7 @@ class Login extends React.Component {
       </Row>
       </div>
       </div>
-      
+
     )
   }
 }

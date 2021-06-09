@@ -32,7 +32,7 @@ class ModalForm extends React.Component {
               onMouseEnter={() => this.setState({hover: true})}
               onMouseLeave={() => this.setState({hover: false})}
               style={{
-                listStyle: "none", paddingBottom: "10px", cursor:"pointer", marginLeft: 24, color: `${this.state.hover ? "#00A6E1" : "#626262"}`}}
+                listStyle: "none", paddingBottom: "10px", cursor:"pointer", marginLeft: 36, color: `${this.state.hover ? "#00A6E1" : "#626262"}`}}
               onClick={this.toggleModal}
             >
 

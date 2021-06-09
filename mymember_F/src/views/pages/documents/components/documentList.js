@@ -28,7 +28,6 @@ class DocumentsList extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
-    console.log("IS LOADING: ", this.props.documentsLoading);
     if (this.props.documentSubFolderList){
       if (prevProps.documentSubFolderList) {
         if (prevProps.documentSubFolderList._id !== this.props.documentSubFolderList._id) {
