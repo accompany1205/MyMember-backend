@@ -251,7 +251,7 @@ export const changeRole = role => {
 export const Get_User_Info = () => {
   return async dispatch => {
       try{
-          let response = await axios.get(`${baseUrl}/api/organization_setup_info/${localStorage.getItem("user_id")}`,
+          let response = await axios.get(`${baseUrl}/api/organization_setup_info/${localStorage.getItem("user_id")}`, 
           {headers : {
               "Authorization" : `Bearer ${localStorage.getItem("access_token")}`}});
           if(response.data && response.status === 200){
@@ -276,6 +276,6 @@ export const updateUserInfo = (id, task) => {
     }).then(res => {
       dispatch(Get_User_Info());
     })
-
+    
   }
 }

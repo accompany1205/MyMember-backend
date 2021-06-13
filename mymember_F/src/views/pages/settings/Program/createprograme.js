@@ -1,4 +1,4 @@
-import React from "react";
+import React from "react"
 import {
   Card,
   CardHeader,
@@ -11,241 +11,107 @@ import {
   Input,
   Form,
   Button,
-  Label,
-  CustomInput,
-} from "reactstrap";
+  Label,CustomInput
+} from "reactstrap"
 
 // import Checkbox from "../../../../components/@vuexy/checkbox/CheckboxesVuexy"
 import "../../../../assets/scss/pages/users.scss";
-import { getProgramList } from "../../../../redux/actions/programe";
-import { connect } from "react-redux";
+import {getProgramList} from '../../../../redux/actions/programe';
+import {connect} from 'react-redux';
 
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 class FloatingLabels extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
+    this.state = { 
       formfilled: false,
       error: false,
-      errorMsg: "",
-      programName: "",
-      color: "",
-      lable: "",
-      total_rank: "",
-      progression: "Progression",
-      type: "By Belt",
-      requirement: "Requirement",
-      program_image: "",
+      errorMsg: '',
+      programName: '', 
+      color: '',
+      lable: '',
+      total_rank: '',
+      progression: 'Progression',
+      type: 'By Belt',
+      requirement: 'Requirement',
+      program_image: '' 
     };
   }
-  //get api
-  getPost() {
-    let token = localStorage.getItem("access_token");
-    fetch(
-      `http://localhost:8080/api/program_list_name/${localStorage.getItem(
-        "user_id"
-      )}`,
-      {
-        method: "GET",
-        headers: new Headers({
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        }),
-      }
-    )
-      .then((res) => res.json())
-      .then((responseData) => {
-        console.log(
-          "###################################################",
-          responseData
-        );
-      })
-      .catch((error) => console.log({ error }));
-  }
-
-  //get api
-  getProgram() {
-    let token = localStorage.getItem("access_token");
-    fetch(
-      `http://localhost:8080/api/program_details/${localStorage.getItem(
-        "user_id",
-        "proId"
-      )}`,
-      {
-        method: "GET",
-        headers: new Headers({
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        }),
-      }
-    )
-      .then((res) => res.json())
-      .then((responseData) => {
-        console.log(
-          "###################################################",
-          responseData
-        );
-      })
-      .catch((error) => console.log({ error }));
-  }
-
-  // post api
-
-  createPost() {
-    let token = localStorage.getItem("access_token");
-    fetch(
-      `http://localhost:8080/api/add_program_rank/${localStorage.getItem(
-        "user_id",
-        "pId"
-      )}`,
-      {
-        method: "POST",
-        headers: new Headers({
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        }),
-      }
-    )
-      .then((res) => res.json())
-      .then((responseData) => {
-        console.log(
-          "###################################################",
-          responseData
-        );
-      })
-      .catch((error) => console.log({ error }));
-  }
-
-  //put api
-  updatePost() {
-    let token = localStorage.getItem("access_token");
-    fetch(
-      `http://localhost:8080/api/update_program_rank/${localStorage.getItem(
-        "user_id",
-        "program_rank_id"
-      )}`,
-      {
-        method: "PUT",
-        headers: new Headers({
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        }),
-      }
-    )
-      .then((res) => res.json())
-      .then((responseData) => {
-        console.log(
-          "###################################################",
-          responseData
-        );
-      })
-      .catch((error) => console.log({ error }));
-  }
-  //delete  api
-  deletePost() {
-    let token = localStorage.getItem("access_token");
-    fetch(
-      `http://localhost:8080/api/delete_program_rank/${localStorage.getItem(
-        "user_Id",
-        "program_rank_id"
-      )}`,
-      {
-        method: "delete",
-        headers: new Headers({
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        }),
-      }
-    )
-      .then((res) => res.json())
-      .then((responseData) => {
-        console.log(
-          "###################################################",
-          responseData
-        );
-      })
-      .catch((error) => console.log({ error }));
-  }
-
-  componentDidMount() {
+  componentDidMount(){
     this.props.getProgramList();
-    this.getPost();
-    this.createPost();
-    this.updatePost();
-    this.deletePost();
-    this.getProgram();
-  }
+    
+}
   myChangeHandler = (event, type) => {
     // console.log("Aeg");
     var statedata = {};
     statedata[type] = event.target.value;
-    this.setState(statedata, function () {
+    this.setState(statedata, function(){
       console.log(this.state);
     });
-  };
+  }
 
-  submitFormData = (e) => {
+  submitFormData = e => {
     e.preventDefault();
-    if (this.state.programName == "") {
+    if(this.state.programName==""){
       this.setState({
         error: true,
-        errorMsg: "Kindly fill program name",
-      });
-    } else if (this.state.color == "") {
+        errorMsg: "Kindly fill program name" 
+      })
+    }
+    else if(this.state.color==""){
       this.setState({
         error: true,
-        errorMsg: "Kindly select color",
-      });
-    } else if (this.state.lable == "") {
+        errorMsg: "Kindly select color" 
+      })
+    }
+    else if(this.state.lable==""){
       this.setState({
         error: true,
-        errorMsg: "Kindly fill label",
-      });
-    } else if (this.state.total_rank == "") {
+        errorMsg: "Kindly fill label" 
+      })
+    }
+    else if(this.state.total_rank==""){
       this.setState({
         error: true,
-        errorMsg: "Kindly fill total rank",
-      });
-    } else {
+        errorMsg: "Kindly fill total rank" 
+      })
+    }
+    else{
       this.setState({
         error: false,
-        errorMsg: "",
-      });
+        errorMsg: "" 
+      })
       // console.log("hey fuck man",this.state);
       var postdata = {
-        color: this.state.color,
-        lable: this.state.lable,
-        programName: this.state.programName,
-        progression: this.state.progression,
-        requirement: this.state.requirement,
-        total_rank: this.state.total_rank,
-        type: this.state.type,
+        "color": this.state.color,
+        "lable": this.state.lable,
+        "programName": this.state.programName,
+        "progression": this.state.progression,
+        "requirement": this.state.requirement,
+        "total_rank": this.state.total_rank,
+        "type": this.state.type
       };
-      if (this.state.program_image !== "") {
+      if(this.state.program_image!==""){
         postdata.program_image = this.state.program_image;
       }
       var el = this;
       let token = localStorage.getItem("access_token");
-      return fetch(
-        `${baseUrl}/api/add_program/${localStorage.getItem("user_id")}`,
-        {
+      return fetch(`${baseUrl}/api/add_program/${localStorage.getItem("user_id")}`, {
           method: "POST",
           headers: new Headers({
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
           }),
-          body: JSON.stringify(postdata), // <-- Post parameters
-        }
-      )
-        .then((responseJson) => {
-          console.log(responseJson);
-          el.setState({ formfilled: true });
-          getProgramList();
-        })
-        .catch((error) => console.log(error));
+          body: JSON.stringify(postdata) // <-- Post parameters        
+      }).then(responseJson => {
+        console.log(responseJson);
+        el.setState({formfilled: true})
+        getProgramList()
+    })
+    .catch(error => console.log(error));
     }
-  };
+  }
 
   render() {
     return (
@@ -259,7 +125,7 @@ class FloatingLabels extends React.Component {
               <Col sm="12">
                 <FormGroup className="form-label-group">
                   <Input
-                    onChange={(e) => this.myChangeHandler(e, "programName")}
+                    onChange={(e)=>this.myChangeHandler(e, 'programName')}
                     type="text"
                     name="program name"
                     id="nameFloating"
@@ -268,28 +134,28 @@ class FloatingLabels extends React.Component {
                   <Label for="nameFloating">Program Name</Label>
                 </FormGroup>
               </Col>
-
+              
               <Col sm="12">
                 <FormGroup className="form-label-group">
                   <Row>
-                    <div className="col-md-3 col-sm-12 col-xs-12">
-                      <Label for="nameFloating">color</Label>
-                    </div>
-                    <div className="col-md-9 col-sm-12 col-xs-12">
-                      <Input
-                        onChange={(e) => this.myChangeHandler(e, "color")}
-                        type="color"
-                        id="colorFloating"
-                        className="npt-1"
-                      />
-                    </div>
+                        <div className="col-md-3 col-sm-12 col-xs-12">
+                        <Label for="nameFloating">color</Label>
+                        </div>
+                        <div className="col-md-9 col-sm-12 col-xs-12">
+                        <Input
+                          onChange={(e)=>this.myChangeHandler(e, 'color')}
+                          type="color"
+                          id="colorFloating"
+                          className="npt-1"
+                        />
+                        </div>
                   </Row>
                 </FormGroup>
               </Col>
               <Col sm="12">
                 <FormGroup className="form-label-group">
                   <Input
-                    onChange={(e) => this.myChangeHandler(e, "lable")}
+                  onChange={(e)=>this.myChangeHandler(e, 'lable')}
                     type="text"
                     name="label"
                     id="labelFloating"
@@ -301,7 +167,7 @@ class FloatingLabels extends React.Component {
               <Col sm="12">
                 <FormGroup className="form-label-group">
                   <Input
-                    onChange={(e) => this.myChangeHandler(e, "total_rank")}
+                    onChange={(e)=>this.myChangeHandler(e, 'total_rank')}
                     type="text"
                     name="retype password"
                     id="totalrankFloating"
@@ -311,85 +177,70 @@ class FloatingLabels extends React.Component {
                 </FormGroup>
               </Col>
               <Col sm="12">
-                <FormGroup className="form-label-group">
-                  <div>
-                    <Label>Progression</Label>
-                  </div>
-                  <CustomInput
-                    onChange={(e) => this.myChangeHandler(e, "progression")}
-                    type="select"
-                    name="select"
-                    id="Progression"
-                  >
-                    <option>Progression</option>
-                    <option>By Time Only</option>
-                    <option>By Time Only & Lession</option>
-                    <option>By Lession Only </option>
-                  </CustomInput>
-                </FormGroup>
-              </Col>
+                        <FormGroup className="form-label-group">
+                            <div>
+                            <Label>Progression</Label>
+                            </div>
+                            <CustomInput onChange={(e)=>this.myChangeHandler(e, 'progression')} type="select" name="select" id="Progression">
+                                <option>Progression</option>
+                                <option>By Time Only</option>
+                                <option>By Time Only & Lession</option>
+                                <option>By Lession Only </option>
+                            </CustomInput>
+                        </FormGroup>
+                </Col>
+                <Col sm="12">
+                        <FormGroup className="form-label-group">
+                            <div>
+                            <Label> Belt Type </Label>
+                            </div>
+                            <CustomInput onChange={(e)=>this.myChangeHandler(e, 'type')} type="select" name="select" id="balttype">
+                                <option>By Belt</option>
+                                <option>By Stripe</option>
+                                <option>By Apparel</option>
+                            </CustomInput>
+                        </FormGroup>
+                </Col>
               <Col sm="12">
-                <FormGroup className="form-label-group">
-                  <div>
-                    <Label> Belt Type </Label>
-                  </div>
-                  <CustomInput
-                    onChange={(e) => this.myChangeHandler(e, "type")}
-                    type="select"
-                    name="select"
-                    id="balttype"
-                  >
-                    <option>By Belt</option>
-                    <option>By Stripe</option>
-                    <option>By Apparel</option>
-                  </CustomInput>
-                </FormGroup>
-              </Col>
-              <Col sm="12">
-                <FormGroup className="form-label-group">
-                  <div>
-                    <Label> Requirement </Label>
-                  </div>
-                  <CustomInput
-                    onChange={(e) => this.myChangeHandler(e, "requirement")}
-                    type="select"
-                    name="select"
-                    id="status"
-                  >
-                    <option>Requirement </option>
-                    <option> None </option>
-                    <option> bottel </option>
-                    <option> Manage list </option>
-                  </CustomInput>
-                </FormGroup>
-              </Col>
-              <Col sm="12">
-                <FormGroup className="form-label-group">
-                  {/* <img src={img} width="100px"/> */}
-                  <Input
-                    onChange={(e) => this.myChangeHandler(e, "program_image")}
-                    type="file"
-                    name="program_image"
-                    id="program_image"
-                    placeholder="Program Name"
-                  />
-                  <Label for="nameFloating">Program Image</Label>
-                </FormGroup>
-              </Col>
-              <Col sm="12">
-                {this.state.error == true && (
-                  <Alert color="danger">{this.state.errorMsg}</Alert>
-                )}
-                {this.state.formfilled == true && (
-                  <Alert color="success">Program created successfully</Alert>
-                )}
-              </Col>
+                        <FormGroup className="form-label-group">
+                            <div>
+                            <Label> Requirement </Label>
+                            </div>
+                            <CustomInput onChange={(e)=>this.myChangeHandler(e, 'requirement')} type="select" name="select" id="status">
+                                <option>Requirement </option>
+                                <option> None </option>
+                                <option> bottel  </option>
+                                <option> Manage list  </option>
+                            </CustomInput>
+                        </FormGroup>
+                </Col>
+                <Col sm="12">
+                    <FormGroup className="form-label-group">
+                          {/* <img src={img} width="100px"/> */}
+                              <Input
+                              onChange={(e)=>this.myChangeHandler(e, 'program_image')}
+                                type="file"
+                                name="program_image"
+                                id="program_image"
+                                placeholder="Program Name"
+                              />
+                          <Label for="nameFloating">Program Image</Label>
+                    </FormGroup>
+                </Col>
+                <Col sm="12">
+                {this.state.error==true && <Alert color="danger">
+                  {this.state.errorMsg}
+                </Alert>}
+                {this.state.formfilled==true && <Alert color="success">
+                  Program created successfully
+                </Alert>}
+                </Col>
               <Col sm="12">
                 <FormGroup className="form-label-group">
                   <Button.Ripple
                     color="primary"
                     className="mr-1 mb-1"
-                    onClick={(e) => this.submitFormData(e)}
+                    onClick={(e)=> this.submitFormData(e)}
                   >
                     Save
                   </Button.Ripple>
@@ -399,7 +250,7 @@ class FloatingLabels extends React.Component {
                     type="reset"
                     className="mb-1"
                   >
-                    Delete
+                   Delete
                   </Button.Ripple>
                 </FormGroup>
               </Col>
@@ -407,12 +258,12 @@ class FloatingLabels extends React.Component {
           </Form>
         </CardBody>
       </Card>
-    );
+    )
   }
 }
 const mapStateToProps = (state) => {
   return {
-    program: state.program,
-  };
-};
-export default connect(mapStateToProps, { getProgramList })(FloatingLabels);
+      program : state.program
+  }
+}
+export default connect(mapStateToProps, {getProgramList})(FloatingLabels);

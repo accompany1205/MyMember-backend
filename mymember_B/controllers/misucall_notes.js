@@ -2,7 +2,6 @@ const misucallNote = require("../models/misucall_notes")
 const student = require("../models/addmember");
 const user = require("../models/user");
 const _ = require("lodash");
-const service = require('../email_sms')
 
 exports.seven_to_forteen =(req,res)=>{
     student.find({$and:[{userId:req.params.userId},{rating: {$gte :7,$lte :14}}]})
@@ -76,32 +75,18 @@ exports.listApp_and_callHistory =(req,res)=>{
     })
 }
 
-
-function TimeZone(){
-    const str = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-    const date_time =str.split(',')
-    console.log(date_time)
-    const date = date_time[0]
-    const time = date_time[1]
-    return { Date:date,Time:time}
-}
-
 exports.create = (req,res)=>{
     student.findById(req.params.studentId).exec((err,studetData)=>{
         if(err){
             res.send({error:'student data not found'})
         }
-      else{
-        if(req.body.Type == 'manual email' || req.body.Type == 'manual text'){
+        else{
             var obj ={
                 firstName:studetData.firstName,
                 lastName:studetData.lastName,
                 userId:req.params.userId
             }
-            var date_time = TimeZone()
             var misucall = new misucallNote(req.body);
-            misucall.date = date_time.Date
-            misucall.time = date_time.Time
             misucallObj = _.extend(misucall,obj) 
             
             misucallObj.save((err,note)=>{
@@ -136,110 +121,7 @@ exports.create = (req,res)=>{
                 }
             })
         }
-         else if(req.body.Type == 'system email'){
-                var toEmail = studetData.email
-                var emailText = req.body.notes
-                service.sendEmail(emailText,toEmail).then((emailResp)=>{
-                var obj ={
-                    firstName:studetData.firstName,
-                    lastName:studetData.lastName,
-                    userId:req.params.userId
-                }
-                var date_time = TimeZone()
-                var misucall = new misucallNote(req.body);
-                misucall.date = date_time.Date
-                misucall.time = date_time.Time
-                misucallObj = _.extend(misucall,obj) 
-            
-            misucallObj.save((err,note)=>{
-                console.log(note)
-                if(err){
-                    res.send({error:'miss u call notes is not create'})
-                    console.log(err)
-                }
-                else{
-                    update = {
-                        $push: {missYouCall_notes: note._id},
-                        $set: {last_contact_missCall:new Date()}
-                    },
-                    student.findByIdAndUpdate(req.params.studentId,update)
-                    .exec((err,missuCallStd)=>{
-                        if(err){
-                            res.send({error:'miss u call notes is not add in student'})
-                        }
-                        else{
-                            // res.send(note)
-                            user.findByIdAndUpdate(req.params.userId,{$push: { missYouCall_note_history: note._id}})
-                            .exec((err,missuCallUser)=>{
-                                if(err){
-                                    res.send({error:'miss u call notes is not add in school'})
-                                }
-                                else{
-                                    res.send({msg:'miss u call note create successfuly',note:note})
-                                }
-                            })
-                        }
-                    })
-                }
-            })
-        }).catch((err)=>{
-            console.log(err)
-            res.send({error:'email not sent to student'})
-        })
-        }
-        else if(req.body.Type == 'system text'){
-          var to = studetData.primaryPhone
-          var smsText = req.body.notes
-          service.sendSms(smsText,to).then((txtResp)=>{
-            var obj ={
-                firstName:studetData.firstName,
-                lastName:studetData.lastName,
-                userId:req.params.userId
-            }
-            var date_time = TimeZone()
-            var misucall = new misucallNote(req.body);
-            misucall.date = date_time.Date
-            misucall.time = date_time.Time
-            misucallObj = _.extend(misucall,obj) 
-            
-            misucallObj.save((err,note)=>{
-                console.log(note)
-                if(err){
-                    res.send({error:'miss u call notes is not create'})
-                    console.log(err)
-                }
-                else{
-                    update = {
-                        $push: {missYouCall_notes: note._id},
-                        $set: {last_contact_missCall:new Date()}
-                    },
-                    student.findByIdAndUpdate(req.params.studentId,update)
-                    .exec((err,missuCallStd)=>{
-                        if(err){
-                            res.send({error:'miss u call notes is not add in student'})
-                        }
-                        else{
-                            // res.send(note)
-                            user.findByIdAndUpdate(req.params.userId,{$push: { missYouCall_note_history: note._id}})
-                            .exec((err,missuCallUser)=>{
-                                if(err){
-                                    res.send({error:'miss u call notes is not add in school'})
-                                }
-                                else{
-                                    res.send({msg:'miss u call note create successfuly',note:note})
-                                }
-                            })
-                        }
-                    })
-                }
-            })
-        }).catch((err)=>{
-            console.log(err)
-            res.send({error:'text sms not sent to student'})
-        })
-        }
-      }
-   })
+    })
 }
 
 exports.remove = (req,res)=>{

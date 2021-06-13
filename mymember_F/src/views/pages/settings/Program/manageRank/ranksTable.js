@@ -4,22 +4,20 @@ import {
   CardBody,
   Input,
   Row,
-  Col,
-  CardTitle,
-  CardHeader
+  Col
 
 
 } from "reactstrap"
-import { ContextLayout } from "../../../../../utility/context/Layout"
-import {Get_SUBUSER_LIST,trashSubUser} from '../../../../../redux/actions/settings/schedule';
+import { ContextLayout } from "../../../../utility/context/Layout"
+import {Get_SUBUSER_LIST,trashSubUser} from '../../../../redux/actions/settings/schedule';
 import { AgGridReact } from "ag-grid-react";
 import {Edit,Trash2} from "react-feather";
 import {connect} from 'react-redux';
 import AddSubUser from './ranksModal'
-import { history } from "../../../../../history"
+import { history } from "../../../../history"
 // import StudentlistuserEyeModal from "./studentlistuserEyeModal"
-import "../../../../../assets/scss/plugins/tables/_agGridStyleOverride.scss"
-import "../../../../../assets/scss/pages/users.scss"
+import "../../../../assets/scss/plugins/tables/_agGridStyleOverride.scss"
+import "../../../../assets/scss/pages/users.scss"
 class UrgentCallList extends React.Component {
   state = {
     rowData: null,
@@ -253,13 +251,8 @@ class UrgentCallList extends React.Component {
       <Row className="app-user-list">
         
         <Col sm="12">
-            <CardHeader>
-             <h5 style={{fontSize:"20px"}}>Program Ranks</h5>
-            </CardHeader>
          <Card>
-            <CardBody className="srol-y">
-              <Row>
-              <Col sm="7">
+            <CardBody>
               <div className="ag-theme-material ag-grid-table">
                 <div className="ag-grid-actions d-flex justify-content-between flex-wrap mb-1">
                   <div className="sort-dropdown">
@@ -303,11 +296,6 @@ class UrgentCallList extends React.Component {
                   </ContextLayout.Consumer>
                 ) : null}
               </div>
-              </Col>
-              <Col sm="5">
-                 
-              </Col>
-              </Row>
             </CardBody>
           </Card>
         </Col>

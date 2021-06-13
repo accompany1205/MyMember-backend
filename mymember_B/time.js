@@ -137,13 +137,18 @@
 // // var mT = moment(date).format('MM/DD/YYYY')    
 // // // console.log(date,mT)
 
-// client.messages.create({
-//   to:'+919893600766',
-//   from:'+12672637681',
-//   body:'hy how are you jio'
-// })
-// .then((message)=>console.log(message))
-// .catch((error)=>console.log(error))
+// const asid = 'AC95c8e5b269c098f81fac4bbc8ce8f881';
+// const authtoken = 'af2e5bd3153fe38cd556686959194c48'
+// const msgService = 'ISb21aa5fdf2d5a8c60dd25d5dd7389d7f'
+// const client = require('twilio')(asid, authtoken)
+
+// // client.messages.create({
+// //   to:'+919893600766',
+// //   from:'+12672637681',
+// //   body:'hy how are you jio'
+// // })
+// // .then((message)=>console.log(message))
+// // .catch((error)=>console.log(error))
 
 // var to = ['989-360-0766']
 // var msg ='without +91'
@@ -249,208 +254,4 @@
 //         return val
 //     }
 // }
-// const sendgrid = require('sendgrid-v3-node');
 
-// const mailOptions = {
-//     sendgrid_key: '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',
-//     from_email: 'info.xpresscure@gmail.com',
-//     from_name: 'kumar',
-//     to: 'tekeshwardevelopersveltosest@gmail.com' // REQUIRED: `string` email
-// };
-
-// mailOptions.subject = 'SUBJECT';
-// mailOptions.content = 'CONTENT';
-// sendgrid.send_via_sendgrid(mailOptions).then(response => {
-//     console.log('success',response);
-// }).catch((error)=>{
-//     console.log(error)
-// });
-
-
-// var cart = [{
-//     pid:[{objectId}],
-//     qty:1,
-//     total_qty:5,
-//     userId:"xyz"
-// }]
-
-// for (i = 0; i < 10; i++) {
-//     if (i === 4) { break; }
-//     console.log(i)
-//   }
-// var array = [1,2,3,4,5]
-// array.forEach(function(val, i){
-//     if (val === 2) {
-//       // how do we stop?
-//       return true;
-//     }
-//     console.log(val); // your code
-//   });
-
-// console.log(Date.now().toString())
-
-
-// var obj = {
-//     name:'ram'
-// }
-
-// async function b(data1, callback){
-//     callback(data1)
-// }
-
-// async function a(data){
-//   await b(data, async function(m){
-//     console.log('run')
-//     console.log(m)
-    
-//   })
-// }
-
-// a(obj)
-
-// var newd = new Date()
-// var old = new Date()
-// console.log(old,newd)
-
-// var sub = (newd.getTime()-old.getTime())
-
-// console.log(sub)
-
-// function ab (){
-// let x = 11 
-// var age  = 18
-// if(age>x){
-//     let y = 12
-//     console.log(x,y)
-//      y = 13
-// console.log(y)
-// }
-
-// }
-
-// ab()
-
-// var ary = ['a','b','c']
-
-// const result =ary.reduce((accumlator,ary)=>{
-//     return accumlator+ary 
-// })
-// console.log(result)
-
-// var ary = [{name:'a'},{name:'b'}]
-
-// var result = ary.reduce(myfunc)
-
-// function myfunc(accumlator,ar){
-//     return accumlator+ar
-// }
-// console.log(result)
-
-// var myGirls = [{"name":"Cecilie"}];
-// var myBoys = [{"userId":"123"}];
-// var myChildren = myGirls.concat(myBoys);
-
-// console.log(myChildren)
-
-// var ary = ['a','b','c','d']
-
-// console.log(ary)
-// var res = ary.slice(1,3)
-// console.log(res)
-// getName()
-// var x =9
-// function getName(){
-// console.log(x)
-// }
-
-// var ary = [1,2,3,3]
-
-// var res = ary.filter((ele)=>{
-//     if(ele>2){
-//         return ele;
-//     }
-// })
-
-// console.log(res)
-
-// const fs = require('fs')
-// const path = require('path')
-// const p  = path.join(__dirname, 'new.txt')
-// console.log(p)
-
-// var file = fs.readFileSync(p)
-// console.log(file.toString())
-// console.log('run')
-
-// const EventEmitter = require('events')
-// const myEmitter = new EventEmitter();
-
-// function c1() {
-//     console.log('an event occurred!');
-//  }
- 
-//  function c2() {
-//     console.log('yet another event occurred!');
-//  }
-
-
- 
-
-// myEmitter.on('eventOne', c1); // Register for eventOne
-// // myEmitter.on('eventOne', c2); // Register for eventOne
-
-// myEmitter.emit('eventOne');
-
-
-// console.log('Batman begins');
-
-// process.on('exit', function(code) {
-//     return console.log(`About to exit with code ${code}`);
-// });
-
-
-// console.log('Batman beginfdss');
-// if(x == undefined){
-//    x=10
-// console.log(x)
-// }
-// var x = 2
-
-// console.log(x)
-// var ary = [1,2,3,2,2,6]
-
-// var result = ary.find(checkNum)
-// console.log(result)
-
-// function checkNum(val){
-//    console.log(val)
-//    if(val==2){
-//       return val
-//    }
-// }
-
-// var ary = [1,2,3,2,2,6]
-// var result = ary.includes(12)
-// console.log(result)
-
-
-// ES6 rest parameter
-// function fun(...input){
-//     console.log(input,'in')
-//     let sum = 0;
-//     for(let i of input){
-//         sum+=i;
-//     }
-//     return sum;
-// }
-  
-// console.log(fun(1,2)); // 3
-// console.log(fun(1,2,3)); // 6 
-// console.log(fun(1,2,3,4,5)); 
-
-// var ary = [1,2,4,3,4,5,6] 
-
-// var result = ary.slice(2,-2)
-// "use strict";
-x = 3.14; 
-console.log(x)

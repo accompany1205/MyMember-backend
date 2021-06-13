@@ -22,7 +22,7 @@ exports.create = (req, res) => {
                             }
                             else {
                                 console.log(data)
-                                program.updateOne({ _id: req.params.pId }, { $push: { program_rank: data._id } })
+                                program.updateOne({ programName: req.body.programName }, { $push: { program_rank: data._id } })
                                     .exec((err, data) => {
                                         if (err) {
                                             res.send({ error: 'rank is not add in program' })
@@ -40,7 +40,7 @@ exports.create = (req, res) => {
                 })
             }
             else {
-                program.updateOne({_id: req.params.pId }, { $push: { program_rank: data._id } })
+                program.updateOne({ programName: req.body.programName }, { $push: { program_rank: data._id } })
                     .exec((err, programdata) => {
                         if (err) {
                             res.send({ error: 'rank is not add in program' })

@@ -79,7 +79,7 @@ const SchoolNavigationConfig = [
         type: "item",
         icon: <Icon.PlusSquare size={14} color="purple" />,
         permissions: ["admin", "editor"],
-        navLink: "/app/student/newstudentbyprogram"
+        navLink: "/app/student/by-program"
       },
       {
         id: "edit",

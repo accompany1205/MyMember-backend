@@ -3,21 +3,18 @@ import {
   Button,
   Modal,
   ModalHeader,
-  ModalBody
+  ModalBody,
 } from "reactstrap"
-import UserCreateForm from "./addProgramRank"
+import NewCategory from "./createFolderForm"
+
 
 class ModalForm extends React.Component {
   state = {
-    activeTab: "1",
+    
     modal: false
   }
 
-  toggleTab = tab => {
-    if (this.state.activeTab !== tab) {
-      this.setState({ activeTab: tab })
-    }
-  }
+
 
   toggleModal = () => {
     this.setState(prevState => ({
@@ -30,11 +27,11 @@ class ModalForm extends React.Component {
       <React.Fragment>
         
             <Button.Ripple
-                  color="success"
-                  outline
+                  color='relief-secondary' 
                   onClick={this.toggleModal}
+                  style={{padding:"0.6rem 1rem", marginLeft:"10px"}}
                 >
-                 Add Stripe
+                Add Folder  
             </Button.Ripple>
           
             <Modal
@@ -43,12 +40,12 @@ class ModalForm extends React.Component {
               className="modal-dialog-centered"
             >
                 <ModalHeader toggle={this.toggleModal}>
-                  Manage Stripe Rules
+                Folder Management
                 </ModalHeader>
                 <ModalBody>
-                   <UserCreateForm toggle={this.toggleModal}/>
+                   <NewCategory toggle={this.toggleModal} />
                 </ModalBody>
-              
+               
             </Modal>
             
         </React.Fragment>

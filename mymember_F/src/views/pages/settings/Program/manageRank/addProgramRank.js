@@ -11,8 +11,8 @@ import {
   Button,
   Label,CustomInput
 } from "reactstrap"
-import img from "../../../../../assets/img/pages/1-apex.png"
-import { CREATE_SUB_USER } from '../../../../../redux/actions/settings/schedule';
+import img from "../../../../assets/img/pages/1-apex.png"
+import { CREATE_SUB_USER } from '../../../../redux/actions/settings/schedule';
 import {connect} from 'react-redux';
 
 class FloatingLabels extends React.Component {
@@ -57,81 +57,102 @@ class FloatingLabels extends React.Component {
         <CardBody>
           <Form className="mt-10" onSubmit={this.onsubmit}>
             <Row>
-             <Col sm="12">
-                   <FormGroup className="form-label-group">
-                     <div>
-                      <Label> Program Name </Label>
-                      </div>
-                        <CustomInput type="select" name="status" value={this.state.status} onChange={this.changeHandler} id="status">
-                            <option>Little Tigers</option>
-                            <option>Taekwondo</option>
-                            <option>Kickboxing</option>
-                            <option>Tasma</option>
-                            <option>Test</option>
-                       </CustomInput>
-                    </FormGroup>
-                   
+            <Col sm="12">
+                <FormGroup className="form-label-group">
+                  <Input
+                    type="text"
+                    name="fullName"
+                    value={this.state.fullName}
+                    onChange={this.changeHandler}
+                    id="fullName"
+                    placeholder="Full Name"
+                  />
+                  <Label for="nameFloating">Full Name</Label>
+                </FormGroup>
               </Col>
               <Col sm="12">
                 <FormGroup className="form-label-group">
                   <Input
                     type="text"
-                    name="rankName"
+                    name="userName"
                     value={this.state.userName}
                     onChange={this.changeHandler}
-                    id="rankName"
-                    placeholder="Rank Name"
+                    id="userName"
+                    placeholder="User Name"
                   />
-                  <Label for="nameFloating">Rank Name</Label>
+                  <Label for="nameFloating">User Name</Label>
                 </FormGroup>
               </Col>
               <Col sm="12">
-                   <FormGroup className="form-label-group">
-                     <div>
-                      <Label>Day to Ready </Label>
-                      </div>
-                        <CustomInput type="select" name="status" value={this.state.status} onChange={this.changeHandler} id="status">
-                            <option>Day to Ready</option>
-                            <option>5</option>
-                            <option>10</option>
-                            <option>15</option>
-                            <option>20</option>
-                       </CustomInput>
-                    </FormGroup>
+                <FormGroup className="form-label-group">
+                <Input
+                    type="password"
+                    name="password"
+                    value={this.state.password}
+                    onChange={this.changeHandler}
+                    id="password"
+                    placeholder="Password"
+                  />
+                  <Label for="passwordFloating">Password</Label>
+                </FormGroup>
               </Col>
               <Col sm="12">
-                   <FormGroup className="form-label-group">
-                      <div>
-                      <Label>Lesson to Ready </Label>
-                      </div>
-                        <CustomInput type="select" name="status" value={this.state.status} onChange={this.changeHandler} id="status">
-                            <option>Lesson to Ready</option>
-                            <option>1</option>
-                            <option>2</option>
-                            <option>3</option>
-                            <option>4</option>
-                            <option>5</option>
-                            <option>6</option>
-                            <option>7</option>
-                       </CustomInput>
-                    </FormGroup>
+                <FormGroup className="form-label-group">
+                  <Input
+                    type="password"
+                    name="retype password"
+                    id="nameFloating"
+                    placeholder="Retype Password"
+                  />
+                  <Label for="nameFloating">Retype Password</Label>
+                </FormGroup>
               </Col>
               <Col sm="12">
-                   <FormGroup className="form-label-group">
-                     <div>
-                      <Label>Rank Order </Label>
-                      </div>
-                        <CustomInput type="select" name="status" value={this.state.status} onChange={this.changeHandler} id="status">
-                            <option>Rank Order</option>
-                       </CustomInput>
-                    </FormGroup>
+                <FormGroup className="form-label-group">
+                  <Input
+                   type="email"
+                   name="email"
+                   value={this.state.email}
+                   onChange={this.changeHandler}
+                   id="email"
+                   placeholder="Email"
+                  />
+                  <Label for="EmailFloating">Email</Label>
+                </FormGroup>
               </Col>
-              
-            
-             
-             
-               
-               
+              <Col sm="12">
+                <FormGroup className="form-label-group">
+                  <Input
+                   type="phone"
+                   name="phone"
+                   value={this.state.phone}
+                   onChange={this.changeHandler}
+                   id="phone"
+                   placeholder="Phone"
+                  />
+                  <Label for="mobileFloating">Mobile</Label>
+                </FormGroup>
+              </Col>
+              <Col sm="12">
+                        <FormGroup className="form-label-group">
+                            <Label> Status </Label>
+                            <CustomInput type="select" name="status" value={this.state.status} onChange={this.changeHandler} id="status">
+                                <option>Active</option>
+                                <option>Inactive</option>
+                            </CustomInput>
+                        </FormGroup>
+                </Col>
+                <Col sm="12">
+                        <FormGroup className="form-label-group">
+                            <Label> Profile Type </Label>
+                            <CustomInput type="select" name="profile_type" value={this.state.profile_type} onChange={this.changeHandler} id="profile_type">
+                                <option>Profile Type</option>
+                                <option>Administrator</option>
+                                <option>Employee</option>
+                                <option>Global Admin</option>
+                            </CustomInput>
+                        </FormGroup>
+                </Col>
                 <Col sm="12">
                     <FormGroup className="form-label-group">
                           <img src={!!this.state.profile_image ? URL.createObjectURL(this.state.profile_image) : img} width="100px"/>

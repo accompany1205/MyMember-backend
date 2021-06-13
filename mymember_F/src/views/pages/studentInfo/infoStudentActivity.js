@@ -53,7 +53,7 @@ class UsersList extends React.Component {
     columnDefs: [
       {
         headerName: "Date",
-        field: "id",
+        field: "date",
         width: 150,
         filter: true,
         // checkboxSelection: true,
@@ -62,36 +62,20 @@ class UsersList extends React.Component {
       },
       {
         headerName: "Type",
-        field: "username",
+        field: "type",
         filter: true,
         width: 250,
-        cellRendererFramework: params => {
-          return (
-            <div
-              className="d-flex align-items-center cursor-pointer"
-              onClick={() => history.push("/app/user/edit")}
-            >
-              <img
-                className="rounded-circle mr-50"
-                src={params.data.avatar}
-                alt="user avatar"
-                height="30"
-                width="30"
-              />
-              <span>{params.data.name}</span>
-            </div>
-          )
-        }
+        
       },
       {
         headerName: "Time",
-        field: "email",
+        field: "time",
         filter: true,
         width: 250
       },
       {
         headerName: "Results",
-        field: "name",
+        field: "result",
         filter: true,
         width: 200
       }
@@ -178,165 +162,7 @@ class UsersList extends React.Component {
     const { rowData, columnDefs, defaultColDef, pageSize } = this.state
     return (
       <Row className="app-user-list">
-        <Col sm="12">
-          <Card
-            className={classnames("card-action card-reload", {
-              "d-none": this.state.isVisible === false,
-              "card-collapsed": this.state.status === "Closed",
-              closing: this.state.status === "Closing...",
-              opening: this.state.status === "Opening...",
-              refreshing: this.state.reload
-            })}
-          >
-            <CardHeader>
-              <CardTitle>Filters</CardTitle>
-              <div className="actions">
-                <ChevronDown
-                  className="collapse-icon mr-50"
-                  size={15}
-                  onClick={this.toggleCollapse}
-                />
-                <RotateCw
-                  className="mr-50"
-                  size={15}
-                  onClick={() => {
-                    this.refreshCard()
-                    this.gridApi.setFilterModel(null)
-                  }}
-                />
-                <X size={15} onClick={this.removeCard} />
-              </div>
-            </CardHeader>
-            <Collapse
-              isOpen={this.state.collapse}
-              onExited={this.onExited}
-              onEntered={this.onEntered}
-              onExiting={this.onExiting}
-              onEntering={this.onEntering}
-            >
-              <CardBody>
-                {this.state.reload ? (
-                  <Spinner color="primary" className="reload-spinner" />
-                ) : (
-                  ""
-                )}
-                <Row>
-                  <Col lg="3" md="6" sm="12">
-                    <FormGroup className="mb-0">
-                      <Label for="role">By Belt</Label>
-                      <Input
-                        type="select"
-                        name="role"
-                        id="role"
-                        value={this.state.role}
-                        onChange={e => {
-                          this.setState(
-                            {
-                              role: e.target.value
-                            },
-                            () =>
-                              this.filterData(
-                                "role",
-                                this.state.role.toLowerCase()
-                              )
-                          )
-                        }}
-                      >
-                        <option value="All">All</option>
-                        <option value="User">User</option>
-                        <option value="Staff">Staff</option>
-                        <option value="Admin">Admin</option>
-                      </Input>
-                    </FormGroup>
-                  </Col>
-                  <Col lg="3" md="6" sm="12">
-                    <FormGroup className="mb-0">
-                      <Label for="status">Status</Label>
-                      <Input
-                        type="select"
-                        name="status"
-                        id="status"
-                        value={this.state.selectStatus}
-                        onChange={e => {
-                          this.setState(
-                            {
-                              selectStatus: e.target.value
-                            },
-                            () =>
-                              this.filterData(
-                                "status",
-                                this.state.selectStatus.toLowerCase()
-                              )
-                          )
-                        }}
-                      >
-                        <option value="All">All</option>
-                        <option value="Active">Active</option>
-                        <option value="Blocked">Blocked</option>
-                        <option value="Deactivated">Deactivated</option>
-                      </Input>
-                    </FormGroup>
-                  </Col>
-                  <Col lg="3" md="6" sm="12">
-                    <FormGroup className="mb-0">
-                      <Label for="verified">Verified</Label>
-                      <Input
-                        type="select"
-                        name="verified"
-                        id="verified"
-                        value={this.state.verified}
-                        onChange={e => {
-                          this.setState(
-                            {
-                              verified: e.target.value
-                            },
-                            () =>
-                              this.filterData(
-                                "is_verified",
-                                this.state.verified.toLowerCase()
-                              )
-                          )
-                        }}
-                      >
-                        <option value="All">All</option>
-                        <option value="True">True</option>
-                        <option value="False">False</option>
-                      </Input>
-                    </FormGroup>
-                  </Col>
-                  <Col lg="3" md="6" sm="12">
-                    <FormGroup className="mb-0">
-                      <Label for="department">Department</Label>
-                      <Input
-                        type="select"
-                        name="department"
-                        id="department"
-                        value={this.state.department}
-                        onChange={e => {
-                          this.setState(
-                            {
-                              department: e.target.value
-                            },
-                            () =>
-                              this.filterData(
-                                "department",
-                                this.state.department.toLowerCase()
-                              )
-                          )
-                        }}
-                      >
-                        <option value="All">All</option>
-                        <option value="Sales">Sales</option>
-                        <option value="Development">Development</option>
-                        <option value="Management">Management</option>
-                      </Input>
-                    </FormGroup>
-                  </Col>
-                </Row>
-              </CardBody>
-            </Collapse>
-          </Card>
-        </Col>
+        {/*  */}
         <Col sm="12">
           <Card>
             <CardBody>

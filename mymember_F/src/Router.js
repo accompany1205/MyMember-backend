@@ -110,7 +110,6 @@ const MymoneyFinanceAddccexpiring = lazy(() => import("./views/pages/myMoney/fin
 
 // chat-text
 const TextChat = lazy(() => import("./views/pages/marketing/text/chat/Chat"))
-const AddStudentByProgram = lazy(() => import("./views/pages/newStudentByProgram/MembershipByProgramMain"))
 
 
 const MarketingNurting = lazy(() => import("./views/pages/marketing/email/nurturing/nurturingMain"))
@@ -174,7 +173,7 @@ const accountSettings = lazy(() =>
   import("./views/pages/account-settings/AccountSettings")
 )
 // const invoice = lazy(() => import("./views/pages/invoice/Invoice"))
-const Documents = lazy(() => import("./views/pages/documents/components/Documents"))
+const invoice1 = lazy(() => import("./views/pages/documents/invoice1/invoiceMain"))
 // const invoice = lazy(() => import("./views/pages/documents/invoice1/Invoice"))
 const comingSoon = lazy(() => import("./views/pages/misc/ComingSoon"))
 const error404 = lazy(() => import("./views/pages/misc/error/404"))
@@ -283,7 +282,7 @@ const mapStateToProps = state => {
 const AppRoute = connect(mapStateToProps)(RouteConfig)
 
 class AppRouter extends React.Component {
-
+  
   state = {
     loggedinUser : JSON.parse(localStorage.getItem('userdata')),
   }
@@ -296,15 +295,15 @@ class AppRouter extends React.Component {
             path="/"
             component={homeMain}
             fullLayout
-
+           
           />
           <AppRoute exact path={'/dashboard'} component={analyticsDashboard} />
-
+          
           <AppRoute
             path="/ecommerce-dashboard"
             component={ecommerceDashboard}
           />
-
+          
           <AppRoute
             path="/email"
             exact
@@ -329,7 +328,7 @@ class AppRouter extends React.Component {
           <AppRoute path="/app/appointment" component={appointment} />
           <AppRoute path="/ecommerce/shop" component={shop} />
           <AppRoute path="/ecommerce/wishlist" component={wishlist} />
-
+          
           <AppRoute
             path="/ecommerce/product-detail"
             component={productDetail}
@@ -387,11 +386,10 @@ class AppRouter extends React.Component {
           <AppRoute path="/app/statistics/former-student" component={StatisticsformerStudent} />
           <AppRoute path="/app/statistics/former-trail" component={StatisticsformerTrail} />
           <AppRoute path="/app/statistics/after-school" component={StatisticsafterSchool} />
-          <AppRoute path="/company/documents" component={Documents} />
-
+          <AppRoute path="/company/documents" component={invoice1} />
+           
           <AppRoute path="/company/marketing/text/chat" component={TextChat} />
-          <AppRoute path="/app/student/newstudentbyprogram" component={AddStudentByProgram} />
-
+          
 
           <AppRoute path="/ui-element/grid" component={grid} />
           <AppRoute path="/ui-element/typography" component={typography} />
@@ -479,7 +477,7 @@ class AppRouter extends React.Component {
             component={accountSettings}
           />
           {/* <AppRoute path="/pages/invoice" component={invoice} /> */}
-
+          
           {/* topnavsupport <AppRoute path="/pages/ navsupport" component={navsupport} />*/}
 
           <AppRoute path="/pages/navsupport" component={Navsupport} />
@@ -522,17 +520,17 @@ class AppRouter extends React.Component {
             component={maintenance}
             fullLayout
           />
-
+           
           <AppRoute
             path="/thank-you-registration"
             component={ThankYouPage}
             fullLayout
-
+            
           />
           <AppRoute path="/app/marketing/email/sent_all_email" component={allEmailList} />
           <AppRoute path="/app/marketing/email/compose" component={composeEmail} />
           <AppRoute path="/app/marketing/email/library" component={libraryEmail} />
-
+          
           <AppRoute path="/app/marketing/text/nurting" component={MarketingTextAddNurting} />
           <AppRoute path="/app/marketing/text/system" component={MarketingTextAddSystem} />
           <AppRoute path="/app/marketing/text/library" component={MarketingTextAddLibrary} />

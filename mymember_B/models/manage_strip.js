@@ -8,15 +8,15 @@ const managestripeSchema = new mongoose.Schema(
             required:true
         },
         day_to_ready:{
-            type:String,
+            type:Number,
             required:true
         },
         lessons_to_ready:{
-            type:String,
+            type:Number,
             required:true
         },
         stripe_order:{
-            type:String,
+            type:Number,
             required:true
         },
         manage_stripe_image:{

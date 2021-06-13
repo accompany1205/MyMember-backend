@@ -82,24 +82,26 @@ exports.read = (req, res) => {
 exports.programs_detail = (req, res) => {
     var id = req.params.proId
     console.log(id)
-    program.find({_id:id},{upsert:true})
-        .populate('program_rank').exec((err, data) => {
+    program.findById(id)
+        .populate('program_category')
+        .populate('program_rank')
+        .exec((err, data) => {
             if (err) {
                 console.log(err)
                 res.send({ error: 'category is not populate' })
             }
             else {
                 res.send(data)
-                console.log(data)
             }
         })
 };
 
-exports.programid_name = (req, res) => {
-    var id = req.params.userId
+exports.program_rank = (req, res) => {
+    var id = req.params.proId
     console.log(id)
-    program.find({userId :id})
+    program.findById(id)
         .select('programName')
+        .populate('program_rank')
         .exec((err, data) => {
             if (err) {
                 console.log(err)

@@ -34,7 +34,7 @@ class ModalForm extends React.Component {
                   outline
                   onClick={this.toggleModal}
                 >
-                 Manage Rank
+                 New User
             </Button.Ripple>
           
             <Modal
@@ -43,7 +43,7 @@ class ModalForm extends React.Component {
               className="modal-dialog-centered"
             >
                 <ModalHeader toggle={this.toggleModal}>
-                   Manage Rank
+                  Add New User
                 </ModalHeader>
                 <ModalBody>
                    <UserCreateForm toggle={this.toggleModal}/>

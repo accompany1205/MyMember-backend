@@ -2,7 +2,6 @@ import React from "react"
 import {
   Card,
   CardHeader,
-  CardTitle,
   CardBody,
   FormGroup,
   Row,
@@ -12,7 +11,9 @@ import {
   Button,
   Label
 } from "reactstrap"
-import { Create_DocFolder } from '../../../../redux/actions/document/document';
+
+// import img from "../../../../assets/img/pages/1-apex.png"
+import { Create_DocSubFolder } from '../../../../redux/actions/document/document';
 import {connect} from 'react-redux';
 
 class FloatingLabels extends React.Component {
@@ -20,7 +21,7 @@ class FloatingLabels extends React.Component {
   constructor(props){
     super(props);
     this.state = {
-      folderName : ""
+      subFolderName : ""
     }
     this.changeHandler = this.changeHandler.bind(this);
     this.onsubmit = this.onsubmit.bind(this);
@@ -33,12 +34,15 @@ class FloatingLabels extends React.Component {
   }
 
   onsubmit(e){
+    // console.log(">>>>>>>>>>>>>>",this.state)
     e.preventDefault();
-    let createFolderData = {
-      folderName: this.state.folderName.trim(),
+    const { ...rest } = this.state;
+    if(this.state.subFolderName != ""){
+      if (this.props.isSubFolder) {
+        this.props.Create_DocSubFolder({ subFolderName: this.state.subFolderName}, this.props.mainFolder);
+      }
+
     }
-    this.props.Create_DocFolder(createFolderData);
-    this.props.toggle();
   }
   render() {
 
@@ -54,13 +58,13 @@ class FloatingLabels extends React.Component {
                 <FormGroup className="form-label-group">
                   <Input
                     type="text"
-                    name="folderName"
-                    value={this.state.folderName}
+                    name="subFolderName"
+                    value={this.state.subFolderName}
                     onChange={this.changeHandler}
-                    id="folderName"
+                    id="subFolderName"
                     placeholder="Folder Name"
                   />
-                  <Label for="nameFloating">Folder Name</Label>
+                  <Label for="nameFloating">Sub Folder Name</Label>
                 </FormGroup>
               </Col>
 
@@ -79,9 +83,8 @@ class FloatingLabels extends React.Component {
                     color="warning"
                     type="reset"
                     className="mb-1"
-                    onClick={() => this.props.toggle()}
                   >
-                   Cancel
+                   Delete
                   </Button.Ripple>
                 </FormGroup>
               </Col>
@@ -97,4 +100,4 @@ const mapStateToProps = (state) => {
 
   };
 }
-export default connect(mapStateToProps, {Create_DocFolder})(FloatingLabels);
+export default connect(mapStateToProps, {Create_DocSubFolder})(FloatingLabels);

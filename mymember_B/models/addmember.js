@@ -136,7 +136,7 @@ const addmemberSchema = new schema(
         },
         memberprofileImage:{
             type:String,
-            default:''
+            default:' '
         },
         rating:{
             type:Number,

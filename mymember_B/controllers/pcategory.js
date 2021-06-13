@@ -32,10 +32,11 @@ exports.catList = (req,res)=>{
 
 exports.create = (req,res)=>{
     var category = req.body.category;
+    var programName = req.body.programName;
    
     var categoryDetails={}
     categoryDetails.category = category;
-    categoryDetails.programName = req.params.pId;
+    categoryDetails.programName = programName;
     categoryDetails.userId = req.params.userId;
     console.log(categoryDetails)
 
@@ -46,7 +47,7 @@ exports.create = (req,res)=>{
                         console.log(err)
                     }   
                     else{
-                        program.updateOne({_id:req.params.pId},{$push:{ program_category : categoryData._id }})
+                        program.updateOne({programName:programName},{$push:{ program_category : categoryData._id }})
                             .exec((err,data)=>{
                                 if(err){
                                     console.log(err)

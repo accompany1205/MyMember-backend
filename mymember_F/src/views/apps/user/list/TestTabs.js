@@ -67,7 +67,7 @@ class UserEdit extends React.Component {
                                
                                 <TabContent activeTab={this.state.activeTab}>
                                     <TabPane tabId="1">
-                                      <RecommendedTable testStudents={this.props.testStudents}/>
+                                      <RecommendedTable />
                                     </TabPane>
                                     <TabPane tabId="2">
                                     <TestRegisterTable/>

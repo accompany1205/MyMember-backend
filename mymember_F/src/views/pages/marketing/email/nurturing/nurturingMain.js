@@ -15,7 +15,7 @@ import Breadcrumbs from "../../../../../components/@vuexy/breadCrumbs/BreadCrumb
 import { Mail, Phone, FileText, Download } from "react-feather"
 import NurturingSidebar from "./nurturingSidebar"
 
-import "../../../../../assets/scss/pages/documents.scss"
+import "../../../../../assets/scss/pages/invoice.scss"
 import TemplateCards from "./templateCards"
 
 class Nurturing extends React.Component {
@@ -39,16 +39,16 @@ class Nurturing extends React.Component {
                         <h6>What is an automatic email?</h6>
                         <p>An email put into this section will be automatically sent to anyone in your lead contacts. Emails are sent automatically based on the time your entered your lead in to CMA Planner.</p>
                       </CardBody>
-
+                     
                   </Row>
               </Card>
               <Card>
-
+              
                 <CardBody>
                     <TemplateCards />
                 </CardBody>
-
-
+              
+                    
               </Card>
           </Col>
         </Row>

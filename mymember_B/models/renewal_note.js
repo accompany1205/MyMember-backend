@@ -14,11 +14,11 @@ const renewalNotesSchema = new schema({
    },
    date:{
         type:String,
-       
+        default: new Date().toLocaleDateString()
    },
    time:{
        type:String,
-       
+       default:new Date().toLocaleTimeString()
    },
    userId:{
        type:String

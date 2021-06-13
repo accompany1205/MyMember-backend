@@ -4,6 +4,9 @@ const {Storage} = require("@google-cloud/storage")
 const sampleFile = require("../models/admin/upload_sample_file")
 const std = require("../models/addmember")
 
+
+var uid = require("uuid")
+var uidv1 = uid.v1
 require("dotenv").config()
 const storage = new Storage({projectId: process.env.GCLOUD_PROJECT,credentials:{client_email:process.env.GCLOUD_CLIENT_EMAIL,private_key:process.env.GCLOUD_PRIVATE_KEY}})
 const bucket = storage.bucket(process.env.GCS_BUCKET)
@@ -11,21 +14,13 @@ const bucket = storage.bucket(process.env.GCS_BUCKET)
 exports.docupload =(req,res)=>{
     console.log('run')
     console.log(req.file)
-    var uid = Date.now()
-    const newFileName = uid + "-" + req.file.originalname
-    console.log(newFileName)
-
-    const doc = bucket.file(newFileName)
+    const newFileName = uidv1() + "-" + req.file.originalname
+    const doc = bucket.file('All-Images/'+newFileName)
     const blogStream =  doc.createWriteStream({resumable:false})
     
-    blogStream.on("error",err=>{res.send(err)
-    console.log(err)                                
-    })
-
+    blogStream.on("error",err=>res.send(err))
     blogStream.on("finish",()=>{
         const publicUrl = `https://storage.googleapis.com/${process.env.GCS_BUCKET}/${doc.name}`
-
-        console.log(publicUrl ,'url')
         const docFileDetails = {
             document_name:req.body.document_name,
             document:publicUrl,

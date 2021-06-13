@@ -2,25 +2,23 @@ const mongoose = require("mongoose");
 var schema = mongoose.Schema;
 var psubcategorySchema = new schema(
     {
-      pName:{
-          type:String
-      },
-      cId:{
-          type:String
-      },
-           
-     subcategory:{
+       subcategory:{
             type: String,
-     },
-     lable:{
+            required: true,
+        },
+        lable:{
             type:String,
-         
-      },
-     color:{
+            require:true
+        },
+        color:{
             type:String,
-          },
-    
+            require:true
+        },
+        category:{
+            type:String,
+            require:true
+        }
     },
 );
 
-module.exports = mongoose.model("psubcat", psubcategorySchema);
+module.exports = mongoose.model("psubcategory", psubcategorySchema);

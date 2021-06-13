@@ -2,6 +2,7 @@ import React from "react"
 import {
   Card,
   CardHeader,
+  CardTitle,
   CardBody,
   FormGroup,
   Row,
@@ -11,9 +12,7 @@ import {
   Button,
   Label
 } from "reactstrap"
-
-// import img from "../../../../assets/img/pages/1-apex.png"
-import { Create_DocSubFolder } from '../../../../redux/actions/document/document';
+import { Create_DocFolder } from '../../../../redux/actions/document/document';
 import {connect} from 'react-redux';
 
 class FloatingLabels extends React.Component {
@@ -21,29 +20,25 @@ class FloatingLabels extends React.Component {
   constructor(props){
     super(props);
     this.state = {
-      subFolderName : ""
+      folderName : ""  
     }
     this.changeHandler = this.changeHandler.bind(this);
     this.onsubmit = this.onsubmit.bind(this);
   }
 
   changeHandler(e){
-
-    this.setState({...this.state, [e.target.name] : e.target.value});
-
+    
+      this.setState({...this.state, [e.target.name] : e.target.value});
+      
   }
 
   onsubmit(e){
     // console.log(">>>>>>>>>>>>>>",this.state)
     e.preventDefault();
-    const { ...rest } = this.state;
-    if(this.state.subFolderName != ""){
-      if (this.props.isSubFolder) {
-        this.props.Create_DocSubFolder({ subFolderName: this.state.subFolderName.trim()}, this.props.mainFolder);
-        this.props.toggle();
-      }
-
-    }
+    this.props.Create_DocFolder(this.state);
+    // setTimeout(() => {
+    //   this.props.toggle();
+    // }, 600)
   }
   render() {
 
@@ -59,13 +54,13 @@ class FloatingLabels extends React.Component {
                 <FormGroup className="form-label-group">
                   <Input
                     type="text"
-                    name="subFolderName"
-                    value={this.state.subFolderName}
+                    name="folderName"
+                    value={this.state.folderName}
                     onChange={this.changeHandler}
-                    id="subFolderName"
+                    id="folderName"
                     placeholder="Folder Name"
                   />
-                  <Label for="nameFloating">Sub Folder Name</Label>
+                  <Label for="nameFloating">Folder Name</Label>
                 </FormGroup>
               </Col>
 
@@ -101,4 +96,4 @@ const mapStateToProps = (state) => {
 
   };
 }
-export default connect(mapStateToProps, {Create_DocSubFolder})(FloatingLabels);
+export default connect(mapStateToProps, {Create_DocFolder})(FloatingLabels);

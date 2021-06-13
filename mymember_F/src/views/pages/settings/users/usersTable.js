@@ -18,10 +18,6 @@ import { history } from "../../../../history"
 // import StudentlistuserEyeModal from "./studentlistuserEyeModal"
 import "../../../../assets/scss/plugins/tables/_agGridStyleOverride.scss"
 import "../../../../assets/scss/pages/users.scss"
-
-
-
-
 class UrgentCallList extends React.Component {
   state = {
     rowData: null,
@@ -153,9 +149,7 @@ class UrgentCallList extends React.Component {
   }
 
   renderButton(params) {
-
-    
-
+    // console.log("????",params.data["_id"]);
     return (
       <>
       <Trash2   
@@ -164,7 +158,6 @@ class UrgentCallList extends React.Component {
         onClick={() =>
           this.props.trashSubUser(params.data["_id"])
         }
-        
       />
       <Edit  
         className="mr-50"
@@ -255,12 +248,11 @@ class UrgentCallList extends React.Component {
   render() {
     const { rowData, columnDefs, defaultColDef, pageSize } = this.state
     return (
-      
-      <Row className="app-user-list">      
+      <Row className="app-user-list">
+        
         <Col sm="12">
          <Card>
             <CardBody>
-          
               <div className="ag-theme-material ag-grid-table">
                 <div className="ag-grid-actions d-flex justify-content-between flex-wrap mb-1">
                   <div className="sort-dropdown">

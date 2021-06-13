@@ -2,8 +2,8 @@ const administrate = require("../models/user");
 const { errorHandler } = require('../helpers/dbErrorHandler');
 const expressJwt = require('express-jwt'); // for authorization check
 const jwt = require('jsonwebtoken'); // to generate signed token
-// const uuidv1 = require('uuid/v1');
-// uuidv1()
+const uuidv1 = require('uuid/v1');
+uuidv1()
 const cloudUrl = require("../gcloud/imageUrl")
 
 exports.signup = (req, res) => {

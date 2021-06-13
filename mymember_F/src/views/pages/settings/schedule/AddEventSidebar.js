@@ -283,12 +283,12 @@ class AddEvent extends React.Component {
                 :
                 <FormGroup>
                   <Label> Program Name</Label>
-                  {/* <CustomInput type="select" name="program_name" onChange={this.changeHandler} value={this.state.program_name} id="ProgramName">
+                  <CustomInput type="select" name="program_name" onChange={this.changeHandler} value={this.state.program_name} id="ProgramName">
                     <option>-- Select Program -- </option>
                     {this.props.program.map((value, index) => {
                       return (<option key={index} value={`${value.programName}`} >{value.programName}</option>)
                     })}
-                  </CustomInput> */}
+                  </CustomInput>
                 </FormGroup>
               }
               {/* <FormGroup className="form-label-group">

@@ -3,18 +3,19 @@ import ScrollToTop from "react-scroll-up"
 import { Button } from "reactstrap"
 import { Heart, ArrowUp } from "react-feather"
 import classnames from "classnames"
-import "../../../assets/scss/pages/users.scss"
 
 const Footer = props => {
   let footerTypeArr = ["sticky", "static", "hidden"]
   return (
     <footer
-      style={{display: "flex", justifyContent: "center", alignItems: "center"}}
-      className={classnames("footer footer-light ft-pd")}
+      className={classnames("footer footer-light", {
+        "footer-static": props.footerType === "static" || !footerTypeArr.includes(props.footerType),
+        "d-none": props.footerType === "hidden"
+      })}
     >
       <p className="mb-0 clearfix">
         <span className="float-md-left d-block d-md-inline-block mt-25">
-          Copyright © {new Date().getFullYear()}
+          COPYRIGHT © {new Date().getFullYear()}
           <a
             href=""
             target="_blank"
@@ -22,7 +23,7 @@ const Footer = props => {
           >
             MY Member,
           </a>
-          All rights reserved.
+          All rights reserved
         </span>
         {/* <span className="float-md-right d-none d-md-block">
           <span className="align-middle">Hand-crafted & Made with</span>{" "}

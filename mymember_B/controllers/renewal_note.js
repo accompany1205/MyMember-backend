@@ -2,16 +2,6 @@ const renewalnote = require("../models/renewal_note");
 const student = require("../models/addmember");
 const user = require("../models/user");
 const _ = require("lodash");
-const service = require('../email_sms')
-
-function TimeZone(){
-    const str = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
-    const date_time =str.split(',')
-    console.log(date_time)
-    const date = date_time[0]
-    const time = date_time[1]
-    return { Date:date,Time:time}
-}
 
 exports.create =(req,res)=>{
 student.findById(req.params.studentId).exec((err,studetData)=>{
@@ -19,16 +9,13 @@ student.findById(req.params.studentId).exec((err,studetData)=>{
             res.send({error:'student data not found'})
         }
         else{
-            if(req.body.Type == 'manual email' || req.body.Type == 'manual text'){
             var obj ={
                 firstName:studetData.firstName,
                 lastName:studetData.lastName,
                 userId:req.params.userId
             }
-            var date_time = TimeZone()
+
             var renewal = new renewalnote(req.body);
-            renewal.date = date_time.Date
-            renewal.time = date_time.Time
             renewObj = _.extend(renewal,obj) 
 
             renewObj.save((err,note)=>{
@@ -59,101 +46,6 @@ student.findById(req.params.studentId).exec((err,studetData)=>{
             })
 
         }
-
-        else if(req.body.Type == 'system email'){
-            var toEmail = studetData.email
-            var emailText = req.body.notes
-            service.sendEmail(emailText,toEmail).then((respEmail)=>{
-               var obj ={
-                    firstName:studetData.firstName,
-                    lastName:studetData.lastName,
-                    userId:req.params.userId
-                }
-            var date_time = TimeZone()
-            var renewal = new renewalnote(req.body);
-            renewal.date = date_time.Date
-            renewal.time = date_time.Time
-            renewObj = _.extend(renewal,obj) 
-
-            renewObj.save((err,note)=>{
-                if(err){
-                    res.send({error:'renewal notes is not create'})
-                    console.log(err)
-                }
-                else{
-                    student.findByIdAndUpdate(req.params.studentId,{$push: { renewals_notes: note._id }})
-                    .exec((err,renewalStd)=>{
-                        if(err){
-                            res.send({error:'renewal notes is not add in student'})
-                        }
-                        else{
-                            // res.send(note)
-                            user.findByIdAndUpdate(req.params.userId,{$push: { renewal_history: note._id }})
-                            .exec((err,renewalUser)=>{
-                                if(err){
-                                    res.send({error:'renewal notes is not add in school'})
-                                }
-                                else{
-                                    res.send(note)
-                                }
-                            })
-                        }
-                    })
-                }
-            })
-        }).catch((err)=>{
-            console.log(err)
-            res.send({error:'email not sent to student'})
-        })
-        }
-
-        else if(req.body.Type == 'system text'){
-            var toNumber = studetData.primaryPhone
-            var emailText = req.body.notes
-            service.sendEmail(emailText,toNumber).then((respText)=>{
-               var obj ={
-                    firstName:studetData.firstName,
-                    lastName:studetData.lastName,
-                    userId:req.params.userId
-                }
-            var date_time = TimeZone()
-            var renewal = new renewalnote(req.body);
-            renewal.date = date_time.Date
-            renewal.time = date_time.Time
-            renewObj = _.extend(renewal,obj) 
-
-            renewObj.save((err,note)=>{
-                if(err){
-                    res.send({error:'renewal notes is not create'})
-                    console.log(err)
-                }
-                else{
-                    student.findByIdAndUpdate(req.params.studentId,{$push: { renewals_notes: note._id }})
-                    .exec((err,renewalStd)=>{
-                        if(err){
-                            res.send({error:'renewal notes is not add in student'})
-                        }
-                        else{
-                            // res.send(note)
-                            user.findByIdAndUpdate(req.params.userId,{$push: { renewal_history: note._id }})
-                            .exec((err,renewalUser)=>{
-                                if(err){
-                                    res.send({error:'renewal notes is not add in school'})
-                                }
-                                else{
-                                    res.send(note)
-                                }
-                            })
-                        }
-                    })
-                }
-            })
-        }).catch((err)=>{
-            console.log(err)
-            res.send({error:'text sms not sent to student'})
-        })
-      }
-    }
     })
 }
 

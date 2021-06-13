@@ -1,42 +1,36 @@
 const mongoose = require('mongoose');
 const schema =  mongoose.Schema
 const EmailSchema = schema({
-   firstName:{
+   from:{
        type:String,
+       require:true
    },
-   lastName:{
+   to:{
+       type:Array,
+       require:true
+   },
+   msg:{
        type:String,
+       require:true 
    },
-   profile_pic:{
-       type:String,
-   },
-   std_Id:{
-       type:String
-   },
-   primaryPhone:{
-       type:String
-   },
-   sent_recieve_sms:{
-        type:Array
-   },
-   userId:{
-    type:String,
-   },
-
-
- 
    text_type:{
       type:String  
    },
    textStatus:{
        type:Boolean,
+      
    },
    schedule_date:{
        type:String,
+       default:new Date().toLocaleDateString()
    },
    category:{
        type:String,
-       default:''
+       default:' '
+   },
+   userId:{
+       type:String,
+       require:true
    },
    folderId:{
        type:String,
@@ -58,6 +52,7 @@ const EmailSchema = schema({
        type:String,
        require:true
    }
+
 },
 { timestamps:true }
 )
