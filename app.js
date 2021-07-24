@@ -226,7 +226,7 @@ app.use("/api", sample_doc);
 app.use("/api", emailKey);
 app.use("/api", textkey);
 
-// menu middleware
+// menu middle
 app.use("/api", student_menu);
 
 // const privateKey1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/privkey.pem', 'utf8');
