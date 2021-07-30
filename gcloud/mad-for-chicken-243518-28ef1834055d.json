@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "mad-for-chicken-243518",
+  "private_key_id": "28ef1834055d5fbf7484583603250729c19fe0ca",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDCvuDam+3imhnb\n5XW0E4xaI1hjTzbc+w8cVrksIMyLD4x/a39iLuc05fLXMmPJonL1Ybw9k2TPA/4M\nC1dIa4RPw0hA27qBWZQhcR0/elalmJE7aCNecNFUEWB/m+J7bjOGxnf1mt4hJKpi\nQtlQLmwESqpGg9SDZuLaErJ0KMiVu5MCPZWBI7IM7CLacllRCarbfiIrwHrQk0Ca\nV0ekI/u73ILyROGa2t6DhQU/HP4+3Nffqz+lmslwUMe1YQub1R9Skaft2XOBMWi0\nEPa49epCrzp1mMYck3Oj/sI+3HSr/GzqJv9Gq+QsMQ9dTNLWWyDNN64/ADRfO/0C\nbeW655vvAgMBAAECggEAFDzWzBD5Mxu1hTr+tNR1OObEaCmSt3slklnWy2WrK+ZV\nQOaQackbAM3GoyNa6FjH3oUmFTYMe1DcZS8GhoGZ0dom14qeApQnBySkl/SkLXhB\n220Sg91we26E2y39ZrtIgoB8ddr+q24OgMCWqbTxR67krAhGHNOjzmqz/ctBMQIL\nL+TOLjflqN9zPqgZxokftoi2oQujjN3dshZ7ohqQ3pc/JIEjev3q68sTJxrrylq5\ny1WP4VClEBB/Nhvir4f2cHkkFI8TZRY5UvCO0eGCPr+28esKebMVbQXAP7GJdVel\nfV5syQD1NXcw0xomjpkytRXTP/7hJf+qQtc9UO+vpQKBgQDnzhEgkK7IffcUgX/D\nqAX9UrVs2jdJSd/xZSqmbbWrfZwl+kJUiWiPHZj+5BBOv1uLnAvfABeMMLj1319x\nM7V9Do4T3BlwElPMStrz9F6s/KqD1qcBZ8WuyuYAHWvPK+3pib+agBzGTVOtyslS\naADewDBoIKMxE2rsdb8k3XQvUwKBgQDXEpHBo4cg+SkwBfAk1OdAUEC+H5a9nseC\n21RybglQEXDhvhfwlIX0JJLYz09CdfT0Jzq+YR5WDJ6+lh6+C1Ragrptm7b0yTmm\nqqhsCcxxHizx8z0BveXqSF9STi3TiFKEnc8KIeQnYiq/Sh4/60BUMhvXXoqtmQgR\nABmE4pm5dQKBgQDd7RPIsbwkhzS+lRzVHVBer4iypli3+dpFKi4jGHYNsTyFv4sx\nlDxeiF+p6H8UZXAnwUY8QcJJnXv3KdwebPsct4qeyOIxwdoohKILXbImu+AkSKWr\nWsaQCgEZqxFETzJ/nDmsmWrzD6VFhhgopRnwKOAvUM/sdEKyECjoCnzpsQKBgQDG\nBiz6M80ZiRBpTS5dW0JJLxtNctxiXy2nyLaqXbJpbIWY9GQqeTYVIw+qXMbHlMAj\nhXNLEzTRWfFX3fUUWm4ioDdy8Gq2XAie8ob8YtFAXd5YL/O+BNEKs/RAXgdHuz7v\nKDYXSDlAIdzmICJWDA9A9po35K6fREXvET5t4g5UeQKBgHJRShWHw7+KEIgogSvu\ndDAyAd/pDsONgggNVUz/o7qNrLNdn817oeWKLTDtqJNyz8hvVyjk/AsQhazTdwiv\ng7/hTVfTEPGdy6cXc72SxR6Aj2SImSXFS8xsxgrukfAl5Z1h7ef6zK0zoE+eAA2J\npLoHG91seXeXBxAjB47V8jXF\n-----END PRIVATE KEY-----\n",
+  "client_email": "mymember@mad-for-chicken-243518.iam.gserviceaccount.com",
+  "client_id": "102951794033982665830",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/mymember%40mad-for-chicken-243518.iam.gserviceaccount.com"
+}
