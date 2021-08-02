@@ -394,7 +394,7 @@ exports.read = (req, res) => {
 
 exports.active_trial_Std = (req, res) => {
   addmemberModal
-    .find({ userId: req.params.userId, studentType: "Active Trials" })
+    .find({ userId: req.params.userId, studentType: "Active Trial" })
     .populate("membership_details")
     .exec((err, active_trial) => {
       if (err) {
@@ -547,6 +547,7 @@ exports.missuCall_list = (req, res) => {
     .select("program")
     .select("primaryPhone")
     .select("rating")
+    .select("memberprofileImage")
     .populate({
       path: "missYouCall_notes", //array name in addmember modal
       model: "missYouCallNote", //collection name
@@ -571,6 +572,7 @@ exports.missuCall_list_urjent = (req, res) => {
     .select("program")
     .select("primaryPhone")
     .select("rating")
+    .select("memberprofileImage")
     .populate({
       path: "missYouCall_notes", //array name in addmember modal
       model: "missYouCallNote", //collection name
@@ -633,6 +635,7 @@ exports.birth_this_month = (req, res) => {
           primaryPhone: 1,
           rank: 1,
           birthday_checklist: 1,
+          memberprofileImage: 1
         },
       },
     ],
@@ -679,6 +682,7 @@ exports.trial_this_month = (req, res) => {
           leadsTracking: 1,
           primaryPhone: 1,
           membership_details: 1,
+          memberprofileImage: 1
         },
       },
     ],
@@ -730,6 +734,7 @@ exports.birth_next_month = (req, res) => {
           primaryPhone: 1,
           rank: 1,
           birthday_checklist: 1,
+          memberprofileImage:1
         },
       },
     ],
@@ -777,6 +782,7 @@ exports.this_month_lead = (req, res) => {
           userId: 1,
           studentType: 1,
           createdAt: 1,
+          memberprofileImage: 1
         },
       },
     ])
@@ -814,6 +820,7 @@ exports.last_three_month = (req, res) => {
           userId: 1,
           studentType: 1,
           createdAt: 1,
+          memberprofileImage: 1
         },
       },
     ])
