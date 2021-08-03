@@ -1,5 +1,5 @@
 const membershipModal = require('../models/membership')
-const cloudinary = require("cloudinary").v2
+// const cloudinary = require("cloudinary").v2
 const cloudUrl = require("../gcloud/imageUrl")
 
 exports.create = (req,res)=>{
