@@ -15,7 +15,7 @@ exports.birthlist =(req,res)=>{
     })
 }
 
-exports.create = (req,res)=>{
+ exports.create = async (req,res)=>{
     student.findById(req.params.studentId).exec((err,std_data)=>{
         if(err){
             res.send({error:'student data not found'})
@@ -26,11 +26,14 @@ exports.create = (req,res)=>{
                 firstName:std_data.firstName,
                 lastName:std_data.lastName
             }
+            console.log("---> ", req.body)
             var birth_app = new birthdayApp(req.body)
             var birthdayAppoinment = _.extend(birth_app, obj)
+            console.log("..> ",birthdayAppoinment)
           
             birthdayAppoinment.save((err,appoinmentData)=>{
                 if(err){
+                    console.log("--> ", err)
                     res.send({error:'student birthday appoinment is not create'})
                 }
                 else{
