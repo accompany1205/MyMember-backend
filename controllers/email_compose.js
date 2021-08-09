@@ -76,7 +76,6 @@ exports.category_list =(req,res)=>{
 }
 
 exports.sendEmail = (req,res)=>{
-    console.log(req.body)
         const emailData = {
                 sendgrid_key: process.env.Email_Key,
                 to: req.body.to,
@@ -96,8 +95,8 @@ exports.sendEmail = (req,res)=>{
                console.log(emailDetail)
                emailDetail.save((err,emailSave)=>{
                    if(err){
+                       console.log(err);
                        res.send({error:'email details is not save'})
-                       console.log(err)
                    }
                    else{
                        emailSent.findByIdAndUpdate(emailSave._id,{userId:req.params.userId,email_type:'sent',category:'compose'})
@@ -112,8 +111,8 @@ exports.sendEmail = (req,res)=>{
                    }
                })
             }).catch(err=>{
+                console.log({err});
                 res.send({error:'email not send',error:err})
-                console.log({err})
             })
  
 }

@@ -4,6 +4,8 @@ const authKey = require("../models/email_key")
 const async = require('async')
 const moment = require('moment');
 
+// compose template
+
 function timefun(sd,st){
     var date = sd
     var stime = st
@@ -199,79 +201,74 @@ exports.add_template = async(req,res)=>{
     //         }
     //         else{
     //             console.log(key)
-    if(req.body.follow_up === 0){
-      var date_iso = timefun(req.body.sent_date,req.body.sent_time)
-      console.log(date_iso)
-    
-                var obj = {
-                    to: req.body.to,
-                    from: req.body.from,
-                    title:req.body.title,
-                    subject:req.body.subject, 
-                    template:req.body.template,
-                    sent_date: req.body.sent_date,
-                    sent_time: req.body.sent_time,
-                    DateT:date_iso,
-                    repeat_mail: req.body.repeat_mail,
-                    follow_up: req.body.follow_up,
-                    email_type:'schedule',
-                    email_status:true,
-                    category:'compose',
-                    userId:req.params.userId,
-                    folderId:req.params.folderId
-                }
-            }
-             else if(req.body.follow_up > 0){
-                var date_iso_follow = timefun(req.body.sent_date,req.body.sent_time)
 
-                console.log(date_iso_follow,'si')
+            let { to, from, title, subject, template, sent_time, repeat_mail, follow_up } = req.body || {};
+            let { userId, folderId } = req.params || {};
+
+            const obj = {
+                to,
+                from,
+                title,
+                subject, 
+                template,
+                sent_date: nD,
+                sent_time,
+                DateT:date_iso_follow,
+                repeat_mail,
+                follow_up,
+                email_type:'schedule',
+                email_status:true,
+                category:'compose',
+                userId,
+                folderId
+            };
+
+            console.log(obj);
+            if(req.body.follow_up === 0){
+                var date_iso = timefun(req.body.sent_date,req.body.sent_time)
+                obj.DateT = date_iso;
+            }
+            else if(req.body.follow_up > 0){
+                var date_iso_follow = timefun(req.body.sent_date,req.body.sent_time)
                 date_iso_follow.setDate(date_iso_follow.getDate() + req.body.follow_up);
                 var nD = moment(date_iso_follow).format('MM/DD/YYYY')    
-                console.log(nD,'lo')// this is date mm/dd/yyyy
-                console.log(date_iso_follow); // this is iso date time
-                console.log(date_iso_follow.getHours(),'hrou')
-                var obj = {
-                    to: req.body.to,
-                    from: req.body.from,
-                    title:req.body.title,
-                    subject:req.body.subject, 
-                    template:req.body.template,
-                    sent_date: nD,
-                    sent_time: req.body.sent_time,
-                    DateT:date_iso_follow,
-                    repeat_mail: req.body.repeat_mail,
-                    follow_up: req.body.follow_up,
-                    email_type:'schedule',
-                    email_status:true,
-                    category:'compose',
-                    userId:req.params.userId,
-                    folderId:req.params.folderId
-                }
+                // console.log(nD,'lo')// this is date mm/dd/yyyy
+                // console.log(date_iso_follow); // this is iso date time
+                // console.log(date_iso_follow.getHours(),'hour')
             }
             else if(req.body.follow_up < 0){
                 res.send({code:400,msg:'follow up not set less then 0'})
             }
 
 
-          var emailDetail =  new all_temp(obj)
-          console.log(emailDetail) 
-          emailDetail.save(async(err,emailSave)=>{
-              if(err){
-                  res.send({Error:'email details is not save',error:err})
-                  console.log(err)
-              }
-              else{
-             compose_folder.findByIdAndUpdate(req.params.folderId,{$push:{template:emailSave._id}})
-                .exec((err,template)=>{
-                    if(err){
-                        res.send({error:'compose template details is not add in folder'})
-                    }
-                    else{
-                        res.send({msg:'compose template details is add in folder',result:emailSave})
-                    }
-                 })
-             }
-          })
+            var emailDetail =  new all_temp(obj)
+            console.log(emailDetail);
+
+
+            try {
+                let emailSave = await emailDetail.save();
+                let template = await compose_folder.findByIdAndUpdate(folderId,{$push:{template:emailSave._id}})
+                try {
+
+                    // wrong model
+                    // let allData = await compose_folder
+                    // .find({})
+                    // .populate('template');
+
+                    // right model
+                    let allData = await all_temp
+                    .find({})
+                    return res.send({msg:'compose template details is add in folder',result: allData});
+                }
+                catch(err) {
+                    return res.send({error:'compose template details is not add in folder'})
+                }
+            }
+
+            catch(err) {
+                console.log(err);
+                res.send({Error:'email details is not save',error:err})
+            }
 }
 
 exports.update_template =(req,res)=>{
@@ -286,6 +283,8 @@ exports.update_template =(req,res)=>{
 }
 
 exports.remove_template =(req,res)=>{
+    console.log({ tempId: req.params.templateId });
+    // all_temp.remove({}).then().catch();
     all_temp.findByIdAndRemove(req.params.templateId,(err,removeTemplate)=>{
         if(err){
             res.send({error:'compose template is not remove'})
