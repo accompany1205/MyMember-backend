@@ -134,6 +134,9 @@ mongoose
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.set("view engine", "ejs");
+app.use('/js', express.static(path.join(__dirname, 'src/')));
+app.use('/css', express.static(path.join(__dirname, 'src/')));
+app.use(express.static(path.join(__dirname , '/public/build')));
 app.use('/', express.static(path.join(__dirname, '/')));
 app.set("views", path.join(__dirname, "views"));
 app.use(morgan("dev"));
@@ -249,6 +252,11 @@ app.use("/api", student_menu);
 //     );
 //     next();
 //   });
+app.get('/', (req,res) =>{
+  console.log('get root')    
+  res.sendFile(path.join(__dirname , "/public/build/index.html"));
+
+});
 
 const port = process.env.PORT || 8080;
 
