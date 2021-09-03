@@ -84,7 +84,7 @@ exports.add_template = async(req,res)=>{
             }
 
 
-            var emailDetail =  new all_temp(obj)
+            var emailDetail =  new template(obj)
             console.log(emailDetail);
 
 
@@ -99,7 +99,7 @@ exports.add_template = async(req,res)=>{
                     // .populate('template');
 
                     // right model
-                    let allData = await all_temp
+                    let allData = await template
                     .find({})
                     return res.send({msg:'compose template details is add in folder',result: allData});
                 }
