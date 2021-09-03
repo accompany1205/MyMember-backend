@@ -1,4 +1,4 @@
-const template = require("../models/emailSentSave")
+const all_temp = require("../models/emailSentSave")
 const nurturingFolderModal = require("../models/email_nurturing_folder")
 const key = require("../models/email_key")
 
@@ -20,7 +20,77 @@ function timefun(sd,st){
     return  curdat = new Date(y,mo,d,h,mi,se,mil)
    
 }
-
+exports.getData = (req,res)=>{
+    let options = {
+        timeZone: 'Asia/Kolkata',
+        hour: 'numeric',
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        },
+        formatter = new Intl.DateTimeFormat([], options);
+        var a =(formatter.format(new Date()));
+        // var str = a
+        // var h = str.split(",");
+        // console.log(h[0],h[1])
+        // var dates = h[0]
+        // var d = dates.split('/')
+        // var curdat = new Date(`${d[1]} ${d[0]} ${d[2]} ${h[1]}`)
+    
+        var str = a
+        var h = str.split(",");
+        var dates = h[0]
+        var d = dates.split('/')
+        
+        var time12h=h[1] // time change in 24hr
+        const [b,time, modifier] = time12h.split(' ');
+        let [hours, minutes] = time.split(':');
+        if (hours === '12') {
+          hours = '00';
+        }
+        if (modifier === 'PM') {
+          hours = parseInt(hours, 10) + 12;
+        }
+       
+        console.log(msg= {hour:`${hours}`,min:`${minutes}`})
+        // console.log(d[2],d[0],d[1],msg.hour,msg.min,se,mil)
+        console.log(msg.hour ,msg.min )
+        
+        var y = d[2]
+        var mo = d[1]-1
+        var d = d[0]
+        var h = msg.hour
+        var mi = msg.min
+        var se = '0'
+        var mil = '0'
+        var curdat = new Date(y,mo,d,h,mi,se,mil)
+        console.log(curdat,'cur')
+        
+        all_temp.aggregate([
+            {
+                $match: {
+                    $and: [{ email_status: true },
+                    { $expr: { $eq: [{ $month: '$DateT' }, { $month: curdat }] } },
+                    { $expr: { $eq: [{ $dayOfMonth: '$DateT' }, { $dayOfMonth: curdat }] } },
+                    { $expr: { $eq: [{ $year: '$DateT' }, { $year: curdat }] } },
+                    { $expr: { $eq: [{ $hour: '$DateT' }, { $hour: curdat }] } },
+                    { $expr: { $eq: [{ $minute: '$DateT' }, { $minute: curdat }] } },
+                    ]
+                }
+            }
+        ]).exec((err,resp)=>{
+            if(err){
+                res.json({code:400,msg:'data not found'})
+                console.log(err)
+            }
+            else{
+                res.json({code:200,msg:resp})
+            }
+        })
+    }
+    
 exports.list_template = (req,res)=>{
     nurturingFolderModal.findById(req.params.folderId)
     .populate('template')
@@ -193,7 +263,7 @@ exports.add_template = async(req,res)=>{
 // }
 
 exports.remove_template =(req,res)=>{
-    template.findByIdAndRemove(req.params.templateId,(err,removeTemplate)=>{
+    all_temp.findByIdAndRemove(req.params.templateId,(err,removeTemplate)=>{
         if(err){
             res.send({error:'nurturing template is not remove'})
         }
@@ -213,7 +283,7 @@ exports.remove_template =(req,res)=>{
 }
 
 exports.all_email_list = async(req,res)=>{
-    template.find({userId:req.params.userId})
+    all_temp.find({userId:req.params.userId})
     .exec((err,allTemp)=>{
         if(err){
             res.send({code:400,msg:'email list not found'})
@@ -227,7 +297,7 @@ exports.all_email_list = async(req,res)=>{
 exports.single_tem_update_status =(req,res)=>{
     console.log(req.body.email_status)
     if(req.body.email_status == true){
-        template.updateOne({_id:req.params.tempId},{$set:{email_status:true}},(err,resp)=>{
+        all_temp.updateOne({_id:req.params.tempId},{$set:{email_status:true}},(err,resp)=>{
             if(err){
                 res.json({code:400,msg:'email nurturing status not deactive'})
             }
@@ -236,7 +306,7 @@ exports.single_tem_update_status =(req,res)=>{
             }
         })
     }else if(req.body.email_status == false){
-        template.updateOne({_id:req.params.tempId},{$set:{email_status:false}},(err,resp)=>{
+        all_temp.updateOne({_id:req.params.tempId},{$set:{email_status:false}},(err,resp)=>{
             if(err){
                 res.json({code:400,msg:'email nurturing status not active'})
             }
@@ -248,7 +318,7 @@ exports.single_tem_update_status =(req,res)=>{
 }
 
 exports.update_template =(req,res)=>{
-    template.update({_id:req.params.templateId},req.body,(err,updateTemp)=>{
+    all_temp.update({_id:req.params.templateId},req.body,(err,updateTemp)=>{
         if(err){
             res.send({error:'template is not update'})
         }
@@ -260,7 +330,7 @@ exports.update_template =(req,res)=>{
 
 exports.status_update_template =(req,res)=>{
     if(req.body.status == 'false'){
-        template.find({$and:[{userId:req.params.userId},{folderId:req.params.folderId}]})
+        all_temp.find({$and:[{userId:req.params.userId},{folderId:req.params.folderId}]})
         .exec((err,TempData)=>{
             if(err){
                 res.send(err)
@@ -268,7 +338,7 @@ exports.status_update_template =(req,res)=>{
             else{
                 console.log(TempData)
                 async.eachSeries(TempData,(obj,done)=>{
-                    template.findByIdAndUpdate(obj._id,{$set:{email_status:false}},done)
+                    all_temp.findByIdAndUpdate(obj._id,{$set:{email_status:false}},done)
                     },function Done(err,List){
                       if(err){
                         res.send(err)
@@ -281,7 +351,7 @@ exports.status_update_template =(req,res)=>{
         })
     }
     else if(req.body.status == 'true'){
-        template.find({$and:[{userId:req.params.userId},{folderId:req.params.folderId}]})
+        all_temp.find({$and:[{userId:req.params.userId},{folderId:req.params.folderId}]})
        .exec((err,TempData)=>{
             if(err){
                 res.send(err)
@@ -289,7 +359,7 @@ exports.status_update_template =(req,res)=>{
             else{
                 console.log(TempData)
                 async.eachSeries(TempData,(obj,done)=>{
-                    template.findByIdAndUpdate(obj._id,{$set:{email_status:true}},done)
+                    all_temp.findByIdAndUpdate(obj._id,{$set:{email_status:true}},done)
                     },function Done(err,List){
                       if(err){
                         res.send(err)
