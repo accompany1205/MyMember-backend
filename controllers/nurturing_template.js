@@ -169,12 +169,11 @@ exports.add_template = async(req,res)=>{
                     // .populate('template');
 
                     // right model
-                    let allData = await all_temp
-                    .find({})
-                    return res.send({msg:'compose template details is add in folder',result: allData});
+                    let allData = await all_temp.find({})
+                    return res.send({msg:'Nurturing template added successfully',result: allData});
                 }
                 catch(err) {
-                    return res.send({error:'compose template details is not add in folder'})
+                    return res.send({error:'Nurturing template details is not add in folder'})
                 }
             }
 
