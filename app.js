@@ -230,32 +230,32 @@ app.use("/api", textkey);
 // menu middle
 app.use("/api", student_menu);
 
-const privateKey1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/privkey.pem', 'utf8');
-const certificate1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/cert.pem', 'utf8');
-const ca1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/chain.pem', 'utf8');
+// const privateKey1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/privkey.pem', 'utf8');
+// const certificate1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/cert.pem', 'utf8');
+// const ca1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/chain.pem', 'utf8');
 
-const credentials1 = {
-	key: privateKey1,
-	cert: certificate1,
-	ca: ca1
-};
+// const credentials1 = {
+// 	key: privateKey1,
+// 	cert: certificate1,
+// 	ca: ca1
+// };
 
-app.use(function (req, res, next){
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE");
-    res.header(
-      "Access-Control-Allow-Headers",
-      "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-    );
-    next();
-  });
+// app.use(function (req, res, next){
+//     res.header("Access-Control-Allow-Origin", "*");
+//     res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE");
+//     res.header(
+//       "Access-Control-Allow-Headers",
+//       "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+//     );
+//     next();
+//   });
 
 const port = process.env.PORT || 3001;
 
-var server = https.createServer(credentials1, app).listen(port, function(){
-    console.log("Express server listening on port " + port);
-});
- 
-// app.listen(port, () => {
-//   console.log(`Server is running on port ${port}`);
+// var server = https.createServer(credentials1, app).listen(port, function(){
+//     console.log("Express server listening on port " + port);
 // });
+ 
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
