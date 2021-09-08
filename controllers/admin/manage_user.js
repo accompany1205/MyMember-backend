@@ -2,6 +2,7 @@ const user = require("../../models/user")
 const sgMail = require('sendgrid-v3-node');
 const cloudUrl = require("../../gcloud/imageUrl")
 
+//TODO - Pavan - Update this api to give the details as per the requirement.
 exports.user_List = (req, res) =>{
     user.find({ role: 0 })
     .populate('user_membership_details','membershipName startDate expiry_date')
@@ -107,7 +108,7 @@ exports.manage_Status = (req, res) => {
 
     })
 }
-
+// TODO - Pavan - Check if this api is fullfilling our requirement or create a new one.
 exports.update_user = (req,res)=>{
     console.log(req.body)
     user.updateOne({_id: req.params.userId},req.body).exec((err,updateUser)=>{

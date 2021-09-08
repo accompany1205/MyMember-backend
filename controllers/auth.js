@@ -9,6 +9,9 @@ const navbar = require("../models/navbar.js");
 
 
 // TODO - Rakesh - Please write a mail service if user is coming with role 0(School)
+//TODO - Rakesh - Please read the admin email ids using a mongo query with the role 1.
+
+
 exports.signup = (req, res) => {
   console.log("req.body", req.body);
   const user = new User(req.body);
