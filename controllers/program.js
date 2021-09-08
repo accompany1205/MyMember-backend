@@ -50,7 +50,7 @@ exports.create = (req, res) => {
                             res.send({ error: 'user id is not add in program' })
                         }
                         else {
-                            res.send(programData)
+                            res.send({msg:'Program updated successfully ',programData:programData})
                         }
                     })
             }
