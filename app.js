@@ -134,7 +134,7 @@ mongoose
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.set("view engine", "ejs");
-app.use('/', express.static(path.join(__dirname, '/build/index.html')));
+// app.use('/', express.static(path.join(__dirname, '')));
 app.set("views", path.join(__dirname, "views"));
 app.use(morgan("dev"));
 app.use(cookieParser());
@@ -250,7 +250,7 @@ app.use("/api", student_menu);
 //     next();
 //   });
 
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 3001;
 
 // var server = https.createServer(credentials1, app).listen(port, function(){
 //     console.log("Express server listening on port " + port);
