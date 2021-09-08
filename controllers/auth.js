@@ -7,6 +7,8 @@ const sgMail = require("@sendgrid/mail");
 sgMail.setApiKey(process.env.email);
 const navbar = require("../models/navbar.js");
 
+
+// TODO - Rakesh - Please write a mail service if user is coming with role 0(School)
 exports.signup = (req, res) => {
   console.log("req.body", req.body);
   const user = new User(req.body);
@@ -25,6 +27,24 @@ exports.signup = (req, res) => {
     res.json({ user });
   });
 };
+
+exports.approveSchoolRequest = (req,res)=>{
+  let filter = {
+    "role":0,
+    "username": req.body.username
+  };
+  let update = {
+    "isverify":true,
+    "status":"Active"
+  };
+  User.findOneAndUpdate(filter,update).exec((err,data)=>{
+    console.log(data);
+    //Once data is updated we will trigger a mail to the same user
+    //TODO - Rakesh please write a mail service here
+  })
+
+}
+
 exports.forgetpasaword = (req, res) => {
   var { email } = req.body;
   User.findOne({ email }, (err, user) => {
@@ -196,9 +216,9 @@ exports.resetPassword = (req, res) => {
 
 exports.signin = (req, res) => {
   // find the user based on email
-  const { username, password } = req.body;
+  const { username, password} = req.body;
   console.log(req.body);
-  User.findOne({ username }).exec((err, data) => {
+  User.findOne({username}).exec((err, data) => {
     if (err || !data) {
       console.log(err);
       return res.status(400).json({
@@ -307,6 +327,12 @@ exports.verifySchool = (req, res, next) => {
     res.sendStatus(403);
   }
 };
+
+exports.isSchoolActiveted = (req,res,next)=>{
+
+  var token = req.headers["authorization"];
+  const bearer = token.split(" ")
+}
 
 exports.isAdmin = (req, res, next) => {
   var Token = req.headers["authorization"];
