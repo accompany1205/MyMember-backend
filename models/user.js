@@ -56,6 +56,7 @@ const userSchema = new schema(
         username:{
             type: String,
             trim: true,
+            unique:true,
            
             maxlength: 100
         },

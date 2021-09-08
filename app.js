@@ -119,7 +119,7 @@ uuidv1();
 
 mongoose
   .connect(
-    "mongodb+srv://mymemberuser:QsQomiu2dmHH4Uhc@mymember.fenvx.mongodb.net/mymember",
+    process.env.DATABASE,
     {
       useNewUrlParser: true,
       useCreateIndex: true,
