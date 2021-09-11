@@ -2,57 +2,101 @@ const user = require("../../models/user")
 const sgMail = require('sendgrid-v3-node');
 const cloudUrl = require("../../gcloud/imageUrl")
 
-//TODO - Pavan - Update this api to give the details as per the requirement.
-exports.user_List = (req, res) =>{
-    user.find({ role: 0 })
-    .populate('user_membership_details','membershipName startDate expiry_date')
-    .exec((err, userList) => {
-        if (err || !userList) {
-            res.send({ error: 'user list not found' })
-            console.log(err)
-        }
-        else {
-            res.send(userList)
-        }
-    })
+
+exports.user_List = (req, res) => {
+    user.find({
+            role: 0
+        })
+        .populate('user_membership_details', 'membershipName startDate expiry_date')
+        .exec((err, userList) => {
+            if (err || !userList) {
+                res.send({
+                    error: 'user list not found'
+                })
+                console.log(err)
+            } else {
+                res.send(userList)
+            }
+        })
 }
 
-exports.userInfo = (req,res)=>{
-    user.findOne({_id:req.params.userId})
-    .populate('user_membership_details')
-    .exec((err,userinfo)=>{
-        if(err){
-            res.send({error:'user info not found'})
-        }
-        else{
-            res.send(userinfo)
-        }
-    })
+/**
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ */
+exports.school_list = (req, res) => {
+    user.find({
+            role: 0
+        }, {
+            status: 1,
+            firstname: 1,
+            username: 1,
+            email: 1,
+            phone: 1,
+            password: 1,
+            location: 1
+        })
+        .exec((err, userList) => {
+            if (err || !userList) {
+                res.send({
+                    error: 'user list not found'
+                })
+                console.log(err)
+            } else {
+                res.send(userList)
+            }
+        })
 }
 
-exports.create_user = (req,res)=>{
+exports.userInfo = (req, res) => {
+    user.findOne({
+            _id: req.params.userId
+        })
+        .populate('user_membership_details')
+        .exec((err, userinfo) => {
+            if (err) {
+                res.send({
+                    error: 'user info not found'
+                })
+            } else {
+                res.send(userinfo)
+            }
+        })
+}
+
+exports.create_user = (req, res) => {
     var userObj = new user(req.body);
     console.log(req.body)
-    userObj.save(function(err,User){
-        if(err){
+    userObj.save(function (err, User) {
+        if (err) {
             res.send(err)
             console.log(err)
-        }
-        else{
-            if(req.file){
-                cloudUrl.imageUrl(req.file).then((subuserImgUrl)=>{
-                    user.findByIdAndUpdate(User._id,{$set:{logo:subuserImgUrl}})
-                    .then((response) => {
-                        res.json(response)
-                     }).catch((error)=>{
-                        res.send({error:'user image is not add'})
+        } else {
+            if (req.file) {
+                cloudUrl.imageUrl(req.file).then((subuserImgUrl) => {
+                    user.findByIdAndUpdate(User._id, {
+                            $set: {
+                                logo: subuserImgUrl
+                            }
+                        })
+                        .then((response) => {
+                            res.json(response)
+                        }).catch((error) => {
+                            res.send({
+                                error: 'user image is not add'
+                            })
+                        })
+                }).catch((error) => {
+                    res.send({
+                        error: 'image url is not create'
                     })
-                    }).catch((error)=>{
-                        res.send({error:'image url is not create'})
-                    })
-            }
-            else{
-                res.send({msg:'user create successfully',data:User})
+                })
+            } else {
+                res.send({
+                    msg: 'user create successfully',
+                    data: User
+                })
             }
         }
     })
@@ -60,89 +104,155 @@ exports.create_user = (req,res)=>{
 
 exports.manage_Status = (req, res) => {
     console.log(req.params.userId)
-    user.findById(req.params.userId).exec((err, list)=>{
+    user.findById(req.params.userId).exec((err, list) => {
         if (err) {
-            res.send({ error: 'user list not find' })
-        }
-        else{
+            res.send({
+                error: 'user list not find'
+            })
+        } else {
             console.log(list.status)
-            if(list.status == 'Deactivate') {
-               user.findByIdAndUpdate({_id: req.params.userId},{$set:{status:'Active'}})
-               .exec((err, updateData) => {
-                    if (err) {
-                        res.send({ error: 'user status not update' })
-                    }
-                    else {
-                        console.log(updateData)
-                        var to = updateData.email
-                        const userinfo = {
-                            sendgrid_key: process.env.email,
-                            to: to,
-                            from_email: 'tekeshwar810@gmail.com',
-                            from_name: 'noreply@gmail.com',
-                        };
-                        userinfo.subject = 'email information';
-                        userinfo.content = `<p>email:${updateData.email}</p>
+            if (list.status == 'Deactivate') {
+                user.findByIdAndUpdate({
+                        _id: req.params.userId
+                    }, {
+                        $set: {
+                            status: 'Active'
+                        }
+                    })
+                    .exec((err, updateData) => {
+                        if (err) {
+                            res.send({
+                                error: 'user status not update'
+                            })
+                        } else {
+                            console.log(updateData)
+                            var to = updateData.email
+                            const userinfo = {
+                                sendgrid_key: process.env.email,
+                                to: to,
+                                from_email: 'tekeshwar810@gmail.com',
+                                from_name: 'noreply@gmail.com',
+                            };
+                            userinfo.subject = 'email information';
+                            userinfo.content = `<p>email:${updateData.email}</p>
                                             <p>password:${updateData.password}</p>`;
-                        sgMail.send_via_sendgrid(userinfo).then(resp=>{
-                            console.log(resp)
-                            res.send({msg:'your acount is activate please check your email'})
-                        }).catch(err=>{
-                            res.send({error:'email is not send'})
-                        })  
-                    }
-                })
-            }
-            else if(list.status == 'Active') {
-                user.findByIdAndUpdate({_id:req.params.userId},{$set:{status:'Deactivate'}})
-                .exec((err, updateData) => {
-                    if (err) {
-                        res.send({ error: 'user status not update' })
-                    }
-                    else {
-                        res.send({ msg: 'user status is deactivate'})
-                    }
-                })
+                            sgMail.send_via_sendgrid(userinfo).then(resp => {
+                                console.log(resp)
+                                res.send({
+                                    msg: 'your acount is activate please check your email'
+                                })
+                            }).catch(err => {
+                                res.send({
+                                    error: 'email is not send'
+                                })
+                            })
+                        }
+                    })
+            } else if (list.status == 'Active') {
+                user.findByIdAndUpdate({
+                        _id: req.params.userId
+                    }, {
+                        $set: {
+                            status: 'Deactivate'
+                        }
+                    })
+                    .exec((err, updateData) => {
+                        if (err) {
+                            res.send({
+                                error: 'user status not update'
+                            })
+                        } else {
+                            res.send({
+                                msg: 'user status is deactivate'
+                            })
+                        }
+                    })
             }
         }
 
     })
 }
-// TODO - Pavan - Check if this api is fullfilling our requirement or create a new one.
-exports.update_user = (req,res)=>{
+exports.update_user = (req, res) => {
     console.log(req.body)
-    user.updateOne({_id: req.params.userId},req.body).exec((err,updateUser)=>{
-        if(err){
+    user.updateOne({
+        _id: req.params.userId
+    }, req.body).exec((err, updateUser) => {
+        if (err) {
             res.send(err)
-        }
-        else{
-            if(req.file){
-                cloudUrl.imageUrl(req.file).then((subuserImgUrl)=>{
-                    user.findByIdAndUpdate(req.params.userId,{$set:{logo:subuserImgUrl}})
-                    .then((response) => {
-                        res.json(response)
-                        }).catch((error)=>{
-                        res.send({error:'user image is not update'})
-                      })
-                    }).catch((error)=>{
-                        res.send({error:'image url is not create'})
+        } else {
+            if (req.file) {
+                cloudUrl.imageUrl(req.file).then((subuserImgUrl) => {
+                    user.findByIdAndUpdate(req.params.userId, {
+                            $set: {
+                                logo: subuserImgUrl
+                            }
+                        })
+                        .then((response) => {
+                            res.json(response)
+                        }).catch((error) => {
+                            res.send({
+                                error: 'user image is not update'
+                            })
+                        })
+                }).catch((error) => {
+                    res.send({
+                        error: 'image url is not create'
+                    })
                 })
-            }
-            else{
+            } else {
                 res.send(updateUser)
             }
         }
     })
 
 }
+//todo Pavan - create a update api for admin that will give a limited scope to admin to modify schools/user data.
+exports.update_user_by_admin = async (req, res) => {
 
-exports.remove =(req,res) =>{
-    user.findByIdAndRemove(req.params.userId).exec((err,removeData)=>{
-        if(err){
-            res.send({error:'user is not remove'});
+    let data = req.body;
+    let query = req.params;
+    let filter = {
+        "role": 0,
+        "_id": query.userId
+    };
+    console.log(filter)
+    let update = {
+        "status": data.status,
+        "location": data.location
+    }
+
+    let updatedUser = await user.findOneAndUpdate(filter, update, {
+        returnOriginal: false
+    }).exec();
+    if (!updatedUser) {
+        res.send({
+            "staus": false,
+            "msg": "unable to update user"
+        })
+    }
+    res.send({
+        "status": true,
+        "msg": "User has been updated successfully",
+        "data": {
+            "status": updatedUser["status"],
+            "location": updatedUser["location"]
         }
-        else{
-            res.send({msg:'user remove successfully'});
+    })
+}
+
+
+
+
+exports.remove = (req, res) => {
+    user.findByIdAndRemove(req.params.userId).exec((err, removeData) => {
+        if (err) {
+            res.send({
+                error: 'user is not remove'
+            });
+        } else {
+            res.send({
+                msg: 'user remove successfully'
+            });
         }
     })
 }

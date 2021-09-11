@@ -64,6 +64,7 @@ const student_appoinment = require("./routes/student_appoinment");
 const birthday_appoinment = require("./routes/birthday_appoinment");
 const renewal_notes = require("./routes/renewal_note");
 const birthday_notes = require("./routes/birthday_notes");
+const followup_notes_router = require("./routes/followup_notes");
 const birthday_checklist = require("./routes/birthday_checklist");
 const support = require("./routes/support");
 const misucall_appoinment = require("./routes/misucall_appoinment");
@@ -114,6 +115,7 @@ const sample_doc = require("./routes/admin/upload_sample_file");
 const app = express();
 // app.use(fileUpload({ safeFileNames: true, preserveExtension: true }))
 const uuidv1 = require("uuid/v1");
+const followup_notes = require("./models/followup_notes");
 uuidv1();
 // status check expire or not
 
@@ -185,6 +187,7 @@ app.use("/api", student_appoinment);
 app.use("/api", birthday_appoinment);
 app.use("/api", renewal_notes);
 app.use("/api", birthday_notes);
+app.use("/api", followup_notes_router);
 app.use("/api", birthday_checklist);
 app.use("/api", misucall_appoinment);
 app.use("/api", misucall_notes);
