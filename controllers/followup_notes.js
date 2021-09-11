@@ -25,21 +25,22 @@ exports.createNote = async (req, res) => {
             "msg": "Error while createign the note"
         })
     }
-    // let updateNodeIdIntoStudent = await student.findByIdAndUpdate(req.params.studentId, {
-    //     $push: {
-    //         followup_notes: createdNote._id
-    //     }
-    // },
-    // {new :true})
-    console.log(updateNodeIdIntoStudent)
+
+    let updateNodeIdIntoStudent = await student.findByIdAndUpdate(req.params.studentId, {
+        $push: {
+            followup_notes: createdNote._id
+        }
+    },
+        { new: true })
     if (!updateNodeIdIntoStudent) {
         res.send({
             "msg": "Error while createign the note"
         })
     }
     res.send({
-        "status": true,
-        "msg": "Followup note has been created for the student"
+        status: true,
+        msg: "Followup note has been created for the student",
+        data: updateNodeIdIntoStudent
     })
 }
 
@@ -55,12 +56,12 @@ exports.removeNote = (req, res) => {
         } else {
             console.log(removeNote)
             student.update({
+                "birthday_notes": removeNote._id
+            }, {
+                $pull: {
                     "birthday_notes": removeNote._id
-                }, {
-                    $pull: {
-                        "birthday_notes": removeNote._id
-                    }
-                })
+                }
+            })
                 .exec((err, noteUpdateStd) => {
                     console.log(noteUpdateStd)
                     if (err) {
@@ -69,12 +70,12 @@ exports.removeNote = (req, res) => {
                         });
                     } else {
                         user.update({
+                            "birthday_note_history": removeNote._id
+                        }, {
+                            $pull: {
                                 "birthday_note_history": removeNote._id
-                            }, {
-                                $pull: {
-                                    "birthday_note_history": removeNote._id
-                                }
-                            })
+                            }
+                        })
                             .exec((err, noteUpdateUser) => {
                                 if (err) {
                                     res.send({
