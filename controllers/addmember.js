@@ -24,6 +24,65 @@ const sgmail = require("sendgrid-v3-node");
 //     })
 // }
 
+exports.getStudentsByProgramm = async (req,res)=>{
+  let userId = req.params.userId;
+  let program = req.params.program;
+  if(!userid || !program){
+    res.json({
+      status: false,
+      msg: "Please give userId and program into params!!"
+    })
+  }
+  let filter = {
+    "userId":userId,
+    "program":program
+  }
+  let studentsByProgram = await addmemberModel.find(filter);
+  if(!studentsByProgram){
+    res.json({
+      status: false,
+      msg: "Having error while fetching data!!"
+    })
+  }
+  else{
+    res.json({
+      status: false,
+      msg: "Please find the data",
+      data: studentByProgram
+    })
+  }
+}
+
+exports.getStudentsByCategory = async (req,res)=>{
+  let userId = req.params.userId;
+  let category = req.params.category;
+  if(!userid || !category){
+    res.json({
+      status: false,
+      msg: "Please give userId and category into params!!"
+    })
+  }
+  let filter = {
+    "userId":userId,
+    "category":category
+  }
+  let studentsByCategory = await addmemberModel.find(filter);
+  if(!studentsByCategory){
+    res.json({
+      status: false,
+      msg: "Having error while fetching data!!"
+    })
+  }
+  else{
+    res.json({
+      status: false,
+      msg: "Please find the data",
+      data: studentByCategory
+    })
+  }
+
+}
+
 exports.std_program = async (req,res)=>{
   // {userId:req.params.userId}
   program.find({$or:[{userId:req.params.userId},{status:'Admin'}]})

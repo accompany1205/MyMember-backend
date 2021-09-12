@@ -112,6 +112,9 @@ const emailKey = require("./routes/email_key");
 const textkey = require("./routes/text_key");
 const sample_doc = require("./routes/admin/upload_sample_file");
 
+//School
+const recomendedRoutes = require("./routes/recomendedList")
+
 const app = express();
 // app.use(fileUpload({ safeFileNames: true, preserveExtension: true }))
 const uuidv1 = require("uuid/v1");
@@ -229,6 +232,7 @@ app.use("/api", sample_doc);
 // school auth key middleware
 app.use("/api", emailKey);
 app.use("/api", textkey);
+app.use("/api",recomendedRoutes);
 
 // menu middle
 app.use("/api", student_menu);
