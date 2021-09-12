@@ -113,7 +113,8 @@ const textkey = require("./routes/text_key");
 const sample_doc = require("./routes/admin/upload_sample_file");
 
 //School
-const recomendedRoutes = require("./routes/recomendedList")
+const recomendedForTestRoutes = require("./routes/recommendedForTest");
+const registerdForTestRoutes = require("./routes/registerdForTest");
 
 const app = express();
 // app.use(fileUpload({ safeFileNames: true, preserveExtension: true }))
@@ -232,7 +233,8 @@ app.use("/api", sample_doc);
 // school auth key middleware
 app.use("/api", emailKey);
 app.use("/api", textkey);
-app.use("/api",recomendedRoutes);
+app.use("/api",recomendedForTestRoutes);
+app.use("/api",registerdForTestRoutes);
 
 // menu middle
 app.use("/api", student_menu);
