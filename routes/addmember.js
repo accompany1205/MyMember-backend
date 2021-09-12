@@ -33,16 +33,17 @@ const { addmember,
     send_sms_std,
     std_program,
     getStudentsByProgramm,
-    getStudentsByCategory
+    getStudentsByCategory,
+    getActiveStudents
 } = require("../controllers/addmember")
 const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 const upload = require('../handler/multer');
 
-router.post('/bluck_student_add/:userId',bluckStd)
+router.post('/bluck_student_add/:userId', bluckStd)
 
 // router.post("/member/next_std_find/:stdId",next_std_find)
 // perticular std count
-router.get('/memeber/std_count/:userId',verifySchool,std_count)
+router.get('/memeber/std_count/:userId', verifySchool, std_count)
 
 //dashboard routes
 router.get('/member/student_type_count/:userId', studentCount)
@@ -62,10 +63,10 @@ router.get("/member/member_list_name/:userId", verifySchool, listMember)
 router.get('/member/member_list/:userId', verifySchool, read);
 router.get('/member/member_info/:userId/:StudentId', verifySchool, studentinfo);
 
-router.post('/member/add_member/:userId',verifySchool,upload.single('memberprofileImage'),addmember); 
+router.post('/member/add_member/:userId', verifySchool, upload.single('memberprofileImage'), addmember);
 
 router.delete('/member/delete_member/:userId/:memberID', verifySchool, deletemember);
-router.delete('/member/delete_multipal_member/:userId',verifySchool,delete_multipal_member)
+router.delete('/member/delete_multipal_member/:userId', verifySchool, delete_multipal_member)
 router.put('/member/update_member/:userId/:memberID', upload.single('memberprofileImage'), verifySchool, updatemember);
 
 //student type 
@@ -81,10 +82,14 @@ router.get('/member/get_students_by_program/:userId/:program', getStudentsByProg
 router.get('/member/get_students_by_category/:userId/:category', getStudentsByCategory);
 
 // email and text sms send perticular student
-router.post('/member/email_send_student',send_mail_std)
-router.post('/member/text_sms_send',send_sms_std)
+router.post('/member/email_send_student', send_mail_std)
+router.post('/member/text_sms_send', send_sms_std)
 
 // student by program
-router.get("/member/list_student_by_program/:userId",std_program)
+router.get("/member/list_student_by_program/:userId", std_program)
+
+// getActiveStudents
+
+router.get("/member/get_active_members/:userId", getActiveStudents)
 
 module.exports = router

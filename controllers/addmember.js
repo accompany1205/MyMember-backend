@@ -24,27 +24,27 @@ const sgmail = require("sendgrid-v3-node");
 //     })
 // }
 
-exports.getStudentsByProgramm = async (req,res)=>{
+exports.getStudentsByProgramm = async (req, res) => {
   let userId = req.params.userId;
   let program = req.params.program;
-  if(!userid || !program){
+  if (!userid || !program) {
     res.json({
       status: false,
       msg: "Please give userId and program into params!!"
     })
   }
   let filter = {
-    "userId":userId,
-    "program":program
+    "userId": userId,
+    "program": program
   }
   let studentsByProgram = await addmemberModel.find(filter);
-  if(!studentsByProgram){
+  if (!studentsByProgram) {
     res.json({
       status: false,
       msg: "Having error while fetching data!!"
     })
   }
-  else{
+  else {
     res.json({
       status: false,
       msg: "Please find the data",
@@ -53,27 +53,27 @@ exports.getStudentsByProgramm = async (req,res)=>{
   }
 }
 
-exports.getStudentsByCategory = async (req,res)=>{
+exports.getStudentsByCategory = async (req, res) => {
   let userId = req.params.userId;
   let category = req.params.category;
-  if(!userid || !category){
+  if (!userid || !category) {
     res.json({
       status: false,
       msg: "Please give userId and category into params!!"
     })
   }
   let filter = {
-    "userId":userId,
-    "category":category
+    "userId": userId,
+    "category": category
   }
   let studentsByCategory = await addmemberModel.find(filter);
-  if(!studentsByCategory){
+  if (!studentsByCategory) {
     res.json({
       status: false,
       msg: "Having error while fetching data!!"
     })
   }
-  else{
+  else {
     res.json({
       status: false,
       msg: "Please find the data",
@@ -83,37 +83,37 @@ exports.getStudentsByCategory = async (req,res)=>{
 
 }
 
-exports.std_program = async (req,res)=>{
+exports.std_program = async (req, res) => {
   // {userId:req.params.userId}
-  program.find({$or:[{userId:req.params.userId},{status:'Admin'}]})
-  .select('programName')
-  .exec((err,resp)=>{
-    if(err){
-      res.send({'error':'program details not found'})
-    }else{
-      if(resp.length>0){
-      var ary = []
-      console.log(resp)
-      var list = resp
-      Promise.all(list.map(async(item)=>{
-        var obj = {}
-        var stdInfo = await addmemberModal.find({program:item.programName},{firstName:1,lastName:1,status:1,primaryPhone:1,program:1,programColor:1,category:1,subcategory:1,current_rank_name:1,current_rank_img:1,rating:1}).populate('membership_details')
-        var stdCount = await addmemberModal.find({program:item.programName}).count()
-        obj.std_count = stdCount
-        obj.program = item.programName
-        obj.std_info = stdInfo
-        ary.push(obj)
-      })).then((resp)=>{
-        res.send({data:ary})
-      }).catch((err)=>{
-        res.send({error:'data not found'})
-        console.log(err)
-      })
-    }else{
-      res.send({msg:'programs list not found'})
-    }
-    }
-  })
+  program.find({ $or: [{ userId: req.params.userId }, { status: 'Admin' }] })
+    .select('programName')
+    .exec((err, resp) => {
+      if (err) {
+        res.send({ 'error': 'program details not found' })
+      } else {
+        if (resp.length > 0) {
+          var ary = []
+          console.log(resp)
+          var list = resp
+          Promise.all(list.map(async (item) => {
+            var obj = {}
+            var stdInfo = await addmemberModal.find({ program: item.programName }, { firstName: 1, lastName: 1, status: 1, primaryPhone: 1, program: 1, programColor: 1, category: 1, subcategory: 1, current_rank_name: 1, current_rank_img: 1, rating: 1 }).populate('membership_details')
+            var stdCount = await addmemberModal.find({ program: item.programName }).count()
+            obj.std_count = stdCount
+            obj.program = item.programName
+            obj.std_info = stdInfo
+            ary.push(obj)
+          })).then((resp) => {
+            res.send({ data: ary })
+          }).catch((err) => {
+            res.send({ error: 'data not found' })
+            console.log(err)
+          })
+        } else {
+          res.send({ msg: 'programs list not found' })
+        }
+      }
+    })
 }
 
 
@@ -250,7 +250,7 @@ exports.std_count = async (req, res) => {
   var resdata3 = await addmemberModal
     .find({
       $and: [{ userId: req.params.userId }, { studentType: "Former Trial" }],
-    })      
+    })
     .count();
   var resdata4 = await addmemberModal
     .find({
@@ -325,7 +325,7 @@ exports.studentCount = (req, res) => {
 };
 
 exports.addmember = async (req, res) => {
-  var pDetail  = await program.findOne({programName:req.body.program})
+  var pDetail = await program.findOne({ programName: req.body.program })
   var memberdetails = req.body;
   var memberObj = new addmemberModal(memberdetails);
   memberObj.userId = req.params.userId;
@@ -793,7 +793,7 @@ exports.birth_next_month = (req, res) => {
           primaryPhone: 1,
           rank: 1,
           birthday_checklist: 1,
-          memberprofileImage:1
+          memberprofileImage: 1
         },
       },
     ],
@@ -1013,3 +1013,20 @@ exports.send_sms_std = (req, res) => {
     }
   );
 };
+
+
+exports.getActiveStudents = (req, res) => {
+  let userId = req.params.userId;
+  if (!userId) {
+    res.json({ status: false, error: "userId not found in params" });
+  }
+
+  let students = await addmemberModal.find({ userId: userId, status: 'Active' })
+
+  if (!students) {
+    res.json({ status: false, error: "Students not found" });
+  }
+
+  res.json({ status: true, data: students });
+
+}

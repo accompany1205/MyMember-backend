@@ -44,6 +44,7 @@ exports.create = async (req, res) => {
           userId: req.params.userId,
           class_color: schdule_data.program_color,
           time: req.body.time,
+          studentId: req.params.studentId
         };
         var attendanceObj = new attendance(stdDetails);
         var DT = TimeZone();
@@ -54,22 +55,22 @@ exports.create = async (req, res) => {
             console.log(err);
           } else {
             console.log(attendanceData);
-            schedule.findByIdAndUpdate({ _id: req.params.scheduleId },{ $push: { class_attendance: attendanceData._id } }              )
+            schedule.findByIdAndUpdate({ _id: req.params.scheduleId }, { $push: { class_attendance: attendanceData._id } })
               .exec((err, attendanceUpdte) => {
                 if (err) {
-                  res.send({error: "student addendance is not add in class",Error: err});
+                  res.send({ error: "student addendance is not add in class", Error: err });
                 } else {
                   console.log(attendanceUpdte);
                   student.updateOne({ _id: req.params.studentId },
-                      {
-                        $set: {
-                          rating: 0,
-                          class_count: stdData.class_count + 1,
-                          attendence_color: "#00FF00",
-                          attendence_status: true,
-                        },
-                      }
-                    )
+                    {
+                      $set: {
+                        rating: 0,
+                        class_count: stdData.class_count + 1,
+                        attendence_color: "#00FF00",
+                        attendence_status: true,
+                      },
+                    }
+                  )
                     .exec((err, data) => {
                       if (err) {
                         res.send({ error: "student rating is not update" });
@@ -129,3 +130,16 @@ exports.list_attendence = (req, res) => {
     }
   });
 };
+
+exports.getStudentAttendence = (req, res) => {
+  let studentId = req.params.studentId
+  if (!studentId) {
+    res.json({ status: false, error: "Student id  not found in params" });
+  }
+  let attendance = await attendance.find({ studentId: studentId })
+  if (!attendance) {
+    res.json({ status: false, error: `Attendance data not found with this Student id  ${studentId}` });
+  }
+
+  res.json({ status: true, data: attendance })
+}
