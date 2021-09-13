@@ -13,13 +13,17 @@ exports.create = (req,res)=>{
             var obj ={
                 firstName:studetData.firstName,
                 lastName:studetData.lastName,
-                userId:req.params.userId
-            }
+                userId:req.params.userId,
+                notes:studetData.notes
 
+            }
+            //console.log("log-- ", req.body)
             var birthday = new birthdayNote(req.body);
             birthdayObj = _.extend(birthday,obj) 
+            console.log("birthdayObj ->", birthdayObj)
 
             birthdayObj.save((err,note)=>{
+                console.log("notes -> ", note)
                 if(err){
                     res.send({error:'birthday notes is not create'})
                     console.log(err)

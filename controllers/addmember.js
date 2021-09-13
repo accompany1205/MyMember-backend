@@ -632,6 +632,7 @@ exports.birth_this_month = (req, res) => {
           dob: 1,
           age: 1,
           day_left: 1,
+          memberprofileImage:1,
           primaryPhone: 1,
           rank: 1,
           birthday_checklist: 1,
