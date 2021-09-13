@@ -21,6 +21,8 @@ router.post("/signout", signout);
 router.put("/forgetPassword", forgetpasaword);
 router.put("/resetPassword", resetPassword);
 
+// router.put("/")
+
 router.get("/get_navbar", get_navbar);
 router.post("/edit_navbar_li", edit_navbar_li);
 router.post("/edit_navbar_ui", edit_navbar_ui)

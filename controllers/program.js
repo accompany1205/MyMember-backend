@@ -144,7 +144,7 @@ exports.update = (req, res) => {
                     }
                 );
             } else {
-                res.send(result);
+                res.send({msg: "programm updated succesfully"});
                 console.log(result);
             }
         }).catch((err) => {
