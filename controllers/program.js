@@ -144,12 +144,12 @@ exports.update = (req, res) => {
                     }
                 );
             } else {
-                res.send({msg: "programm updated succesfully"});
-                console.log(result);
+                res.send({msg: "programm updated succesfully",success:true});
+    
             }
         }).catch((err) => {
             console.log(err);
-            res.send(err);
+            res.send({message:err.message.replace(/\"/g, ""),success:false} );
         })
 }
 
