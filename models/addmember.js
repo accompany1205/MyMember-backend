@@ -203,6 +203,9 @@ const addmemberSchema = new schema(
         }],
         followup_notes: {
             type: Array
+        },
+        rank_update_history:{
+            type: Array
         }
     },
     { timestamps: true }

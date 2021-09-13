@@ -6,7 +6,7 @@ const programSchema = new schema(
     {
         programName:{
             type: String,
-          
+            unique:true,          
             maxlength: 32
         },
         color:{

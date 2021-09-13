@@ -1,4 +1,7 @@
-const { functions, add } = require("lodash");
+const {
+  functions,
+  add
+} = require("lodash");
 var addmemberModal = require("../models/addmember");
 const cloudUrl = require("../gcloud/imageUrl");
 const program = require("../models/program");
@@ -43,8 +46,7 @@ exports.getStudentsByProgramm = async (req, res) => {
       status: false,
       msg: "Having error while fetching data!!"
     })
-  }
-  else {
+  } else {
     res.json({
       status: false,
       msg: "Please find the data",
@@ -72,8 +74,7 @@ exports.getStudentsByCategory = async (req, res) => {
       status: false,
       msg: "Having error while fetching data!!"
     })
-  }
-  else {
+  } else {
     res.json({
       status: false,
       msg: "Please find the data",
@@ -85,11 +86,19 @@ exports.getStudentsByCategory = async (req, res) => {
 
 exports.std_program = async (req, res) => {
   // {userId:req.params.userId}
-  program.find({ $or: [{ userId: req.params.userId }, { status: 'Admin' }] })
+  program.find({
+      $or: [{
+        userId: req.params.userId
+      }, {
+        status: 'Admin'
+      }]
+    })
     .select('programName')
     .exec((err, resp) => {
       if (err) {
-        res.send({ 'error': 'program details not found' })
+        res.send({
+          'error': 'program details not found'
+        })
       } else {
         if (resp.length > 0) {
           var ary = []
@@ -97,20 +106,42 @@ exports.std_program = async (req, res) => {
           var list = resp
           Promise.all(list.map(async (item) => {
             var obj = {}
-            var stdInfo = await addmemberModal.find({ program: item.programName }, { firstName: 1, lastName: 1, status: 1, primaryPhone: 1, program: 1, programColor: 1, category: 1, subcategory: 1, current_rank_name: 1, current_rank_img: 1, rating: 1 }).populate('membership_details')
-            var stdCount = await addmemberModal.find({ program: item.programName }).count()
+            var stdInfo = await addmemberModal.find({
+              program: item.programName
+            }, {
+              firstName: 1,
+              lastName: 1,
+              status: 1,
+              primaryPhone: 1,
+              program: 1,
+              programColor: 1,
+              category: 1,
+              subcategory: 1,
+              current_rank_name: 1,
+              current_rank_img: 1,
+              rating: 1
+            }).populate('membership_details')
+            var stdCount = await addmemberModal.find({
+              program: item.programName
+            }).count()
             obj.std_count = stdCount
             obj.program = item.programName
             obj.std_info = stdInfo
             ary.push(obj)
           })).then((resp) => {
-            res.send({ data: ary })
+            res.send({
+              data: ary
+            })
           }).catch((err) => {
-            res.send({ error: 'data not found' })
+            res.send({
+              error: 'data not found'
+            })
             console.log(err)
           })
         } else {
-          res.send({ msg: 'programs list not found' })
+          res.send({
+            msg: 'programs list not found'
+          })
         }
       }
     })
@@ -120,111 +151,127 @@ exports.std_program = async (req, res) => {
 exports.bluckStd = async (req, res) => {
   var List = req.body.data;
   await Promise.all(
-    List.map(async (item) => {
-      var memberdetails = item;
-      var memberObj = new addmemberModal(memberdetails);
-      memberObj.userId = req.params.userId;
-      memberObj.save(function (err, data) {
-        if (err) {
-          console.log(err);
-          res.send({ error: "member is not add" });
-        } else {
-          if (req.file) {
-            cloudUrl
-              .imageUrl(req.file)
-              .then((stdImgUrl) => {
-                addmemberModal
-                  .findByIdAndUpdate(data._id, {
-                    $set: { memberprofileImage: stdImgUrl },
-                  })
-                  .then((response) => {
-                    // res.send({'res':response})
-                    program
-                      .findOne({ programName: req.body.program })
-                      .select("programName")
-                      .populate({
-                        path: "program_rank",
-                        model: "Program_rank",
-                        select: "rank_name rank_image",
-                      })
-                      .exec((err, proData) => {
-                        if (err) {
-                          res.send({ code: 400, msg: "program not found" });
-                        } else {
-                          var d = proData.program_rank[0];
-                          addmemberModal.findByIdAndUpdate(
-                            { _id: response._id },
-                            {
-                              $set: {
-                                next_rank_id: d._id,
-                                next_rank_name: d.rank_name,
-                                next_rank_img: d.rank_image,
-                                programID: proData._id,
-                              },
-                            },
-                            (err, mangerank) => {
-                              if (err) {
-                                res.send({
-                                  code: 400,
-                                  msg: "manage rank not found",
-                                });
-                              } else {
-                                res.send(mangerank);
-                              }
-                            }
-                          );
-                        }
-                      });
-                  })
-                  .catch((err) => {
-                    res.send(err);
-                  });
-              })
-              .catch((error) => {
-                res.send({ error: "image url is not create" });
-              });
+      List.map(async (item) => {
+        var memberdetails = item;
+        var memberObj = new addmemberModal(memberdetails);
+        memberObj.userId = req.params.userId;
+        memberObj.save(function (err, data) {
+          if (err) {
+            console.log(err);
+            res.send({
+              error: "member is not add"
+            });
           } else {
-            console.log(memberdetails.program);
-            program
-              .findOne({ programName: memberdetails.program })
-              .select("programName")
-              .populate({
-                path: "program_rank",
-                model: "Program_rank",
-                select: "rank_name rank_image",
-              })
-              .exec(async (err, proData) => {
-                if (err || !proData) {
-                  res.send({ code: 400, msg: "program not find" });
-                } else {
-                  var d = proData.program_rank[0];
-                  console.log(d, "fs");
-                  await addmemberModal.findByIdAndUpdate(
-                    { _id: data._id },
-                    {
+            if (req.file) {
+              cloudUrl
+                .imageUrl(req.file)
+                .then((stdImgUrl) => {
+                  addmemberModal
+                    .findByIdAndUpdate(data._id, {
                       $set: {
-                        next_rank_id: d._id,
-                        next_rank_name: d.rank_name,
-                        next_rank_img: d.rank_image,
-                        programID: proData._id,
+                        memberprofileImage: stdImgUrl
                       },
-                    }
-                    // ((err,mangerank)=>{
-                    //     if(err){
-                    //         res.send({code:400,msg:'manage rank not find of program'})
-                    //     }
-                    //     else{
-                    //          res.send(mangerank)
-                    //     }
-                    /*})*/
-                  );
-                }
-              });
+                    })
+                    .then((response) => {
+                      // res.send({'res':response})
+                      program
+                        .findOne({
+                          programName: req.body.program
+                        })
+                        .select("programName")
+                        .populate({
+                          path: "program_rank",
+                          model: "Program_rank",
+                          select: "rank_name rank_image",
+                        })
+                        .exec((err, proData) => {
+                          if (err) {
+                            res.send({
+                              code: 400,
+                              msg: "program not found"
+                            });
+                          } else {
+                            var d = proData.program_rank[0];
+                            addmemberModal.findByIdAndUpdate({
+                                _id: response._id
+                              }, {
+                                $set: {
+                                  next_rank_id: d._id,
+                                  next_rank_name: d.rank_name,
+                                  next_rank_img: d.rank_image,
+                                  programID: proData._id,
+                                },
+                              },
+                              (err, mangerank) => {
+                                if (err) {
+                                  res.send({
+                                    code: 400,
+                                    msg: "manage rank not found",
+                                  });
+                                } else {
+                                  res.send(mangerank);
+                                }
+                              }
+                            );
+                          }
+                        });
+                    })
+                    .catch((err) => {
+                      res.send(err);
+                    });
+                })
+                .catch((error) => {
+                  res.send({
+                    error: "image url is not create"
+                  });
+                });
+            } else {
+              console.log(memberdetails.program);
+              program
+                .findOne({
+                  programName: memberdetails.program
+                })
+                .select("programName")
+                .populate({
+                  path: "program_rank",
+                  model: "Program_rank",
+                  select: "rank_name rank_image",
+                })
+                .exec(async (err, proData) => {
+                  if (err || !proData) {
+                    res.send({
+                      code: 400,
+                      msg: "program not find"
+                    });
+                  } else {
+                    var d = proData.program_rank[0];
+                    console.log(d, "fs");
+                    await addmemberModal.findByIdAndUpdate({
+                        _id: data._id
+                      }, {
+                        $set: {
+                          next_rank_id: d._id,
+                          next_rank_name: d.rank_name,
+                          next_rank_img: d.rank_image,
+                          programID: proData._id,
+                        },
+                      }
+                      // ((err,mangerank)=>{
+                      //     if(err){
+                      //         res.send({code:400,msg:'manage rank not find of program'})
+                      //     }
+                      //     else{
+                      //          res.send(mangerank)
+                      //     }
+                      /*})*/
+                    );
+                  }
+                });
+            }
           }
-        }
-      });
-    })
-  )
+        });
+      })
+    )
     .then((resp) => {
       res.send("student add successfully");
     })
@@ -235,35 +282,67 @@ exports.bluckStd = async (req, res) => {
 
 exports.std_count = async (req, res) => {
   var resdata = await addmemberModal
-    .find({ $and: [{ userId: req.params.userId }, { intrested: "Camp" }] })
+    .find({
+      $and: [{
+        userId: req.params.userId
+      }, {
+        intrested: "Camp"
+      }]
+    })
     .count();
   var resdata1 = await addmemberModal
     .find({
-      $and: [{ userId: req.params.userId }, { studentType: "Active Student" }],
+      $and: [{
+        userId: req.params.userId
+      }, {
+        studentType: "Active Student"
+      }],
     })
     .count();
   var resdata2 = await addmemberModal
     .find({
-      $and: [{ userId: req.params.userId }, { studentType: "Former Student" }],
+      $and: [{
+        userId: req.params.userId
+      }, {
+        studentType: "Former Student"
+      }],
     })
     .count();
   var resdata3 = await addmemberModal
     .find({
-      $and: [{ userId: req.params.userId }, { studentType: "Former Trial" }],
+      $and: [{
+        userId: req.params.userId
+      }, {
+        studentType: "Former Trial"
+      }],
     })
     .count();
   var resdata4 = await addmemberModal
     .find({
-      $and: [{ userId: req.params.userId }, { studentType: "Active Trials" }],
+      $and: [{
+        userId: req.params.userId
+      }, {
+        studentType: "Active Trials"
+      }],
     })
     .count();
   var resdata5 = await addmemberModal
     .find({
-      $and: [{ userId: req.params.userId }, { intrested: "After School" }],
+      $and: [{
+        userId: req.params.userId
+      }, {
+        intrested: "After School"
+      }],
     })
     .count();
   var resdata6 = await addmemberModal
-    .find({ $and: [{ userId: req.params.userId }, { studentType: "Leads" }] })
+    .find({
+      $and: [{
+        userId: req.params.userId
+      }, {
+        studentType: "Leads"
+      }]
+    })
     .count();
 
   var total =
@@ -282,18 +361,24 @@ exports.std_count = async (req, res) => {
 
 exports.listMember = (req, res) => {
   addmemberModal
-    .find({ userId: req.params.userId })
+    .find({
+      userId: req.params.userId
+    })
     .select("firstName")
     .select("lastName")
     .exec((err, data) => {
       if (err) {
         console.log(err);
-        res.send({ error: "member list is not found" });
+        res.send({
+          error: "member list is not found"
+        });
       } else {
         if (data.length > 0) {
           res.send(data);
         } else {
-          res.send({ msg: "member list is empty" });
+          res.send({
+            msg: "member list is empty"
+          });
         }
       }
     });
@@ -301,31 +386,45 @@ exports.listMember = (req, res) => {
 
 exports.studentCount = (req, res) => {
   addmemberModal
-    .aggregate([
-      { $match: { userId: req.params.userId } },
+    .aggregate([{
+        $match: {
+          userId: req.params.userId
+        }
+      },
       {
         $group: {
           _id: "$studentType",
-          count: { $sum: 1 },
+          count: {
+            $sum: 1
+          },
         },
       },
     ])
     .exec((err, stdCount) => {
       if (err) {
-        res.send({ code: 400, msg: "student count not found" });
+        res.send({
+          code: 400,
+          msg: "student count not found"
+        });
       } else {
         var Total = 0;
         stdCount.forEach((ele) => {
           Total = Total + ele.count;
         });
         console.log(Total);
-        res.send({ code: 200, Total_std: Total, Student_count: stdCount });
+        res.send({
+          code: 200,
+          Total_std: Total,
+          Student_count: stdCount
+        });
       }
     });
 };
 
 exports.addmember = async (req, res) => {
-  var pDetail = await program.findOne({ programName: req.body.program })
+  var pDetail = await program.findOne({
+    programName: req.body.program
+  })
   var memberdetails = req.body;
   var memberObj = new addmemberModal(memberdetails);
   memberObj.userId = req.params.userId;
@@ -333,7 +432,9 @@ exports.addmember = async (req, res) => {
   memberObj.save(function (err, data) {
     if (err) {
       console.log(err);
-      res.send({ error: "member is not add" });
+      res.send({
+        error: "member is not add"
+      });
     } else {
       if (req.file) {
         cloudUrl
@@ -341,12 +442,16 @@ exports.addmember = async (req, res) => {
           .then((stdImgUrl) => {
             addmemberModal
               .findByIdAndUpdate(data._id, {
-                $set: { memberprofileImage: stdImgUrl },
+                $set: {
+                  memberprofileImage: stdImgUrl
+                },
               })
               .then((response) => {
                 // res.send({'res':response})
                 program
-                  .findOne({ programName: req.body.program })
+                  .findOne({
+                    programName: req.body.program
+                  })
                   .select("programName")
                   .populate({
                     path: "program_rank",
@@ -355,12 +460,15 @@ exports.addmember = async (req, res) => {
                   })
                   .exec((err, proData) => {
                     if (err) {
-                      res.send({ code: 400, msg: "program not found" });
+                      res.send({
+                        code: 400,
+                        msg: "program not found"
+                      });
                     } else {
                       var d = proData.program_rank[0];
-                      addmemberModal.findByIdAndUpdate(
-                        { _id: response._id },
-                        {
+                      addmemberModal.findByIdAndUpdate({
+                          _id: response._id
+                        }, {
                           $set: {
                             next_rank_id: d._id,
                             next_rank_name: d.rank_name,
@@ -387,11 +495,15 @@ exports.addmember = async (req, res) => {
               });
           })
           .catch((error) => {
-            res.send({ error: "image url is not create" });
+            res.send({
+              error: "image url is not create"
+            });
           });
       } else {
         program
-          .findOne({ programName: req.body.program })
+          .findOne({
+            programName: req.body.program
+          })
           .select("programName")
           .populate({
             path: "program_rank",
@@ -400,13 +512,16 @@ exports.addmember = async (req, res) => {
           })
           .exec((err, proData) => {
             if (err || !proData) {
-              res.send({ code: 400, msg: "program not find" });
+              res.send({
+                code: 400,
+                msg: "program not find"
+              });
             } else {
               var d = proData.program_rank[0];
               console.log(d, "fs");
-              addmemberModal.findByIdAndUpdate(
-                { _id: data._id },
-                {
+              addmemberModal.findByIdAndUpdate({
+                  _id: data._id
+                }, {
                   $set: {
                     next_rank_id: d._id,
                     next_rank_name: d.rank_name,
@@ -434,18 +549,24 @@ exports.addmember = async (req, res) => {
 
 exports.read = (req, res) => {
   addmemberModal
-    .find({ userId: req.params.userId })
+    .find({
+      userId: req.params.userId
+    })
     .populate("membership_details")
     .populate("manage_change_rank")
     .exec((err, data) => {
       if (err) {
         console.log(err);
-        res.send({ error: "member list is not found" });
+        res.send({
+          error: "member list is not found"
+        });
       } else {
         if (data.length > 0) {
           res.send(data);
         } else {
-          res.send({ msg: "member list is empty" });
+          res.send({
+            msg: "member list is empty"
+          });
         }
       }
     });
@@ -453,11 +574,16 @@ exports.read = (req, res) => {
 
 exports.active_trial_Std = (req, res) => {
   addmemberModal
-    .find({ userId: req.params.userId, studentType: "Active Trial" })
+    .find({
+      userId: req.params.userId,
+      studentType: "Active Trial"
+    })
     .populate("membership_details")
     .exec((err, active_trial) => {
       if (err) {
-        res.send({ error: "active trial student is not found" });
+        res.send({
+          error: "active trial student is not found"
+        });
       } else {
         res.send(active_trial);
       }
@@ -466,11 +592,16 @@ exports.active_trial_Std = (req, res) => {
 
 exports.leads_Std = (req, res) => {
   addmemberModal
-    .find({ userId: req.params.userId, studentType: "Leads" })
+    .find({
+      userId: req.params.userId,
+      studentType: "Leads"
+    })
     .populate("membership_details")
     .exec((err, lead) => {
       if (err) {
-        res.send({ error: "leads student is not found" });
+        res.send({
+          error: "leads student is not found"
+        });
       } else {
         res.send(lead);
       }
@@ -479,11 +610,16 @@ exports.leads_Std = (req, res) => {
 
 exports.Former_Std = (req, res) => {
   addmemberModal
-    .find({ userId: req.params.userId, studentType: "Former Student" })
+    .find({
+      userId: req.params.userId,
+      studentType: "Former Student"
+    })
     .populate("membership_details")
     .exec((err, former) => {
       if (err) {
-        res.send({ error: "former student is not found" });
+        res.send({
+          error: "former student is not found"
+        });
       } else {
         res.send(former);
       }
@@ -492,11 +628,16 @@ exports.Former_Std = (req, res) => {
 
 exports.active_Std = (req, res) => {
   addmemberModal
-    .find({ userId: req.params.userId, studentType: "Active Student" })
+    .find({
+      userId: req.params.userId,
+      studentType: "Active Student"
+    })
     .populate("membership_details")
     .exec((err, active_std) => {
       if (err) {
-        res.send({ error: "active student is not found" });
+        res.send({
+          error: "active student is not found"
+        });
       } else {
         res.send(active_std);
       }
@@ -505,11 +646,16 @@ exports.active_Std = (req, res) => {
 
 exports.Former_trial_Std = (req, res) => {
   addmemberModal
-    .find({ userId: req.params.userId, studentType: "Former Trial" })
+    .find({
+      userId: req.params.userId,
+      studentType: "Former Trial"
+    })
     .populate("membership_details")
     .exec((err, former_trial) => {
       if (err) {
-        res.send({ error: "former trial student is not found" });
+        res.send({
+          error: "former trial student is not found"
+        });
       } else {
         res.send(former_trial);
       }
@@ -518,11 +664,16 @@ exports.Former_trial_Std = (req, res) => {
 
 exports.camp_Std = (req, res) => {
   addmemberModal
-    .find({ userId: req.params.userId, intrested: "Camp" })
+    .find({
+      userId: req.params.userId,
+      intrested: "Camp"
+    })
     .populate("membership_details", "mactive_date expiry_date")
     .exec((err, camp) => {
       if (err) {
-        res.send({ error: "camp student not found" });
+        res.send({
+          error: "camp student not found"
+        });
       } else {
         res.send(camp);
       }
@@ -531,11 +682,16 @@ exports.camp_Std = (req, res) => {
 
 exports.after_school_Std = (req, res) => {
   addmemberModal
-    .find({ userId: req.params.userId, intrested: "After School" })
+    .find({
+      userId: req.params.userId,
+      intrested: "After School"
+    })
     .populate("membership_details")
     .exec((err, after_school) => {
       if (err) {
-        res.send({ error: "after school student not found" });
+        res.send({
+          error: "after school student not found"
+        });
       } else {
         res.send(after_school);
       }
@@ -551,7 +707,9 @@ exports.studentinfo = (req, res) => {
     .populate("myFaimly")
     .exec((err, data) => {
       if (err) {
-        res.send({ error: "member is not found" });
+        res.send({
+          error: "member is not found"
+        });
         console.log(err);
       } else {
         res.send(data);
@@ -561,17 +719,23 @@ exports.studentinfo = (req, res) => {
 
 exports.lastestMember = (req, res) => {
   addmemberModal
-    .find({ userId: req.params.userId })
+    .find({
+      userId: req.params.userId
+    })
     .select("firstName")
     .select("lastName")
     .select("program")
     .select("primaryPhone")
     .select("createdAt")
-    .sort({ createdAt: -1 })
+    .sort({
+      createdAt: -1
+    })
     .limit(5)
     .exec((err, memberdata) => {
       if (err) {
-        res.send({ error: "member data is not find" });
+        res.send({
+          error: "member data is not find"
+        });
       } else {
         res.send(memberdata);
       }
@@ -580,7 +744,10 @@ exports.lastestMember = (req, res) => {
 
 exports.expire_member = (req, res) => {
   addmemberModal
-    .find({ userId: req.params.userId, status: "expired" })
+    .find({
+      userId: req.params.userId,
+      status: "expired"
+    })
     .select("firstName")
     .select("lastName")
     .select("days_expire")
@@ -591,7 +758,9 @@ exports.expire_member = (req, res) => {
     .populate("membership_details", "expiry_date")
     .exec((err, expMember) => {
       if (err) {
-        res.send({ error: "member list not found" });
+        res.send({
+          error: "member list not found"
+        });
       } else {
         res.send(expMember);
       }
@@ -600,7 +769,9 @@ exports.expire_member = (req, res) => {
 
 exports.missuCall_list = (req, res) => {
   addmemberModal
-    .find({ userId: req.params.userId })
+    .find({
+      userId: req.params.userId
+    })
     .select("firstName")
     .select("lastName")
     .select("program")
@@ -615,7 +786,9 @@ exports.missuCall_list = (req, res) => {
     })
     .exec((err, list_missUCall) => {
       if (err) {
-        res.send({ error: "student list not find" });
+        res.send({
+          error: "student list not find"
+        });
         console.log(err);
       } else {
         res.send(list_missUCall);
@@ -625,7 +798,9 @@ exports.missuCall_list = (req, res) => {
 
 exports.missuCall_list_urjent = (req, res) => {
   addmemberModal
-    .find({ userId: req.params.userId })
+    .find({
+      userId: req.params.userId
+    })
     .select("firstName")
     .select("lastName")
     .select("program")
@@ -640,7 +815,9 @@ exports.missuCall_list_urjent = (req, res) => {
     })
     .exec((err, list_missUCall) => {
       if (err) {
-        res.send({ error: "student list not find" });
+        res.send({
+          error: "student list not find"
+        });
         console.log(err);
       } else {
         res.send(list_missUCall);
@@ -650,35 +827,50 @@ exports.missuCall_list_urjent = (req, res) => {
 
 exports.expire_this_month = (req, res) => {
   var curDate = new Date();
-  addmemberModal.aggregate([
-    {
-      $match: {
-        $and: [
-          { userId: req.params.userId },
-          {
-            $expr: {
-              $eq: [{ $month: "$membership_details" }, { $month: curDate }],
-            },
+  addmemberModal.aggregate([{
+    $match: {
+      $and: [{
+          userId: req.params.userId
+        },
+        {
+          $expr: {
+            $eq: [{
+              $month: "$membership_details"
+            }, {
+              $month: curDate
+            }],
           },
-        ],
-      },
+        },
+      ],
     },
-  ]);
+  }, ]);
 };
 
 exports.birth_this_month = (req, res) => {
   console.log("run");
   var curDate = new Date();
   addmemberModal.aggregate(
-    [
-      {
+    [{
         $match: {
-          $and: [
-            { userId: req.params.userId },
-            { $expr: { $eq: [{ $month: "$dob" }, { $month: curDate }] } },
+          $and: [{
+              userId: req.params.userId
+            },
             {
               $expr: {
-                $lt: [{ $dayOfMonth: curDate }, { $dayOfMonth: "$dob" }],
+                $eq: [{
+                  $month: "$dob"
+                }, {
+                  $month: curDate
+                }]
+              }
+            },
+            {
+              $expr: {
+                $lt: [{
+                  $dayOfMonth: curDate
+                }, {
+                  $dayOfMonth: "$dob"
+                }],
               },
             },
           ],
@@ -700,7 +892,9 @@ exports.birth_this_month = (req, res) => {
     ],
     function (err, docs) {
       if (err) {
-        res.send({ error: "this month birthday data not found" });
+        res.send({
+          error: "this month birthday data not found"
+        });
         console.log(err);
       } else {
         var options = {
@@ -710,7 +904,9 @@ exports.birth_this_month = (req, res) => {
         };
         addmemberModal.populate(docs, options, function (err, thisMonth) {
           if (err) {
-            res.send({ error: "birthday checklist not populate" });
+            res.send({
+              error: "birthday checklist not populate"
+            });
           } else {
             res.send(thisMonth);
           }
@@ -723,13 +919,23 @@ exports.birth_this_month = (req, res) => {
 exports.trial_this_month = (req, res) => {
   var curDate = new Date();
   addmemberModal.aggregate(
-    [
-      {
+    [{
         $match: {
-          $and: [
-            { userId: req.params.userId },
-            { studentType: "Active Trials" },
-            { $expr: { $eq: [{ $month: "$createdAt" }, { $month: curDate }] } },
+          $and: [{
+              userId: req.params.userId
+            },
+            {
+              studentType: "Active Trials"
+            },
+            {
+              $expr: {
+                $eq: [{
+                  $month: "$createdAt"
+                }, {
+                  $month: curDate
+                }]
+              }
+            },
           ],
         },
       },
@@ -747,7 +953,9 @@ exports.trial_this_month = (req, res) => {
     ],
     (err, trial) => {
       if (err) {
-        res.send({ error: "this month active trial student data not found" });
+        res.send({
+          error: "this month active trial student data not found"
+        });
       } else {
         var options = {
           path: "membership_details",
@@ -756,7 +964,9 @@ exports.trial_this_month = (req, res) => {
         };
         addmemberModal.populate(trial, options, (err, result) => {
           if (err) {
-            res.send({ error: "buy membership details is not populate" });
+            res.send({
+              error: "buy membership details is not populate"
+            });
           } else {
             res.send(result);
           }
@@ -774,12 +984,20 @@ exports.birth_next_month = (req, res) => {
     curDate.getDate()
   );
   addmemberModal.aggregate(
-    [
-      {
+    [{
         $match: {
-          $and: [
-            { userId: req.params.userId },
-            { $expr: { $eq: [{ $month: "$dob" }, { $month: next_month }] } },
+          $and: [{
+              userId: req.params.userId
+            },
+            {
+              $expr: {
+                $eq: [{
+                  $month: "$dob"
+                }, {
+                  $month: next_month
+                }]
+              }
+            },
           ],
         },
       },
@@ -799,7 +1017,9 @@ exports.birth_next_month = (req, res) => {
     ],
     function (err, docs) {
       if (err) {
-        res.send({ error: "next month birthday data not found" });
+        res.send({
+          error: "next month birthday data not found"
+        });
         console.log(err);
       } else {
         var options = {
@@ -809,7 +1029,9 @@ exports.birth_next_month = (req, res) => {
         };
         addmemberModal.populate(docs, options, function (err, thisMonth) {
           if (err) {
-            res.send({ error: "birthday checklist not populate" });
+            res.send({
+              error: "birthday checklist not populate"
+            });
           } else {
             res.send(thisMonth);
           }
@@ -822,13 +1044,23 @@ exports.birth_next_month = (req, res) => {
 exports.this_month_lead = (req, res) => {
   var curDate = new Date();
   addmemberModal
-    .aggregate([
-      {
+    .aggregate([{
         $match: {
-          $and: [
-            { userId: req.params.userId },
-            { studentType: "leads" },
-            { $expr: { $eq: [{ $month: "$createdAt" }, { $month: curDate }] } },
+          $and: [{
+              userId: req.params.userId
+            },
+            {
+              studentType: "leads"
+            },
+            {
+              $expr: {
+                $eq: [{
+                  $month: "$createdAt"
+                }, {
+                  $month: curDate
+                }]
+              }
+            },
           ],
         },
       },
@@ -847,7 +1079,9 @@ exports.this_month_lead = (req, res) => {
     ])
     .exec((err, leadMonth) => {
       if (err) {
-        res.send({ error: "leads this month data not found" });
+        res.send({
+          error: "leads this month data not found"
+        });
         console.log(err);
       } else {
         res.send(leadMonth);
@@ -860,13 +1094,21 @@ exports.last_three_month = (req, res) => {
   date.setMonth(date.getMonth() - 03);
   let dateInput = date.toISOString();
   addmemberModal
-    .aggregate([
-      {
+    .aggregate([{
         $match: {
-          $and: [
-            { userId: req.params.userId },
-            { studentType: "leads" },
-            { $expr: { $gt: ["$createdAt", { $toDate: dateInput }] } },
+          $and: [{
+              userId: req.params.userId
+            },
+            {
+              studentType: "leads"
+            },
+            {
+              $expr: {
+                $gt: ["$createdAt", {
+                  $toDate: dateInput
+                }]
+              }
+            },
           ],
         },
       },
@@ -898,19 +1140,31 @@ exports.deletemember = (req, res) => {
   var memberID = req.params.memberID;
   addmemberModal.findByIdAndDelete(memberID).exec((err, data) => {
     if (err) {
-      res.send({ error: "member is not delete" });
+      res.send({
+        error: "member is not delete"
+      });
     } else {
-      res.send({ msg: "member is delete" });
+      res.send({
+        msg: "member is delete"
+      });
     }
   });
 };
 
 exports.delete_multipal_member = (req, res) => {
-  addmemberModal.deleteMany({ _id: req.body.stdIds }).exec((err, resp) => {
+  addmemberModal.deleteMany({
+    _id: req.body.stdIds
+  }).exec((err, resp) => {
     if (err) {
-      res.json({ code: 400, msg: "student is not delete" });
+      res.json({
+        code: 400,
+        msg: "student is not delete"
+      });
     } else {
-      res.json({ code: 200, msg: "student delete successfully" });
+      res.json({
+        code: 200,
+        msg: "student delete successfully"
+      });
     }
   });
 };
@@ -919,10 +1173,14 @@ exports.updatemember = (req, res) => {
   var memberID = req.params.memberID;
   console.log(req.body);
   addmemberModal
-    .findByIdAndUpdate({ _id: memberID }, req.body)
+    .findByIdAndUpdate({
+      _id: memberID
+    }, req.body)
     .exec((err, data) => {
       if (err) {
-        res.send({ error: "member is not update" });
+        res.send({
+          error: "member is not update"
+        });
       } else {
         if (req.file) {
           cloudUrl
@@ -930,32 +1188,47 @@ exports.updatemember = (req, res) => {
             .then((stdimagUrl) => {
               addmemberModal
                 .findByIdAndUpdate(data._id, {
-                  $set: { memberprofileImage: stdimagUrl },
+                  $set: {
+                    memberprofileImage: stdimagUrl
+                  },
                 })
                 .then((response) => {
-                  res.send({ msg: "member details and profile is update" });
+                  res.send({
+                    msg: "member details and profile is update"
+                  });
                 })
                 .catch((error) => {
-                  res.send({ error: "student image is not update" });
+                  res.send({
+                    error: "student image is not update"
+                  });
                 });
             })
             .catch((error) => {
-              res.send({ error: "image url is not create" });
+              res.send({
+                error: "image url is not create"
+              });
             });
         } else {
-          res.send({ msg: "member is update successfully" });
+          res.send({
+            msg: "member is update successfully"
+          });
         }
       }
     });
 };
 
 function TimeZone() {
-  const str = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+  const str = new Date().toLocaleString("en-US", {
+    timeZone: "Asia/Kolkata"
+  });
   const date_time = str.split(",");
   console.log(date_time);
   const date = date_time[0];
   const time = date_time[1];
-  return { Date: date, Time: time };
+  return {
+    Date: date,
+    Time: time
+  };
 }
 
 exports.send_mail_std = (req, res) => {
@@ -981,14 +1254,19 @@ exports.send_mail_std = (req, res) => {
         emailDetail.sent_time = DT.Time;
         console.log(emailDetail);
         emailDetail.save((err, resp) => {
-          res.send({ code: 200, msg: "email sent successfully" });
+          res.send({
+            code: 200,
+            msg: "email sent successfully"
+          });
         });
       })
       .catch((error) => {
-        res.send({ code: 400, msg: "email not send" });
+        res.send({
+          code: 400,
+          msg: "email not send"
+        });
       });
-  } else if (req.body.email_type == "Schedule") {
-  }
+  } else if (req.body.email_type == "Schedule") {}
 };
 
 const client = require("twilio")(process.env.aid, process.env.authkey);
@@ -997,36 +1275,89 @@ exports.send_sms_std = (req, res) => {
   var number = req.body.number;
   var code = "+1";
   console.log(number);
-  client.messages.create(
-    {
+  client.messages.create({
       to: number,
       from: "+12192445425",
       body: "This is the ship that made the Kessel Run in fourteen parsecs?",
     },
     function (err, data) {
       if (err) {
-        res.send({ error: "msg not set" });
+        res.send({
+          error: "msg not set"
+        });
         console.log(err);
       } else {
-        res.send({ msg: "text sms send successfully" });
+        res.send({
+          msg: "text sms send successfully"
+        });
       }
     }
   );
 };
 
 
-exports.getActiveStudents = (req, res) => {
+exports.getActiveStudents = async (req, res) => {
+  console.log("I am able to call the api");
+  console.log(req.params.userId)
   let userId = req.params.userId;
   if (!userId) {
-    res.json({ status: false, error: "userId not found in params" });
+    return res.json({
+      status: false,
+      error: "userId not found in params"
+    });
   }
 
-  let students = await addmemberModal.find({ userId: userId, status: 'Active' })
+  let students = await addmemberModal.find({
+    userId: userId,
+    status: 'Active'
+  })
 
   if (!students) {
-    res.json({ status: false, error: "Students not found" });
+    res.json({
+      status: false,
+      error: "Students not found"
+    });
   }
 
-  res.json({ status: true, data: students });
+  res.json({
+    status: true,
+    data: students
+  });
+
+}
+
+/**This api belongs to studend_program_rank_history;
+ * 
+ * @param {*} req
+ * @param {*} res 
+ */
+
+exports.getRankUpdateHistoryByStudentId = async (req, res) => {
+  let studentId = req.params.studentId;
+  if (!studentId) {
+    res.json({
+      status: false,
+      error: "userId not found in params"
+    });
+  }
+  let student = await addmemberModal.findById(studentId);
+  if (!student) {
+    res.json({
+      status: false,
+      error: "Student is not available with this id!!"
+    });
+  }
+  let history = student.rank_update_history;
+  if(!history.length){
+    return res.json({
+      stasus: false,
+      error: "Not any history available for this student!!"
+    })
+  }
+  return res.json({
+    status: true,
+    msg: "Please find the student's rank update history!",
+    data: history
+  });
 
 }

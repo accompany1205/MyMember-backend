@@ -114,7 +114,8 @@ const sample_doc = require("./routes/admin/upload_sample_file");
 
 //School
 const recomendedForTestRoutes = require("./routes/recommendedForTest");
-const registerdForTestRoutes = require("./routes/registerdForTest");
+const registeredForTestRoutes = require("./routes/registerdForTest");
+const recommendedCandidatesRoutes = require("./routes/recommededCandidate");
 
 const app = express();
 // app.use(fileUpload({ safeFileNames: true, preserveExtension: true }))
@@ -234,7 +235,8 @@ app.use("/api", sample_doc);
 app.use("/api", emailKey);
 app.use("/api", textkey);
 app.use("/api",recomendedForTestRoutes);
-app.use("/api",registerdForTestRoutes);
+app.use("/api",registeredForTestRoutes);
+app.use("/api",recommendedCandidatesRoutes);
 
 // menu middle
 app.use("/api", student_menu);

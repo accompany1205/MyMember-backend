@@ -34,7 +34,8 @@ const { addmember,
     std_program,
     getStudentsByProgramm,
     getStudentsByCategory,
-    getActiveStudents
+    getActiveStudents,
+    getRankUpdateHistoryByStudentId
 } = require("../controllers/addmember")
 const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 const upload = require('../handler/multer');
@@ -77,9 +78,6 @@ router.get('/member/Former_student/:userId', verifySchool, Former_Std);
 router.get('/member/Leads/:userId', verifySchool, leads_Std);
 router.get('/member/camp_student/:userId', verifySchool, camp_Std);
 router.get('/member/after_school_student/:userId', verifySchool, after_school_Std);
-//todo - pavan - add the verication.
-router.get('/member/get_students_by_program/:userId/:program', getStudentsByProgramm);
-router.get('/member/get_students_by_category/:userId/:category', getStudentsByCategory);
 
 // email and text sms send perticular student
 router.post('/member/email_send_student', send_mail_std)
@@ -90,6 +88,10 @@ router.get("/member/list_student_by_program/:userId", std_program)
 
 // getActiveStudents
 
+//todo - pavan - add the verication.
+router.get('/member/get_students_by_program/:userId/:program', getStudentsByProgramm);
+router.get('/member/get_students_by_category/:userId/:category', getStudentsByCategory);
+router.get('/member/get_student_rank_update_hisrory/:userId/:studentId', getRankUpdateHistoryByStudentId);
 router.get("/member/get_active_members/:userId", getActiveStudents)
 
 module.exports = router

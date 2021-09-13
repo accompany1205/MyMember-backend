@@ -131,7 +131,7 @@ exports.list_attendence = (req, res) => {
   });
 };
 
-exports.getStudentAttendence = (req, res) => {
+exports.getStudentAttendence = async (req, res) => {
   let studentId = req.params.studentId
   if (!studentId) {
     res.json({ status: false, error: "Student id  not found in params" });
