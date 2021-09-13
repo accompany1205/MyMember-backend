@@ -51,10 +51,10 @@ exports.create = (req,res)=>{
                             .exec((err,data)=>{
                                 if(err){
                                     console.log(err)
-                                    res.send({error:'category is not add'})
+                                    res.send({error:'category is not added'})
                                 }
                                 else{
-                                  res.send({msg:'category add successfully',category:categoryData})
+                                  res.send({msg:'category added successfully',category:categoryData})
                                 }
                             })
                     }
@@ -65,17 +65,29 @@ exports.create = (req,res)=>{
 
 exports.update = (req,res)=>{
     var categoryId = req.params.categoryID;
-    var programID = req.params.programID;
+    // var programID = req.params.programID;
     var category_name = req.body.category;
-    
-    pcategory.findByIdAndUpdate(categoryId,{$set:{category:category_name}}).exec((err,data)=>{
-        if(err){
-            res.send({error:'category not find'})
-        }
-        else{
-            res.send({ result: 'category is  update successfully' })
-        }
+    pcategory.updateOne({ _id: categoryId }, req.body)
+    .then((result) => {
+        
+            pcategory.findByIdAndUpdate(categoryId,{$set:{category:category_name}})
+            .then((response) => {
+                res.json(response)
+                res.send({msg:'category added successfully',result})
+                
+            }).catch((err) => {
+                console.log(err);
+                res.send(err);
+            })
+            
+        
     })
+    .catch((err) => {
+        console.log(err);
+        res.send(err);
+    })
+    
+   
 }
 
 exports.remove = (req,res)=>{
