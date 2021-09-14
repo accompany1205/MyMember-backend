@@ -72,7 +72,7 @@ router.put('/member/update_member/:userId/:memberID', upload.single('memberprofi
 
 //student type 
 router.get('/member/active_trial/:userId', verifySchool, active_trial_Std);
-router.get('/member/active_student/:userId', verifySchool, active_Std);
+router.get('/member/nt/:userId', verifySchool, active_Std);
 router.get('/member/Former_trial/:userId', verifySchool, Former_trial_Std);
 router.get('/member/Former_student/:userId', verifySchool, Former_Std);
 router.get('/member/Leads/:userId', verifySchool, leads_Std);
