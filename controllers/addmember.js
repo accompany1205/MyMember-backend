@@ -483,7 +483,7 @@ exports.addmember = async (req, res) => {
                               msg: "manage rank not found",
                             });
                           } else {
-                            res.send(mangerank);
+                            res.send({mangerank:mangerank, message:"Student created successfully", status:true});
                           }
                         }
                       );
@@ -536,7 +536,7 @@ exports.addmember = async (req, res) => {
                       msg: "manage rank not find of program",
                     });
                   } else {
-                    res.send(mangerank);
+                    res.send({mangerank:mangerank, message:"Student created successfully", status:true});
                   }
                 }
               );
