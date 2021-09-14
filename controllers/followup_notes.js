@@ -2,106 +2,189 @@ const followUpNotes = require("../models/followup_notes");
 const student = require("../models/addmember");
 const user = require("../models/user");
 const _ = require("lodash");
-const memberModal = require("../models/addmember")
+const memberModel = require("../models/addmember")
 
-exports.createNote = async (req,res)=>{
+exports.createNote = async (req, res) => {
+    let memberId = req.params.memberId;
+    console.log("This is the member.... ", memberId)
+    if (!memberId) {
+        res.send({
+            status: true,
+            "msg": "Member Id not found in the params!!"
+        })
+    }
     let payload = req.body;
-    let filter = {}
+    let createNotePayload = payload;
+    let filter = {
+        "_id": memberId
+    }
     let studentInfo = await student.findById(filter).exec();
+    if (!studentInfo) {
+        res.send({
+            status: true,
+            "msg": "Data not exists into the collection!!"
+        })
+    }
+    createNotePayload.firstName = studentInfo.firstName;
+    createNotePayload.lastName = studentInfo.lastName;
+    createNotePayload.userId = studentInfo.userId,
+        createNotePayload.memberId = studentInfo._id
 
-    if(studentInfo){
-        const {firstName, lastName, userId} = studentInfo;
-        let createNotePayload = {};
-        createNotePayload.fistName = firstName;
-        createNotePayload.lastName = lastName;
+    let createdNote = await followUpNotes.create(createNotePayload);
+    if (!createdNote) {
+        res.send({
+            status: false,
+            "msg": "Error while createign the note"
+        })
     }
 
-// okay, you can install... i am coming back in 5 min
-
-    // student.findById(req.body.studentId).exec((err,studetData)=>{
-    //     if(err){
-    //         res.send({error:'student data not found'})
-    //     }
-    //     else{
-    //         var obj ={
-    //             firstName:studetData.firstName,
-    //             lastName:studetData.lastName,
-    //             userId:req.params.userId
-    //         }
-
-    //         var birthday = new birthdayNote(req.body);
-    //         birthdayObj = _.extend(birthday,obj) 
-
-    //         birthdayObj.save((err,note)=>{
-    //             if(err){
-    //                 res.send({error:'birthday notes is not create'})
-    //                 console.log(err)
-    //             }
-    //             else{
-    //                 student.findByIdAndUpdate(req.params.studentId,{$push: { birthday_notes: note._id }})
-    //                 .exec((err,birthdayStd)=>{
-    //                     if(err){
-    //                         res.send({error:'birthday notes is not add in student'})
-    //                     }
-    //                     else{
-    //                         // res.send(note)
-    //                         user.findByIdAndUpdate(req.params.userId,{$push: { birthday_note_history: note._id }})
-    //                         .exec((err,birthdayUser)=>{
-    //                             if(err){
-    //                                 res.send({error:'birthday notes is not add in school'})
-    //                             }
-    //                             else{
-    //                                 res.send(note)
-    //                             }
-    //                         })
-    //                     }
-    //                 })
-    //             }
-    //         })
-
-    //     }
-    // })
-}
-
-exports.removeNote = (req,res)=>{
-    var notesId = req.params.notesId
-    birthdayNote.findByIdAndRemove({_id:notesId},(err,removeNote)=>{
-        if(err){
-            res.send({error:'notes is not delete'})
+    let updateNoteIdIntoStudent = await student.findByIdAndUpdate(memberId, {
+        $push: {
+            followup_notes: createdNote._id
         }
-        else{
-            console.log(removeNote)
-            student.update({"birthday_notes":removeNote._id},{$pull:{"birthday_notes":removeNote._id}})
-            .exec((err,noteUpdateStd)=>{
-                console.log(noteUpdateStd)
-                if(err){
-                    res.send({error:'notes is not remove in student'});
-                }
-                else{
-                    user.update({"birthday_note_history":removeNote._id},{$pull:{"birthday_note_history":removeNote._id}})
-                    .exec((err,noteUpdateUser)=>{
-                        if(err){
-                            res.send({error:'notes is not remove in school'})
-                        }
-                        else{
-                            res.send({msg:'notes is remove successfully'})
-                        }
-                    })
-                }
-            })
-        }
+    }, {
+        new: true
+    })
+    if (!updateNoteIdIntoStudent) {
+        res.send({
+            status: false,
+            "msg": "Error while updating into member"
+        })
+    }
+    res.send({
+        status: true,
+        msg: "Followup note has been created for the student",
+        data: createdNote
     })
 }
 
-exports.updateNote = (req,res)=>{
-    var notesid = req.params.notesId
-    console.log(req.body)
-    birthdayNote.findByIdAndUpdate(notesid,req.body).exec((err,updateNote)=>{
-        if(err){
-            res.send({error:'birthday notes is not update'})
-        }
-        else{
-            res.send({msg:'birthday notes update successfully'})
-        }
+exports.getNotesByUserId = async (req, res) => {
+    var userId = req.params.userId;    
+    if (!userId) {
+        res.send({
+            status: true,
+            msg: "Member Id not found in the params!!"
+        })
+    }
+    let filter = {
+        "userId":userId
+    }
+    let notes = await followUpNotes.find(filter);
+    if(!notes){
+        res.send({
+            status: true,
+            msg: "Data not exists for this query!!"
+        })
+    }
+    res.send({
+        status: true,
+        msg: "Please find the notes with userId",
+        data : notes
+    })
+
+}
+
+exports.getNotesByMemberId = async (req, res) => {
+    var memberId = req.params.memberId;    
+    if (!memberId) {
+        res.send({
+            status: true,
+            msg: "Member Id not found in the params!!"
+        })
+    }
+    let filter = {
+        "memberId":memberId
+    }
+    let notes = await followUpNotes.find(filter);
+    if(!notes){
+        res.send({
+            status: true,
+            msg: "Data not exists for this query!!"
+        })
+    }
+    res.send({
+        status: true,
+        msg: "Please find the notes with userId",
+        data : notes
+    })
+
+}
+
+exports.getNotesByNoteType = async (req, res) => {
+    var memberId = req.params.memberId;    
+    if (!memberId) {
+        res.send({
+            status: true,
+            msg: "Member Id not found in the params!!"
+        })
+    }
+    let filter = {
+        "memberId":memberId
+    }
+    let notes = await followUpNotes.find(filter);
+    if(!notes){
+        res.send({
+            status: true,
+            msg: "Data not exists for this query!!"
+        })
+    }
+    res.send({
+        status: true,
+        msg: "Please find the notes with userId",
+        data : notes
+    })
+
+}
+
+
+exports.updateNote = async (req, res) => {
+    let noteId = req.params.noteId;    
+    let {body:payload} = req;
+    if(!payload){
+        res.json({
+            status: false,
+            msg:"Please check your input details!!"
+        })
+    }
+    if (!noteId) {
+        res.send({
+            status: true,
+            msg: "Note id not found in the params!!"
+        })
+    }
+    let updatedNote = await followUpNotes.findByIdAndUpdate(noteId,payload,{new:true});
+    if(!updatedNote){
+        res.send({
+            status: true,
+            msg: "Data not exists for this query!!"
+        })
+    }
+    res.send({
+        status: true,
+        msg: "The note has been updated!!",
+        data : updatedNote
+    })
+
+}
+
+exports.removeNote = async(req,res)=>{
+    let noteId = req.params.noteId;    
+    if (!noteId) {
+        res.send({
+            status: true,
+            msg: "Note id not found in the params!!"
+        })
+    }
+    let deletedNote = await followUpNotes.findByIdAndDelete(noteId);
+    if(!deletedNote){
+        res.send({
+            status: true,
+            msg: "Data not exists for this query!!"
+        })
+    }
+    res.send({
+        status: true,
+        msg: "The note has been removed!!",
+        data : {}
     })
 }

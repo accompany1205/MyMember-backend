@@ -31,16 +31,20 @@ const { addmember,
     delete_multipal_member,
     send_mail_std,
     send_sms_std,
-    std_program
+    std_program,
+    getStudentsByProgramm,
+    getStudentsByCategory,
+    getActiveStudents,
+    getRankUpdateHistoryByStudentId
 } = require("../controllers/addmember")
 const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 const upload = require('../handler/multer');
 
-router.post('/bluck_student_add/:userId',bluckStd)
+router.post('/bluck_student_add/:userId', bluckStd)
 
 // router.post("/member/next_std_find/:stdId",next_std_find)
 // perticular std count
-router.get('/memeber/std_count/:userId',verifySchool,std_count)
+router.get('/memeber/std_count/:userId', verifySchool, std_count)
 
 //dashboard routes
 router.get('/member/student_type_count/:userId', studentCount)
@@ -60,15 +64,15 @@ router.get("/member/member_list_name/:userId", verifySchool, listMember)
 router.get('/member/member_list/:userId', verifySchool, read);
 router.get('/member/member_info/:userId/:StudentId', verifySchool, studentinfo);
 
-router.post('/member/add_member/:userId',verifySchool,upload.single('memberprofileImage'),addmember); 
+router.post('/member/add_member/:userId', verifySchool, upload.single('memberprofileImage'), addmember);
 
 router.delete('/member/delete_member/:userId/:memberID', verifySchool, deletemember);
-router.delete('/member/delete_multipal_member/:userId',verifySchool,delete_multipal_member)
+router.delete('/member/delete_multipal_member/:userId', verifySchool, delete_multipal_member)
 router.put('/member/update_member/:userId/:memberID', upload.single('memberprofileImage'), verifySchool, updatemember);
 
 //student type 
 router.get('/member/active_trial/:userId', verifySchool, active_trial_Std);
-router.get('/member/active_student/:userId', verifySchool, active_Std);
+router.get('/member/nt/:userId', verifySchool, active_Std);
 router.get('/member/Former_trial/:userId', verifySchool, Former_trial_Std);
 router.get('/member/Former_student/:userId', verifySchool, Former_Std);
 router.get('/member/Leads/:userId', verifySchool, leads_Std);
@@ -76,10 +80,18 @@ router.get('/member/camp_student/:userId', verifySchool, camp_Std);
 router.get('/member/after_school_student/:userId', verifySchool, after_school_Std);
 
 // email and text sms send perticular student
-router.post('/member/email_send_student',send_mail_std)
-router.post('/member/text_sms_send',send_sms_std)
+router.post('/member/email_send_student', send_mail_std)
+router.post('/member/text_sms_send', send_sms_std)
 
 // student by program
-router.get("/member/list_student_by_program/:userId",std_program)
+router.get("/member/list_student_by_program/:userId", std_program)
+
+// getActiveStudents
+
+//todo - pavan - add the verication.
+router.get('/member/get_students_by_program/:userId/:program', getStudentsByProgramm);
+router.get('/member/get_students_by_category/:userId/:category', getStudentsByCategory);
+router.get('/member/get_student_rank_update_hisrory/:userId/:studentId', getRankUpdateHistoryByStudentId);
+router.get("/member/get_active_members/:userId", getActiveStudents)
 
 module.exports = router

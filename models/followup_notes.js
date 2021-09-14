@@ -26,6 +26,9 @@ const followUpNotes = new schema({
     userId: {
         type: String
     },
+    memberId:{
+        type: String
+    },
     firstName: {
         type: String
     },
