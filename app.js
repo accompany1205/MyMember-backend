@@ -64,6 +64,7 @@ const student_appoinment = require("./routes/student_appoinment");
 const birthday_appoinment = require("./routes/birthday_appoinment");
 const renewal_notes = require("./routes/renewal_note");
 const birthday_notes = require("./routes/birthday_notes");
+const followup_notes_router = require("./routes/followup_notes");
 const birthday_checklist = require("./routes/birthday_checklist");
 const support = require("./routes/support");
 const misucall_appoinment = require("./routes/misucall_appoinment");
@@ -111,9 +112,15 @@ const emailKey = require("./routes/email_key");
 const textkey = require("./routes/text_key");
 const sample_doc = require("./routes/admin/upload_sample_file");
 
+//School
+const recomendedForTestRoutes = require("./routes/recommendedForTest");
+const registeredForTestRoutes = require("./routes/registerdForTest");
+const recommendedCandidatesRoutes = require("./routes/recommededCandidate");
+
 const app = express();
 // app.use(fileUpload({ safeFileNames: true, preserveExtension: true }))
 const uuidv1 = require("uuid/v1");
+const followup_notes = require("./models/followup_notes");
 uuidv1();
 // status check expire or not
 
@@ -185,6 +192,7 @@ app.use("/api", student_appoinment);
 app.use("/api", birthday_appoinment);
 app.use("/api", renewal_notes);
 app.use("/api", birthday_notes);
+app.use("/api", followup_notes_router);
 app.use("/api", birthday_checklist);
 app.use("/api", misucall_appoinment);
 app.use("/api", misucall_notes);
@@ -226,6 +234,9 @@ app.use("/api", sample_doc);
 // school auth key middleware
 app.use("/api", emailKey);
 app.use("/api", textkey);
+app.use("/api",recomendedForTestRoutes);
+app.use("/api",registeredForTestRoutes);
+app.use("/api",recommendedCandidatesRoutes);
 
 // menu middle
 app.use("/api", student_menu);

@@ -1,21 +1,57 @@
+require('dotenv').config()
 const User = require("../models/user");
 const _ = require("lodash");
 const jwt = require("jsonwebtoken"); // to generate signed token
 const expressJwt = require("express-jwt"); // for authorization check
-const { errorHandler } = require("../helpers/dbErrorHandler");
+const {
+  errorHandler
+} = require("../helpers/dbErrorHandler");
 const sgMail = require("@sendgrid/mail");
-sgMail.setApiKey(process.env.email);
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const from_email = process.env.from_email;
 const navbar = require("../models/navbar.js");
+const {
+  map
+} = require('lodash');
 
 
 // TODO - Rakesh - Please write a mail service if user is coming with role 0(School)
 //TODO - Rakesh - Please read the admin email ids using a mongo query with the role 1.
+//todo - Pavan - #Copleted!
 
 
-exports.signup = (req, res) => {
-  console.log("req.body", req.body);
+//Signup stsrting.....
+exports.signup = async (req, res) => {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   const user = new User(req.body);
-  console.log(user);
+  const admins = await User.find({
+    "role": 1
+  }, {
+    email: 1,
+    _id: 0
+  });
+  let sendToAllAdmins = [];
+  if (!admins.length) {
+    res.send({
+      "msg": "There is any admin avaible to accept your request."
+    })
+  }
+  admins.map(email => {
+    sendToAllAdmins.push(email["email"])
+  })
+  console.log("Here we can send the emails", sendToAllAdmins)
+  console.log(admins);
+
+  //todo Pavan - Need to restructure the mail body as per the requirement
+  let msg = {
+    to: sendToAllAdmins, // Change to your recipient
+    from: from_email, // Change to your verified sender
+    subject: 'Varification Email For User',
+    text: 'Please find the below URL to activate your resent registered user - ',
+    html: `<h2>Please click on given link to accept the user's request</h2>
+                          <p>${process.env.RESET_URL}</p>
+                          `,
+  }
   user.save((err, user) => {
     if (err) {
       console.log(err);
@@ -24,59 +60,116 @@ exports.signup = (req, res) => {
         error: "Email is taken",
       });
     }
+
     user.salt = undefined;
     user.hashed_password = undefined;
     navbar_custom(user.id);
-    res.json({ user });
+    sgMail
+      .send(msg)
+      .then(() => {
+        console.log('Email sent')
+      })
+      .catch((error) => {
+        console.error(error)
+      })
+    res.json({
+      user
+    });
   });
 };
+//...signup ending.
 
-exports.approveSchoolRequest = (req,res)=>{
+exports.approveUserRequestByAdmin = async (req, res) => {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  let data = req.body;
+  let query = req.params;
   let filter = {
-    "role":0,
-    "username": req.body.username
+    "role": 0,
+    "_id": query.userId
   };
   let update = {
-    "isverify":true,
-    "status":"Active"
-  };
-  User.findOneAndUpdate(filter,update).exec((err,data)=>{
-    console.log(data);
-    //Once data is updated we will trigger a mail to the same user
-    //TODO - Rakesh please write a mail service here
-  })
+    "status": data.status,
+    "isverify": data.isverify
+  }
 
+  let updatedUser = await User.findOneAndUpdate(filter, update, {
+    returnOriginal: false
+  }).exec();
+  if (!updatedUser) {
+    res.send({
+      "staus": false,
+      "msg": "unable to update user"
+    })
+  }
+  let msg = {
+    to: updatedUser.email, // Change to your recipient
+    from: from_email, // Change to your verified sender
+    subject: 'Registration process with My_Member',
+    text: 'Congratulation, your request has been accepted.',
+    html: `<h2>congratulation, your registration with My Member is completed.</h2>
+                          <p>You can login here - ${process.env.RESET_URL}</p>
+                          `,
+  }
+  sgMail
+    .send(msg)
+    .then(() => {
+      console.log('Email sent')
+    })
+    .catch((error) => {
+      console.error(error)
+    })
+  res.send({
+    "status": true,
+    "msg": "User has been updated successfully",
+    "data": {
+      "status": updatedUser["status"],
+      "location": updatedUser["isverify"]
+    }
+  })
 }
 
 exports.forgetpasaword = (req, res) => {
-  var { email } = req.body;
-  User.findOne({ email }, (err, user) => {
+  var {
+    email
+  } = req.body;
+  User.findOne({
+    email
+  }, (err, user) => {
     if (err || !user) {
-      res.send({ error: "user with email does not exist" });
+      res.send({
+        error: "user with email does not exist"
+      });
     } else {
-      var resetPassToken = jwt.sign(
-        { _id: user._id },
+      var resetPassToken = jwt.sign({
+          _id: user._id
+        },
         process.env.JWT_RESET_PASSWORD_KEY
       );
       var Email = user.email;
       const resetPassData = {
         to: Email,
-        from: "tekeshwar810@gmail.com",
+        from: from_email,
         subject: "reset password link",
         html: `<h2>Please click on given link to reset your password</h2>
                             <p>${process.env.RESET_URL}/reset_password/${resetPassToken}</p>
                             `,
       };
-      User.updateOne(
-        { _id: user._id },
-        { reset_token: resetPassToken },
+      User.updateOne({
+          _id: user._id
+        }, {
+          reset_token: resetPassToken
+        },
         (err, success) => {
           if (err) {
-            res.send({ error: "reset token is not add" });
+            res.send({
+              error: "reset token is not add"
+            });
           } else {
             sgMail.send(resetPassData, function (err, data) {
               if (err) {
-                res.send({ error: "email not sent" });
+                res.send({
+                  error: "email not sent"
+                });
                 console.log(err);
               } else {
                 res.send({
@@ -102,24 +195,36 @@ exports.resetPassword = (req, res) => {
       process.env.JWT_RESET_PASSWORD_KEY,
       (err, decodeToken) => {
         if (err) {
-          res.send({ error: "incorrect token or it expire" });
+          res.send({
+            error: "incorrect token or it expire"
+          });
         } else {
           console.log(decodeToken);
-          User.findByIdAndUpdate(
-            { _id: decodeToken._id },
-            { $set: { reset_token: "", hashed_password: newPass } }
-          ).exec((err, restdata) => {
+          User.findByIdAndUpdate({
+            _id: decodeToken._id
+          }, {
+            $set: {
+              reset_token: "",
+              hashed_password: newPass
+            }
+          }).exec((err, restdata) => {
             if (err) {
-              res.send({ error: "password is not reset" });
+              res.send({
+                error: "password is not reset"
+              });
             } else {
-              res.send({ error: "password is reset successfully" });
+              res.send({
+                error: "password is reset successfully"
+              });
             }
           });
         }
       }
     );
   } else {
-    res.send({ error: "authentication error" });
+    res.send({
+      error: "authentication error"
+    });
   }
 };
 
@@ -219,16 +324,21 @@ exports.resetPassword = (req, res) => {
 
 exports.signin = (req, res) => {
   // find the user based on email
-  const { username, password} = req.body;
+  const {
+    username,
+    password
+  } = req.body;
   console.log(req.body);
-  User.findOne({username}).exec((err, data) => {
+  User.findOne({
+    username
+  }).exec((err, data) => {
     if (err || !data) {
       console.log(err);
       return res.status(400).json({
         error: "User with that email does not exist. Please signup",
       });
     } else {
-      console.log('data',data)
+      console.log('data', data)
       if (data.password == req.body.password) {
         if (data.role == 0) {
           if (data.status == "Active") {
@@ -237,8 +347,12 @@ exports.signin = (req, res) => {
             //         error: 'Email and password dont match'
             //     });
             // }
-            token = jwt.sign({ id: data._id }, process.env.JWT_SECRET);
-            res.cookie("t", token, { expire: new Date() + 9999 });
+            token = jwt.sign({
+              id: data._id
+            }, process.env.JWT_SECRET);
+            res.cookie("t", token, {
+              expire: new Date() + 9999
+            });
             const {
               _id,
               username,
@@ -251,10 +365,20 @@ exports.signin = (req, res) => {
             console.log(data);
             return res.json({
               token,
-              data: { _id, username, email, name, role, logo, location_name },
+              data: {
+                _id,
+                username,
+                email,
+                name,
+                role,
+                logo,
+                location_name
+              },
             });
           } else {
-            return res.json({ error: "your account is deactivate" });
+            return res.json({
+              error: "your account is deactivate"
+            });
           }
         } else if (data.role == 1) {
           // if (!data.authenticate(password)) {
@@ -262,19 +386,37 @@ exports.signin = (req, res) => {
           //         error: 'Email and password dont match'
           //     });
           // }
-          token = jwt.sign(
-            { id: data._id, role: data.role },
+          token = jwt.sign({
+              id: data._id,
+              role: data.role
+            },
             process.env.JWT_SECRET
           );
-          res.cookie("t", token, { expire: new Date() + 9999 });
-          const { _id, username, name, email, role } = data;
+          res.cookie("t", token, {
+            expire: new Date() + 9999
+          });
+          const {
+            _id,
+            username,
+            name,
+            email,
+            role
+          } = data;
           return res.json({
             token,
-            data: { _id, username, email, name, role },
+            data: {
+              _id,
+              username,
+              email,
+              name,
+              role
+            },
           });
         }
       } else {
-        res.send({ error: "password is wrong" });
+        res.send({
+          error: "password is wrong"
+        });
       }
     }
   });
@@ -282,7 +424,9 @@ exports.signin = (req, res) => {
 
 exports.signout = (req, res) => {
   res.clearCookie("t");
-  res.json({ message: "Signout success" });
+  res.json({
+    message: "Signout success"
+  });
 };
 
 exports.requireSignin = expressJwt({
@@ -331,7 +475,7 @@ exports.verifySchool = (req, res, next) => {
   }
 };
 
-exports.isSchoolActiveted = (req,res,next)=>{
+exports.isSchoolActiveted = (req, res, next) => {
 
   var token = req.headers["authorization"];
   const bearer = token.split(" ")
@@ -361,8 +505,7 @@ exports.isAdmin = (req, res, next) => {
 };
 
 function navbar_custom(user_id) {
-  const Data = [
-    {
+  const Data = [{
       user_id: user_id,
       ui: "Dashboard",
       li: "",
@@ -454,39 +597,74 @@ function navbar_custom(user_id) {
 }
 
 exports.get_navbar = async (req, res) => {
-  const { user_id } = req.body;
+  const {
+    user_id
+  } = req.body;
   await navbar
-    .find({ user_id: user_id }, { _id: 0, user_id: 0, __v: 0 })
+    .find({
+      user_id: user_id
+    }, {
+      _id: 0,
+      user_id: 0,
+      __v: 0
+    })
     .then((response) => {
       res.send(response);
     })
     .catch((error) => {
-      res.json({ error: errorHandler(error) });
+      res.json({
+        error: errorHandler(error)
+      });
     });
 };
 
 exports.edit_navbar_li = async (req, res) => {
-  const { user_id, ui, li, newli } = req.body;
+  const {
+    user_id,
+    ui,
+    li,
+    newli
+  } = req.body;
   await navbar
-    .updateOne(
-      { user_id: user_id, ui: ui, li: li },
-      { $set: { "li.$": newli } }
-    )
+    .updateOne({
+      user_id: user_id,
+      ui: ui,
+      li: li
+    }, {
+      $set: {
+        "li.$": newli
+      }
+    })
     .then((response) => {
       res.send(response);
     })
     .catch((error) => {
-      res.json({ error: errorHandler(error) });
+      res.json({
+        error: errorHandler(error)
+      });
     });
 };
 exports.edit_navbar_ui = async (req, res) => {
-  const { user_id, ui, newui } = req.body;
+  const {
+    user_id,
+    ui,
+    newui
+  } = req.body;
   await navbar
-    .updateOne({ user_id: user_id, ui: ui }, { $set: { ui: newui } })
+    .updateOne({
+      user_id: user_id,
+      ui: ui
+    }, {
+      $set: {
+        ui: newui
+      }
+    })
     .then((response) => {
       res.send(response);
     })
     .catch((error) => {
-      res.json({ error: errorHandler(error) });
+      res.json({
+        error: errorHandler(error)
+      });
     });
 };
