@@ -10,7 +10,11 @@ const documentSchema = new schema({
         type:String,
         require:true
     },
-    subFolder:{
+    subFolderId:{
+        type:String,
+        require:true
+    },
+    rootFolderId:{
         type:String,
         require:true
     }

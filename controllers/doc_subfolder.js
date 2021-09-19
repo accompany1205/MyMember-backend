@@ -1,17 +1,18 @@
 const docSubFolder = require("../models/doc_subfolder")
 const DocFolder = require("../models/doc_folder")
+const UploadFiles = require("../models/doc_upload")
 
 exports.documentList = (req,res)=>{
-    docSubFolder.findById(req.params.subfolderId)
-    .populate('uploadDocument')
-    .exec((err,doclist)=>{
-        if(err){
-            res.send({error:'document list not found'})
-        }
-        else{
-            res.send(doclist)
-        }
-    })
+    UploadFiles.find({subFolderId: req.params.subfolderId})
+      .populate('uploadDocument')
+      .exec((err,doclist)=>{
+          if(err){
+              res.send({error:'document list not found'})
+          }
+          else{
+              res.send(doclist)
+          }
+      })
 }
 
 exports.createSubFolder =(req,res)=>{
@@ -53,7 +54,7 @@ exports.removeSubFolder = (req,res)=>{
             res.send({error:'sub folder is not remove'})
         }
         else{
-            DocFolder.update({"subFolder":removeFolder._id},{$pull:{"subFolder":removeFolder._id}},
+            DocFolder.updateOne({"subFolder":removeFolder._id},{$pull:{"subFolder":removeFolder._id}},
             function(err,data){
                 if(err){
                     res.send({error:'subfolder is not remove in folder'})
@@ -62,7 +63,7 @@ exports.removeSubFolder = (req,res)=>{
                     res.send({msg:'subfolder is remove in folder',result:data})
                 }
             })
-            
+
         }
     })
 }

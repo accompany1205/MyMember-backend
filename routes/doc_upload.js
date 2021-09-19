@@ -6,6 +6,6 @@ const upload = require("../handler/multer")
 
 router.get("/group_student_list/:userId",verifySchool,groupList)
 router.get("/sample_file/:userId",verifySchool,file_sample)
-router.post("/upload_document/:userId",verifySchool,upload.single('document'),verifySchool,docupload)
+router.post("/upload_document/:userId/:rootFolderId/:subFolderId",verifySchool,docupload)
 
 module.exports = router

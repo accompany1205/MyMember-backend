@@ -7,10 +7,6 @@ const docSubFolder = new schema({
         require:true,
         unique:true
     },
-    uploadDocument:[{
-        type:schema.Types.ObjectId,
-        ref:"uploadDocument"
-    }]
 })
 
 module.exports = mongoose.model("docsubfolder", docSubFolder);
