@@ -45,6 +45,7 @@ exports.create = (req,res)=>{
 }
 
 exports.read =(req,res)=>{
+        console.log("params -> ", req.params.userId)
         membershipModal.find({userId : req.params.userId}).exec((err,data)=>{
             
             if(err){

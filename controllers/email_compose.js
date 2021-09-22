@@ -77,7 +77,7 @@ exports.category_list =(req,res)=>{
 
 exports.sendEmail = (req,res)=>{
         const emailData = {
-                sendgrid_key: process.env.Email_Key,
+                sendgrid_key: process.env.SENDGRID_API_KEY,
                 to: req.body.to,
                 from_email: req.body.from,
                 from_name: 'noreply@gmail.com',

@@ -1,58 +1,99 @@
 const class_schedule = require("../models/class_schedule");
 const Prog = require("../models/program")
+var moment = require("moment");
 const { errorHandler } = require('../helpers/dbErrorHandler');
 
-exports.Create = async(req, res)=>{
-    var proDetail = await Prog.findOne({programName:req.body.program_name})
-    if(proDetail){
-    const task = new class_schedule(req.body);
-    task.program_color = proDetail.color
-    console.log(task)
-    task.save((err, data)=>{
-        if(err){
-            res.send({error:'class schedule is not add',Error:err})
-            console.log(err)
+exports.Create = async (req, res) => {
+    var proDetail = await Prog.find({ programName: req.body.program_name })
+    if (proDetail) {
+        let reqBody = req.body
+        let startDate = moment(reqBody.start_date, 'MM/DD/YYYY').format('MM/DD/YYYY')
+        let endDate = moment(reqBody.end_date, 'MM/DD/YYYY').format('MM/DD/YYYY')
+        let repeat_weekly_on = reqBody.repeat_weekly_on
+        function dateRange(startDate, endDate, steps = 1) {
+            const dateArray = [];
+            let currentDate = new Date(startDate);
+            while (currentDate <= new Date(endDate)) {
+                dateArray.push(moment(new Date(currentDate)).format('MM/DD/YYYY'));
+                // Use UTC date to prevent problems with time zones and DST
+                currentDate.setUTCDate(currentDate.getUTCDate() + steps);
+            }
+
+            return dateArray;
         }
-        else{
-            class_schedule.findByIdAndUpdate({_id:data._id},{$set:{ userId:req.params.userId }})
-            .exec((err,scheduleData)=>{
-                if(err){
-                    res.send({error:'userId is not add in student'})
-                }
-                else{
-                    res.send({msg:'class schedule is add successfully',data:scheduleData})
-               }
-           })
+
+        const dates = dateRange(startDate, endDate);
+        let allAttendance = []
+        for (let index in dates) {
+            let date = moment(dates[index], 'MM/DD/YYYY').format('MM/DD/YYYY')
+            let dayName = moment(new Date(date)).format('dddd').toLowerCase()
+            if (repeat_weekly_on.includes(dayName)) {
+                let NewEvent = { ...reqBody, start_date: date, end_date: date, day: dayName }
+                delete NewEvent['repeat_weekly_on']
+                allAttendance.push(NewEvent)
+            }
         }
-    });
-}else{
-    res.send({error:'program details not found'})
-}
+        try {
+            await class_schedule.insertMany(allAttendance)
+            res.send({msg:'Class schedule succefully!',success:true,status:200})
+        } catch (error) {
+            res.send({error:error.message.replace(/\"/g, ""),success:false})
+        }
+        // return
+        // task.save((err, data) => {
+        //     if (err) {
+        //         res.send({ error: 'class schedule is not add', Error: err })
+        //         console.log(err)
+        //     }
+        //     else {
+        //         class_schedule.findByIdAndUpdate({ _id: data._id }, { $set: { userId: req.params.userId } })
+        //             .exec((err, scheduleData) => {
+        //                 if (err) {
+        //                     res.send({ error: 'userId is not add in student' })
+        //                 }
+        //                 else {
+        //                     res.send({ msg: 'class schedule is add successfully', data: scheduleData })
+        //                 }
+        //             })
+        //     }
+        // });
+    } else {
+        res.send({msg:'Somthing went wrong!',success:false})
+    }
 };
 
-exports.read = (req, res)=>{
-    class_schedule.find({userId:req.params.userId})
-   .then((result) => {
-       res.json(result)
-    }).catch((err) => {
-        res.send(err)
-    })
+exports.read = (req, res) => {
+    const resp =
+        class_schedule.find({ userId: req.params.userId })
+            .then((result) => {
+                result.forEach(element => {
+                    var repeateDays = element.repeat_weekly_on
+                    console.log("repeatedDays --> ", repeateDays);
+                    //var daylist = getDaysArray(new Date("2021-08-01"),new Date("2021-08-10"));
+
+                });
+
+                res.json(result)
+            }).catch((err) => {
+                res.send(err)
+            })
+    console.log("Resp -->", resp);
 };
-exports.class_schedule_Info = (req, res)=>{
+exports.class_schedule_Info = (req, res) => {
     console.log('run')
     const id = req.params.scheduleId
-    class_schedule.findById(id,{upsert: true})
-    .populate('class_attendance')
+    class_schedule.findById(id, { upsert: true })
+        .populate('class_attendance')
         .then((result) => {
             var r = result.class_attendance
-            var total =r.length
-            res.json({data:result,total:total})
+            var total = r.length
+            res.json({ data: result, total: total })
         }).catch((err) => {
             res.send(err)
-    })
+        })
 };
 
-exports.update = (req, res)=>{
+exports.update = (req, res) => {
     const id = req.params.scheduleId;
     class_schedule.findByIdAndUpdate(id, { $set: req.body })
         .then((update_resp) => {
@@ -64,7 +105,7 @@ exports.update = (req, res)=>{
         })
 };
 
-exports.remove = (req, res)=>{
+exports.remove = (req, res) => {
     const id = req.params.scheduleId
     class_schedule.deleteOne({ _id: id })
         .then((resp) => {
