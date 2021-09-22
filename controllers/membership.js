@@ -10,41 +10,28 @@ exports.create = (req,res)=>{
     membershipObj.save((err,data)=>{
         if(err){
             console.log(err)
-            res.send({error :'membership not add'})
+            res.send("error")
         }
         else{
-        if(req.file){
-            cloudUrl.imageUrl(req.file).then((expimgUrl)=>{ 
-                membershipModal.findByIdAndUpdate(data._id,{$set:{membership_profile:expimgUrl,userId: Id}})
-                .exec((err,updateStripe)=>{
-                    console.log(updateStripe)
-             if(err){
-                    res.send({error:'image url is not add in membership'})
-                  }
-            else{
-                res.send({msg:'membership is add with image successfully',result:data})
-            }
-          })
-        }).catch((error)=>{
-                res.send({error:'membership image url is not create'})
-        })
-     }
-        else{
-            membershipModal.findByIdAndUpdate({_id:data._id},{$set:{ userId:Id }})
-            .exec((err,membershipData)=>{
-                if(err){
-                    res.send({error:'user id is not add in membership'});
-                }
-                else{
-                    res.send({msg:'membership add successfully',result:membershipData});
-                }
-            })
-        }
+        
+            console.log(data)
+            res.send({message:"membership created successfully",  success:true })
+            // membershipModal.findByIdAndUpdate({_id:data._id},{$set:{ userId:Id }})
+            // .exec((err,membershipData)=>{
+            //     if(err){
+            //         res.send({error:'user id is not add in membership'});
+            //     }
+            //     else{
+            //         res.send({msg:'membership add successfully',result:membershipData});
+            //     }
+            // })
+        
     }
  })
 }
 
 exports.read =(req,res)=>{
+        console.log("params -> ", req.params.userId)
         membershipModal.find({userId : req.params.userId}).exec((err,data)=>{
             
             if(err){
@@ -87,32 +74,15 @@ exports.remove = (req,res)=>{
 
 exports.membershipUpdate =(req,res)=>{
     var membershipId = req.params.membershipId;
-    console.log(membershipId)
-    console.log(req.body)
+
     membershipModal.updateOne({_id:membershipId}, req.body).exec((err,data)=>{
         if(err){
-            res.send({error:'membership is not update'})
+            res.send(err)
         }
         else{
-            if(req.file){
-                cloudUrl.imageUrl(req.file).then((expimgUrl)=>{ 
-                    membershipModal.updateOne({_id:data._id},{$set:{membership_profile:expimgUrl}})
-                    .exec((err,updateStripe)=>{
-                        console.log(updateMembership)
-                       if(err){
-                        res.send({error:'image url is not update in membership'})
-                          }
-                      else{
-                        res.send(updateMembership)
-                    }
-              })
-            }).catch((error)=>{
-                    res.send({error:'membership image url is not create'})
-            })
-          }
-            else{
-                res.send(data)
-            }
+            
+                res.send({message:"membership updated successfully", success:true })
+            
         }
     })
 }

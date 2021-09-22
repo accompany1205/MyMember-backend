@@ -460,6 +460,7 @@ exports.addmember = async (req, res) => {
                   })
                   .exec((err, proData) => {
                     if (err) {
+                      console.log("------>", err)
                       res.send({
                         code: 400,
                         msg: "program not found"
@@ -1180,6 +1181,7 @@ exports.updatemember = (req, res) => {
     .exec((err, data) => {
       if (err) {
         res.send({
+          status:false,
           error: "member is not update"
         });
       } else {
@@ -1206,11 +1208,13 @@ exports.updatemember = (req, res) => {
             })
             .catch((error) => {
               res.send({
+                status: false,
                 error: "image url is not create"
               });
             });
         } else {
           res.send({
+            status: true,
             msg: "member is update successfully"
           });
         }
