@@ -22,22 +22,24 @@ exports.Create = async (req, res) => {
             return dateArray;
         }
 
-        const dates = dateRange(startDate, endDate);
-        let allAttendance = []
-        for (let index in dates) {
-            let date = moment(dates[index], 'MM/DD/YYYY').format('MM/DD/YYYY')
-            let dayName = moment(new Date(date)).format('dddd').toLowerCase()
-            if (repeat_weekly_on.includes(dayName)) {
-                let NewEvent = { ...reqBody, start_date: date, end_date: date, day: dayName }
-                delete NewEvent['repeat_weekly_on']
-                allAttendance.push(NewEvent)
-            }
-        }
         try {
+            const dates = dateRange(startDate, endDate);
+            console.log(dates, '------------')
+
+            let allAttendance = []
+            for (let index in dates) {
+                let date = moment(dates[index], 'MM/DD/YYYY').format('MM/DD/YYYY')
+                let dayName = moment(new Date(date)).format('dddd').toLowerCase()
+                if (repeat_weekly_on.includes(dayName)) {
+                    let NewEvent = { ...reqBody, start_date: date, end_date: date }
+                    delete NewEvent['repeat_weekly_on']
+                    allAttendance.push(NewEvent)
+                }
+            }
             await class_schedule.insertMany(allAttendance)
-            res.send({msg:'Class schedule succefully!',success:true,status:200})
+            res.send({ msg: 'Class schedule succefully!', success: true })
         } catch (error) {
-            res.send({error:error.message.replace(/\"/g, ""),success:false})
+            res.send({ error: error.message.replace(/\"/g, ""), success: false })
         }
         // return
         // task.save((err, data) => {
@@ -58,27 +60,28 @@ exports.Create = async (req, res) => {
         //     }
         // });
     } else {
-        res.send({msg:'Somthing went wrong!',success:false})
+        res.send({ msg: 'Somthing went wrong!', success: false })
     }
 };
 
-exports.read = (req, res) => {
-    const resp =
-        class_schedule.find({ userId: req.params.userId })
-            .then((result) => {
-                result.forEach(element => {
-                    var repeateDays = element.repeat_weekly_on
-                    console.log("repeatedDays --> ", repeateDays);
-                    //var daylist = getDaysArray(new Date("2021-08-01"),new Date("2021-08-10"));
+exports.read = async (req, res) => {
+    try {
+        let result = await class_schedule.find({})
+        console.log(result)
+        res.send({ data: result, success: true })
+    } catch (error) {
+        res.send({ error: error.message.replace(/\"/g, ""), success: false })
+    }
 
-                });
-
-                res.json(result)
-            }).catch((err) => {
-                res.send(err)
-            })
-    console.log("Resp -->", resp);
+    // const resp =
+    //     class_schedule.find({ userId: req.params.userId })
+    //         .then((result) => {
+    //             res.json(result)
+    //         }).catch((err) => {
+    //             res.send(err)
+    //         })
 };
+
 exports.class_schedule_Info = (req, res) => {
     console.log('run')
     const id = req.params.scheduleId
