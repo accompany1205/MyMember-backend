@@ -58,7 +58,6 @@ exports.recomendStudent = async (req, res) => {
     let recommended = await RecommendedCandidateModel.insertMany(recommendedCandidates);
     if (!recommended.length) {
         res.json({
-            statusCode:422,
             status: false,
             msg: "Ether the student is areadey in recommeded list or it is not eligible!!"
         })
@@ -66,8 +65,7 @@ exports.recomendStudent = async (req, res) => {
         res.json({
             status: true,
             msg: "Selected students got recomended successfully.",
-            data: recommended,
-            statusCode:200,
+            data: recommended
         })
     }
 
