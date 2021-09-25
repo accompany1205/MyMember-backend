@@ -12,7 +12,7 @@ exports.create = async (req, res) => {
         res.send({msg:"working!"})
         
     } catch (error) {
-        cosole.log(error)
+        console.log(error)
     }
     // membershipObj.save((err, data) => {
     //     if (err) {
