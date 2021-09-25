@@ -24,8 +24,6 @@ exports.Create = async (req, res) => {
 
         try {
             const dates = dateRange(startDate, endDate);
-            console.log(dates, '------------')
-
             let allAttendance = []
             for (let index in dates) {
                 let date = moment(dates[index], 'MM/DD/YYYY').format('MM/DD/YYYY')
