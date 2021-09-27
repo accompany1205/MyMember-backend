@@ -16,6 +16,7 @@ const Stripe = require('../models/stripe');
 exports.recomendStudent = async (req, res) => {
     //only accepte array of objects
     let students = req.body;
+    
     if (!students) {
         res.json({
             status: false,
@@ -35,24 +36,23 @@ exports.recomendStudent = async (req, res) => {
             current_rank_img,
             current_stripe,
             userId,
-            stripeName,
-            stripeId
         } = student;
         let isStudentExists = await RecommendedCandidateModel.find({
             "studentId": studentId
         });
+
         if (!isStudentExists.length && status == "Active") {
             recommendedCandidates.push({
                 "fullName": `${firstName} ${lastName}`,
                 "memberprofileImage": memberprofileImage,
                 "studentId": studentId,
                 "userId": userId,
-                "stripeId": stripeId,
-                "stripeName":stripeName,
                 "current_stripe": current_stripe,
                 "current_rank_id": current_rank_id,
                 "current_rank_name": current_rank_name,
-                "current_rank_img": current_rank_img
+                "current_rank_img": current_rank_img,
+                "stripeName":"",
+                "stripeId":""
             })
         }
     }
@@ -92,20 +92,19 @@ exports.promoteTheStudentStripe = async (req, res) => {
     }
     let {
         studentId,
-        stripeName,
         current_stripe
     } = recommendedStudent;
-    let stripeDetails = await Stripe.findById(stripeInfo.stripeId)                      
-    console.log("stripeDetail -->", stripeDetails)
+    let stripeDetails = await Stripe.findById(stripeInfo.stripeId)  
     if (!stripeDetails) {
         return res.json({
             status: false,
             msg: "There is some issue while fetching Stripe!!"
         })
     }
+
     let {
         total_stripe
-    } = stripeDetails;
+    } = stripeDetails;       
     
 
     if (!(current_stripe < total_stripe)) {
@@ -118,6 +117,8 @@ exports.promoteTheStudentStripe = async (req, res) => {
     let updateStripeIntoRecommededCandidate = await RecommendedCandidateModel.findOneAndUpdate({
         "_id": recommededCandidateId
     }, {
+        "stripeId":stripeInfo.stripeId,
+        "stripeName": stripeInfo.stripeName,
         "current_stripe": current_stripe + 1,
         "lastStripeUpdatedDate": new Date()
     }, {
@@ -136,7 +137,8 @@ exports.promoteTheStudentStripe = async (req, res) => {
     } = updateStripeIntoRecommededCandidate
 
     let history = {
-        "stripeName": stripeName,
+        "stripeId":stripeInfo.stripeId,
+        "stripeName": stripeInfo.stripeName,
         "current_rank_name": current_rank_name,
         "current_stripe": current_stripe + 1,
         "recommededDate": recommededDate,
@@ -159,10 +161,6 @@ exports.promoteTheStudentStripe = async (req, res) => {
     })
 
     //Todo - Monu - Please write a logic with the stripe and programs.
-
-
-
-
 }
 
 exports.getRecommendedCandidateStudents = async (req, res) => {

@@ -8,9 +8,9 @@ const recommendedCandidate = new mongoose.Schema({
     studentId: {
         type: String
     },
-    // stripeId:{
-    //     type: String
-    // },
+    stripeId:{
+        type: String
+    },
     stripeName:{
         type: String
     },
