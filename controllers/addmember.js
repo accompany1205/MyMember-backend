@@ -87,12 +87,12 @@ exports.getStudentsByCategory = async (req, res) => {
 exports.std_program = async (req, res) => {
   // {userId:req.params.userId}
   program.find({
-      $or: [{
-        userId: req.params.userId
-      }, {
-        status: 'Admin'
-      }]
-    })
+    $or: [{
+      userId: req.params.userId
+    }, {
+      status: 'Admin'
+    }]
+  })
     .select('programName')
     .exec((err, resp) => {
       if (err) {
@@ -151,127 +151,127 @@ exports.std_program = async (req, res) => {
 exports.bluckStd = async (req, res) => {
   var List = req.body.data;
   await Promise.all(
-      List.map(async (item) => {
-        var memberdetails = item;
-        var memberObj = new addmemberModal(memberdetails);
-        memberObj.userId = req.params.userId;
-        memberObj.save(function (err, data) {
-          if (err) {
-            console.log(err);
-            res.send({
-              error: "member is not add"
-            });
-          } else {
-            if (req.file) {
-              cloudUrl
-                .imageUrl(req.file)
-                .then((stdImgUrl) => {
-                  addmemberModal
-                    .findByIdAndUpdate(data._id, {
-                      $set: {
-                        memberprofileImage: stdImgUrl
-                      },
-                    })
-                    .then((response) => {
-                      // res.send({'res':response})
-                      program
-                        .findOne({
-                          programName: req.body.program
-                        })
-                        .select("programName")
-                        .populate({
-                          path: "program_rank",
-                          model: "Program_rank",
-                          select: "rank_name rank_image",
-                        })
-                        .exec((err, proData) => {
-                          if (err) {
-                            res.send({
-                              code: 400,
-                              msg: "program not found"
-                            });
-                          } else {
-                            var d = proData.program_rank[0];
-                            addmemberModal.findByIdAndUpdate({
-                                _id: response._id
-                              }, {
-                                $set: {
-                                  next_rank_id: d._id,
-                                  next_rank_name: d.rank_name,
-                                  next_rank_img: d.rank_image,
-                                  programID: proData._id,
-                                },
-                              },
-                              (err, mangerank) => {
-                                if (err) {
-                                  res.send({
-                                    code: 400,
-                                    msg: "manage rank not found",
-                                  });
-                                } else {
-                                  res.send(mangerank);
-                                }
+    List.map(async (item) => {
+      var memberdetails = item;
+      var memberObj = new addmemberModal(memberdetails);
+      memberObj.userId = req.params.userId;
+      memberObj.save(function (err, data) {
+        if (err) {
+          console.log(err);
+          res.send({
+            error: "member is not add"
+          });
+        } else {
+          if (req.file) {
+            cloudUrl
+              .imageUrl(req.file)
+              .then((stdImgUrl) => {
+                addmemberModal
+                  .findByIdAndUpdate(data._id, {
+                    $set: {
+                      memberprofileImage: stdImgUrl
+                    },
+                  })
+                  .then((response) => {
+                    // res.send({'res':response})
+                    program
+                      .findOne({
+                        programName: req.body.program
+                      })
+                      .select("programName")
+                      .populate({
+                        path: "program_rank",
+                        model: "Program_rank",
+                        select: "rank_name rank_image",
+                      })
+                      .exec((err, proData) => {
+                        if (err) {
+                          res.send({
+                            code: 400,
+                            msg: "program not found"
+                          });
+                        } else {
+                          var d = proData.program_rank[0];
+                          addmemberModal.findByIdAndUpdate({
+                            _id: response._id
+                          }, {
+                            $set: {
+                              next_rank_id: d._id,
+                              next_rank_name: d.rank_name,
+                              next_rank_img: d.rank_image,
+                              programID: proData._id,
+                            },
+                          },
+                            (err, mangerank) => {
+                              if (err) {
+                                res.send({
+                                  code: 400,
+                                  msg: "manage rank not found",
+                                });
+                              } else {
+                                res.send(mangerank);
                               }
-                            );
-                          }
-                        });
-                    })
-                    .catch((err) => {
-                      res.send(err);
-                    });
-                })
-                .catch((error) => {
-                  res.send({
-                    error: "image url is not create"
+                            }
+                          );
+                        }
+                      });
+                  })
+                  .catch((err) => {
+                    res.send(err);
                   });
+              })
+              .catch((error) => {
+                res.send({
+                  error: "image url is not create"
                 });
-            } else {
-              console.log(memberdetails.program);
-              program
-                .findOne({
-                  programName: memberdetails.program
-                })
-                .select("programName")
-                .populate({
-                  path: "program_rank",
-                  model: "Program_rank",
-                  select: "rank_name rank_image",
-                })
-                .exec(async (err, proData) => {
-                  if (err || !proData) {
-                    res.send({
-                      code: 400,
-                      msg: "program not find"
-                    });
-                  } else {
-                    var d = proData.program_rank[0];
-                    console.log(d, "fs");
-                    await addmemberModal.findByIdAndUpdate({
-                        _id: data._id
-                      }, {
-                        $set: {
-                          next_rank_id: d._id,
-                          next_rank_name: d.rank_name,
-                          next_rank_img: d.rank_image,
-                          programID: proData._id,
-                        },
-                      }
-                      // ((err,mangerank)=>{
-                      //     if(err){
-                      //         res.send({code:400,msg:'manage rank not find of program'})
-                      //     }
-                      //     else{
-                      //          res.send(mangerank)
-                      //     }
-                      /*})*/
-                    );
+              });
+          } else {
+            console.log(memberdetails.program);
+            program
+              .findOne({
+                programName: memberdetails.program
+              })
+              .select("programName")
+              .populate({
+                path: "program_rank",
+                model: "Program_rank",
+                select: "rank_name rank_image",
+              })
+              .exec(async (err, proData) => {
+                if (err || !proData) {
+                  res.send({
+                    code: 400,
+                    msg: "program not find"
+                  });
+                } else {
+                  var d = proData.program_rank[0];
+                  console.log(d, "fs");
+                  await addmemberModal.findByIdAndUpdate({
+                    _id: data._id
+                  }, {
+                    $set: {
+                      next_rank_id: d._id,
+                      next_rank_name: d.rank_name,
+                      next_rank_img: d.rank_image,
+                      programID: proData._id,
+                    },
                   }
-                });
-            }
+                    // ((err,mangerank)=>{
+                    //     if(err){
+                    //         res.send({code:400,msg:'manage rank not find of program'})
+                    //     }
+                    //     else{
+                    //          res.send(mangerank)
+                    //     }
+                    /*})*/
+                  );
+                }
+              });
           }
-        });
-      })
-    )
+        }
+      });
+    })
+  )
     .then((resp) => {
       res.send("student add successfully");
     })
@@ -281,72 +281,15 @@ exports.bluckStd = async (req, res) => {
 };
 
 exports.std_count = async (req, res) => {
-  var resdata = await addmemberModal
-    .find({
-      $and: [{
-        userId: req.params.userId
-      }, {
-        intrested: "Camp"
-      }]
-    })
-    .count();
-  var resdata1 = await addmemberModal
-    .find({
-      $and: [{
-        userId: req.params.userId
-      }, {
-        studentType: "Active Student"
-      }],
-    })
-    .count();
-  var resdata2 = await addmemberModal
-    .find({
-      $and: [{
-        userId: req.params.userId
-      }, {
-        studentType: "Former Student"
-      }],
-    })
-    .count();
-  var resdata3 = await addmemberModal
-    .find({
-      $and: [{
-        userId: req.params.userId
-      }, {
-        studentType: "Former Trial"
-      }],
-    })
-    .count();
-  var resdata4 = await addmemberModal
-    .find({
-      $and: [{
-        userId: req.params.userId
-      }, {
-        studentType: "Active Trials"
-      }],
-    })
-    .count();
-  var resdata5 = await addmemberModal
-    .find({
-      $and: [{
-        userId: req.params.userId
-      }, {
-        intrested: "After School"
-      }],
-    })
-    .count();
-  var resdata6 = await addmemberModal
-    .find({
-      $and: [{
-        userId: req.params.userId
-      }, {
-        studentType: "Leads"
-      }]
-    })
-    .count();
-
-  var total =
-    resdata + resdata1 + resdata2 + resdata3 + resdata4 + resdata5 + resdata6;
+try {
+  var resdata = await addmemberModal.find({$and: [{userId: req.params.userId}, {intrested: "Camp"}]}).count();
+  var resdata1 = await addmemberModal.find({$and: [{userId: req.params.userId}, {studentType: "Active Student"}]}).count();
+  var resdata2 = await addmemberModal.find({$and: [{userId: req.params.userId}, {studentType: "Former Student"}]}).count();
+  var resdata3 = await addmemberModal.find({$and: [{userId: req.params.userId}, {studentType: "Former Trial" }]}).count();
+  var resdata4 = await addmemberModal.find({$and: [{userId: req.params.userId}, {studentType: "Active Trial"}]}).count();
+  var resdata5 = await addmemberModal.find({$and: [{userId: req.params.userId}, {intrested: "After School"}]}).count();
+  var resdata6 = await addmemberModal.find({$and: [{userId: req.params.userId}, {studentType: "Leads"}]}).count();
+  var total = resdata + resdata1 + resdata2 + resdata3 + resdata4 + resdata5 + resdata6;
   res.json({
     total: total,
     camp: resdata,
@@ -357,6 +300,10 @@ exports.std_count = async (req, res) => {
     after_school: resdata5,
     leads: resdata6,
   });
+} catch (error) {
+  res.send({ error: error.message.replace(/\"/g, ""), success: false })
+}
+ 
 };
 
 exports.listMember = (req, res) => {
@@ -387,18 +334,18 @@ exports.listMember = (req, res) => {
 exports.studentCount = (req, res) => {
   addmemberModal
     .aggregate([{
-        $match: {
-          userId: req.params.userId
-        }
-      },
-      {
-        $group: {
-          _id: "$studentType",
-          count: {
-            $sum: 1
-          },
+      $match: {
+        userId: req.params.userId
+      }
+    },
+    {
+      $group: {
+        _id: "$studentType",
+        count: {
+          $sum: 1
         },
       },
+    },
     ])
     .exec((err, stdCount) => {
       if (err) {
@@ -468,15 +415,15 @@ exports.addmember = async (req, res) => {
                     } else {
                       var d = proData.program_rank[0];
                       addmemberModal.findByIdAndUpdate({
-                          _id: response._id
-                        }, {
-                          $set: {
-                            next_rank_id: d._id,
-                            next_rank_name: d.rank_name,
-                            next_rank_img: d.rank_image,
-                            programID: proData._id,
-                          },
+                        _id: response._id
+                      }, {
+                        $set: {
+                          next_rank_id: d._id,
+                          next_rank_name: d.rank_name,
+                          next_rank_img: d.rank_image,
+                          programID: proData._id,
                         },
+                      },
                         (err, mangerank) => {
                           if (err) {
                             res.send({
@@ -484,7 +431,7 @@ exports.addmember = async (req, res) => {
                               msg: "manage rank not found",
                             });
                           } else {
-                            res.send({mangerank:mangerank, message:"Student created successfully", status:true});
+                            res.send({ mangerank: mangerank, message: "Student created successfully", status: true });
                           }
                         }
                       );
@@ -521,15 +468,15 @@ exports.addmember = async (req, res) => {
               var d = proData.program_rank[0];
               console.log(d, "fs");
               addmemberModal.findByIdAndUpdate({
-                  _id: data._id
-                }, {
-                  $set: {
-                    next_rank_id: d._id,
-                    next_rank_name: d.rank_name,
-                    next_rank_img: d.rank_image,
-                    programID: proData._id,
-                  },
+                _id: data._id
+              }, {
+                $set: {
+                  next_rank_id: d._id,
+                  next_rank_name: d.rank_name,
+                  next_rank_img: d.rank_image,
+                  programID: proData._id,
                 },
+              },
                 (err, mangerank) => {
                   if (err) {
                     res.send({
@@ -537,7 +484,7 @@ exports.addmember = async (req, res) => {
                       msg: "manage rank not find of program",
                     });
                   } else {
-                    res.send({mangerank:mangerank, message:"Student created successfully", status:true});
+                    res.send({ mangerank: mangerank, message: "Student created successfully", status: true });
                   }
                 }
               );
@@ -831,20 +778,20 @@ exports.expire_this_month = (req, res) => {
   addmemberModal.aggregate([{
     $match: {
       $and: [{
-          userId: req.params.userId
+        userId: req.params.userId
+      },
+      {
+        $expr: {
+          $eq: [{
+            $month: "$membership_details"
+          }, {
+            $month: curDate
+          }],
         },
-        {
-          $expr: {
-            $eq: [{
-              $month: "$membership_details"
-            }, {
-              $month: curDate
-            }],
-          },
-        },
+      },
       ],
     },
-  }, ]);
+  },]);
 };
 
 exports.birth_this_month = (req, res) => {
@@ -852,45 +799,45 @@ exports.birth_this_month = (req, res) => {
   var curDate = new Date();
   addmemberModal.aggregate(
     [{
-        $match: {
-          $and: [{
-              userId: req.params.userId
-            },
-            {
-              $expr: {
-                $eq: [{
-                  $month: "$dob"
-                }, {
-                  $month: curDate
-                }]
-              }
-            },
-            {
-              $expr: {
-                $lt: [{
-                  $dayOfMonth: curDate
-                }, {
-                  $dayOfMonth: "$dob"
-                }],
-              },
-            },
-          ],
+      $match: {
+        $and: [{
+          userId: req.params.userId
         },
-      },
-      {
-        $project: {
-          firstName: 1,
-          lastName: 1,
-          dob: 1,
-          age: 1,
-          day_left: 1,
-          memberprofileImage:1,
-          primaryPhone: 1,
-          rank: 1,
-          birthday_checklist: 1,
-          memberprofileImage: 1
+        {
+          $expr: {
+            $eq: [{
+              $month: "$dob"
+            }, {
+              $month: curDate
+            }]
+          }
         },
+        {
+          $expr: {
+            $lt: [{
+              $dayOfMonth: curDate
+            }, {
+              $dayOfMonth: "$dob"
+            }],
+          },
+        },
+        ],
       },
+    },
+    {
+      $project: {
+        firstName: 1,
+        lastName: 1,
+        dob: 1,
+        age: 1,
+        day_left: 1,
+        memberprofileImage: 1,
+        primaryPhone: 1,
+        rank: 1,
+        birthday_checklist: 1,
+        memberprofileImage: 1
+      },
+    },
     ],
     function (err, docs) {
       if (err) {
@@ -922,36 +869,36 @@ exports.trial_this_month = (req, res) => {
   var curDate = new Date();
   addmemberModal.aggregate(
     [{
-        $match: {
-          $and: [{
-              userId: req.params.userId
-            },
-            {
-              studentType: "Active Trials"
-            },
-            {
-              $expr: {
-                $eq: [{
-                  $month: "$createdAt"
-                }, {
-                  $month: curDate
-                }]
-              }
-            },
-          ],
+      $match: {
+        $and: [{
+          userId: req.params.userId
         },
-      },
-      {
-        $project: {
-          firstName: 1,
-          lastName: 1,
-          class_count: 1,
-          leadsTracking: 1,
-          primaryPhone: 1,
-          membership_details: 1,
-          memberprofileImage: 1
+        {
+          studentType: "Active Trials"
         },
+        {
+          $expr: {
+            $eq: [{
+              $month: "$createdAt"
+            }, {
+              $month: curDate
+            }]
+          }
+        },
+        ],
       },
+    },
+    {
+      $project: {
+        firstName: 1,
+        lastName: 1,
+        class_count: 1,
+        leadsTracking: 1,
+        primaryPhone: 1,
+        membership_details: 1,
+        memberprofileImage: 1
+      },
+    },
     ],
     (err, trial) => {
       if (err) {
@@ -987,35 +934,35 @@ exports.birth_next_month = (req, res) => {
   );
   addmemberModal.aggregate(
     [{
-        $match: {
-          $and: [{
-              userId: req.params.userId
-            },
-            {
-              $expr: {
-                $eq: [{
-                  $month: "$dob"
-                }, {
-                  $month: next_month
-                }]
-              }
-            },
-          ],
+      $match: {
+        $and: [{
+          userId: req.params.userId
         },
-      },
-      {
-        $project: {
-          firstName: 1,
-          lastName: 1,
-          dob: 1,
-          age: 1,
-          day_left: 1,
-          primaryPhone: 1,
-          rank: 1,
-          birthday_checklist: 1,
-          memberprofileImage: 1
+        {
+          $expr: {
+            $eq: [{
+              $month: "$dob"
+            }, {
+              $month: next_month
+            }]
+          }
         },
+        ],
       },
+    },
+    {
+      $project: {
+        firstName: 1,
+        lastName: 1,
+        dob: 1,
+        age: 1,
+        day_left: 1,
+        primaryPhone: 1,
+        rank: 1,
+        birthday_checklist: 1,
+        memberprofileImage: 1
+      },
+    },
     ],
     function (err, docs) {
       if (err) {
@@ -1047,37 +994,37 @@ exports.this_month_lead = (req, res) => {
   var curDate = new Date();
   addmemberModal
     .aggregate([{
-        $match: {
-          $and: [{
-              userId: req.params.userId
-            },
-            {
-              studentType: "leads"
-            },
-            {
-              $expr: {
-                $eq: [{
-                  $month: "$createdAt"
-                }, {
-                  $month: curDate
-                }]
-              }
-            },
-          ],
+      $match: {
+        $and: [{
+          userId: req.params.userId
         },
-      },
-      {
-        $project: {
-          firstName: 1,
-          lastName: 1,
-          leadsTracking: 1,
-          primaryPhone: 1,
-          userId: 1,
-          studentType: 1,
-          createdAt: 1,
-          memberprofileImage: 1
+        {
+          studentType: "leads"
         },
+        {
+          $expr: {
+            $eq: [{
+              $month: "$createdAt"
+            }, {
+              $month: curDate
+            }]
+          }
+        },
+        ],
       },
+    },
+    {
+      $project: {
+        firstName: 1,
+        lastName: 1,
+        leadsTracking: 1,
+        primaryPhone: 1,
+        userId: 1,
+        studentType: 1,
+        createdAt: 1,
+        memberprofileImage: 1
+      },
+    },
     ])
     .exec((err, leadMonth) => {
       if (err) {
@@ -1097,35 +1044,35 @@ exports.last_three_month = (req, res) => {
   let dateInput = date.toISOString();
   addmemberModal
     .aggregate([{
-        $match: {
-          $and: [{
-              userId: req.params.userId
-            },
-            {
-              studentType: "leads"
-            },
-            {
-              $expr: {
-                $gt: ["$createdAt", {
-                  $toDate: dateInput
-                }]
-              }
-            },
-          ],
+      $match: {
+        $and: [{
+          userId: req.params.userId
         },
-      },
-      {
-        $project: {
-          firstName: 1,
-          lastName: 1,
-          leadsTracking: 1,
-          primaryPhone: 1,
-          userId: 1,
-          studentType: 1,
-          createdAt: 1,
-          memberprofileImage: 1
+        {
+          studentType: "leads"
         },
+        {
+          $expr: {
+            $gt: ["$createdAt", {
+              $toDate: dateInput
+            }]
+          }
+        },
+        ],
       },
+    },
+    {
+      $project: {
+        firstName: 1,
+        lastName: 1,
+        leadsTracking: 1,
+        primaryPhone: 1,
+        userId: 1,
+        studentType: 1,
+        createdAt: 1,
+        memberprofileImage: 1
+      },
+    },
     ])
     .exec((err, mon) => {
       if (err) {
@@ -1181,7 +1128,7 @@ exports.updatemember = (req, res) => {
     .exec((err, data) => {
       if (err) {
         res.send({
-          status:false,
+          status: false,
           error: "member is not update"
         });
       } else {
@@ -1271,7 +1218,7 @@ exports.send_mail_std = (req, res) => {
           msg: "email not send"
         });
       });
-  } else if (req.body.email_type == "Schedule") {}
+  } else if (req.body.email_type == "Schedule") { }
 };
 
 const client = require("twilio")(process.env.aid, process.env.authkey);
@@ -1281,10 +1228,10 @@ exports.send_sms_std = (req, res) => {
   var code = "+1";
   console.log(number);
   client.messages.create({
-      to: number,
-      from: "+12192445425",
-      body: "This is the ship that made the Kessel Run in fourteen parsecs?",
-    },
+    to: number,
+    from: "+12192445425",
+    body: "This is the ship that made the Kessel Run in fourteen parsecs?",
+  },
     function (err, data) {
       if (err) {
         res.send({
@@ -1353,7 +1300,7 @@ exports.getRankUpdateHistoryByStudentId = async (req, res) => {
     });
   }
   let history = student.rank_update_history;
-  if(!history.length){
+  if (!history.length) {
     return res.json({
       stasus: false,
       error: "Not any history available for this student!!"

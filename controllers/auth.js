@@ -481,6 +481,7 @@ exports.isSchoolActiveted = (req, res, next) => {
   const bearer = token.split(" ")
 }
 
+
 exports.isAdmin = (req, res, next) => {
   var Token = req.headers["authorization"];
   const bearer = Token.split(" ");
