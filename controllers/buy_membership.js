@@ -1,5 +1,6 @@
 const membershipModal = require("../models/membership");
 const buyMembership = require("../models/buy_membership");
+const AddMember = require("../models/addmember")
 var addmemberModal = require('../models/addmember')
 const { errorHandler } = require('../helpers/dbErrorHandler');
 const _ = require('lodash')
@@ -17,7 +18,7 @@ exports.membership_Info = (req, res) => {
 exports.update = (req, res) => {
     // const id = req.params.membershipId;
     // console.log(id,req.body)
-    buyMembership.findByIdAndUpdate(req.params.membershipId,req.body)
+    buyMembership.findByIdAndUpdate(req.params.membershipId, req.body)
         .then((update_resp) => {
             console.log(update_resp)
             res.send(update_resp)
@@ -31,132 +32,137 @@ exports.remove = (req, res) => {
     const id = req.params.membershipId
     buyMembership.deleteOne({ _id: id })
         .then((resp) => {
-            addmemberModal.update({"membership_details": id},{$pull:{"membership_details":id}}
-            ,function(err,data){
-                if(err){
-                    res.send({error:"mebership is not delete in student"});
-                    console.log(err)
-                }
-                else{
-                    res.send({msg:"mebership is delete in student"});
-                }
-            })
+            addmemberModal.update({ "membership_details": id }, { $pull: { "membership_details": id } }
+                , function (err, data) {
+                    if (err) {
+                        res.send({ error: "mebership is not delete in student" });
+                        console.log(err)
+                    }
+                    else {
+                        res.send({ msg: "mebership is delete in student" });
+                    }
+                })
         }).catch((err) => {
             console.log(err)
             res.send(err)
-    })
+        })
 };
 
 
-exports.create = (req,res)=>{
+exports.create = (req, res) => {
     var studentId = req.params.studentId;
-    var Id = { userId:req.params.userId }
-    if(req.body.ptype == 'cash' || req.body.ptype == 'check'){
-        if(req.body.balance == 0){
-            status={membership_status:'Paid'} 
-             membershipDetails = _.extend(req.body,status)
+    var Id = { userId: req.params.userId }
+    if (req.body.ptype == 'cash' || req.body.ptype == 'check') {
+        if (req.body.balance == 0) {
+            status = { membership_status: 'Paid' }
+            membershipDetails = _.extend(req.body, status)
         }
-        else{
-             status={membership_status:'Due'} 
-             membershipDetails = _.extend(req.body,status)
-        }    
-           var membership = new buyMembership(membershipDetails);
-           memberbuy = _.extend(membership,Id)
-           memberbuy.save((err,data)=>{
-                if(err){
-                    res.send({error:'membership not buy'})
-                    console.log(err)
+        else {
+            status = { membership_status: 'Due' }
+            membershipDetails = _.extend(req.body, status)
+        }
+        var membership = new buyMembership(membershipDetails);
+        memberbuy = _.extend(membership, Id)
+        memberbuy.save((err, data) => {
+            if (err) {
+                res.send({ error: 'membership not buy' })
+                console.log(err)
+            }
+            else {
+                query = { '_id': studentId }
+                update = {
+                    $set: { status: "active" },
+                    $push: { membership_details: data._id }
                 }
-                else{
-                    query = {'_id': studentId}
-                    update = {
-                        $set: {status: "active"},
-                        $push: {membership_details: data._id}
+                addmemberModal.findOneAndUpdate(query, update, (err, stdData) => {
+                    if (err) {
+                        res.send({ error: 'membership id is not add in student' })
                     }
-                    addmemberModal.findOneAndUpdate(query,update,(err,stdData)=>{
-                        if(err){
-                            res.send({error:'membership id is not add in student'})
-                        }
-                        else{
-                           buyMembership.findOneAndUpdate({_id:data._id},{$push:{studentInfo:stdData._id}})
-                           .exec((err,result)=>{
-                               if(err){
-                                   res.send({error:'student id is not add in buy membership'})
-                               }
-                               else{
-                                   res.send({msg:'membership purchase successfully',data:result})
-                               }
-                           })
-                        }
-
-                    })    
-                }
-            })
-        }
-    else if(req.body.ptype == 'card'){
-
-    }
-}
-
-exports.buyMembership =(req,res)=>{
-    var Id = { userId:req.params.userId }
-    if(req.body.ptype == 'cash' || req.body.ptype == 'check'){
-       
-        if(req.body.balance == 0){
-            status={membership_status:'Paid'} 
-             membershipDetails = _.extend(req.body,status)
-        }
-        else{
-             status={membership_status:'Due'} 
-             membershipDetails = _.extend(req.body,status)
-        }  
-           var membership = new buyMembership(membershipDetails);
-           memberbuy = _.extend(membership,Id)
-           memberbuy.save((err,data)=>{
-                if(err){
-                    res.send({error:'membership not buy'})
-                    console.log(err)
-                }
-                else{
-                    query = {'firstName': req.body.student_name}
-                    update = {
-                        $set: {status: "active"},
-                        $push: {membership_details: data._id}
-                    }
-                    addmemberModal.findOneAndUpdate(query,update,(err,stdData)=>{
-                        if(err){
-                            res.send({error:'membership id is not add in student'})
-                        }
-                        else{
-                            // res.send({msg:'membership purchase successfully'})
-                            buyMembership.findOneAndUpdate({_id:data._id},{$push:{studentInfo:stdData._id}})
-                            .exec((err,result)=>{
-                                if(err){
-                                    res.send({error:'student id is not add in buy membership'})
+                    else {
+                        buyMembership.findOneAndUpdate({ _id: data._id }, { $push: { studentInfo: stdData._id } })
+                            .exec((err, result) => {
+                                if (err) {
+                                    res.send({ error: 'student id is not add in buy membership' })
                                 }
-                                else{
-                                    res.send({msg:'membership purchase successfully',data:result})
+                                else {
+                                    res.send({ msg: 'membership purchase successfully', data: result })
                                 }
                             })
-                        }
+                    }
 
-                    })    
-                }
-            })
-        }
-    else if(req.body.ptype == 'card'){
+                })
+            }
+        })
+    }
+    else if (req.body.ptype == 'card') {
 
     }
 }
 
-exports.membership_info = (req,res)=>{
-    var membershipId = req.params.membershipId
-    membershipModal.findById(membershipId).exec((err,data)=>{
-        if(err){
-            res.send({error:'membership is not found'});
+exports.buyMembership = (req, res) => {
+    var Id = { userId: req.params.userId }
+    if (req.body.ptype == 'cash' || req.body.ptype == 'check') {
+
+        if (req.body.balance == 0) {
+            status = { membership_status: 'Paid' }
+            membershipDetails = _.extend(req.body, status)
         }
-        else{
-            res.send(data);
+        else {
+            status = { membership_status: 'Due' }
+            membershipDetails = _.extend(req.body, status)
         }
-    })
+        var membership = new buyMembership(membershipDetails);
+        memberbuy = _.extend(membership, Id)
+        memberbuy.save((err, data) => {
+            if (err) {
+                res.send({ error: 'membership not buy' })
+                console.log(err)
+            }
+            else {
+                query = { 'firstName': req.body.student_name }
+                update = {
+                    $set: { status: "active" },
+                    $push: { membership_details: data._id }
+                }
+                addmemberModal.findOneAndUpdate(query, update, (err, stdData) => {
+                    if (err) {
+                        res.send({ error: 'membership id is not add in student' })
+                    }
+                    else {
+                        // res.send({msg:'membership purchase successfully'})
+                        buyMembership.findOneAndUpdate({ _id: data._id }, { $push: { studentInfo: stdData._id } })
+                            .exec((err, result) => {
+                                if (err) {
+                                    res.send({ error: 'student id is not add in buy membership' })
+                                }
+                                else {
+                                    res.send({ msg: 'membership purchase successfully', data: result })
+                                }
+                            })
+                    }
+
+                })
+            }
+        })
+    }
+    else if (req.body.ptype == 'card') {
+
+    }
+}
+
+exports.members_info = async (req, res) => {
+    var studentId = req.params.studentId
+    let studentInfo = await AddMember.findById(studentId)
+    try {
+        let {
+            membership_details
+        } = studentInfo;
+        let membershipDa = await buyMembership.find({ _id: { $in: membership_details } });
+        res.send({
+            msg: "done",
+            data: membershipDa
+        })
+    } catch (error) {
+        res.send({ error: error.message.replace(/\"/g, ""), success: false })
+    }
 }
