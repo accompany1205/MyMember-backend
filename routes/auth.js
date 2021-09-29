@@ -12,7 +12,8 @@ const {
     edit_navbar_li,
     edit_navbar_ui,
     isAdmin,
-    approveUserRequestByAdmin
+    approveUserRequestByAdmin,
+    updateUser
 } = require("../controllers/auth");
 const { userSignupValidator } = require("../validator");
 
@@ -24,8 +25,8 @@ router.put("/forgetPassword", forgetpasaword);
 router.put("/resetPassword", resetPassword);
 router.put("/get_user_approved_by_admin/:adminId/:userId",isAdmin, approveUserRequestByAdmin);
 
-
-// router.put("/")
+//
+router.put("/updateUser/:userId",updateUser)
 
 router.get("/get_navbar", get_navbar);
 router.post("/edit_navbar_li", edit_navbar_li);

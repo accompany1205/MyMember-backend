@@ -13,6 +13,7 @@ const navbar = require("../models/navbar.js");
 const {
   map
 } = require('lodash');
+const { errorMonitor } = require('events');
 
 
 // TODO - Rakesh - Please write a mail service if user is coming with role 0(School)
@@ -141,8 +142,8 @@ exports.forgetpasaword = (req, res) => {
       });
     } else {
       var resetPassToken = jwt.sign({
-          _id: user._id
-        },
+        _id: user._id
+      },
         process.env.JWT_RESET_PASSWORD_KEY
       );
       var Email = user.email;
@@ -155,10 +156,10 @@ exports.forgetpasaword = (req, res) => {
                             `,
       };
       User.updateOne({
-          _id: user._id
-        }, {
-          reset_token: resetPassToken
-        },
+        _id: user._id
+      }, {
+        reset_token: resetPassToken
+      },
         (err, success) => {
           if (err) {
             res.send({
@@ -387,9 +388,9 @@ exports.signin = (req, res) => {
           //     });
           // }
           token = jwt.sign({
-              id: data._id,
-              role: data.role
-            },
+            id: data._id,
+            role: data.role
+          },
             process.env.JWT_SECRET
           );
           res.cookie("t", token, {
@@ -507,89 +508,89 @@ exports.isAdmin = (req, res, next) => {
 
 function navbar_custom(user_id) {
   const Data = [{
-      user_id: user_id,
-      ui: "Dashboard",
-      li: "",
-    },
-    {
-      user_id: user_id,
-      ui: "Student",
-      li: [
-        "Student",
-        "Active Trail",
-        "Lead",
-        "Former Student",
-        "Former Trail",
-        "After School",
-        "Camp",
-        "Studen By Program",
-        "Membership by Program",
-      ],
-    },
+    user_id: user_id,
+    ui: "Dashboard",
+    li: "",
+  },
+  {
+    user_id: user_id,
+    ui: "Student",
+    li: [
+      "Student",
+      "Active Trail",
+      "Lead",
+      "Former Student",
+      "Former Trail",
+      "After School",
+      "Camp",
+      "Studen By Program",
+      "Membership by Program",
+    ],
+  },
 
-    {
-      user_id: user_id,
-      ui: "My School",
-      li: ["Miss you call", "Renewals", "Birthday", "Candidates"],
-    },
-    {
-      user_id: user_id,
-      ui: "Testing",
-      li: ["Eligible", "Recomended", "Registration"],
-    },
-    {
-      user_id: user_id,
-      ui: "Task and Goal",
-      li: ["To Do List", "Goal"],
-    },
-    {
-      user_id: user_id,
-      ui: "Calendar",
-      li: ["Attendence", "Appointment", "Self Check In"],
-    },
-    {
-      user_id: user_id,
-      ui: "Marketing",
-      li: ["Email", "Compose", "Nurturing", "System", "Library", "Sent"],
-    },
-    {
-      user_id: user_id,
-      ui: "Shop",
-      li: ["Membership", "Store", "Testing", "Purchase History"],
-    },
-    {
-      user_id: user_id,
-      ui: "My Money",
-      li: ["Expenses", "Finance"],
-    },
-    {
-      user_id: user_id,
-      ui: "Finance",
-      li: ["Delinquent", "Forecast", "CC Expiring", "Test"],
-    },
-    {
-      user_id: user_id,
-      ui: "Statistics",
-      li: [
-        "Active Students",
-        "Active Trial",
-        "Lead",
-        "Former Student",
-        "Former Trial",
-        "After School",
-        "Camp",
-      ],
-    },
-    {
-      user_id: user_id,
-      ui: "Documents",
-      li: "",
-    },
-    {
-      user_id: user_id,
-      ui: "Settings",
-      li: "",
-    },
+  {
+    user_id: user_id,
+    ui: "My School",
+    li: ["Miss you call", "Renewals", "Birthday", "Candidates"],
+  },
+  {
+    user_id: user_id,
+    ui: "Testing",
+    li: ["Eligible", "Recomended", "Registration"],
+  },
+  {
+    user_id: user_id,
+    ui: "Task and Goal",
+    li: ["To Do List", "Goal"],
+  },
+  {
+    user_id: user_id,
+    ui: "Calendar",
+    li: ["Attendence", "Appointment", "Self Check In"],
+  },
+  {
+    user_id: user_id,
+    ui: "Marketing",
+    li: ["Email", "Compose", "Nurturing", "System", "Library", "Sent"],
+  },
+  {
+    user_id: user_id,
+    ui: "Shop",
+    li: ["Membership", "Store", "Testing", "Purchase History"],
+  },
+  {
+    user_id: user_id,
+    ui: "My Money",
+    li: ["Expenses", "Finance"],
+  },
+  {
+    user_id: user_id,
+    ui: "Finance",
+    li: ["Delinquent", "Forecast", "CC Expiring", "Test"],
+  },
+  {
+    user_id: user_id,
+    ui: "Statistics",
+    li: [
+      "Active Students",
+      "Active Trial",
+      "Lead",
+      "Former Student",
+      "Former Trial",
+      "After School",
+      "Camp",
+    ],
+  },
+  {
+    user_id: user_id,
+    ui: "Documents",
+    li: "",
+  },
+  {
+    user_id: user_id,
+    ui: "Settings",
+    li: "",
+  },
   ];
 
   navbar.insertMany(Data).then((response) => {
@@ -611,6 +612,7 @@ exports.get_navbar = async (req, res) => {
     })
     .then((response) => {
       res.send(response);
+
     })
     .catch((error) => {
       res.json({
@@ -669,3 +671,23 @@ exports.edit_navbar_ui = async (req, res) => {
       });
     });
 };
+
+///////////////////////////////////////
+exports.updateUser = async (req, res) => {
+
+  await User.findByIdAndUpdate(req.params.userId, req.body)
+    .exec((err, data) => {
+      if (err) {
+        console.log(err); 
+        res.send({ error: "User is not updated!" ,status:"failure"})
+      }
+      else {
+        console.log(data);
+        res.status(200).send({ msg: 'User is updated successfully',status:"success" })
+      }
+    })
+}
+
+
+
+      
