@@ -1321,23 +1321,29 @@ exports.filter_members = async (req, res) => {
 
   const listOfdata = await addmemberModal
     .find({
-        $and:
-          [{
-            $or: [
-              { "category": req.body.category },
-              { "program": req.body.program },
-              { "subcategory": req.body.subcategory }
-            ]
-          }
+      $and:
+        [{
+          $or: [
+            { "category": req.body.category },
+            { "program": req.body.program },
+            { "subcategory": req.body.subcategory }
           ]
+        }
+        ]
 
-      }
+    }
       ,
       {
-        "firstName": 1,
-        "program": 1,
-        "category": 1,
-        "subcategory": 1
+        firstName: 1,
+        lastName: 1,
+        program: 1,
+        category: 1,
+        subcategory: 1,
+        status: 1,
+        current_rank_img: 1,
+        primaryPhone: 1,
+        class_count:1,
+        updatedAt: 1
       })
   console.log(listOfdata);
   res.send({ listOfdata });
