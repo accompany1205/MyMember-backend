@@ -672,7 +672,7 @@ exports.edit_navbar_ui = async (req, res) => {
     });
 };
 
-///////////////////////////////////////
+
 exports.updateUser = async (req, res) => {
 
   await User.findByIdAndUpdate(req.params.userId, req.body)
