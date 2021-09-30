@@ -1315,37 +1315,53 @@ exports.getRankUpdateHistoryByStudentId = async (req, res) => {
 }
 
 exports.filter_members = async (req, res) => {
+  try {
+    await   addmemberModal
+      .find({
+        $and:
+          [{
+            $or: [
+              { "category": req.body.category },
+              { "program": req.body.program },
+              { "subcategory": req.body.subcategory }
+            ]
+          }]
+      },
+        {
+          firstName: 1,
+          lastName: 1,
+          program: 1,
+          category: 1,
+          subcategory: 1,
+          status: 1,
+          current_rank_img: 1,
+          primaryPhone: 1,
+          class_count: 1,
+          updatedAt: 1
+        })
 
-  // const filter = /
-
-
-  const listOfdata = await addmemberModal
-    .find({
-      $and:
-        [{
-          $or: [
-            { "category": req.body.category },
-            { "program": req.body.program },
-            { "subcategory": req.body.subcategory }
-          ]
+      .exec((er, data) => {
+        if (er) {
+          res.status(500).send({
+            status: "failure",
+            data: er
+          })
         }
-        ]
-
-    }
-      ,
-      {
-        firstName: 1,
-        lastName: 1,
-        program: 1,
-        category: 1,
-        subcategory: 1,
-        status: 1,
-        current_rank_img: 1,
-        primaryPhone: 1,
-        class_count:1,
-        updatedAt: 1
+        else {
+          res.status(200).send({
+            status: "success",
+            data: data
+          })
+        }
       })
-  console.log(listOfdata);
-  res.send({ listOfdata });
+
+  }
+  catch (er) {
+    res.status(500).send({
+      message:er,
+      status: "failure"
+    })
+
+  }
 
 }
