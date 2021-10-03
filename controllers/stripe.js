@@ -46,7 +46,7 @@ exports.create = (req, res) => {
 
 
 exports.read = (req, res) => {
-    stripe.find({ $or: [{ userId: req.params.userId }, {status : 'Admin'}] })
+    stripe.find({ $or: [{ userId: req.params.userId }, { status: 'Admin' }] })
         .then((stripe) => {
             if (stripe.length > 0) {
                 res.send(stripe)
@@ -81,7 +81,10 @@ exports.update = (req, res) => {
                     res.send({ error: 'stripe image url is not create' })
                 })
             } else {
-                res.send({ msg: 'stripe is update' })
+                res.send({
+                    msg: 'stripe is updated successfully',
+                    status: "success"
+                })
             }
         }).catch((err) => {
             console.log(err);

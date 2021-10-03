@@ -281,29 +281,29 @@ exports.bluckStd = async (req, res) => {
 };
 
 exports.std_count = async (req, res) => {
-try {
-  var resdata = await addmemberModal.find({$and: [{userId: req.params.userId}, {intrested: "Camp"}]}).count();
-  var resdata1 = await addmemberModal.find({$and: [{userId: req.params.userId}, {studentType: "Active Student"}]}).count();
-  var resdata2 = await addmemberModal.find({$and: [{userId: req.params.userId}, {studentType: "Former Student"}]}).count();
-  var resdata3 = await addmemberModal.find({$and: [{userId: req.params.userId}, {studentType: "Former Trial" }]}).count();
-  var resdata4 = await addmemberModal.find({$and: [{userId: req.params.userId}, {studentType: "Active Trial"}]}).count();
-  var resdata5 = await addmemberModal.find({$and: [{userId: req.params.userId}, {intrested: "After School"}]}).count();
-  var resdata6 = await addmemberModal.find({$and: [{userId: req.params.userId}, {studentType: "Leads"}]}).count();
-  var total = resdata + resdata1 + resdata2 + resdata3 + resdata4 + resdata5 + resdata6;
-  res.json({
-    total: total,
-    camp: resdata,
-    active: resdata1,
-    former: resdata2,
-    former_trail: resdata3,
-    active_trial: resdata4,
-    after_school: resdata5,
-    leads: resdata6,
-  });
-} catch (error) {
-  res.send({ error: error.message.replace(/\"/g, ""), success: false })
-}
- 
+  try {
+    var resdata = await addmemberModal.find({ $and: [{ userId: req.params.userId }, { intrested: "Camp" }] }).count();
+    var resdata1 = await addmemberModal.find({ $and: [{ userId: req.params.userId }, { studentType: "Active Student" }] }).count();
+    var resdata2 = await addmemberModal.find({ $and: [{ userId: req.params.userId }, { studentType: "Former Student" }] }).count();
+    var resdata3 = await addmemberModal.find({ $and: [{ userId: req.params.userId }, { studentType: "Former Trial" }] }).count();
+    var resdata4 = await addmemberModal.find({ $and: [{ userId: req.params.userId }, { studentType: "Active Trial" }] }).count();
+    var resdata5 = await addmemberModal.find({ $and: [{ userId: req.params.userId }, { intrested: "After School" }] }).count();
+    var resdata6 = await addmemberModal.find({ $and: [{ userId: req.params.userId }, { studentType: "Leads" }] }).count();
+    var total = resdata + resdata1 + resdata2 + resdata3 + resdata4 + resdata5 + resdata6;
+    res.json({
+      total: total,
+      camp: resdata,
+      active: resdata1,
+      former: resdata2,
+      former_trail: resdata3,
+      active_trial: resdata4,
+      after_school: resdata5,
+      leads: resdata6,
+    });
+  } catch (error) {
+    res.send({ error: error.message.replace(/\"/g, ""), success: false })
+  }
+
 };
 
 exports.listMember = (req, res) => {
@@ -1311,5 +1311,57 @@ exports.getRankUpdateHistoryByStudentId = async (req, res) => {
     msg: "Please find the student's rank update history!",
     data: history
   });
+
+}
+
+exports.filter_members = async (req, res) => {
+  try {
+    await   addmemberModal
+      .find({
+        $and:
+          [{
+            $or: [
+              { "category": req.body.category },
+              { "program": req.body.program },
+              { "subcategory": req.body.subcategory }
+            ]
+          }]
+      },
+        {
+          firstName: 1,
+          lastName: 1,
+          program: 1,
+          category: 1,
+          subcategory: 1,
+          status: 1,
+          current_rank_img: 1,
+          primaryPhone: 1,
+          class_count: 1,
+          updatedAt: 1
+        })
+
+      .exec((er, data) => {
+        if (er) {
+          res.status(500).send({
+            status: "failure",
+            data: er
+          })
+        }
+        else {
+          res.status(200).send({
+            status: "success",
+            data: data
+          })
+        }
+      })
+
+  }
+  catch (er) {
+    res.status(500).send({
+      message:er,
+      status: "failure"
+    })
+
+  }
 
 }

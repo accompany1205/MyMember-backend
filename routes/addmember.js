@@ -35,7 +35,8 @@ const { addmember,
     getStudentsByProgramm,
     getStudentsByCategory,
     getActiveStudents,
-    getRankUpdateHistoryByStudentId
+    getRankUpdateHistoryByStudentId,
+    filter_members
 } = require("../controllers/addmember")
 const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 const upload = require('../handler/multer');
@@ -82,6 +83,10 @@ router.get('/member/after_school_student/:userId', verifySchool, after_school_St
 // email and text sms send perticular student
 router.post('/member/email_send_student', send_mail_std)
 router.post('/member/text_sms_send', send_sms_std)
+
+//filter member by category, subcategory , program
+router.post("/member/filter_members",filter_members )
+
 
 // student by program
 router.get("/member/list_student_by_program/:userId", std_program)
