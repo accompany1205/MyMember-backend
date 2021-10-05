@@ -209,7 +209,7 @@ exports.removeFromRecomended = async (req, res) => {
             msg: "Please give the recomended id in params!"
         })
     }
-    let isDeleted = await RecommendedList.findByIdAndDelete(recommededId);
+    let isDeleted = await RecommendedForTest.findByIdAndDelete(recommededId);
     if (!isDeleted) {
         res.json({
             status: false,
