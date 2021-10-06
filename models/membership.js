@@ -38,24 +38,21 @@ const membershipSchema = new mongoose.Schema({
         type:Number,
         required:true
     },
-    payment_time:{
-        type:String,
-        required:true
-    },
-    payments_types:{
-        type:String,
-        required:true
-    },
-    pay:{
-        type:Number,
-        required:true
-    },
+    // payment_time:{
+    //     type:String,
+    //     required:true
+    // },
+    // payments_types:{
+    //     type:String,
+    //     required:true
+    // },
+    // pay:{
+    //     type:Number,
+    //     required:true
+    // },
     due_every:{
         type:String,
         required:true
-    },
-    membership_profile:{
-        type:Object,
     },
     isfavorite:{
         type:Number,

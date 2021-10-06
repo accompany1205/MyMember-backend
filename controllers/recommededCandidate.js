@@ -4,6 +4,7 @@ const Member = require('../models/addmember');
 const RecommendedCandidateModel = require('../models/recommendedCandidate');
 const RegisterdForTest = require('../models/registerdForTest');
 const ProgramModel = require('../models/program');
+const Stripe = require('../models/stripe');
 
 
 /**This api belongs to studend_program_rank_history;
@@ -15,6 +16,7 @@ const ProgramModel = require('../models/program');
 exports.recomendStudent = async (req, res) => {
     //only accepte array of objects
     let students = req.body;
+    
     if (!students) {
         res.json({
             status: false,
@@ -34,32 +36,32 @@ exports.recomendStudent = async (req, res) => {
             current_rank_img,
             current_stripe,
             userId,
-            program,
-            programID
         } = student;
         let isStudentExists = await RecommendedCandidateModel.find({
             "studentId": studentId
         });
+
         if (!isStudentExists.length && status == "Active") {
             recommendedCandidates.push({
                 "fullName": `${firstName} ${lastName}`,
                 "memberprofileImage": memberprofileImage,
                 "studentId": studentId,
                 "userId": userId,
-                "programId": programID,
-                "programName": program,
                 "current_stripe": current_stripe,
                 "current_rank_id": current_rank_id,
                 "current_rank_name": current_rank_name,
-                "current_rank_img": current_rank_img
+                "current_rank_img": current_rank_img,
+                "stripeName":"",
+                "stripeId":""
             })
         }
     }
     let recommended = await RecommendedCandidateModel.insertMany(recommendedCandidates);
     if (!recommended.length) {
         res.json({
+            statusCode : 422,
             status: false,
-            msg: "Ether the student is areadey in recommeded list or it is not eligible!!"
+            msg: "Either the student is areadey in recommeded list or it is not eligible!!"
         })
     } else {
         res.json({
@@ -73,6 +75,7 @@ exports.recomendStudent = async (req, res) => {
 
 
 exports.promoteTheStudentStripe = async (req, res) => {
+    let stripeInfo = req.body;
     let recommededCandidateId = req.params.recommededCandidateId;
     if (!recommededCandidateId) {
         return res.json({
@@ -88,32 +91,34 @@ exports.promoteTheStudentStripe = async (req, res) => {
         })
     }
     let {
-        programId,
-        programName,
         studentId,
         current_stripe
     } = recommendedStudent;
-    let programDetails = await ProgramModel.findById(programId)
-    if (!programDetails) {
+    let stripeDetails = await Stripe.findById(stripeInfo.stripeId)  
+    if (!stripeDetails) {
         return res.json({
             status: false,
-            msg: "There is some issue while fetching data of program!!"
+            msg: "There is some issue while fetching Stripe!!"
         })
     }
-    let {
-        total_rank
-    } = programDetails;
 
-    if (!(current_stripe < total_rank)) {
+    let {
+        total_stripe
+    } = stripeDetails;       
+    
+
+    if (!(current_stripe < total_stripe)) {
         return res.json({
             status: true,
-            msg: "The meximum limit has been reached!"
+            msg: "The meximum stripe limit has been reached!"
         })
     }
 
     let updateStripeIntoRecommededCandidate = await RecommendedCandidateModel.findOneAndUpdate({
         "_id": recommededCandidateId
     }, {
+        "stripeId":stripeInfo.stripeId,
+        "stripeName": stripeInfo.stripeName,
         "current_stripe": current_stripe + 1,
         "lastStripeUpdatedDate": new Date()
     }, {
@@ -132,7 +137,8 @@ exports.promoteTheStudentStripe = async (req, res) => {
     } = updateStripeIntoRecommededCandidate
 
     let history = {
-        "programName": programName,
+        "stripeId":stripeInfo.stripeId,
+        "stripeName": stripeInfo.stripeName,
         "current_rank_name": current_rank_name,
         "current_stripe": current_stripe + 1,
         "recommededDate": recommededDate,
@@ -155,10 +161,6 @@ exports.promoteTheStudentStripe = async (req, res) => {
     })
 
     //Todo - Monu - Please write a logic with the stripe and programs.
-
-
-
-
 }
 
 exports.getRecommendedCandidateStudents = async (req, res) => {

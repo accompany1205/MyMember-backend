@@ -212,3 +212,4 @@ const addmemberSchema = new schema(
 );
 
 module.exports = mongoose.model("member", addmemberSchema);
+    

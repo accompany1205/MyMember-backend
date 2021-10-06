@@ -33,13 +33,16 @@ exports.getRecommededForTest = async (req, res) => {
 
 exports.recomendStudent = async (req, res) => {
     //only accepte array of objects
+    
     let students = req.body;
+    let userId = req.params.userId;
     if (!students) {
         res.json({
             status: false,
             msg: "You haven't selected any student!"
         })
     }
+
     const recommendedStudentsForTest = [];
     for (let student of students) {
         let {
@@ -49,8 +52,14 @@ exports.recomendStudent = async (req, res) => {
             rating,
             current_rank_name,
             next_rank_name,
-            userId
+            memberprofileImage,
+            phone,
+            program,
+            method,
+            status,
+            lastPromotedDate
         } = student;
+        console.log("student-->", next_rank_name)
         let isStudentExists = await RecommendedForTest.find({
             "studentId": studentId
         });
@@ -62,12 +71,20 @@ exports.recomendStudent = async (req, res) => {
                 "rating": rating,
                 "current_rank_name": current_rank_name,
                 "next_rank_name": next_rank_name,
-                "userId": userId
+                "userId": userId,
+                "memberprofileImage":memberprofileImage,
+                "phone":phone,
+                "program":program,
+                "lastPromotedDate":lastPromotedDate,
+                "method":method,
+                "status":status
             })
         }
     }
+    //console.log("recommendedStudentsForTest", recommendedStudentsForTest)
 
     let recommended = await RecommendedForTest.insertMany(recommendedStudentsForTest);
+    //console.log("recommended->",recommended)
     if (!recommended.length) {
         res.json({
             status: false,
@@ -193,7 +210,7 @@ exports.removeFromRecomended = async (req, res) => {
             msg: "Please give the recomended id in params!"
         })
     }
-    let isDeleted = await RecommendedList.findByIdAndDelete(recommededId);
+    let isDeleted = await RecommendedForTest.findByIdAndDelete(recommededId);
     if (!isDeleted) {
         res.json({
             status: false,

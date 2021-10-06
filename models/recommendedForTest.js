@@ -14,6 +14,24 @@ const recommendedForTest = new mongoose.Schema({
     lastName: {
         type: String
     },
+    memberprofileImage:{
+        type:String
+    },
+    phone:{
+        type:String
+    },
+    program:{
+        type:String
+    },
+    lastPromoted:{
+        type:Date
+    },
+    method:{
+        type:String
+    },
+    status:{
+        type:String
+    },
     rating: {
         type: String
     },
