@@ -33,6 +33,7 @@ exports.getRecommededForTest = async (req, res) => {
 
 exports.recomendStudent = async (req, res) => {
     //only accepte array of objects
+    
     let students = req.body;
     let userId = req.params.userId;
     if (!students) {
