@@ -19,6 +19,7 @@ exports.Create = async (req, res) => {
                 currentDate.setUTCDate(currentDate.getUTCDate() + steps);
             }
 
+
             return dateArray;
         }
 
