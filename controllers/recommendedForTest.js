@@ -30,6 +30,32 @@ exports.getRecommededForTest = async (req, res) => {
     })
 }
 
+exports.listRegisteredForTest = async (req,res) => {
+    let userId = req.params.userId;
+    if (!userId) {
+        res.json({
+            status: false,
+            msg: "Please give userId into the params!!"
+        })
+    }
+
+    let students = await RegisterdForTest.find({
+        "userId": userId
+    });    
+    if (!students.length) {
+        res.json({
+            status: false,
+            msg: "There no data available for this query!!"
+        })
+    }
+    res.json({
+        status: true,
+        msg: "Please find the data!!",
+        data: students
+    })
+
+}
+
 
 exports.recomendStudent = async (req, res) => {
     //only accepte array of objects
@@ -111,7 +137,8 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         current_rank,
         next_rank,
         userId,
-        current_rank_img
+        current_rank_img,
+        method
     } = req.body;
 
     //If student removed by mistake and adding again to the registerd list...
@@ -160,7 +187,8 @@ exports.payAndPromoteTheStudent = async (req, res) => {
             "current_rank": current_rank,
             "next_rank": next_rank,
             "userId": userId,
-            "current_rank_img":current_rank_img
+            "current_rank_img":current_rank_img,
+            "method":method
         });
         let studentData = await Member.findById(studentId)
         if (!registerd) {
@@ -212,6 +240,12 @@ exports.payAndPromoteTheStudent = async (req, res) => {
             data: registerd
         })
     }
+}
+
+exports.listRegisteredForTest = async (req,res) => {
+    let userId = req.params.userId;
+
+
 }
 
 exports.removeFromRecomended = async (req, res) => {
