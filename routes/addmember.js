@@ -35,7 +35,8 @@ const { addmember,
     getStudentsByProgramm,
     getStudentsByCategory,
     getActiveStudents,
-    getRankUpdateHistoryByStudentId,
+    getRankUpdateStripeHistoryByStudentId,
+    getRankUpdateTestHistoryByStudentId,
     filter_members
 } = require("../controllers/addmember")
 const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
@@ -96,7 +97,8 @@ router.get("/member/list_student_by_program/:userId", std_program)
 //todo - pavan - add the verication.
 router.get('/member/get_students_by_program/:userId/:program', getStudentsByProgramm);
 router.get('/member/get_students_by_category/:userId/:category', getStudentsByCategory);
-router.get('/member/get_student_rank_update_hisrory/:userId/:studentId', getRankUpdateHistoryByStudentId);
+router.get('/member/get_student_rank_update_hisrory/:userId/:studentId', getRankUpdateStripeHistoryByStudentId);
+router.get('/member/get_student_rank_update_test_hisrory/:userId/:studentId', getRankUpdateTestHistoryByStudentId);
 router.get("/member/get_active_members/:userId", getActiveStudents)
 
 module.exports = router

@@ -109,7 +109,8 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         rating,
         current_rank,
         next_rank,
-        userId
+        userId,
+        current_rank_img
     } = req.body;
 
     //If student removed by mistake and adding again to the registerd list...
@@ -157,17 +158,28 @@ exports.payAndPromoteTheStudent = async (req, res) => {
             "rating": rating,
             "current_rank": current_rank,
             "next_rank": next_rank,
-            "userId": userId
+            "userId": userId,
+            "current_rank_img":current_rank_img
         });
+        let studentData = await Member.findById(studentId)
         if (!registerd) {
             res.json({
                 status: false,
                 msg: "Having some issue while register!!"
             })
         }
+        let date = new Date();
+        let history = {
+            "current_rank":current_rank,
+            "program":studentData.program,
+            "current_rank_img":current_rank_img,
+            "testPaid":date,
+            "promoted":date
+        }
         let updatedTestPurchasing = await Member.findByIdAndUpdate(studentId, {
             $push: {
-                test_purchasing: testId
+                test_purchasing: testId,
+                rank_update_test_history: history
             }
         }, {
             new: true
