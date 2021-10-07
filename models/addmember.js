@@ -206,9 +206,13 @@ const addmemberSchema = new schema(
         },
         rank_update_history:{
             type: Array
+        },
+        rank_update_test_history:{
+            type: Array
         }
     },
     { timestamps: true }
 );
 
 module.exports = mongoose.model("member", addmemberSchema);
+    
