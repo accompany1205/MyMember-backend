@@ -4,7 +4,7 @@ var moment = require("moment");
 const { errorHandler } = require('../helpers/dbErrorHandler');
 
 exports.Create = async (req, res) => {
-    var proDetail = await Prog.find({ programName: req.body.program_name }) 
+    var proDetail = await Prog.find({ programName: req.body.program_name })
     if (proDetail) {
         let reqBody = req.body
         let startDate = moment(reqBody.start_date, 'MM/DD/YYYY').format('MM/DD/YYYY')
@@ -81,7 +81,6 @@ exports.read = async (req, res) => {
 };
 
 exports.class_schedule_Info = (req, res) => {
-    console.log('run')
     const id = req.params.scheduleId
     class_schedule.findById(id, { upsert: true })
         .populate('class_attendance')
@@ -106,12 +105,47 @@ exports.update = (req, res) => {
         })
 };
 
+exports.updateAll = (req, res) => {
+    class_schedule.updateMany(
+        { $and: [{ userId: req.params.userId }, { program_name: req.params.program_name }, { class_name: req.params.class_name }] },
+        { $set: req.body }
+    )
+        .then((update_resp) => {
+            console.log(update_resp)
+            res.status(200).json({
+                message: 'All class schedule has been updated Successfully',
+                success: true
+            })
+        }).catch((err) => {
+            console.log(err)
+            res.send(err)
+        })
+};
+
+
 exports.remove = (req, res) => {
     const id = req.params.scheduleId
     class_schedule.deleteOne({ _id: id })
         .then((resp) => {
             console.log(resp)
             res.json("class schedule has been deleted successfully")
+        }).catch((err) => {
+            console.log(err)
+            res.send(err)
+        })
+};
+
+
+exports.removeAll = (req, res) => {
+    const id = req.params.scheduleId
+    class_schedule.deleteMany(
+        { $and: [{ userId: req.params.userId }, { program_name: req.params.program_name }, { class_name: req.params.class_name }] },
+    )
+        .then((resp) => {
+            res.status(200).json({
+                message: 'All class schedule has been deleted Successfully',
+                success: true
+            })
         }).catch((err) => {
             console.log(err)
             res.send(err)
