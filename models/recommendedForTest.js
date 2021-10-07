@@ -23,11 +23,14 @@ const recommendedForTest = new mongoose.Schema({
     program:{
         type:String
     },
-    lastPromoted:{
-        type:Date
+    lastPromotedDate:{
+        type:Date,
+        default: new Date()
     },
     method:{
-        type:String
+        type:String,
+        default: "Cash",
+        enum: ["Cash", "Check", "Credit Card"]
     },
     status:{
         type:String
@@ -40,10 +43,6 @@ const recommendedForTest = new mongoose.Schema({
     },
     next_rank:{
         type:String
-    },
-    date: {
-        type: Date,
-        default: new Date()
     },
     isDeleted:{
         type: Boolean,

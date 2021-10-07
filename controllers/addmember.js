@@ -1284,7 +1284,7 @@ exports.getActiveStudents = async (req, res) => {
  * @param {*} res 
  */
 
-exports.getRankUpdateHistoryByStudentId = async (req, res) => {
+exports.getRankUpdateStripeHistoryByStudentId = async (req, res) => {
   let studentId = req.params.studentId;
   if (!studentId) {
     res.json({
@@ -1314,9 +1314,39 @@ exports.getRankUpdateHistoryByStudentId = async (req, res) => {
 
 }
 
+exports.getRankUpdateTestHistoryByStudentId = async (req, res) => {
+  let studentId = req.params.studentId;
+  console.log("--->", studentId)
+  if (!studentId) {
+    res.json({
+      status: false,
+      error: "userId not found in params"
+    });
+  }
+  let student = await addmemberModal.findById(studentId);
+  if (!student) {
+    res.json({
+      status: false,
+      error: "Student is not available with this id!!"
+    });
+  }
+  let rankTestHistory = student.rank_update_test_history;
+  if (!rankTestHistory.lenght) {
+    return res.json({
+      stasus: false,
+      error: "No rank history available for this student!!"
+    })
+  }
+  return res.json({
+    status: true,
+    msg: "Please find the student's rank update history!",
+    data: history
+  });
+}
+
 exports.filter_members = async (req, res) => {
   try {
-    await   addmemberModal
+    await addmemberModal
       .find({
         $and:
           [{
@@ -1358,7 +1388,7 @@ exports.filter_members = async (req, res) => {
   }
   catch (er) {
     res.status(500).send({
-      message:er,
+      message: er,
       status: "failure"
     })
 

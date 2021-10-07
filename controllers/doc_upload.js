@@ -4,7 +4,6 @@ const {Storage} = require("@google-cloud/storage")
 const sampleFile = require("../models/admin/upload_sample_file")
 const std = require("../models/addmember")
 
-
 // var uid = require("uuid")
 // var uidv1 = uid.v1
 require("dotenv").config()
@@ -37,6 +36,27 @@ exports.docupload =(req,res)=>{
         })
     }
   });
+}
+
+exports.docremove =(req,res)=>{
+  const docFileDetails = {
+    document:req.body.document,
+  }
+  docfile.findOneAndRemove({document: req.body.document}, {}, function (err, doc) {
+    console.log('Doc: ', doc);
+    docsubfolder.updateOne({subFolderName: req.body.subFolderName},{$pull:docFileDetails},
+      function(err,updateDoc){
+        if(err){
+          res.send({error:'File not removed.'})
+        }
+        else{
+          console.log('After update: ', updateDoc);
+          res.send({result: updateDoc, Doc: doc});
+          //res.send({result:updateDoc,Doc:docdata})
+        }
+      });
+  });
+
 }
 
 exports.file_sample =(req,res)=>{

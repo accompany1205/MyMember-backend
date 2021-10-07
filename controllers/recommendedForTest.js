@@ -30,6 +30,32 @@ exports.getRecommededForTest = async (req, res) => {
     })
 }
 
+exports.listRegisteredForTest = async (req,res) => {
+    let userId = req.params.userId;
+    if (!userId) {
+        res.json({
+            status: false,
+            msg: "Please give userId into the params!!"
+        })
+    }
+
+    let students = await RegisterdForTest.find({
+        "userId": userId
+    });    
+    if (!students.length) {
+        res.json({
+            status: false,
+            msg: "There no data available for this query!!"
+        })
+    }
+    res.json({
+        status: true,
+        msg: "Please find the data!!",
+        data: students
+    })
+
+}
+
 
 exports.recomendStudent = async (req, res) => {
     //only accepte array of objects
@@ -110,7 +136,9 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         rating,
         current_rank,
         next_rank,
-        userId
+        userId,
+        current_rank_img,
+        method
     } = req.body;
 
     //If student removed by mistake and adding again to the registerd list...
@@ -158,17 +186,29 @@ exports.payAndPromoteTheStudent = async (req, res) => {
             "rating": rating,
             "current_rank": current_rank,
             "next_rank": next_rank,
-            "userId": userId
+            "userId": userId,
+            "current_rank_img":current_rank_img,
+            "method":method
         });
+        let studentData = await Member.findById(studentId)
         if (!registerd) {
             res.json({
                 status: false,
                 msg: "Having some issue while register!!"
             })
         }
+        let date = new Date();
+        let history = {
+            "current_rank":current_rank,
+            "program":studentData.program,
+            "current_rank_img":current_rank_img,
+            "testPaid":date,
+            "promoted":date
+        }
         let updatedTestPurchasing = await Member.findByIdAndUpdate(studentId, {
             $push: {
-                test_purchasing: testId
+                test_purchasing: testId,
+                rank_update_test_history: history
             }
         }, {
             new: true
@@ -200,6 +240,12 @@ exports.payAndPromoteTheStudent = async (req, res) => {
             data: registerd
         })
     }
+}
+
+exports.listRegisteredForTest = async (req,res) => {
+    let userId = req.params.userId;
+
+
 }
 
 exports.removeFromRecomended = async (req, res) => {
