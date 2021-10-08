@@ -474,6 +474,7 @@ exports.verifySchool = (req, res, next) => {
   } else {
     res.sendStatus(403);
   }
+
 };
 
 exports.isSchoolActiveted = (req, res, next) => {
@@ -678,16 +679,16 @@ exports.updateUser = async (req, res) => {
   await User.findByIdAndUpdate(req.params.userId, req.body)
     .exec((err, data) => {
       if (err) {
-        console.log(err); 
-        res.send({ error: "User is not updated!" ,status:"failure"})
+        console.log(err);
+        res.send({ error: "User is not updated!", status: "failure" })
       }
       else {
         console.log(data);
-        res.status(200).send({ msg: 'User is updated successfully',status:"success" })
+        res.status(200).send({ msg: 'User is updated successfully', status: "success" })
       }
     })
 }
 
 
 
-      
+
