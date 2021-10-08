@@ -1,5 +1,6 @@
 const class_schedule = require("../models/class_schedule");
 const Prog = require("../models/program")
+const dateRange = require('../Services/dateRange')
 var moment = require("moment");
 const { errorHandler } = require('../helpers/dbErrorHandler');
 
@@ -10,22 +11,11 @@ exports.Create = async (req, res) => {
         let startDate = moment(reqBody.start_date, 'MM/DD/YYYY').format('MM/DD/YYYY')
         let endDate = moment(reqBody.end_date, 'MM/DD/YYYY').format('MM/DD/YYYY')
         let repeat_weekly_on = reqBody.repeat_weekly_on
-        function dateRange(startDate, endDate, steps = 1) {
-            const dateArray = [];
-            let currentDate = new Date(startDate);
-            while (currentDate <= new Date(endDate)) {
-                dateArray.push(moment(new Date(currentDate)).format('MM/DD/YYYY'));
-                // Use UTC date to prevent problems with time zones and DST
-                currentDate.setUTCDate(currentDate.getUTCDate() + steps);
-            }
-
-
-
-            return dateArray;
-        }
 
         try {
+
             const dates = dateRange(startDate, endDate);
+
             let allAttendance = []
             for (let index in dates) {
                 let date = moment(dates[index], 'MM/DD/YYYY').format('MM/DD/YYYY')
@@ -36,6 +26,7 @@ exports.Create = async (req, res) => {
                     allAttendance.push(NewEvent)
                 }
             }
+            console.log(allAttendance)
             await class_schedule.insertMany(allAttendance)
             res.send({ msg: 'Class schedule succefully!', success: true })
         } catch (error) {
@@ -100,7 +91,7 @@ exports.update = (req, res) => {
     const id = req.params.scheduleId;
     class_schedule.findByIdAndUpdate(id, { $set: req.body })
         .then((update_resp) => {
-    
+
             res.status(200).send("class schedule has been updated successfully")
         }).catch((error) => {
             res.send({ error: error.message.replace(/\"/g, ""), success: false })
@@ -108,27 +99,75 @@ exports.update = (req, res) => {
         })
 };
 
-exports.updateAll = (req, res) => {
-    class_schedule.updateMany(
-        { $and: [{ userId: req.params.userId }, { program_name: req.params.program_name }, { class_name: req.params.class_name }] },
-        { $set: req.body }
-    )
-        .then((update_resp) => {
-            if (update_resp.nModified< 1) {
+exports.updateAll = async (req, res) => {
+
+    // var proDetail = await Prog.find({ programName: req.body.program_name })
+    // if (proDetail) {
+    let reqBody = req.body
+    let startDate = moment(reqBody.start_date, 'MM/DD/YYYY').format('MM/DD/YYYY')
+    let endDate = moment(reqBody.end_date, 'MM/DD/YYYY').format('MM/DD/YYYY')
+    let repeat_weekly_on = reqBody.repeat_weekly_on
+
+
+    const dates = dateRange(startDate, endDate);
+
+    let allAttendance = []
+    for (let index in dates) {
+        let date = moment(dates[index], 'MM/DD/YYYY').format('MM/DD/YYYY')
+        let dayName = moment(new Date(date)).format('dddd').toLowerCase()
+        if (repeat_weekly_on.includes(dayName)) {
+            let NewEvent = { ...reqBody, start_date: date, end_date: date }
+            delete NewEvent['repeat_weekly_on']
+            allAttendance.push(NewEvent)
+        }
+    }
+    // console.log(allAttendance.length)
+
+    const data = await class_schedule.deleteMany({
+        $and:
+            [{ userId: req.params.userId },
+            { program_name: req.body.program_name },
+            { class_name: req.body.class_name }]
+    })
+
+
+
+        // await class_schedule.aggregate([
+        //     {
+        //         $project: {
+        //             item: {
+        //                 replaceAll: {
+        //                     input: "$item",
+        //                     find: {
+        //                         $and:
+        //                             [{ userId: req.params.userId },
+        //                             { program_name: req.body.program_name },
+        //                             { class_name: req.body.class_name }]
+        //                     },
+        //                     replacement: allAttendance
+        //                 }
+        //             }
+        //         }
+        //     }
+        // ])
+        .then(async (update_resp) => {
+            if (update_resp.nModified < 1) {
                 res.status(403).json({
                     message: 'class_name/program_name not found',
-                    success: false
-                })}
-            else{
-            res.status(200).json({
-                message: 'All class schedule has been updated Successfully',
-                success: true
-            })}
+                    success: true
+                })
+            }
+            else {
+                const res1 = await class_schedule.insertMany(allAttendance);
+                res.status(200).json({
+                    message: 'All class schedule has been updated Successfully',
+                    success: true
+                })
+            }
         }).catch((error) => {
             res.send({ error: error.message.replace(/\"/g, ""), success: false })
-
         })
-};
+}
 
 
 exports.remove = (req, res) => {
@@ -146,7 +185,9 @@ exports.remove = (req, res) => {
 exports.removeAll = (req, res) => {
     // const id = req.params.scheduleId
     class_schedule.deleteMany(
-        { $and: [{ userId: req.params.userId }, { program_name: req.body.program_name }, { class_name: req.body.class_name }] }
+        { $and: [{ userId: req.params.userId },
+             { program_name: req.body.program_name }, 
+             { class_name: req.body.class_name }] }
     )
         .then((resp) => {
             if (resp.deletedCount < 1) {
