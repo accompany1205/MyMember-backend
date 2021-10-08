@@ -101,11 +101,11 @@ exports.update = (req, res) => {
     const id = req.params.scheduleId;
     class_schedule.findByIdAndUpdate(id, { $set: req.body })
         .then((update_resp) => {
-            console.log(update_resp)
-            res.send("class schedule has been updated successfully")
-        }).catch((err) => {
-            console.log(err)
-            res.send(err)
+    
+            res.status(200).send("class schedule has been updated successfully")
+        }).catch((error) => {
+            res.send({ error: error.message.replace(/\"/g, ""), success: false })
+
         })
 };
 
@@ -121,14 +121,13 @@ exports.updateAll = (req, res) => {
                     success: false
                 })}
             else{
-            console.log(update_resp)
             res.status(200).json({
                 message: 'All class schedule has been updated Successfully',
                 success: true
             })}
-        }).catch((err) => {
-            console.log(err)
-            res.send(err)
+        }).catch((error) => {
+            res.send({ error: error.message.replace(/\"/g, ""), success: false })
+
         })
 };
 
@@ -139,9 +138,9 @@ exports.remove = (req, res) => {
         .then((resp) => {
             console.log(resp)
             res.json("class schedule has been deleted successfully")
-        }).catch((err) => {
-            console.log(err)
-            res.send(err)
+        }).catch((error) => {
+            res.send({ error: error.message.replace(/\"/g, ""), success: false })
+
         })
 };
 
@@ -159,7 +158,6 @@ exports.removeAll = (req, res) => {
                 })
             }
             else {
-                console.log(resp)
                 res.status(200).json({
                     message: 'All class schedule has been deleted Successfully',
                     success: true
@@ -168,8 +166,8 @@ exports.removeAll = (req, res) => {
 
             }
 
-        }).catch((err) => {
-            console.log(err)
-            res.send(err)
+        }).catch((error) => {
+            res.send({ error: error.message.replace(/\"/g, ""), success: false })
+
         })
 };
