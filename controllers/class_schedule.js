@@ -147,6 +147,7 @@ exports.remove = (req, res) => {
 
 exports.removeAll = (req, res) => {
     // const id = req.params.scheduleId
+    console.log(req.body,'______________-')
     class_schedule.deleteMany(
         { $and: [{ userId: req.params.userId }, { program_name: req.body.program_name }, { class_name: req.body.class_name }] }
     )
