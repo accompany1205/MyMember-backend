@@ -12,7 +12,7 @@ router.put("/update_All_classSchedule/:userId/:program_name/:class_name",require
 router.get("/class_schedule_by_id/:userId/:scheduleId",requireSignin,class_schedule.class_schedule_Info)
 
 router.delete("/delete_classSchedule/:userId/:scheduleId",requireSignin,class_schedule.remove);
-router.delete("/delete_All_classSchedule/:userId/:program_name/:class_name",requireSignin,class_schedule.removeAll);
+router.delete("/delete_All_classSchedule/:userId",requireSignin,class_schedule.removeAll);
 
 
 module.exports = router;

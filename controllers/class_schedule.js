@@ -64,7 +64,7 @@ exports.Create = async (req, res) => {
     }
 };
 
-//checking changes
+//checking 
 
 exports.read = async (req, res) => {
     try {
@@ -141,14 +141,15 @@ exports.remove = (req, res) => {
 
 
 exports.removeAll = (req, res) => {
-    const id = req.params.scheduleId
+    // const id = req.params.scheduleId
     class_schedule.deleteMany(
-        { $and: [{ userId: req.params.userId }, { program_name: req.params.program_name }, { class_name: req.params.class_name }] },
+        { $and: [{ userId: req.params.userId }, { program_name: req.body.program_name }, { class_name: req.body.class_name }] }
     )
         .then((resp) => {
+            console.log(resp)
             res.status(200).json({
                 message: 'All class schedule has been deleted Successfully',
-                success: true
+                success:true
             })
         }).catch((err) => {
             console.log(err)
