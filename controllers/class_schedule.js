@@ -115,11 +115,17 @@ exports.updateAll = (req, res) => {
         { $set: req.body }
     )
         .then((update_resp) => {
+            if (update_resp.nModified< 1) {
+                res.status(403).json({
+                    message: 'class_name/program_name not found',
+                    success: false
+                })}
+            else{
             console.log(update_resp)
             res.status(200).json({
                 message: 'All class schedule has been updated Successfully',
                 success: true
-            })
+            })}
         }).catch((err) => {
             console.log(err)
             res.send(err)
@@ -146,11 +152,22 @@ exports.removeAll = (req, res) => {
         { $and: [{ userId: req.params.userId }, { program_name: req.body.program_name }, { class_name: req.body.class_name }] }
     )
         .then((resp) => {
-            console.log(resp)
-            res.status(200).json({
-                message: 'All class schedule has been deleted Successfully',
-                success:true
-            })
+            if (resp.deletedCount < 1) {
+                res.status(403).json({
+                    message: 'class_name/program_name not found',
+                    success: false
+                })
+            }
+            else {
+                console.log(resp)
+                res.status(200).json({
+                    message: 'All class schedule has been deleted Successfully',
+                    success: true
+
+                })
+
+            }
+
         }).catch((err) => {
             console.log(err)
             res.send(err)
