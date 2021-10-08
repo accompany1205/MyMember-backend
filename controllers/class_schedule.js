@@ -69,7 +69,6 @@ exports.Create = async (req, res) => {
 exports.read = async (req, res) => {
     try {
         let result = await class_schedule.find({})
-        console.log(result)
         res.send({ data: result, success: true })
     } catch (error) {
         res.send({ error: error.message.replace(/\"/g, ""), success: false })
@@ -136,7 +135,6 @@ exports.remove = (req, res) => {
     const id = req.params.scheduleId
     class_schedule.deleteOne({ _id: id })
         .then((resp) => {
-            console.log(resp)
             res.json("class schedule has been deleted successfully")
         }).catch((error) => {
             res.send({ error: error.message.replace(/\"/g, ""), success: false })
@@ -147,7 +145,6 @@ exports.remove = (req, res) => {
 
 exports.removeAll = (req, res) => {
     // const id = req.params.scheduleId
-    console.log(req.body,'______________-')
     class_schedule.deleteMany(
         { $and: [{ userId: req.params.userId }, { program_name: req.body.program_name }, { class_name: req.body.class_name }] }
     )
