@@ -30,8 +30,10 @@ exports.getRecommededForTest = async (req, res) => {
     })
 }
 
-exports.listRegisteredForTest = async (req,res) => {
+exports.getRegisteredForTest = async (req, res) => {
+    console.log("ddwdwwewdwdwdw====")
     let userId = req.params.userId;
+    console.log("userId --", userId)
     if (!userId) {
         res.json({
             status: false,
@@ -42,10 +44,12 @@ exports.listRegisteredForTest = async (req,res) => {
     let students = await RegisterdForTest.find({
         "userId": userId
     });    
+    console.log("students", students)
     if (!students.length) {
         res.json({
             status: false,
-            msg: "There no data available for this query!!"
+            msg: "There no data available for this query!!",
+            data:students
         })
     }
     res.json({

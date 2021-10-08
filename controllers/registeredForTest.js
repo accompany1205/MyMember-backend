@@ -20,7 +20,6 @@ exports.promoteStudentRank = async (req, res) => {
 };
 
 
-exports.getRegistered
 
 
 
