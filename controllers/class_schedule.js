@@ -101,11 +101,11 @@ exports.update = (req, res) => {
     const id = req.params.scheduleId;
     class_schedule.findByIdAndUpdate(id, { $set: req.body })
         .then((update_resp) => {
-            console.log(update_resp)
-            res.send("class schedule has been updated successfully")
-        }).catch((err) => {
-            console.log(err)
-            res.send(err)
+    
+            res.status(200).send("class schedule has been updated successfully")
+        }).catch((error) => {
+            res.send({ error: error.message.replace(/\"/g, ""), success: false })
+
         })
 };
 
@@ -121,14 +121,13 @@ exports.updateAll = (req, res) => {
                     success: false
                 })}
             else{
-            console.log(update_resp)
             res.status(200).json({
                 message: 'All class schedule has been updated Successfully',
                 success: true
             })}
-        }).catch((err) => {
-            console.log(err)
-            res.send(err)
+        }).catch((error) => {
+            res.send({ error: error.message.replace(/\"/g, ""), success: false })
+
         })
 };
 
@@ -139,9 +138,9 @@ exports.remove = (req, res) => {
         .then((resp) => {
             console.log(resp)
             res.json("class schedule has been deleted successfully")
-        }).catch((err) => {
-            console.log(err)
-            res.send(err)
+        }).catch((error) => {
+            res.send({ error: error.message.replace(/\"/g, ""), success: false })
+
         })
 };
 
@@ -149,7 +148,7 @@ exports.remove = (req, res) => {
 exports.removeAll = (req, res) => {
     // const id = req.params.scheduleId
     class_schedule.deleteMany(
-        { $and: [{ userId: req.params.userId }, { program_name: req.body.program_name }, { class_name: req.body.class_name }] }
+        // { $and: [{ userId: req.params.userId }, { program_name: req.body.program_name }, { class_name: req.body.class_name }] }
     )
         .then((resp) => {
             if (resp.deletedCount < 1) {
@@ -159,7 +158,6 @@ exports.removeAll = (req, res) => {
                 })
             }
             else {
-                console.log(resp)
                 res.status(200).json({
                     message: 'All class schedule has been deleted Successfully',
                     success: true
@@ -168,8 +166,8 @@ exports.removeAll = (req, res) => {
 
             }
 
-        }).catch((err) => {
-            console.log(err)
-            res.send(err)
+        }).catch((error) => {
+            res.send({ error: error.message.replace(/\"/g, ""), success: false })
+
         })
 };
