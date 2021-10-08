@@ -126,8 +126,8 @@ exports.updateAll = async (req, res) => {
     const data = await class_schedule.deleteMany({
         $and:
             [{ userId: req.params.userId },
-            { program_name: req.body.program_name },
-            { class_name: req.body.class_name }]
+            { program_name: req.body.defaultprogram_name },
+            { class_name: req.body.defaultclass_name }]
     })
 
 
