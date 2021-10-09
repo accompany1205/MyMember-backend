@@ -187,8 +187,8 @@ exports.payAndPromoteTheStudent = async (req, res) => {
             "current_rank_img":current_rank_img,
             "method":method
         });
-        console.log("-----> ", userId)
         let studentData = await Member.findById(studentId)
+        console.log(studentData)
         if (!registerd) {
             res.json({
                 status: false,
