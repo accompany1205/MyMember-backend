@@ -32,7 +32,6 @@ exports.getRecommededForTest = async (req, res) => {
 
 exports.getRegisteredForTest = async (req, res) => {
     let userId = req.params.userId;
-    console.log("userId --", userId)
     if (!userId) {
         res.json({
             status: false,
@@ -41,9 +40,8 @@ exports.getRegisteredForTest = async (req, res) => {
     }
 
     let students = await RegisterdForTest.find({
-        "userId": userId
+        "isDeleted": false
     });    
-    console.log("students", students)
     if (!students.length) {
         res.json({
             status: false,
@@ -107,10 +105,8 @@ exports.recomendStudent = async (req, res) => {
             })
         }
     }
-    //console.log("recommendedStudentsForTest", recommendedStudentsForTest)
 
     let recommended = await RecommendedForTest.insertMany(recommendedStudentsForTest);
-    console.log("recommended->",recommended)
     if (!recommended.length) {
         res.json({
             status: false,
@@ -128,6 +124,7 @@ exports.recomendStudent = async (req, res) => {
 
 
 exports.payAndPromoteTheStudent = async (req, res) => {
+    let userId = req.params.userId;
     let {
         testId,
         studentId,
@@ -136,7 +133,6 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         rating,
         current_rank,
         next_rank,
-        userId,
         current_rank_img,
         method
     } = req.body;
@@ -161,7 +157,8 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         let updateIsDeleted = await RegisterdForTest.findOneAndUpdate({
             "studentId": studentId
         }, {
-            "isDeleted": false
+            "isDeleted": false,
+            "userId":userId
         }, {
             new: true
         });
@@ -190,6 +187,7 @@ exports.payAndPromoteTheStudent = async (req, res) => {
             "current_rank_img":current_rank_img,
             "method":method
         });
+        console.log("-----> ", userId)
         let studentData = await Member.findById(studentId)
         if (!registerd) {
             res.json({
