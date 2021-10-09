@@ -134,7 +134,8 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         current_rank,
         next_rank,
         current_rank_img,
-        method
+        method,
+        phone
     } = req.body;
 
     //If student removed by mistake and adding again to the registerd list...
@@ -176,6 +177,7 @@ exports.payAndPromoteTheStudent = async (req, res) => {
 
     } else {
         //If moving the student to the registerd list for the fist time.
+        let studentData = await Member.findById(studentId)
         let registerd = await RegisterdForTest.create({
             "studentId": studentId,
             "firstName": firstName,
@@ -184,11 +186,12 @@ exports.payAndPromoteTheStudent = async (req, res) => {
             "current_rank": current_rank,
             "next_rank": next_rank,
             "userId": userId,
-            "current_rank_img":current_rank_img,
-            "method":method
+            "current_rank_img":studentData.current_rank_img,
+            "method":method,
+            "memberprofileImage": studentData.memberprofileImage,
+            "phone":phone,
+            "program":studentData.program
         });
-        console.log("-----> ", userId)
-        let studentData = await Member.findById(studentId)
         if (!registerd) {
             res.json({
                 status: false,

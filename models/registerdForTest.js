@@ -41,6 +41,19 @@ const registerdForTest = new mongoose.Schema({
         type:String,
         default: "Cash",
         enum: ["Cash", "Check", "Credit Card"]
+    },
+    phone:{
+        type:String
+    },
+    memberprofileImage:{
+        type:String
+    },
+    lastPromotedDate:{
+        type:Date,
+        default: new Date()
+    },
+    program:{
+        type:String
     }
 
 });
