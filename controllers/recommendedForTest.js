@@ -31,7 +31,6 @@ exports.getRecommededForTest = async (req, res) => {
 }
 
 exports.getRegisteredForTest = async (req, res) => {
-    console.log("ddwdwwewdwdwdw====")
     let userId = req.params.userId;
     console.log("userId --", userId)
     if (!userId) {
@@ -85,11 +84,9 @@ exports.recomendStudent = async (req, res) => {
             memberprofileImage,
             phone,
             program,
-            method,
             status,
             lastPromotedDate
         } = student;
-        console.log("student-->", next_rank_name)
         let isStudentExists = await RecommendedForTest.find({
             "studentId": studentId
         });
@@ -106,7 +103,6 @@ exports.recomendStudent = async (req, res) => {
                 "phone":phone,
                 "program":program,
                 "lastPromotedDate":lastPromotedDate,
-                "method":method,
                 "status":status
             })
         }
@@ -114,7 +110,7 @@ exports.recomendStudent = async (req, res) => {
     //console.log("recommendedStudentsForTest", recommendedStudentsForTest)
 
     let recommended = await RecommendedForTest.insertMany(recommendedStudentsForTest);
-    //console.log("recommended->",recommended)
+    console.log("recommended->",recommended)
     if (!recommended.length) {
         res.json({
             status: false,
@@ -246,11 +242,7 @@ exports.payAndPromoteTheStudent = async (req, res) => {
     }
 }
 
-exports.listRegisteredForTest = async (req,res) => {
-    let userId = req.params.userId;
 
-
-}
 
 exports.removeFromRecomended = async (req, res) => {
     let recommededId = req.params.recommendedId;

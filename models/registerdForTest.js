@@ -30,8 +30,12 @@ const registerdForTest = new mongoose.Schema({
     isDeleted:{
         type: Boolean,
         default:false
+    },
+    method:{
+        type:String,
+        default: "Cash",
+        enum: ["Cash", "Check", "Credit Card"]
     }
-
 
 });
 
