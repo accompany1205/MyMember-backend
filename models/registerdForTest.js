@@ -5,6 +5,9 @@ const registerdForTest = new mongoose.Schema({
     studentId: {
         type: String
     },
+    userId: {
+        typre:String
+    },
     firstName: {
         type: String
     },
@@ -18,6 +21,9 @@ const registerdForTest = new mongoose.Schema({
         type: String
     },
     next_rank:{
+        type:String
+    },
+    current_rank_img:{
         type:String
     },
     date: {
