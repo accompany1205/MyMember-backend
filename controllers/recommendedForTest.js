@@ -30,7 +30,7 @@ exports.getRecommededForTest = async (req, res) => {
     })
 }
 
-exports.listRegisteredForTest = async (req,res) => {
+exports.getRegisteredForTest = async (req, res) => {
     let userId = req.params.userId;
     if (!userId) {
         res.json({
@@ -40,12 +40,13 @@ exports.listRegisteredForTest = async (req,res) => {
     }
 
     let students = await RegisterdForTest.find({
-        "userId": userId
+        "isDeleted": false
     });    
     if (!students.length) {
         res.json({
             status: false,
-            msg: "There no data available for this query!!"
+            msg: "There no data available for this query!!",
+            data:students
         })
     }
     res.json({
@@ -81,11 +82,9 @@ exports.recomendStudent = async (req, res) => {
             memberprofileImage,
             phone,
             program,
-            method,
             status,
             lastPromotedDate
         } = student;
-        console.log("student-->", next_rank_name)
         let isStudentExists = await RecommendedForTest.find({
             "studentId": studentId
         });
@@ -102,15 +101,12 @@ exports.recomendStudent = async (req, res) => {
                 "phone":phone,
                 "program":program,
                 "lastPromotedDate":lastPromotedDate,
-                "method":method,
                 "status":status
             })
         }
     }
-    //console.log("recommendedStudentsForTest", recommendedStudentsForTest)
 
     let recommended = await RecommendedForTest.insertMany(recommendedStudentsForTest);
-    //console.log("recommended->",recommended)
     if (!recommended.length) {
         res.json({
             status: false,
@@ -128,6 +124,7 @@ exports.recomendStudent = async (req, res) => {
 
 
 exports.payAndPromoteTheStudent = async (req, res) => {
+    let userId = req.params.userId;
     let {
         testId,
         studentId,
@@ -136,7 +133,6 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         rating,
         current_rank,
         next_rank,
-        userId,
         current_rank_img,
         method
     } = req.body;
@@ -161,7 +157,8 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         let updateIsDeleted = await RegisterdForTest.findOneAndUpdate({
             "studentId": studentId
         }, {
-            "isDeleted": false
+            "isDeleted": false,
+            "userId":userId
         }, {
             new: true
         });
@@ -190,6 +187,7 @@ exports.payAndPromoteTheStudent = async (req, res) => {
             "current_rank_img":current_rank_img,
             "method":method
         });
+        console.log("-----> ", userId)
         let studentData = await Member.findById(studentId)
         if (!registerd) {
             res.json({
@@ -242,11 +240,7 @@ exports.payAndPromoteTheStudent = async (req, res) => {
     }
 }
 
-exports.listRegisteredForTest = async (req,res) => {
-    let userId = req.params.userId;
 
-
-}
 
 exports.removeFromRecomended = async (req, res) => {
     let recommededId = req.params.recommendedId;
