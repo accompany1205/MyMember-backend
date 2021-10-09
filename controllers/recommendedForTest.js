@@ -198,7 +198,7 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         let date = new Date();
         let history = {
             "current_rank":current_rank,
-            "program":studentData.program,
+            //"program":studentData.program,
             "current_rank_img":current_rank_img,
             "testPaid":date,
             "promoted":date
