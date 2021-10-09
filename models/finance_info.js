@@ -6,6 +6,8 @@ const Finance_infoSchema = new schema(
 		card_type: {
 			type: String,
 			required: true,
+			enum: ['credit', 'debit'],
+			default: 'credit'
 		},
 		holder_name: {
 			type: String,
@@ -14,30 +16,38 @@ const Finance_infoSchema = new schema(
 		notes: {
 			type: String,
 		},
-		default: {
-			type: Number,
-			default: 0,
-		},
+		// default: {
+		// 	type: Number,
+		// 	default: 0,
+		// },
 		status: {
 			type: String,
 			required: true,
+			enum: ['active', 'inactive'],
+			default: 'inactive'
 		},
-		credit_Card_type: {
+		Credit_card_type: {
 			type: String,
 			required: true,
+			enum: ['Visa', 'Mastercard', 'Amex', 'Discover'],
+			default: 'Visa'
+
 		},
-		credit_Card_Number: {
+		Card_Number: {
 			type: String,
 			required: true,
+			minlength: 12
+
 		},
-		credit_cvv: {
+		card_cvv: {
 			type: String,
 			required: true,
+			minlength: 3
 		},
-		cardExpiry: {
-			type: Date,
-			require: true,
-		},
+		// Expiration_Date: {
+		// 	type: Date,
+		// 	require: true,
+		// },
 		expiry_month: {
 			type: Number,
 			required: true,
@@ -49,17 +59,19 @@ const Finance_infoSchema = new schema(
 		billing_address: {
 			type: String,
 		},
-		country: {
-			type: String,
-		},
-		state: {
-			type: String,
-		},
-		city: {
-			type: String,
-		},
+		// country: {
+		// 	type: String,
+		// },
+		// state: {
+		// 	type: String,
+		// },
+		// city: {
+		// 	type: String,
+		// },
 		zip_postal: {
 			type: String,
+			required:true,
+			minlength:6
 		},
 		studentId: {
 			type: schema.Types.ObjectId,
