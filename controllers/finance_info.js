@@ -1,4 +1,6 @@
 const finance_info = require("../models/finance_info");
+const bcrypt = require('bcryptjs')
+
 const addmemberModal = require("../models/addmember");
 const { errorHandler } = require("../helpers/dbErrorHandler");
 const _ = require("lodash");
@@ -11,7 +13,8 @@ exports.create = async (req, res) => {
 	const bodyInfo = req.body;
 
 	const expiryDate = new Date(bodyInfo.expiry_year, bodyInfo.expiry_month);
-
+	const hashedCard_Number = bcrypt.hashSync(bodyInfo.Card_Number, 10)
+	const hashedCard_Cvv = bcrypt.hashSync(bodyInfo.card_cvv, 10)
 	const cardExpiry = {
 		expiryDate,
 		userId,
@@ -19,6 +22,8 @@ exports.create = async (req, res) => {
 
 	const financeDetails = _.extend(bodyInfo, cardExpiry);
 	financeDetails["studentId"] = studentId;
+	financeDetails["Card_Number"] = hashedCard_Number;
+	financeDetails["card_cvv"] = hashedCard_Cvv;
 
 	const finance = await finance_info.create(financeDetails);
 
@@ -27,24 +32,25 @@ exports.create = async (req, res) => {
 	}
 
 	const member = await addmemberModal.findByIdAndUpdate({ _id: studentId }, { $push: { finance_details: finance._id } });
-
 	if (!member) {
 		res.send({ status: false, error: "finance info is not add in student" });
 	}
-
 	res.send({ status: true, msg: "finance info is add in student", result: finance });
 };
 
 exports.read = (req, res) => {
 	console.log(req.params.studentId);
+
 	finance_info
-		.find({ student_Id: req.params.studentId })
+		.find({ studentId: req.params.studentId })
 		.then((result) => {
-			res.json(result);
+			res.status(200).json({
+				data: result
+			});
 		})
 		.catch((err) => {
-			console.log(err);
-			res.send(err);
+			res.send({ error: err.message.replace(/\"/g, ""), success: false })
+
 		});
 };
 
