@@ -3,7 +3,7 @@ const router = express.Router();
 const finance_info = require("../controllers/finance_info");
 const { requireSignin, isAuth } = require("../controllers/auth");
 
-router.get("/finance/finance_info/:userId/:studentId", requireSignin, finance_info.read);
+router.get("/finance/finance_info/:userId/:financeId", requireSignin, finance_info.read);
 // router.post("/finance_info/create_finance_info/:userId/:studentId", requireSignin, finance_info.create);
 router.post("/finance_info/create_finance_info/:userId/:studentId", finance_info.create);
 router.put("/finance/update_finance_info/:userId/:financeId", requireSignin, finance_info.update);

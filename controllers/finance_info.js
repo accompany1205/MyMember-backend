@@ -36,10 +36,10 @@ exports.create = async (req, res) => {
 };
 
 exports.read = (req, res) => {
-	console.log(req.params.studentId);
+	console.log(req.params.financeId);
 
 	finance_info
-		.find({ studentId: req.params.studentId })
+		.find({ _id: req.params.financeId })
 		.then((result) => {
 			res.status(200).json({
 				data: result
