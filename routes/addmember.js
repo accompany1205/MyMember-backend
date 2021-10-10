@@ -99,6 +99,8 @@ router.get('/member/get_students_by_program/:userId/:program', getStudentsByProg
 router.get('/member/get_students_by_category/:userId/:category', getStudentsByCategory);
 router.get('/member/get_student_rank_update_hisrory/:userId/:studentId', getRankUpdateStripeHistoryByStudentId);
 router.get('/member/get_student_rank_update_test_hisrory/:userId/:studentId', getRankUpdateTestHistoryByStudentId);
-router.get("/member/get_active_members/:userId", getActiveStudents)
+router.get("/member/get_active_members/:userId", getActiveStudents);
+
+
 
 module.exports = router
