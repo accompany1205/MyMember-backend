@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const schema = mongoose.Schema
 
-const textTemplateDocUpload = new schema({
+const templateUpload = new schema({
   document:{
     type:String,
     require:true
@@ -20,5 +20,5 @@ const textTemplateDocUpload = new schema({
   }
 })
 
-module.exports = mongoose.model("textTemplateDocUpload", textTemplateDocUpload);
+module.exports = mongoose.model("templateUpload", templateUpload);
 

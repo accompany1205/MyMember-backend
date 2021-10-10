@@ -117,6 +117,8 @@ const recomendedForTestRoutes = require("./routes/recommendedForTest");
 const registeredForTestRoutes = require("./routes/registerdForTest");
 const recommendedCandidatesRoutes = require("./routes/recommededCandidate");
 
+const textTemplateRoutes = require('./routes/text_templates_routes');
+
 const app = express();
 // app.use(fileUpload({ safeFileNames: true, preserveExtension: true }))
 const uuidv1 = require("uuid/v1");
@@ -219,6 +221,7 @@ app.use("/api", text_Library_Folder);
 app.use("/api", document_folder);
 app.use("/api", document_subFolder);
 app.use("/api", upload_doc);
+app.use("/api", textTemplateRoutes);
 app.use("/api", finance_list);
 app.use("/api", student_email);
 app.use("/api", student_text);
@@ -266,7 +269,7 @@ const port = process.env.PORT || 3001;
 // var server = https.createServer(credentials1, app).listen(port, function(){
 //     console.log("Express server listening on port " + port);
 // });
- 
+
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });

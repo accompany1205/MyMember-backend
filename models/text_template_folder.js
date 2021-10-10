@@ -1,14 +1,14 @@
 const mongoose = require("mongoose");
 const schema = mongoose.Schema
 
-const textTemplateDocFolderSchema = new schema({
+const templateFolder = new schema({
   folderName:{
     type:String,
     required:true
   },
   subFolder:[{
     type:schema.Types.ObjectId,
-    ref:'docsubfolder'
+    ref:'templateSubFolder'
   }],
   userId:{
     type:String
@@ -18,5 +18,5 @@ const textTemplateDocFolderSchema = new schema({
   }
 })
 
-module.exports = mongoose.model("textTemplateDocFolder", textTemplateDocFolderSchema);
+module.exports = mongoose.model("templateFolder", templateFolder);
 

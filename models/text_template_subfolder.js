@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const schema = mongoose.Schema
 
-const textTemplateDocSubFolder = new schema({
+const templateSubFolder = new schema({
   subFolderName:{
     type:String,
     require:true,
@@ -9,4 +9,4 @@ const textTemplateDocSubFolder = new schema({
   },
 })
 
-module.exports = mongoose.model("textTemplateDocSubFolder", textTemplateDocSubFolder);
+module.exports = mongoose.model("templateSubFolder", templateSubFolder);

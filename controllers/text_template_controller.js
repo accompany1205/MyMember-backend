@@ -1,9 +1,9 @@
-const templateFolder = require("../models/text_template_doc_folder")
-const templateSubFolder = require("../models/text_template_doc_subfolder");
-const UploadFiles = require("../models/text_template_doc_upload");
+const templateFolder = require("../models/text_template_folder");
+const templateSubFolder = require("../models/text_template_subfolder");
+const UploadFiles = require("../models/text_template_upload");
 
 exports.createfolder = (req,res)=>{
-  var doc = new templateFolder(req.body)
+  var doc = new templateFolder(req.body);
   doc.save((err,template)=>{
     if(err){
       res.send({error:'template folder is not create'})
@@ -17,7 +17,7 @@ exports.createfolder = (req,res)=>{
           else{
             res.send(doc)
           }
-        })
+        });
     }
   })
 }
@@ -172,5 +172,4 @@ exports.templateRemove =(req,res)=>{
         }
       });
   });
-
 }
