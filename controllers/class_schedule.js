@@ -154,7 +154,7 @@ exports.updateAll = async (req, res) => {
             if (update_resp.nModified < 1) {
                 res.status(403).json({
                     message: 'class_name/program_name not found',
-                    success: true
+                    success: false
                 })
             }
             else {

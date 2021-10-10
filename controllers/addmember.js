@@ -1300,7 +1300,7 @@ exports.getRankUpdateStripeHistoryByStudentId = async (req, res) => {
     });
   }
   let history = student.rank_update_history;
-  if (!history.length) {
+  if (history.length === 0) {
     return res.json({
       stasus: false,
       error: "Not any history available for this student!!"
@@ -1331,16 +1331,18 @@ exports.getRankUpdateTestHistoryByStudentId = async (req, res) => {
     });
   }
   let rankTestHistory = student.rank_update_test_history;
-  if (!rankTestHistory.lenght) {
+  console.log(rankTestHistory.lenght)
+  if (rankTestHistory.lenght ===0) {
     return res.json({
       stasus: false,
-      error: "No rank history available for this student!!"
+      error: "No rank history available for this student!!",
+      data:rankTestHistory
     })
   }
   return res.json({
     status: true,
     msg: "Please find the student's rank update history!",
-    data: history
+    data: rankTestHistory
   });
 }
 

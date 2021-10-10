@@ -27,11 +27,6 @@ const recommendedForTest = new mongoose.Schema({
         type:Date,
         default: new Date()
     },
-    method:{
-        type:String,
-        default: "Cash",
-        enum: ["Cash", "Check", "Credit Card"]
-    },
     status:{
         type:String
     },

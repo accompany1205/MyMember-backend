@@ -5,6 +5,12 @@ const registerdForTest = new mongoose.Schema({
     studentId: {
         type: String
     },
+    userId: {
+        typre:String
+    },
+    testId: {
+        type:String
+    },
     firstName: {
         type: String
     },
@@ -20,6 +26,9 @@ const registerdForTest = new mongoose.Schema({
     next_rank:{
         type:String
     },
+    current_rank_img:{
+        type:String
+    },
     date: {
         type: Date,
         default: new Date()
@@ -30,8 +39,25 @@ const registerdForTest = new mongoose.Schema({
     isDeleted:{
         type: Boolean,
         default:false
+    },
+    method:{
+        type:String,
+        default: "Cash",
+        enum: ["Cash", "Check", "Credit Card"]
+    },
+    phone:{
+        type:String
+    },
+    memberprofileImage:{
+        type:String
+    },
+    lastPromotedDate:{
+        type:Date,
+        default: new Date()
+    },
+    program:{
+        type:String
     }
-
 
 });
 
