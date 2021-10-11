@@ -75,19 +75,15 @@ const Membershipschema = new schema(
         },
         card_holder_name:{
             type:String,
-            required:true
         },
         cvv_number:{
             type:String,
-            required:true
         },
        card_expiry_date:{
             type:String,
-            required:true
         },
         membership_status:{
             type:String,
-            required:true
         },
         userId:{
             type:String,
