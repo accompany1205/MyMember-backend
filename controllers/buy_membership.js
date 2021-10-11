@@ -72,15 +72,8 @@ exports.create = async (req, res)  => {
         due_every_month: Joi.string().required(),
         pay_inout: Joi.string().required(),
         pay_latter: Joi.string().required(),
-        check_number: Joi.string().required(),
-        card_number: Joi.string().required(),
-        card_holder_name: Joi.string().required(),
-        cvv_number: Joi.string().required(),
-        card_expiry_date: Joi.string().required(),
         membership_status: Joi.string().required(),
-        userId: Joi.string().required(),
-        createdMonth: Joi.string().required(),
-        createdYear: Joi.string().required()
+        userId: Joi.string().required()
     })
 
     // let addMemberSchema = Joi.object({
