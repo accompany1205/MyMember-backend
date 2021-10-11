@@ -83,7 +83,7 @@ const Membershipschema = new schema(
             type:String,
         },
         membership_status:{
-            type:String,
+            type:String
         },
         userId:{
             type:String,
