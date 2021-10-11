@@ -4,8 +4,7 @@ const schema = mongoose.Schema;
 const Membershipschema = new schema(
     {
         student_name: {
-            type: String,
-            required:true
+            type: String
         },
         membership_name:{
             type:String,

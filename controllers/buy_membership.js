@@ -56,7 +56,6 @@ exports.create = async (req, res)  => {
     var Id = { userId: req.params.userId }
 
     let buyMembershipSchema = Joi.object({
-        student_name : Joi.string().required(),
         membership_name : Joi.string().required(),
         mactive_date : Joi.string().required(),
         membership_duration: Joi.string().required(),
