@@ -21,7 +21,7 @@ exports.Create = async (req, res) => {
                 let date = moment(dates[index], 'MM/DD/YYYY').format('MM/DD/YYYY')
                 let dayName = moment(new Date(date)).format('dddd').toLowerCase()
                 if (repeat_weekly_on.includes(dayName)) {
-                    let NewEvent = { ...reqBody, start_date: date, end_date: date,wholeSeriesEndDate: endDate }
+                    let NewEvent = { ...reqBody, start_date: date, end_date: date, wholeSeriesEndDate: endDate,wholeSeriesStartDate:startDate}
                     // delete NewEvent['repeat_weekly_on']
                     allAttendance.push(NewEvent)
                 }
@@ -115,7 +115,7 @@ exports.updateAll = async (req, res) => {
         let date = moment(dates[index], 'MM/DD/YYYY').format('MM/DD/YYYY')
         let dayName = moment(new Date(date)).format('dddd').toLowerCase()
         if (repeat_weekly_on.includes(dayName)) {
-            let NewEvent = { ...reqBody, start_date: date, end_date: date, wholeSeriesEndDate: endDate}
+            let NewEvent = { ...reqBody, start_date: date, end_date: date, wholeSeriesEndDate: endDate,wholeSeriesStartDate:startDate}
             // delete NewEvent['repeat_weekly_on']
             allAttendance.push(NewEvent)
         }
