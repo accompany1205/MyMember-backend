@@ -5,9 +5,11 @@ const Membershipschema = new schema(
     {
         student_name: {
             type: String,
+            required:true
         },
         membership_name:{
-            type:String
+            type:String,
+            required:true
         },
         mactive_date: {
             type: String,
@@ -67,36 +69,45 @@ const Membershipschema = new schema(
 
         check_number:{
             type:String,
+            required:true
         },
         card_number:{
             type:String
         },
         card_holder_name:{
-            type:String
+            type:String,
+            required:true
         },
         cvv_number:{
-            type:String
+            type:String,
+            required:true
         },
        card_expiry_date:{
-            type:String
+            type:String,
+            required:true
         },
         membership_status:{
-            type:String
+            type:String,
+            required:true
         },
         userId:{
-            type:String
+            type:String,
+            required:true
         },
         createdMonth:{
             type:String,
-            default: new Date().getMonth()
+            default: new Date().getMonth(),
+            required:true
         },
         createdYear:{
             type:String,
-            default: new Date().getFullYear()
+            default: new Date().getFullYear(),
+            required:true
         },
         studentInfo:[{
             type:schema.Types.ObjectId,
-            ref:"member"
+            ref:"member",
+            required:true
         }]
   },
     { timestamps: true }
