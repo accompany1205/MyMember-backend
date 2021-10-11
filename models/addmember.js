@@ -3,212 +3,271 @@ const schema = mongoose.Schema
 const addmemberSchema = new schema(
     {
         studentType: {
-            type: String
+            type: String,
+            required:true
 
         },
         firstName: {
-            type: String
+            type: String,
+            required:true
 
         },
         lastName: {
-            type: String
+            type: String,
+            required:true
 
         },
         status: {
             type: String,
-            default: 'Inactive'
+            default: 'Inactive',
+            required:true
         },
         days_expire: {
             type: String,
-            default: ' '
+            default: ' ',
+            required:true
         },
         dob: {
-            type: Date
+            type: Date,
+            required:true
         },
         day_left: {
             type: String,
-            default: ' '
+            default: ' ',
+            required:true
         },
         age: {
-            type: String
+            type: String,
+            required:true
         },
         gender: {
-            type: String
+            type: String,
+            required:true
 
         },
         email: {
-            type: String
+            type: String,
+            required:true
         },
         primaryPhone: {
-            type: String
+            type: String,
+            required:true
         },
         secondaryNumber: {
-            type: String
+            type: String,
+            required:true
         },
         address: {
-            type: String
+            type: String,
+            required:true
         },
         country: {
-            type: String
+            type: String,
+            required:true
         },
         state: {
-            type: String
+            type: String,
+            required:true
         },
         zipPostalCode: {
-            type: String
+            type: String,
+            required:true
         },
         notes: {
-            type: String
+            type: String,
+            required:true
         },
         studentBeltSize: {
-            type: String
+            type: String,
+
         },
         program: {
-            type: String
+            type: String,
+            required:true
         },
         programColor: {
             type: String,
-            default: ""
+            default: "",
+            required:true
         },
         programID: {
-            type: String
+            type: String,
+            required:true
         },
         next_rank_id: {
-            type: String
+            type: String,
+            required:true
         },
         next_rank_name: {
             type: String,
-            default: ""
+            default: "",
+            required:true
         },
         next_rank_img: {
             type: String,
-            default: ""
+            default: "",
+            required:true
         },
         current_rank_name: {
             type: String,
-            default: "No Belt"
+            default: "No Belt",
+            required:true
         },
         current_rank_img: {
             type: String,
-            default: "https://storage.googleapis.com/mymember/All-Images/7dbb2cf0-969e-11eb-b12e-7f5ddf0f0ed7-No%20Belt.jpg"
+            default: "https://storage.googleapis.com/mymember/All-Images/7dbb2cf0-969e-11eb-b12e-7f5ddf0f0ed7-No%20Belt.jpg",
+            required:true
         },
         current_rank_id: {
             type: String,
-            default: ""
+            default: "",
+            required:true
         },
         current_stripe: {
-            type: Number
+            type: Number,
+            required:true
         },
         last_stripe_given_date: {
-            type: String
+            type: String,
+            required:true
         },
         category: {
-            type: String
+            type: String,
+            required:true
         },
         subcategory: {
             type: String,
-            default: ""
+            default: "",
+            required:true
         },
         belt_rank_img: {
-            type: String
+            type: String,
+            required:true
 
         },
         belt_rank_name: {
-            type: String
+            type: String,
+            required:true
         },
         location: {
-            type: String
+            type: String,
+            required:true
         },
         customId: {
-            type: String
+            type: String,
+            required:true
         },
         leadsTracking: {
-            type: String
+            type: String,
+            required:true
         },
         staff: {
-            type: String
+            type: String,
+            required:true
         },
         intrested: {
-            type: String
+            type: String,
+            required:true
         },
         school: {
-            type: String
+            type: String,
+            required:true
         },
         memberprofileImage: {
             type: String,
-            default: ' '
+            default: ' ',
+            required:true
         },
         rating: {
             type: Number,
-            default: 0
+            default: 0,
+            required:true
         },
         attendence_color: {
             type: String,
-            default: '#FF0000'
+            default: '#FF0000',
+            required:true
         },
         class_count: {
             type: Number,
-            default: 0
+            default: 0,
+            required:true
         },
         attendence_status: {
             type: Boolean,
-            default: false
+            default: false,
+            required:true
         },
         userId: {
-            type: String
+            type: String,
+            required:true
         },
         membership_details: [{
             type: schema.Types.ObjectId,
-            ref: 'Buy_Membership'
+            ref: 'Buy_Membership',
+            required:true
         }],
         finance_details: [{
             type: schema.Types.ObjectId,
-            ref: 'FinanceInfo'
+            ref: 'FinanceInfo',
+            required:true
         }],
         myFaimly: [{
             type: schema.Types.ObjectId,
-            ref: 'family'
+            ref: 'family',
+            required:true
         }],
         myGroup: [{
             type: schema.Types.ObjectId,
-            ref: 'myGroup'
+            ref: 'myGroup',
+            required:true
         }],
         test_purchasing: [{
             type: schema.Types.ObjectId,
-            ref: 'testpurchase'
+            ref: 'testpurchase',
+            required:true
         }],
         renewals_notes: [{
             type: schema.Types.ObjectId,
-            ref: 'renewalNote'
+            ref: 'renewalNote',
+            required:true
         }],
         birthday_notes: [{
             type: schema.Types.ObjectId,
-            ref: 'birthdayNote'
+            ref: 'birthdayNote',
+            required:true
         }],
         birthday_checklist: [{
             type: schema.Types.ObjectId,
-            ref: 'birthdaycheckList'
+            ref: 'birthdaycheckList',
+            required:true
         }],
         last_contact_missCall: {
             type: Date,
-            default: ""
+            default: "",
+            required:true
         },
         last_contact_renewal: {
             type: Date,
-            default: ""
+            default: "",
+            required:true
         },
         missYouCall_notes: [{
             type: schema.Types.ObjectId,
-            ref: 'missYouCallNote'
+            ref: 'missYouCallNote',
+            required:true
         }],
         followup_notes: {
-            type: Array
+            type: Array,
+            required:true
         },
         rank_update_history:{
-            type: Array
+            type: Array,
+            required:true
         },
         rank_update_test_history:{
-            type: Array
+            type: Array,
+            required:true
         }
     },
     { timestamps: true }

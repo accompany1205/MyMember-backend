@@ -5,14 +5,15 @@ const student_info_Rank = require('../models/student_info_Rank')
 
 exports.addRank = async (req, res) => {
     try {
-        // const studentId = req.params.studentId
+        const studentId = req.params.studentId
         const data = await program_rank.findOne({ rank_name: req.body.rank_name }, { _id: 0, rank_image: 1, rank_name: 1, day_to_ready: 1 })
 
         const resp = new student_info_Rank({
             programName: req.body.programName,
             rank_name: req.body.rank_name,
             day_to_ready: data.day_to_ready,
-            rank_image: data.rank_image
+            rank_image: data.rank_image,
+            studentId: studentId
         })
         resp.save(async (er, data) => {
             if (er) {
@@ -33,8 +34,10 @@ exports.addRank = async (req, res) => {
 
 exports.getRank = async (req, res) => {
     try {
-        const rankId = req.params.rankId
-        const data = await student_info_Rank.find({ _id: rankId })
+        const studentId = req.params.studentId
+        console.log(studentId)
+        const data = await student_info_Rank.find({ _id: studentId })
+        console.log(data)
         res.send({ data: data })
     }
     catch (err) {
