@@ -22,11 +22,10 @@ exports.Create = async (req, res) => {
                 let dayName = moment(new Date(date)).format('dddd').toLowerCase()
                 if (repeat_weekly_on.includes(dayName)) {
                     let NewEvent = { ...reqBody, start_date: date, end_date: date }
-                    delete NewEvent['repeat_weekly_on']
+                    // delete NewEvent['repeat_weekly_on']
                     allAttendance.push(NewEvent)
                 }
             }
-            console.log(allAttendance)
             await class_schedule.insertMany(allAttendance)
             res.send({ msg: 'Class schedule succefully!', success: true })
         } catch (error) {
@@ -117,7 +116,7 @@ exports.updateAll = async (req, res) => {
         let dayName = moment(new Date(date)).format('dddd').toLowerCase()
         if (repeat_weekly_on.includes(dayName)) {
             let NewEvent = { ...reqBody, start_date: date, end_date: date }
-            delete NewEvent['repeat_weekly_on']
+            // delete NewEvent['repeat_weekly_on']
             allAttendance.push(NewEvent)
         }
     }
