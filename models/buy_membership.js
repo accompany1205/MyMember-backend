@@ -68,7 +68,6 @@ const Membershipschema = new schema(
 
         check_number:{
             type:String,
-            required:true
         },
         card_number:{
             type:String
