@@ -72,7 +72,6 @@ exports.create = async (req, res)  => {
         due_every_month: Joi.string().required(),
         pay_inout: Joi.string().required(),
         pay_latter: Joi.string().required(),
-        membership_status: Joi.string().required(),
         userId: Joi.string().required()
     })
 
