@@ -28,6 +28,10 @@ const scheduleSchema = new schema(
             type: String,
             required: true
         },
+        wholeSeriesEndDate: {
+            type:String,
+            required:true
+        },
         repeat_weekly_on: { type: Array },
         userId:{
             type:String
