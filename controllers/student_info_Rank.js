@@ -2,17 +2,27 @@ const program = require("../models/program");
 const program_rank = require("../models/program_rank");
 const addmemberModal = require("../models/addmember");
 const student_info_Rank = require('../models/student_info_Rank')
+const Joi = require('@hapi/joi')
+
 
 exports.addRank = async (req, res) => {
+
+    let studentInfoRankModal = Joi.object({
+        programName: Joi.string().max(32).required(),
+        rank_name: Joi.string().required()
+        
+    })
     try {
-        // const studentId = req.params.studentId
+        await studentInfoRankModal.validateAsync(req.body);
+        const studentId = req.params.studentId
         const data = await program_rank.findOne({ rank_name: req.body.rank_name }, { _id: 0, rank_image: 1, rank_name: 1, day_to_ready: 1 })
 
         const resp = new student_info_Rank({
             programName: req.body.programName,
             rank_name: req.body.rank_name,
             day_to_ready: data.day_to_ready,
-            rank_image: data.rank_image
+            rank_image: data.rank_image,
+            studentId: studentId
         })
         resp.save(async (er, data) => {
             if (er) {
@@ -22,7 +32,11 @@ exports.addRank = async (req, res) => {
             //     {
             //         $push: { rank_update_history: data }
             //     });
-            res.status(200).send('Rank created Successfully !')
+            res.json({
+                success: true,
+                msg: "Rank updated successfully",
+                data: data
+            })
         })
     }
     catch (error) {
@@ -32,9 +46,12 @@ exports.addRank = async (req, res) => {
 
 
 exports.getRank = async (req, res) => {
+
     try {
-        const rankId = req.params.rankId
-        const data = await student_info_Rank.find({ _id: rankId })
+        const studentId = req.params.studentId
+        console.log(studentId)
+        const data = await student_info_Rank.find({ studentId: studentId })
+        console.log(data)
         res.send({ data: data })
     }
     catch (err) {

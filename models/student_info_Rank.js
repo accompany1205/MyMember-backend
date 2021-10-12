@@ -14,6 +14,9 @@ const programSchema = new mongoose.Schema(
             type: String,
 
         },
+        studentId : {
+            type:String
+        },
         day_to_ready: {
             type: String,
             required: true

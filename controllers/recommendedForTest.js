@@ -128,8 +128,6 @@ exports.payAndPromoteTheStudent = async (req, res) => {
     let {
         testId,
         studentId,
-        firstName,
-        lastName,
         rating,
         current_rank,
         next_rank,
@@ -180,13 +178,14 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         let studentData = await Member.findById(studentId)
         let registerd = await RegisterdForTest.create({
             "studentId": studentId,
-            "firstName": firstName,
-            "lastName": lastName,
+            "firstName": studentData.firstName,
+            "testId":testId,
+            "lastName": studentData.lastName,
             "rating": rating,
             "current_rank": current_rank,
             "next_rank": next_rank,
             "userId": userId,
-            "current_rank_img":studentData.current_rank_img,
+            "current_rank_img":current_rank_img,
             "method":method,
             "memberprofileImage": studentData.memberprofileImage,
             "phone":phone,

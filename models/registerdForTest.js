@@ -8,6 +8,9 @@ const registerdForTest = new mongoose.Schema({
     userId: {
         typre:String
     },
+    testId: {
+        type:String
+    },
     firstName: {
         type: String
     },
