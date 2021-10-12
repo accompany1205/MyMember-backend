@@ -34,7 +34,6 @@ const recommendedForTest = new mongoose.Schema({
     lastPromotedDate:{
         type:Date,
         default: new Date(),
-        required:true
     },
     status:{
         type:String,
