@@ -72,7 +72,6 @@ exports.recomendStudent = async (req, res) => {
         memberprofileImage: Joi.string().required(),
         phone: Joi.string().required(),
         program: Joi.string().required(),
-        lastPromotedDate: Joi.string().required(),
         status: Joi.string().required(),
         rating: Joi.number().required(),
         current_rank: Joi.string().required(),
