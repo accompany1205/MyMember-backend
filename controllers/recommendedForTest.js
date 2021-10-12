@@ -96,28 +96,36 @@ exports.recomendStudent = async (req, res) => {
         for (let student of students) {
             student.userId = userId
             await recommendedFortestSchema.validateAsync(student);
-            let isStudentExists = await RecommendedForTest.find({
-                "studentId": student.studentId
-            });
-            if (!isStudentExists.length) {
-                recommendedStudentsForTest.push(student)
-            }
-        }
+            recommendedStudentsForTest.push(student)
 
-        let recommended = await RecommendedForTest.insertMany(recommendedStudentsForTest);
-        if (!recommended.length) {
-            res.json({
-                status: false,
-                msg: "Having some issue while createing the recommended list!!"
-            })
-        } else {
-            res.json({
-                status: true,
-                msg: "Selected students got recomended successfully.",
-                data: recommended
-            })
+            // let isStudentExists = await RecommendedForTest.find({
+            //     "studentId": student.studentId
+            // });
+            // console.log(isStudentExists)
+            // if (isStudentExists.length > 0) {
+            //     recommendedStudentsForTest.push(student)
+            // }
         }
+        await RecommendedForTest.insertMany(recommendedStudentsForTest);
+        res.send({
+            success: true,
+            msg: "Selected students got recomended successfully.",
+        })
+        // try{
+        //     await RecommendedForTest.insertMany(recommendedStudentsForTest);
+        //     res.send({
+        //         success: true,
+        //         msg: "Selected students got recomended successfully.",
+        //     })
+        // }catch(eror){
+        //     res.send({ error: error.message.replace(/\"/g, ""), success: false })
+        // }
+
     } catch (error) {
+        let errorFound = error.message.replace(/\"/g, "")
+        if (errorFound.includes('duplicate key')) {
+            res.send({ error: 'Student already exist in recommend list !', success: false })
+        }
         res.send({ error: error.message.replace(/\"/g, ""), success: false })
     }
 
@@ -194,6 +202,7 @@ exports.payAndPromoteTheStudent = async (req, res) => {
             "phone": phone,
             "program": studentData.program
         });
+        console.log(registerd)
         if (!registerd) {
             res.json({
                 status: false,
