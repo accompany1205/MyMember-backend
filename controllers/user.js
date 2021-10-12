@@ -16,6 +16,7 @@ exports.userById = (req, res, next, id) => {
 };
 
 exports.read = (req, res) => {
+    console.log(req)
     req.profile.hashed_password = undefined;
     req.profile.salt = undefined;
     return res.json(req.profile);
