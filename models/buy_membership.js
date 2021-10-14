@@ -7,7 +7,8 @@ const Membershipschema = new schema(
             type: String,
         },
         membership_name:{
-            type:String
+            type:String,
+            required:true
         },
         mactive_date: {
             type: String,
@@ -72,31 +73,35 @@ const Membershipschema = new schema(
             type:String
         },
         card_holder_name:{
-            type:String
+            type:String,
         },
         cvv_number:{
-            type:String
+            type:String,
         },
        card_expiry_date:{
-            type:String
+            type:String,
         },
         membership_status:{
             type:String
         },
         userId:{
-            type:String
+            type:String,
+            required:true
         },
         createdMonth:{
             type:String,
-            default: new Date().getMonth()
+            default: new Date().getMonth(),
+            required:true
         },
         createdYear:{
             type:String,
-            default: new Date().getFullYear()
+            default: new Date().getFullYear(),
+            required:true
         },
         studentInfo:[{
             type:schema.Types.ObjectId,
-            ref:"member"
+            ref:"member",
+            required:true
         }]
   },
     { timestamps: true }

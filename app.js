@@ -31,6 +31,7 @@ const TTL = require("./routes/attl")
 const administrate_user = require("./routes/administrater_user");
 const programRoutes = require("./routes/program");
 const manageRankRoutes = require("./routes/program_rank");
+const studentINfoRank = require('./routes/student_info_Rank')
 const stripe = require("./routes/stripe");
 const manage_stripe = require("./routes/manage_strip");
 const todo_api = require("./routes/todo_apis");
@@ -150,7 +151,7 @@ app.use(cookieParser());
 app.use(expressValidator());
 app.use(cors());
 
-app.use('/api',TTL)
+app.use('/api', TTL)
 
 app.use("/api", authRoutes);
 app.use("/api", userRoutes);
@@ -160,6 +161,7 @@ app.use("/api", braintreeRoutes);
 app.use("/api", orderRoutes);
 app.use("/api", programRoutes);
 app.use("/api", manageRankRoutes);
+app.use("/api", studentINfoRank);
 app.use("/api", stripe);
 app.use("/api", adminstrate);
 app.use("/api", todo_api);
@@ -237,9 +239,9 @@ app.use("/api", sample_doc);
 // school auth key middleware
 app.use("/api", emailKey);
 app.use("/api", textkey);
-app.use("/api",recomendedForTestRoutes);
-app.use("/api",registeredForTestRoutes);
-app.use("/api",recommendedCandidatesRoutes);
+app.use("/api", recomendedForTestRoutes);
+app.use("/api", registeredForTestRoutes);
+app.use("/api", recommendedCandidatesRoutes);
 
 // menu middle
 app.use("/api", student_menu);
