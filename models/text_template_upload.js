@@ -2,11 +2,11 @@ const mongoose = require("mongoose");
 const schema = mongoose.Schema
 
 const templateUpload = new schema({
-  document:{
+  template:{
     type:String,
     require:true
   },
-  document_name:{
+  template_name:{
     type:String,
     require:true
   },
