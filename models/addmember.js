@@ -114,9 +114,7 @@ const addmemberSchema = new schema(
             
         },
         current_rank_img: {
-            type: String,
-            default: "https://storage.googleapis.com/mymember/All-Images/7dbb2cf0-969e-11eb-b12e-7f5ddf0f0ed7-No%20Belt.jpg",
-            
+            type: String,            
         },
         current_rank_id: {
             type: String,

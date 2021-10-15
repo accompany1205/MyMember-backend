@@ -8,7 +8,7 @@ exports.create = (req, res) => {
     var category = req.body.category;
     var subcategoryDetails = category.subcatdetails;
 
-    for (let row of subcategoryDetails) {
+ 
         obj = {
             subcategory: row.subcategoryname,
             color: row.color,
@@ -35,7 +35,7 @@ exports.create = (req, res) => {
                     })
             }
         })
-    }
+    
 }
 
 exports.update = (req, res) => {

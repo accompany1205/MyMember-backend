@@ -5,7 +5,6 @@ const navbar = require('../models/navbar.js')
 const cloudUrl = require("../gcloud/imageUrl")
 
 
-
 exports.userById = (req, res, next, id) => {
     User.findById(id).exec((err, user) => {
         if (err || !user) {
@@ -24,22 +23,53 @@ exports.read = (req, res) => {
     return res.json(req.profile);
 };
 
+// exports.update = (req, res) => {
+//     req.body.role = 0; // role will always be 0
+//     User.findOneAndUpdate({ _id: req.profile._id }, { $set: req.body }, { new: true }, (err, user) => {
+//         if (err) {
+//             return res.status(400).json({
+//                 error: 'You are not authorized to perform this action'
+//             });
+//         }
+//         user.hashed_password = undefined;
+//         user.salt = undefined;
+//         res.json(user);
+//     });
+// };
+
+// exports.update = (req, res) => {
+//     const id = req.params.userId;
+//     User.updateOne({ _id: id }, req.body).exec((err, data) => {
+//         if (err) {
+//             res.send(err)
+//         }
+//         else {
+
+//             res.send({ message: "User updated successfully", success: true })
+
+//         }
+//     })
+// }
+
 
 
 exports.update = (req, res) => {
-    var userID = req.params.userID;
+    var userId = req.params.userId;
+    console.log(req.body)
     User
       .findByIdAndUpdate({
-        _id: userID
+        _id: userId
       }, req.body)
       .exec((err, data) => {
+          console.log(data)
         if (err) {
           res.send({
             status: false,
-            error: "User not updated"
+            error: "member is not update"
           });
         } else {
           if (req.file) {
+              console.log(">>>>>>>>>>>>>>>>",req.file)
             cloudUrl
               .imageUrl(req.file)
               .then((stdimagUrl) => {
@@ -51,12 +81,12 @@ exports.update = (req, res) => {
                   })
                   .then((response) => {
                     res.send({
-                      msg: "profile updated successfully"
+                      msg: "profile image is update"
                     });
                   })
                   .catch((error) => {
                     res.send({
-                      error: "profile image not updated"
+                      error: "student image is not update"
                     });
                   });
               })
@@ -69,12 +99,13 @@ exports.update = (req, res) => {
           } else {
             res.send({
               status: true,
-              msg: "profile updated successfully"
+              msg: "profile is update successfully"
             });
           }
         }
       });
   };
+
 
 
 
