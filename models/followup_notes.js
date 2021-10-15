@@ -34,6 +34,10 @@ const followUpNotes = new schema({
     },
     lastName: {
         type: String
+    },
+    communication_mode: {
+        type: String
+
     }
 }, {
     timestamps: true
