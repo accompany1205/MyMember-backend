@@ -414,6 +414,7 @@ exports.addmember = async (req, res) => {
                       });
                     } else {
                       var d = proData.program_rank[0];
+                      console.log(">>>>>>>>>>>>>", response._id)
                       addmemberModal.findByIdAndUpdate({
                         _id: response._id
                       }, {
