@@ -20,7 +20,7 @@ exports.create = (req, res) => {
         psubcategoryObj.save((err, data) => {
             if (err) {
 
-                res.send({ error: 'subcategory not add' })
+                res.send({ error: 'subcategory not added' })
             }
             else{
                 
