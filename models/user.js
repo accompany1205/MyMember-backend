@@ -175,7 +175,8 @@ const userSchema = new schema(
 
         },
         profile_image: {
-            type: String
+            type: String,
+            default: ''
         },
         schoolId:{
             type:String
