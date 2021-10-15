@@ -2,6 +2,8 @@ const User = require('../models/user');
 const { Order } = require('../models/order');
 const { errorHandler } = require('../helpers/dbErrorHandler');
 const navbar = require('../models/navbar.js')
+const cloudUrl = require("../gcloud/imageUrl")
+
 
 exports.userById = (req, res, next, id) => {
     User.findById(id).exec((err, user) => {
@@ -16,14 +18,12 @@ exports.userById = (req, res, next, id) => {
 };
 
 exports.read = (req, res) => {
-    console.log(req)
     req.profile.hashed_password = undefined;
     req.profile.salt = undefined;
     return res.json(req.profile);
 };
 
 // exports.update = (req, res) => {
-//     console.log('user update', req.body);
 //     req.body.role = 0; // role will always be 0
 //     User.findOneAndUpdate({ _id: req.profile._id }, { $set: req.body }, { new: true }, (err, user) => {
 //         if (err) {
@@ -37,19 +37,62 @@ exports.read = (req, res) => {
 //     });
 // };
 
+// exports.update = (req, res) => {
+//     const id = req.params.userId;
+//     User.updateOne({ _id: id }, req.body).exec((err, data) => {
+//         if (err) {
+//             res.send(err)
+//         }
+//         else {
+
+//             res.send({ message: "User updated successfully", success: true })
+
+//         }
+//     })
+// }
+
 exports.update = (req, res) => {
     const id = req.params.userId;
-    User.updateOne({ _id: id }, req.body).exec((err, data) => {
-        if (err) {
-            res.send(err)
-        }
-        else {
-
-            res.send({ message: "User updated successfully", success: true })
-
-        }
-    })
+    User.updateOne({ _id: id }, req.body)
+        .then((result) => {
+            if (req.file) {
+                const cloudenary = require("cloudinary").v2
+                cloudenary.config({
+                    cloud_name: process.env.cloud_name,
+                    api_key: process.env.cloud_api_key,
+                    api_secret: process.env.cloud_api_secret
+                });
+                const path = req.file.path
+                const uniqueFilename = new Date().toISOString()
+                cloudenary.uploader.upload(
+                    path,
+                    { public_id: `school_profile/${uniqueFilename}`, tags: `school_profile` }, // directory and tags are optional
+                    function (err, image) {
+                        if (err) return res.send(err)
+                        const fs = require('fs')
+                        fs.unlinkSync(path)
+                        User.findByIdAndUpdate(id, { $set: { profile_image: image.url } })
+                            .then((response) => {
+                                res.json({ msg: 'Profile updated successfully !', success:true })
+                            });
+                    }
+                );
+            } else {
+                res.send({ msg: 'Profile updated successfully !', success:true });
+            }
+            // res.send(result);
+        }).catch((err) => {
+            res.send(err);
+        })
 }
+
+
+
+
+
+
+
+
 
 
 exports.addOrderToUserHistory = (req, res, next) => {

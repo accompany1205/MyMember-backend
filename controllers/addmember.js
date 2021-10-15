@@ -380,7 +380,7 @@ exports.addmember = async (req, res) => {
     if (err) {
       console.log(err);
       res.send({
-        error: "member is not add"
+        error: "member is not added"
       });
     } else {
       if (req.file) {
