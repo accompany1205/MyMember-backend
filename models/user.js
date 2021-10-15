@@ -45,6 +45,9 @@ const userSchema = new schema(
             trim: true,
             maxlength: 100
         },
+        accountNumber: {
+            type: Number
+        },
         secondary_phone:{
             type:String
         },
