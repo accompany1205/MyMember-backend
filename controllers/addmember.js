@@ -1121,7 +1121,6 @@ exports.delete_multipal_member = (req, res) => {
 
 exports.updatemember = (req, res) => {
   var memberID = req.params.memberID;
-  console.log(req.body);
   addmemberModal
     .findByIdAndUpdate({
       _id: memberID

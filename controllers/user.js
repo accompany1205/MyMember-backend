@@ -55,13 +55,13 @@ exports.read = (req, res) => {
 
 exports.update = (req, res) => {
     var userId = req.params.userId;
-    console.log(req.body)
+    console.log(req.files)
+    console.log('===================================================   ========================')
     User
       .findByIdAndUpdate({
         _id: userId
       }, req.body)
       .exec((err, data) => {
-          console.log(data)
         if (err) {
           res.send({
             status: false,
@@ -69,7 +69,6 @@ exports.update = (req, res) => {
           });
         } else {
           if (req.file) {
-              console.log(">>>>>>>>>>>>>>>>",req.file)
             cloudUrl
               .imageUrl(req.file)
               .then((stdimagUrl) => {

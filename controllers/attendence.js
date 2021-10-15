@@ -131,15 +131,26 @@ exports.list_attendence = (req, res) => {
   });
 };
 
-exports.getStudentAttendence = async (req, res) => {
-  let studentId = req.params.studentId
-  if (!studentId) {
-    res.json({ status: false, error: "Student id  not found in params" });
-  }
-  let attendance = await attendance.find({ studentId: studentId })
-  if (!attendance) {
-    res.json({ status: false, error: `Attendance data not found with this Student id  ${studentId}` });
-  }
 
-  res.json({ status: true, data: attendance })
-}
+exports.getStudentAttendence = (req, res) => {
+  attendance.find({ studentId: req.params.studentId }).exec((err, list) => {
+    if (err) {
+      res.send({ error: "attendence list not found" });
+    } else {
+      res.send(list);
+    }
+  });
+};
+
+// exports.getStudentAttendence = async (req, res) => {
+//   let studentId = req.params.studentId
+//   if (!studentId) {
+//     res.json({ status: false, error: "Student id  not found in params" });
+//   }
+//   let attendance = attendance.find({ studentId: studentId })
+//   if (!attendance) {
+//     res.json({ status: false, error: `Attendance data not found with this Student id  ${studentId}` });
+//   }
+
+//   res.json({ status: true, data: attendance })
+// }
