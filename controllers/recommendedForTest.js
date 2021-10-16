@@ -77,7 +77,9 @@ exports.recomendStudent = async (req, res) => {
         current_rank: Joi.string(),
         userId: Joi.string().required(),
         next_rank: Joi.string(),
-        current_rank_name: Joi.string()
+        current_rank_name: Joi.string(),
+        next_rank_name: Joi.string().default("1"),
+
     })
 
     try {
