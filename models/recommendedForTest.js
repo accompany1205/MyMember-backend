@@ -41,6 +41,9 @@ const recommendedForTest = new mongoose.Schema({
     next_rank:{
         type:String
     },
+    next_rank_name:{
+        type:String
+    },
     isDeleted:{
         type: Boolean,
         default: false
