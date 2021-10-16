@@ -8,57 +8,46 @@ const recommendedForTest = new mongoose.Schema({
         unique:true
     },
     userId:{
-        type: String,
-        required:true
+        type: String
     },
     firstName: {
-        type: String,
-        required:true
+        type: String
     },
     lastName: {
-        type: String,
-        required:true
+        type: String
     },
     memberprofileImage:{
-        type:String,
-        required:true
+        type:String
     },
     phone:{
-        type:String,
-        required:true
+        type:String
     },
     program:{
-        type:String,
-        required:true
+        type:String
     },
     lastPromotedDate:{
         type:Date,
         default: new Date(),
     },
     status:{
-        type:String,
-        required:true
+        type:String
     },
     rating: {
-        type: String,
-        required:true
+        type: String
     },
     current_rank:{
-        type: String,
-        required:true
+        type: String
     },
     next_rank:{
-        type:String,
-        required:true
+        type:String
     },
     isDeleted:{
         type: Boolean,
         default: false
     },
     current_rank_name:{
-        type:String,
-        required:true
-    }
+        type:String
+        }
 
 });
 

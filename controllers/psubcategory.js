@@ -16,7 +16,7 @@ exports.create = (req, res) => {
             }
             else{
                 
-                pcategory.findByIdAndUpdate({ _id: categoryId }, { $push: { program_subcategory: data._id } })
+                psubcategory.findByIdAndUpdate({ _id: categoryId }, { $push: { program_subcategory: data._id } })
                     .exec((err, data) => {
                         if (err) {
                             res.send({ error: 'subcategory not push in category' })
