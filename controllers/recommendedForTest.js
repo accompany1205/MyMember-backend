@@ -74,11 +74,11 @@ exports.recomendStudent = async (req, res) => {
         program: Joi.string().required(),
         status: Joi.string().required(),
         rating: Joi.number().required(),
-        current_rank: Joi.string().required(),
+        current_rank: Joi.string(),
         userId: Joi.string().required(),
         next_rank: Joi.string().required(),
-        current_rank_name: Joi.string().required(),
-        next_rank_name: Joi.string().required(),
+        current_rank_name: Joi.string(),
+        next_rank_name: Joi.string(),
 
     })
 
