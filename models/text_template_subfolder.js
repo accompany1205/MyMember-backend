@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const schema = mongoose.Schema
 
 const templateSubFolder = new schema({
-  subFolderName:{
+  subFolderId:{
     type:String,
     require:true,
     unique:true

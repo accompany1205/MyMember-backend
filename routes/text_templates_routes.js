@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const { requireSignin,isAuth,verifySchool } = require("../controllers/auth");
-const { readfolder,createfolder,editFolder,removeFolder,createSubFolder,editSubFolder,removeSubFolder,templateList,templateUpload, templateRemove } = require("../controllers/text_template_controller")
+const { readfolder,createfolder,editFolder,removeFolder,createSubFolder,editSubFolder,removeSubFolder,templateList,templateUpload, templateRemove,
+  editTemplate
+} = require("../controllers/text_template_controller")
 
 router.get("/template_folder/read_folder/:userId",verifySchool,readfolder)
 router.post("/template_folder/create_folder/:userId",verifySchool,createfolder)
@@ -12,6 +14,7 @@ router.post("/template_subfolder/create_subfolder/:userId/:folderId",verifySchoo
 router.put("/template_subfolder/edit_subfolder/:userId/:subfolderId",requireSignin,editSubFolder)
 router.delete("/template_subfolder/remove_subfolder/:userId/:subfolderId",requireSignin,removeSubFolder)
 router.post("/upload_template/:userId/:rootFolderId/:subFolderId",verifySchool,templateUpload)
-router.post("/remove_template/:userId/:rootFolderId/:subFolderId",verifySchool,templateRemove)
+router.put("/upload_template/edit_template/:userId/:templateId",requireSignin,editTemplate)
+router.delete("/upload_template/remove_template/:userId/:templateId",requireSignin,templateRemove)
 
 module.exports = router

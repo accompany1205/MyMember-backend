@@ -62,7 +62,7 @@ exports.removeFolder = (req,res)=>{
 
 exports.templateList = (req,res)=>{
   UploadFiles.find({subFolderId: req.params.subfolderId})
-    .populate('uploadDocument')
+    .populate('uploadTemplates')
     .exec((err,doclist)=>{
       if(err){
         res.send({error:'template list not found'})
@@ -126,10 +126,34 @@ exports.removeSubFolder = (req,res)=>{
     })
 }
 
+exports.removeTemplate = (req,res)=>{
+  UploadFiles.findByIdAndRemove(req.params.templateId)
+    .exec((err,removeFolder)=>{
+      if(err){
+        res.send({error:'template is not remove'});
+      }
+      else{
+        res.send({msg:'template is remove in folder'});
+      }
+    })
+}
+
+exports.editTemplate =(req,res)=>{
+  UploadFiles.updateOne({_id:req.params.templateId},req.body)
+    .exec((err,updateTemplate)=>{
+      if(err){
+        res.send({error:'sub folder is not update'})
+      }
+      else{
+        res.send(updateTemplate)
+      }
+    })
+}
+
 exports.templateUpload =(req,res)=>{
   const docFileDetails = {
     template_name:req.body.template_name,
-    template:req.body.template,
+    text:req.body.text,
     subFolderId:req.params.subFolderId,
     rootFolderId: req.params.rootFolderId,
   }
@@ -140,16 +164,7 @@ exports.templateUpload =(req,res)=>{
     }
     else{
       console.log('Doc file details: ', docFileDetails);
-      templateSubFolder.updateOne({subFolderName:req.body.subFolder},{$push:docFileDetails},
-        function(err,updateDoc){
-          if(err){
-            res.send({error:'File not added.'})
-          }
-          else{
-            console.log('After update: ', updateDoc);
-            res.send({result:updateDoc,Doc:docdata})
-          }
-        })
+      res.send({template:docdata})
     }
   });
 }
