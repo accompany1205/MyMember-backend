@@ -11,8 +11,8 @@ router.get('/secret', requireSignin, (req, res) => {
     });
 });
 
-router.get('/user/:userId', requireSignin, isAuth, read);
-router.put('/user/:userId', requireSignin, isAuth, update);
+router.get('/user/:userId', requireSignin, read);
+router.put('/user/:userId', requireSignin, update);
 router.get('/orders/by/user/:userId', requireSignin, isAuth, purchaseHistory);
 
 router.param('userId', userById);

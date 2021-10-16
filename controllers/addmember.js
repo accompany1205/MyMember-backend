@@ -380,7 +380,7 @@ exports.addmember = async (req, res) => {
     if (err) {
       console.log(err);
       res.send({
-        error: "member is not add"
+        error: "member is not added"
       });
     } else {
       if (req.file) {
@@ -414,6 +414,7 @@ exports.addmember = async (req, res) => {
                       });
                     } else {
                       var d = proData.program_rank[0];
+                      console.log(">>>>>>>>>>>>>", response._id)
                       addmemberModal.findByIdAndUpdate({
                         _id: response._id
                       }, {
@@ -1120,7 +1121,6 @@ exports.delete_multipal_member = (req, res) => {
 
 exports.updatemember = (req, res) => {
   var memberID = req.params.memberID;
-  console.log(req.body);
   addmemberModal
     .findByIdAndUpdate({
       _id: memberID

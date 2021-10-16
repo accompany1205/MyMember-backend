@@ -45,6 +45,9 @@ const userSchema = new schema(
             trim: true,
             maxlength: 100
         },
+        accountNumber: {
+            type: Number
+        },
         secondary_phone:{
             type:String
         },
@@ -175,7 +178,8 @@ const userSchema = new schema(
 
         },
         profile_image: {
-            type: String
+            type: String,
+            default: ''
         },
         schoolId:{
             type:String
