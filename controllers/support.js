@@ -40,7 +40,7 @@ exports.create = (req, res) => {
 }
 
 exports.read=(req,res)=>{
-    supportModal.find().exec((err,data)=>{
+    supportModal.find({ userId: req.params.userId }).exec((err,data)=>{
         if(err){
             res.send({ error : 'ticket list not found' })
         }
@@ -49,11 +49,13 @@ exports.read=(req,res)=>{
                 res.send(data) 
             }
             else{
-                res.send({ error : 'list is empty' })
+                res.send({ msg:'list is empty' })
             }
         }
     })
 }
+
+
 
 exports.closeList=(req,res)=>{
     supportModal.find({$and:[{userId:req.params.userId},{status:'Closed'}]})
