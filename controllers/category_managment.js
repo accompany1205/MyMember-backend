@@ -59,13 +59,11 @@ exports.Create = async (req, res) => {
                                                 .then((sub_detail) => {
                                                     console.log(sub_detail);
                                                 });
-                                            console.log(result)
                                         })
                                 }
                             }
                         });
                 });
-                console.log(cat_resp)
             })
         cate = cate + 1
     });
@@ -106,7 +104,6 @@ exports.Create = async (req, res) => {
                                             console.log(response)
                                             category_managment.findByIdAndUpdate(result._id, { $push: { subCategory: sub_ids } })
                                                 .then((cate_resp) => {
-                                                    console.log(cate_resp)
                                                     res.send("category added sucessful");
                                                 });
                                         }

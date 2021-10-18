@@ -5,16 +5,13 @@ const attendance = require("../models/attendence");
 function TimeZone() {
   const str = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
   const date_time = str.split(",");
-  console.log(date_time);
   const date = date_time[0];
   const time = date_time[1];
   return { Date: date, Time: time };
 }
 
 exports.search_std = (req, res) => {
-  console.log(req.body.search);
   var regex = new RegExp("^" + req.body.search, "i");
-  console.log(regex);
   student
     .find(
       { $and: [{ userId: req.params.userId }, { firstName: regex }] },
@@ -52,15 +49,13 @@ exports.create = async (req, res) => {
         attendanceObj.save((err, attendanceData) => {
           if (err) {
             res.send({ error: "addendance is not create" });
-            console.log(err);
+            
           } else {
-            console.log(attendanceData);
             schedule.findByIdAndUpdate({ _id: req.params.scheduleId }, { $push: { class_attendance: attendanceData._id } })
               .exec((err, attendanceUpdte) => {
                 if (err) {
                   res.send({ error: "student addendance is not add in class", Error: err });
                 } else {
-                  console.log(attendanceUpdte);
                   student.updateOne({ _id: req.params.studentId },
                     {
                       $set: {
@@ -74,7 +69,7 @@ exports.create = async (req, res) => {
                     .exec((err, data) => {
                       if (err) {
                         res.send({ error: "student rating is not update" });
-                        console.log(err);
+                        
                       } else {
                         res.send({
                           msg: "student rating is update",

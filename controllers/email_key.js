@@ -8,7 +8,6 @@ var auth = new email_auth({
  try{
     var Auth = await auth.save()
     res.send({msg:'email auth key add succcessfully'})
-    console.log(Auth)
  }catch(err){
      res.send(err)
  }

@@ -22,10 +22,8 @@ exports.update = (req, res) => {
     // console.log(id,req.body)
     buyMembership.findByIdAndUpdate(req.params.membershipId, req.body)
         .then((update_resp) => {
-            console.log(update_resp)
             res.send(update_resp)
         }).catch((err) => {
-            console.log(err)
             res.send(err)
         })
 };
@@ -38,14 +36,12 @@ exports.remove = (req, res) => {
                 , function (err, data) {
                     if (err) {
                         res.send({ error: "mebership is not delete in student" });
-                        console.log(err)
                     }
                     else {
                         res.send({ msg: "mebership is delete in student" });
                     }
                 })
         }).catch((err) => {
-            console.log(err)
             res.send(err)
         })
 };
@@ -139,7 +135,6 @@ exports.create = async (req, res)  => {
             memberbuy.save((err, data) => {
                 if (err) {
                     res.send({ error: 'membership not buy' })
-                    console.log(err)
                 }
                 else {
                     query = { '_id': studentId }
@@ -193,7 +188,6 @@ exports.buyMembership = (req, res) => {
         memberbuy.save((err, data) => {
             if (err) {
                 res.send({ error: 'membership not buy' })
-                console.log(err)
             }
             else {
                 query = { 'firstName': req.body.student_name }
