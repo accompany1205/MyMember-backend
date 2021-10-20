@@ -8,7 +8,6 @@ exports.list_template = (req,res)=>{
     .exec((err,template_data)=>{
         if(err){
             res.send({error:'nurturing template list not found'})
-            console.log(err)
         }
         else{
             res.send(template_data)
@@ -42,14 +41,11 @@ exports.add_template = (req,res)=>{
                 folderId:req.params.folderId
             }
                 var emailDetail =  new addTemp(obj)
-                console.log(emailDetail)
                 emailDetail.save((err,emailSave)=>{
          if(err){
               res.send(err)
-              console.log(err)
           }
           else{
-              console.log(emailSave)
             systemFolder.findByIdAndUpdate(req.params.folderId,{$push:{template:emailSave._id}})
             .exec((err,template)=>{
                 if(err){
@@ -104,7 +100,6 @@ exports.status_update_template = (req,res)=>{
                 res.send(err)
             }
             else{
-                console.log(TempData)
                 async.eachSeries(TempData,(obj,done)=>{
                     addTemp.findByIdAndUpdate(obj._id,{$set:{email_status:false}},done)
                     },function Done(err,List){
@@ -125,7 +120,6 @@ exports.status_update_template = (req,res)=>{
                 res.send(err)
             }
             else{
-                console.log(TempData)
                 async.eachSeries(TempData,(obj,done)=>{
                     addTemp.findByIdAndUpdate(obj._id,{$set:{email_status:true}},done)
                     },function Done(err,List){

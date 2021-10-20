@@ -24,13 +24,11 @@ exports.create = (req,res) =>{
            memberDetails.student_type = student_type;
            memberDetails.date = new Date().toLocaleDateString();
 
-           console.log(memberDetails)
 
            var familyObj = new familyModal(memberDetails)
            familyObj.save((err,familyData)=>{
                if(err){
                    res.send({error:'family is not add'})
-                   console.log(err)
                }
                else{
                    addmemberModal.findByIdAndUpdate({_id:student_id},{$push:{ myFaimly:familyData._id }})

@@ -7,7 +7,6 @@ exports.goalCreate = (req, res) => {
     task.save((err, data) => {
         if (err) {
             res.send({ error: 'goals is not add' })
-            console.log(err)
         }
         else {
             goals.findByIdAndUpdate({ _id: data._id }, { $set: { userId: req.params.userId } })
@@ -43,13 +42,10 @@ exports.goalinfo = (req, res) => {
 };
 exports.goalupdate = (req, res) => {
     const id = req.params.goalId;
-    console.log(req.body)
     goals.findByIdAndUpdate(id, { $set: req.body })
         .then((update_resp) => {
-            console.log(update_resp)
             res.send("goal has been updated successfully")
         }).catch((err) => {
-            console.log(err)
             res.send(err)
         })
 };
@@ -58,10 +54,8 @@ exports.goalremove = (req, res) => {
     const id = req.params.goalId
     goals.deleteOne({ _id: id })
         .then((resp) => {
-            console.log(resp)
             res.json("goal has been deleted successfully")
         }).catch((err) => {
-            console.log(err)
             res.send(err)
         })
 };
@@ -106,9 +100,7 @@ exports.annual_goalread = (req, res) => {
 exports.searching_goal = (req, res) => {
 
     const all = url.parse(req.url, true).query
-    console.log(all)
-    console.log(req.url)
-    console.log(all.q)
+   
 
     let searchKeyWord = new RegExp(".*" + all.q + ".*", 'i');
 

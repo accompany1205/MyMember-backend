@@ -44,7 +44,6 @@ exports.update = (req, res) => {
 
 // exports.updatemember = (req, res) => {
 //     var memberID = req.params.memberID;
-//     console.log(req.body)
 //     addmemberModal.updateOne({ _id : memberID },req.body).exec((err, data) => {
 //         if (err) {
 //             res.send({ error: 'member is not update' })
@@ -65,7 +64,6 @@ exports.update = (req, res) => {
 //                 { public_id: `member_image/${uniqueFilename}`, tags: `member_image` }, // directory and tags are optional
 //                 function (err, image) {
 //                     if (err) return res.send(err)
-//                     console.log('file uploaded to Cloudinary')
 //                     const fs = require('fs')
 //                     fs.unlinkSync(path)
 //                     addmemberModal.findByIdAndUpdate(data._id, { $set:{memberprofileImage: image.url } })
@@ -98,10 +96,8 @@ exports.update = (req, res) => {
 //     const id = req.params.orgIid
 //     organization.deleteOne({ _id: id })
 //         .then((resp) => {
-//             console.log(resp)
 //             res.json("campaign type has been deleted successfully")
 //         }).catch((err) => {
-//             console.log(err)
 //             res.send(err)
 //         })
 // };

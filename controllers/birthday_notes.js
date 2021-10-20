@@ -92,7 +92,6 @@ exports.updateNote = (req,res)=>{
 
 exports.birth_this_week = async(req,res)=>{
     //     var cur = new Date()
-    // console.log(cur)
     // try{
     // var data = await memberModal.find({$expr:{$eq:[{"$month":"$dob"},6]}})
     // res.send(data)

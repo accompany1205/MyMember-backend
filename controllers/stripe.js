@@ -17,7 +17,6 @@ exports.create = (req, res) => {
                 cloudUrl.imageUrl(req.file).then((expimgUrl) => {
                     stripe.findByIdAndUpdate(data._id, { $set: { userId: Id, stripe_image: expimgUrl } })
                         .exec((err, updateStripe) => {
-                            console.log(updateStripe)
                             if (err) {
                                 res.send({ error: 'image url is not add in stripe' })
                             }
@@ -55,21 +54,18 @@ exports.read = (req, res) => {
                 res.send({ msg: 'stripe is empty' })
             }
         }).catch((err) => {
-            console.log(err);
             res.send(err)
         })
 };
 
 exports.update = (req, res) => {
     const uid = req.params.stripeId;
-    console.log(req.body)
     stripe.findByIdAndUpdate({ _id: uid }, req.body)
         .then((result) => {
             if (req.file) {
                 cloudUrl.imageUrl(req.file).then((expimgUrl) => {
                     stripe.findByIdAndUpdate(result._id, { $set: { stripe_image: expimgUrl } })
                         .exec((err, updateStripe) => {
-                            console.log(updateStripe)
                             if (err) {
                                 res.send({ error: 'image url is not add in stripe' })
                             }
@@ -87,7 +83,6 @@ exports.update = (req, res) => {
                 })
             }
         }).catch((err) => {
-            console.log(err);
             res.send(err);
         });
 }
@@ -105,10 +100,8 @@ exports.stripe_detail = (req, res) => {
 
 exports.remove = (req, res) => {
     var uid = req.params.stripeId;
-    console.log('userid', uid)
     stripe.remove({ _id: uid })
         .then((resp) => {
-            console.log(resp);
             res.json({ data: resp, message: "stripe deleted succesfuly" });
         }).catch((err) => {
             res.send(err)

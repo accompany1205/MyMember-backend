@@ -19,7 +19,6 @@ exports.membership_Info = (req, res) => {
 
 exports.update = (req, res) => {
     // const id = req.params.membershipId;
-    // console.log(id,req.body)
     buyMembership.findByIdAndUpdate(req.params.membershipId, req.body)
         .then((update_resp) => {
             res.send(update_resp)

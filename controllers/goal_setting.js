@@ -7,7 +7,6 @@ exports.goalSettingCreate = (req, res) => {
     task.save((err, data) => {
         if (err) {
             res.send({ error: 'goals setting is not add' })
-            console.log(err)
         }
         else {
             goals.findByIdAndUpdate({ _id: data._id }, { $set: { userId: req.params.userId } })
@@ -43,13 +42,10 @@ exports.goalsettinginfo = (req, res) => {
 };
 exports.goalsettingupdate = (req, res) => {
     const id = req.params.goalId;
-    console.log(req.body)
     goalsSetting.findByIdAndUpdate(id, { $set: req.body })
         .then((update_resp) => {
-            console.log(update_resp)
             res.send("goal setting has been updated successfully")
         }).catch((err) => {
-            console.log(err)
             res.send(err)
         })
 };
@@ -58,10 +54,8 @@ exports.goalsettingremove = (req, res) => {
     const id = req.params.goalId
     goalsSetting.deleteOne({ _id: id })
         .then((resp) => {
-            console.log(resp)
             res.json("goal setting has been deleted successfully")
         }).catch((err) => {
-            console.log(err)
             res.send(err)
         })
 };

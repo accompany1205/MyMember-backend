@@ -19,24 +19,22 @@ module.exports = corn.schedule("00 02 17 * * 0-6", function(){
                     for (member of row.membership_details) {
                         var expiry_date = member.expiry_date;
                         var expdate = new Date(expiry_date)
-                        console.log(expdate)
                         if (expdate < new Date()) {
                             const subtract = (new Date() - new Date(expiry_date))
                             const diffTime = Math.abs(subtract);
                             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                            console.log(diffDays, typeof diffDays)
                             addmemberModal.findByIdAndUpdate({ _id: row._id }, { status:'expired', days_expire: diffDays })
                                 .exec((err, updateStatus) => {
                                     if (err) {
-                                        console.log('status is not update')
+                                        res.send(err)
                                     }
                                     else {
-                                        console.log('status update successfully')
+                                        res.send('status update successfully')
                                     }
                                 })
                         }
                         else {
-                            console.log('membership is not expire')
+                            res.send('membership is not expire')
                         }
                     }
                 }
@@ -48,19 +46,17 @@ module.exports = corn.schedule("00 02 17 * * 0-6", function(){
 module.exports = corn.schedule("00 24 17 * * 0-6", function () {
     addmemberModal.find({ attendence_status: true }).exec((err, Status) => {
         if (err) {
-            console.log({ error: 'status is not find' })
+            send.send({ error: 'status is not find' })
         }
         else {
             for (row of Status) {
-                console.log(row._id)
                 addmemberModal.update({ _id: row._id }, { $set: { attendence_status: false } })
                     .exec((err, updateStatus) => {
                         if (err) {
-                            console.log({ error: 'attendance status is not update' })
-                            console.log(err)
+                            res.send(err)
                         }
                         else {
-                            console.log({ msg: 'attendance status is update' })
+                            res.send({ msg: 'attendance status is update' })
                         }
                     })
             }
@@ -73,18 +69,17 @@ module.exports = corn.schedule("00 24 17 * * 0-6", function () {
 module.exports = corn.schedule("00 12 19 * * 0-6", function () {
     addmemberModal.find({ attendence_status: false }).exec((err, notattend) => {
         if (err) {
-            console.log({ error: 'student false status is not found' })
+            res.send({ error: 'student false status is not found' })
         }
         else {
             for (row of notattend) {
-                console.log(row.rating + 1)
                 addmemberModal.update({ _id: row._id }, { $set: { rating: row.rating + 1 } })
                     .exec((err, updaterating) => {
                         if (err) {
-                            console.log({ error: 'student attendence status is not update' })
+                            res.send({ error: 'student attendence status is not update' })
                         }
                         else {
-                            console.log({ msg: 'student attendence status is update' })
+                            res.send({ msg: 'student attendence status is update' })
                         }
                     })
             }
@@ -96,10 +91,9 @@ module.exports = corn.schedule("00 12 19 * * 0-6", function () {
 module.exports = corn.schedule("00 55 11 * * 0-6", function () {
     addmemberModal.find({}).exec((err, list_member) => {
         if (err) {
-            console.log({ error: 'member list not found' })
+            res.send({ error: 'member list not found' })
         }
         else {
-            console.log(list_member)
             for (row of list_member) {
                 var birthDate = row.dob
                 var currentDate = new Date()
@@ -110,15 +104,14 @@ module.exports = corn.schedule("00 55 11 * * 0-6", function () {
                 var timDiffInMilliSeconds = yearBirthday.getTime() - today.getTime();
                 var timDiffInDays = timDiffInMilliSeconds / (1000 * 60 * 60 * 24);
                 var leftDay = timDiffInDays - 1
-                console.log(leftDay)
 
                 addmemberModal.findByIdAndUpdate({ _id: row._id }, { $set: { day_left: leftDay } })
                     .exec((err, left_day) => {
                         if (err) {
-                            console.log({ error: 'birthday left day is not update' })
+                            res.send({ error: 'birthday left day is not update' })
                         }
                         else {
-                            console.log({ msg: 'birthday left day is update' })
+                            res.send({ msg: 'birthday left day is update' })
                         }
                     })
 
@@ -128,20 +121,8 @@ module.exports = corn.schedule("00 55 11 * * 0-6", function () {
 })
 
 
-// module.exports = corn.schedule('*/20 * * * * *',function(){
-//     emailsentsave.find({email_status:true}).exec((err,resp)=>{
-//         if(err){
-//             console.log(err)
-//         }
-//         else{
-//             console.log(resp)
-//         }
-//     })
-  
-// })
 
 module.exports = corn.schedule('*/20 * * * * *',function(){
-    console.log('run')
     let options = {
         timeZone: 'Asia/Kolkata',
         hour: 'numeric',
@@ -154,17 +135,13 @@ module.exports = corn.schedule('*/20 * * * * *',function(){
       
         formatter = new Intl.DateTimeFormat([], options);
         var a =(formatter.format(new Date()));
-        console.log(a,'dt')
 
         var str = a
         var h = str.split(",");
-        console.log(h[0],h[1],'split_td')
         var dates = h[0]
         var d = dates.split('/')
         var dateary = d
         // var hms = h[1].split(':')    
-        // console.log(hms,'splitT')  
-
         // 4/21/2021, 11:08:00 AM dt
 // 0|app       | 4/21/2021  11:08:00 AM split_td
 // 0|app       | [ ' 11', '08', '00 AM' ] splitT
@@ -174,10 +151,8 @@ module.exports = corn.schedule('*/20 * * * * *',function(){
 
 // var h1 = '11:08:00 AM'
 // var time12h=h1 // time change in 24hr
-// console.log(time12h,'fdh1111')
 // const [time, modifier] = time12h.split(' ');
 // let [hours, minutes] = time.split(':');
-// console.log(hours,minutes,'h','m')
 // if (hours === '12') {
 //   hours = '00';
 // }
@@ -185,8 +160,6 @@ module.exports = corn.schedule('*/20 * * * * *',function(){
 //   hours = parseInt(hours, 10) + 12;
 // }
 
-// console.log(msg= {hour:`${hours}`,min:`${minutes}`})
-// console.log(msg.hour ,msg.min )
 
 
 // run
@@ -203,10 +176,8 @@ module.exports = corn.schedule('*/20 * * * * *',function(){
         
         var time12h=h[1] // time change in 24hr
         var tisp = time12h.split(' ');
-        console.log(tisp,'24hour_am_pm')
         const [b,time, modifier] = time12h.split(' ');
         var ti = time.split(':')
-        console.log(ti,'hour_m')
         let [hours, minutes] = time.split(':');
         if (hours === '12') {
             hours = '00';
@@ -214,9 +185,8 @@ module.exports = corn.schedule('*/20 * * * * *',function(){
         if (modifier === 'PM') {
         hours = parseInt(hours, 10) + 12;
       }
-   
-    console.log(msg= {hour:`${hours}`,min:`${minutes}`})
-    console.log(msg.hour,msg.min)
+      console.log(msg= {hour:`${hours}`,min:`${minutes}`})
+      console.log(msg.hour,msg.min)
     
         var y = d[2]
         var mo = parseInt(dateary[0])-1
@@ -225,9 +195,7 @@ module.exports = corn.schedule('*/20 * * * * *',function(){
         var mi = msg.min
         var se = '0'
         var mil = '0'
-        console.log(y,mo,d,h,mi,se,mil)
         var curdat = new Date(y,mo,d,h,mi,se,mil)
-        console.log(curdat,'cur')
 
         emailsentsave.aggregate([
             {
@@ -243,16 +211,13 @@ module.exports = corn.schedule('*/20 * * * * *',function(){
             }
         ]).exec((err,resp)=>{
             if(resp.length >0){
-            console.log(resp)
             var Data = resp
             Data.forEach((row)=>{
-                console.log(row)
                 var to = row.to
                 var from = row.from
                 var sub = row.subject
                 var template = row.template
                 var dmy = row.DateT
-                    console.log('inside email')
                     const emailData = {
                         sendgrid_key:'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',
                         to:to,
@@ -266,15 +231,14 @@ module.exports = corn.schedule('*/20 * * * * *',function(){
                         emailsentsave.findByIdAndUpdate(row._id, {$set:{email_type:'sent'}})
                             .exec((err, emailUpdate) => {
                                 if (err) {
-                                    console.log('email status is not update')
+                                    res.send('email status is not update')
                                 }
                                 else {
-                                    console.log('email sent successfully status schdule sent')
+                                    res.send('email sent successfully status schdule sent')
                                 }
                             })
                     }).catch(err => {
-                        console.log('email not send')
-                        console.log(err)
+                        res.send(err)
                     })
             })
   
@@ -290,7 +254,6 @@ module.exports = corn.schedule('*/20 * * * * *',function(){
 // EmailSent.find({$and:[{email_type:'schedule'},{email_status:true}]})
 //     .exec((err,scheduleData)=>{
 //         if(err){
-//             console.log('schedule data not found')
 //         }
 //         else{
 //             var Data = scheduleData
@@ -306,10 +269,8 @@ module.exports = corn.schedule('*/20 * * * * *',function(){
 //                 var mon = d.getMonth()+1
 //                 var hour = tsplit[0]
 //                 var min = tsplit[1]
-//                 console.log(date)
 
 //                 corn.schedule(`${min} ${hour} ${date} ${mon} *`, function() {
-//                     console.log('inside email')
 //                     const emailData = {
 //                         sendgrid_key:Auth,
 //                         to:to,
@@ -323,15 +284,14 @@ module.exports = corn.schedule('*/20 * * * * *',function(){
 //                     EmailSent.findByIdAndUpdate(row._id, {$set:{email_type:'sent'}})
 //                             .exec((err, emailUpdate) => {
 //                                 if (err) {
-//                                     console.log('email status is not update')
+//                                     res.send('email status is not update')
 //                                 }
 //                                 else {
-//                                     console.log('email sent successfully status schdule sent')
+//                                     res.send('email sent successfully status schdule sent')
 //                                 }
 //                             })
 //                     }).catch(err => {
-//                         console.log('email not send')
-//                         console.log(err)
+//                         res.send('email not send')
 //                     })
 //             })
 
@@ -344,10 +304,9 @@ module.exports = corn.schedule('*/20 * * * * *',function(){
 //     textSentSave.find({$and:[{text_type:'schedule'},{textStatus:true}]})
 //     .exec((err,txtData)=>{
 //         if(err){
-//             console.log('schedule data not found')
+//             res.send('schedule data not found')
 //         }
 //         else{
-//             console.log(txtData)
 //             var Data = txtData
 //             Data.forEach((row)=>{
 //                 var ACCOUNT_SID = process.env.ACCOUNT_SID
@@ -358,7 +317,6 @@ module.exports = corn.schedule('*/20 * * * * *',function(){
 //                 var d = new Date(row.schedule_date)
 //                 var date = d.getDate()
 //                 var mon = d.getMonth()+1
-//                 console.log(date,mon)
 //               var job = corn.schedule(`* * * ${date} ${mon} *`, function() {
                     
 //                     function sendBulkMessages(msg,to){
@@ -379,15 +337,14 @@ module.exports = corn.schedule('*/20 * * * * *',function(){
 //                         .services(process.env.SERVICE_SID) 
 //                         .notifications.create(notificationOpts) 
 //                         .then((resp)=>{
-//                                 console.log(row._id)                            
 //                                textSentSave.findByIdAndUpdate(row._id,{text_type:'sent'})
 //                               .exec((err,updatetxt)=>{
 //                                    if(err){
-//                                       console.log('schedule text sms not sent')
+//                                       res.send('schedule text sms not sent')
 //                                    }
 //                               else{
 
-//                                   console.log('schedule text sms sent successfully')
+//                                   res.send('schedule text sms sent successfully')
 //                                   job.stop()
 //                                }
 //                            })

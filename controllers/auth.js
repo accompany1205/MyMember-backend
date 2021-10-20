@@ -65,10 +65,8 @@ exports.signup = async (req, res) => {
     sgMail
       .send(msg)
       .then(() => {
-        console.log('Email sent')
       })
       .catch((error) => {
-        console.error(error)
       })
     res.json({
       user
@@ -111,10 +109,9 @@ exports.approveUserRequestByAdmin = async (req, res) => {
   sgMail
     .send(msg)
     .then(() => {
-      console.log('Email sent')
     })
     .catch((error) => {
-      console.error(error)
+      res.send(error)
     })
   res.send({
     "status": true,
@@ -168,7 +165,7 @@ exports.forgetpasaword = (req, res) => {
                 res.send({
                   error: "email not sent"
                 });
-                console.log(err);
+                res.send(err);
               } else {
                 res.send({
                   msg: "email send successfully reset link sent your email",
@@ -197,7 +194,6 @@ exports.resetPassword = (req, res) => {
             error: "incorrect token or it expire"
           });
         } else {
-          console.log(decodeToken);
           User.findByIdAndUpdate({
             _id: decodeToken._id
           }, {
@@ -227,7 +223,6 @@ exports.resetPassword = (req, res) => {
 };
 
 // exports.signup = (req, res) => {
-//     // console.log("req.body", req.body);
 //     // const info = req.body;
 //     const email = req.body.email;
 //     const token = jwt.sign(req.body, process.env.JWT_ACC_ACTIVATE, { expiresIn: '60m' })
@@ -245,7 +240,6 @@ exports.resetPassword = (req, res) => {
 //             sgMail.send(emailData, function (err, data) {
 //                 if (err) {
 //                     res.send({ error: 'email not sent' })
-//                     console.log(err)
 //                 }
 //                 else {
 //                     res.send({ msg: 'email send successfully please verify your email',data:data })
@@ -268,18 +262,14 @@ exports.resetPassword = (req, res) => {
 //                 res.send({ error: 'expire or invaild token' })
 //             }
 //             else {
-//                 console.log(decodedToken)
 //                 const detailsUser = decodedToken.info;
 //                 const user = new User(detailsUser);
 //                 const obj= {
 //                     isverify:true
 //                 }
 //                 const newUser = _.extend(user,obj)
-//                 console.log(newUser)
-//                         console.log(user)
 //                         user.save((err, user) => {
 //                             if (err) {
-//                                 console.log(err)
 //                                 return res.status(400).json({
 //                                     // error: errorHandler(err)
 //                                     error: 'user is not signup'
@@ -304,7 +294,6 @@ exports.resetPassword = (req, res) => {
 // exports.signup = async (req, res) => {
 //     try {
 //         const user = await new User(req.body);
-//         console.log(req.body);
 
 //         await user.save((err, user) => {
 //             if (err) {
@@ -316,7 +305,6 @@ exports.resetPassword = (req, res) => {
 //             res.status(200).json({ user });
 //         });
 //     } catch (err) {
-//         console.error(err.message);
 //     }
 // };
 
@@ -583,7 +571,6 @@ function navbar_custom(user_id) {
   ];
 
   navbar.insertMany(Data).then((response) => {
-    console.log(response);
   });
 }
 

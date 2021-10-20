@@ -8,20 +8,16 @@ const url = require('url')
 exports.todoCreate = (req, res) => {
     const Id = req.params.userId
     const task = new tasks(req.body);
-    console.log(req.body, Id)
     task.save((err, data) => {
         if (err) {
             res.send("todo not add")
-            console.log(err)
         } else {
-            console.log(data)
             tasks.findByIdAndUpdate({ _id: data._id }, { $set: { userId: Id } }).exec((err, todoData) => {
                 if (err) {
                     res.send({ error: 'user id is not add in todo' })
                 }
                 else {
                     res.send({ msg: 'todo add successfully' })
-                    console.log(todoData)
                 }
             })
 
@@ -52,10 +48,8 @@ exports.update = (req, res) => {
     const id = req.params.todoId;
     tasks.findByIdAndUpdate(id, { $set: req.body })
         .then((update_resp) => {
-            console.log(update_resp)
             res.send(update_resp)
         }).catch((err) => {
-            console.log(err)
             res.send(err)
         })
 }
@@ -66,7 +60,6 @@ exports.remove = (req, res) => {
         .then((resp) => {
             res.json(resp)
         }).catch((err) => {
-            console.log(err)
             res.send(err)
         })
 }
@@ -88,7 +81,6 @@ exports.today_taskread = (req, res) => {
 
     var newtodoDate = `${year}-${month}-${date}`;
 
-    console.log(newtodoDate)
     tasks.find({ userId: req.params.userId, todoDate: newtodoDate })
         .then((result) => {
             res.json(result)
@@ -112,7 +104,6 @@ exports.tomorrow_taskread = (req, res) => {
 
     var newtodoDate = `${year}-${month}-${date}`;
 
-    console.log(newtodoDate)
     tasks.find({ userId: req.params.userId, todoDate: newtodoDate })
         .then((result) => {
             res.json(result)
@@ -190,9 +181,7 @@ exports.appointment_taskread = (req, res) => {
 exports.searching_task = (req, res) => {
 
     const all = url.parse(req.url, true).query
-    console.log(all)
-    console.log(req.url)
-    console.log(all.q)
+   
 
     let searchKeyWord = new RegExp(".*" + all.q + ".*", 'i');
 
@@ -236,11 +225,9 @@ exports.upcoming_taskread = (req, res) => {
 
         var newtodoDate = `${year}-${month}-${date}`;
 
-        console.log(newtodoDate)
         tasks.find({ userId: req.params.userId, todoDate: newtodoDate })
             .then((result) => {
                 if (result) {
-                    console.log(result[0].subject)
                     element.subject = result[0].subject;
                     element.todoDate = result[0].todoDate;
                     cart.push({ element: element });

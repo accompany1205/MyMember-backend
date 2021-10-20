@@ -36,7 +36,6 @@ exports.create = async (req, res) => {
 };
 
 exports.read = (req, res) => {
-	console.log(req.params.studentId);
 
 	finance_info
 		.find({ studentId: req.params.studentId })
@@ -88,7 +87,6 @@ exports.update = (req, res) => {
 			$set: financeDetails
 		})
 		.then((update_resp) => {
-			console.log(update_resp);
 			res.send({
 				message:
 					"finance Info has been updated for this student successfully",

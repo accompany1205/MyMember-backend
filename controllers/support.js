@@ -7,12 +7,11 @@ exports.create = (req, res) => {
     var supportObj = new supportModal(req.body);
     supportObj.save((err,ticket)=>{
         if(err){
-            console.log(err)
+            res.send(err)
         }
         else{
             if(req.file){
               cloudUrl.imageUrl(req.file).then((ticketImgUrl)=>{
-                   console.log(ticketImgUrl)
                    supportModal.findByIdAndUpdate(ticket._id,{$set:{ticket_image:ticketImgUrl,userId:req.params.userId}})
                    .then((response) => {
                            res.send(response)

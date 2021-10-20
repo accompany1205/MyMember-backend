@@ -78,7 +78,6 @@ exports.membership =(req,res)=>{
 }
 
 // exports.membership_status =(req, res)=>{
-//     console.log(req.body)
 //     if(req.body.pay_inout == 'All Payments'){
 //         var Data = {$and: [{ userId: req.params.userId },
 //             { $and: [{ createdMonth: req.body.month }, { createdYear: req.body.year }] }]}
@@ -148,7 +147,6 @@ exports.exp_break = (req, res) => {
     ]).exec((err, expBreak) => {
         if (err) {
             res.send({ error: 'expense breakdown list not found' })
-            console.log(err)
         }
         else {
             res.send(expBreak)
@@ -173,7 +171,6 @@ exports.cc_expire = (req, res) => {
     ],function(err, docs){
         if (err){
             res.send({error:'card expire list not found'})
-            console.log(err)
         }
         else{
             var options = {

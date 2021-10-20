@@ -70,7 +70,6 @@ exports.seven_to_forteen = async (req, res) => {
     }
 
     catch (Er) {
-        console.log(Er)
     }
 
 }
@@ -134,7 +133,6 @@ exports.fifteen_to_thirty = async (req, res) => {
     }
 
     catch (Er) {
-        console.log(Er)
     }
 }
 
@@ -197,12 +195,10 @@ exports.moreThirty = async (req, res) => {
             })
     }
     catch (Er) {
-        console.log(Er)
     }
 }
 
 exports.listApp_and_callHistory = (req, res) => {
-    console.log(req.params.userId)
     user.find({ _id: req.params.userId }, { upsert: true })
         .populate('missYouCall_note_history')
         .populate('missYouCall_appoinment_history')
@@ -231,10 +227,8 @@ exports.create = (req, res) => {
             misucallObj = _.extend(misucall, obj)
 
             misucallObj.save((err, note) => {
-                console.log(note)
                 if (err) {
                     res.send({ error: 'miss u call notes is not create' })
-                    console.log(err)
                 }
                 else {
                     update = {
@@ -272,10 +266,8 @@ exports.remove = (req, res) => {
             res.send({ error: 'notes is not delete' })
         }
         else {
-            console.log(removeNote)
             student.update({ "missYouCall_notes": removeNote._id }, { $pull: { "missYouCall_notes": removeNote._id } })
                 .exec((err, noteUpdateStd) => {
-                    console.log(noteUpdateStd)
                     if (err) {
                         res.send({ error: 'notes is not remove in student' });
                     }
@@ -297,7 +289,6 @@ exports.remove = (req, res) => {
 
 exports.updateNote = (req, res) => {
     var notesid = req.params.notesId
-    console.log(req.body)
     misucallNote.findByIdAndUpdate(notesid, req.body).exec((err, updateNote) => {
         if (err) {
             res.send({ error: 'miss you call notes is not update' })

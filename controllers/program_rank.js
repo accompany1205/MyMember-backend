@@ -100,7 +100,6 @@ exports.update = (req, res) => {
                
             }
             // res.send(result);
-            // console.log(result);
         }).catch((err) => {
             res.send(err);
         })

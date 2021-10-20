@@ -21,9 +21,7 @@
 // const a = saveUsers(user)
 
 //     a.then(function (data) {
-//         console.log(data)
 //     })
 //     .catch(function (error) {
-//         console.log(error)
 //     });
 // mongodb+srv://tekeshwar810:xo3JUW38HcfBvZwF@test.r0ri0.mongodb.net/MyMember

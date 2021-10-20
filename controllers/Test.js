@@ -27,7 +27,6 @@ exports.create = (req,res)=>{
         TestModal.insertMany(data).then(async(result)=>{
           await Promise.all(data.map(async(item)=>{
              var pDetail = await program.findOne({programName:item.program}) 
-             console.log(pDetail.color)
              var testUpdate = await TestModal.updateOne({_id: item._id },{ $set : {userId: req.params.userId,start_date:req.body.start_date,programColor:pDetail.color,programId:pDetail._id  }});
           })).then((respT)=>{
               res.send({msg:'student add in test section'})
@@ -56,7 +55,6 @@ exports.testReg = async(req,res)=>{
     if(testData){   
         if(req.body.p_type == 'Cash'){
         var testReg = new TestReg(testData)
-        console.log(testReg)
         testReg.save((err,resp)=>{
             if(err){
                 res.send({error:'student not register in test register section'})
@@ -76,7 +74,6 @@ exports.testReg_list = async(req,res)=>{
         var regTestCount = await TestReg.find({userId:req.params.userId}).count()
         res.send({list:regTest,count:regTestCount})
        }catch(e){
-           console.log(e)
            res.send({error:'test register student not found'})
        }
 
