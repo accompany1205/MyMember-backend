@@ -21,7 +21,6 @@ student.findById(req.params.studentId).exec((err,studetData)=>{
             renewObj.save((err,note)=>{
                 if(err){
                     res.send({error:'renewal notes is not create'})
-                    console.log(err)
                 }
                 else{
                     student.findByIdAndUpdate(req.params.studentId,{$push: { renewals_notes: note._id }})
@@ -56,10 +55,8 @@ exports.remove =(req,res)=>{
             res.send({error:'notes is not delete'})
         }
         else{
-            console.log(removeNote)
             student.update({"renewals_notes":removeNote._id},{$pull:{"renewals_notes":removeNote._id}})
             .exec((err,noteUpdateStd)=>{
-                console.log(noteUpdateStd)
                 if(err){
                     res.send({error:'notes is not remove in student'});
                 }
@@ -81,7 +78,6 @@ exports.remove =(req,res)=>{
 
 exports.updateNote = (req,res)=>{
     var notesid = req.params.notesId
-    console.log(req.body)
     renewalnote.findByIdAndUpdate(notesid,req.body).exec((err,updateNote)=>{
         if(err){
             res.send({error:'miss you call notes is not update'})
@@ -98,7 +94,6 @@ exports.expireStd = async(req,res)=>{
     res.send(dataExpire)
     }catch(e){
         res.send({error:'expire student data not fount'})
-        console.log(e)
     }
 }
 
@@ -108,7 +103,7 @@ exports.expire_thirty_std = async(req,res)=>{
         res.send(dataExpire)
         }catch(e){
             res.send({error:'expire student data not fount'})
-            console.log(e)
+            
         }
 }
 
@@ -118,6 +113,6 @@ exports.expire_sixty_std = async(req,res)=>{
         res.send(dataExpire)
         }catch(e){
             res.send({error:'expire student data not fount'})
-            console.log(e)
+            
         }
 }

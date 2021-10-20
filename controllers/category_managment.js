@@ -45,7 +45,6 @@ exports.Create = async (req, res) => {
                                 if (subCat_resp) {
                                     category_managment.findByIdAndUpdate(subCat_resp._id, { $set: { "subCategory.subCategories": details } }).populate("subCategory")
                                         .then((sub_detail) => {
-                                            console.log(sub_detail);
                                         })
                                 } else {
                                     const newSub = new subCategory_managment({
@@ -57,7 +56,6 @@ exports.Create = async (req, res) => {
                                         .then((result) => {
                                             category_managment.findByIdAndUpdate(subCat_resp._id, { $set: { "subCategory.subCategories": details } }).populate("subCategory")
                                                 .then((sub_detail) => {
-                                                    console.log(sub_detail);
                                                 });
                                         })
                                 }
@@ -99,9 +97,7 @@ exports.Create = async (req, res) => {
                                 category_managment.findOne({ $and: [{ programName: program }, { category: categ }] })
                                     .then((result) => {
                                         if (result) {
-                                            console.log("category already exist create anathor")
                                         } else {
-                                            console.log(response)
                                             category_managment.findByIdAndUpdate(result._id, { $push: { subCategory: sub_ids } })
                                                 .then((cate_resp) => {
                                                     res.send("category added sucessful");
@@ -135,7 +131,6 @@ exports.by_program_name = async (req, res) => {
         .then((resp) => {
             res.json(resp);
         }).catch((err) => {
-            console.log(err)
             res.send(err);
         });
 };
@@ -144,10 +139,8 @@ exports.remove = async (req, res) => {
     const id = req.body.id
     category_managment.deleteOne({ _id: id })
         .then((resp) => {
-            console.log(resp)
             res.json("category_managment has been deleted successfully")
         }).catch((err) => {
-            console.log(err)
             res.send(err)
         })
 };

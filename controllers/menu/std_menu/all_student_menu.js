@@ -19,8 +19,6 @@ exports.all_std_menu = (req,res)=>{
 }
 
 exports.edit_all_std_menu =(req,res)=>{
-    console.log(req.body)
-    console.log(req.params.userId)
     allstdMenu.updateOne({user_id:req.params.userId},req.body,(err,resp)=>{
         if(err){
             res.json({code:400,msg:'all student menu not update'})

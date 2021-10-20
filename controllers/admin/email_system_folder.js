@@ -2,7 +2,6 @@ const folderSystem = require("../../models/email_system_folder");
 const systemCat = require('../../models/email_system')
 
 exports.create_folder = (req,res)=>{
-    console.log(req.body)
     var folder={
         folderName:req.body.folderName,
         createdBy:'admin'
@@ -11,10 +10,8 @@ exports.create_folder = (req,res)=>{
     folderObj.save((err,folder)=>{
         if(err){
             res.send({error:'system folder is not create'})
-            console.log(err)
         }
         else{
-            console.log(folder)
             systemCat.findByIdAndUpdate(req.params.catId,{$push:{ folder:folder._id }})
             .exec((err,folderUpdate)=>{
                 if(err){

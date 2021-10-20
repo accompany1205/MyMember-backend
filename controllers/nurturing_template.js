@@ -7,7 +7,6 @@ function timefun(sd,st){
     var stime = st
     var spD = date.split('/')
     var spT = stime.split(":")
-    console.log(spD,spT)
 
     var y = spD[2]
     var mo = parseInt(spD[0])-1
@@ -16,7 +15,6 @@ function timefun(sd,st){
     var mi = spT[1]
     var se = '0'
     var mil = '0'
-    console.log(y,mo,d,h,mi,se,mil)
     return  curdat = new Date(y,mo,d,h,mi,se,mil)
    
 }
@@ -34,7 +32,6 @@ exports.getData = (req,res)=>{
         var a =(formatter.format(new Date()));
         // var str = a
         // var h = str.split(",");
-        // console.log(h[0],h[1])
         // var dates = h[0]
         // var d = dates.split('/')
         // var curdat = new Date(`${d[1]} ${d[0]} ${d[2]} ${h[1]}`)
@@ -54,9 +51,6 @@ exports.getData = (req,res)=>{
           hours = parseInt(hours, 10) + 12;
         }
        
-        console.log(msg= {hour:`${hours}`,min:`${minutes}`})
-        // console.log(d[2],d[0],d[1],msg.hour,msg.min,se,mil)
-        console.log(msg.hour ,msg.min )
         
         var y = d[2]
         var mo = d[1]-1
@@ -66,7 +60,6 @@ exports.getData = (req,res)=>{
         var se = '0'
         var mil = '0'
         var curdat = new Date(y,mo,d,h,mi,se,mil)
-        console.log(curdat,'cur')
         
         all_temp.aggregate([
             {
@@ -83,7 +76,6 @@ exports.getData = (req,res)=>{
         ]).exec((err,resp)=>{
             if(err){
                 res.json({code:400,msg:'data not found'})
-                console.log(err)
             }
             else{
                 res.json({code:200,msg:resp})
@@ -97,7 +89,6 @@ exports.list_template = (req,res)=>{
     .exec((err,template_data)=>{
         if(err){
             res.send({error:'nurturing template list not found'})
-            console.log(err)
         }
         else{
             res.send(template_data)
@@ -113,7 +104,6 @@ exports.add_template = async(req,res)=>{
     //             res.send({Error:'email auth key is not find so schedule is not create',error:err})
     //         }
     //         else{
-    //             console.log(key)
 
             let { to, from, title, subject, template, sent_time, repeat_mail, follow_up } = req.body || {};
             let { userId, folderId } = req.params || {};
@@ -136,7 +126,6 @@ exports.add_template = async(req,res)=>{
                 folderId
             };
 
-            console.log(obj);
             if(req.body.follow_up === 0){
                 var date_iso = timefun(req.body.sent_date,req.body.sent_time)
                 obj.DateT = date_iso;
@@ -145,9 +134,7 @@ exports.add_template = async(req,res)=>{
                 var date_iso_follow = timefun(req.body.sent_date,req.body.sent_time)
                 date_iso_follow.setDate(date_iso_follow.getDate() + req.body.follow_up);
                 var nD = moment(date_iso_follow).format('MM/DD/YYYY')    
-                // console.log(nD,'lo')// this is date mm/dd/yyyy
-                // console.log(date_iso_follow); // this is iso date time
-                // console.log(date_iso_follow.getHours(),'hour')
+                
             }
             else if(req.body.follow_up < 0){
                 res.send({code:400,msg:'follow up not set less then 0'})
@@ -155,7 +142,6 @@ exports.add_template = async(req,res)=>{
 
 
             var emailDetail =  new all_temp(obj)
-            console.log(emailDetail);
 
 
             try {
@@ -178,7 +164,6 @@ exports.add_template = async(req,res)=>{
             }
 
             catch(err) {
-                console.log(err);
                 res.send({Error:'email details is not save',error:err})
             }
 }
@@ -186,7 +171,6 @@ exports.add_template = async(req,res)=>{
 // exports.add_template = (req,res)=>{
 //             if(req.body.follow_up === 0){
 //                 var date_iso = timefun(req.body.sent_date,req.body.sent_time)
-//                 console.log(date_iso)
               
 //                           var obj = {
 //                               to: req.body.to,
@@ -210,12 +194,9 @@ exports.add_template = async(req,res)=>{
 //                       else if(req.body.follow_up > 0){
 //                         var date_iso_follow = timefun(req.body.sent_date,req.body.sent_time)
         
-//                         console.log(date_iso_follow,'si')
 //                         date_iso_follow.setDate(date_iso_follow.getDate() + req.body.follow_up);
 //                         var mdy = moment(date_iso_follow).format('MM/DD/YYYY')    
-//                         console.log(mdy,'lo')// this is date mm/dd/yyyy
-//                         console.log(date_iso_follow); // this is iso date time
-//                         console.log(date_iso_follow.getHours(),'hrou')
+//                        
 
 //                         var obj = {
 //                             to: req.body.to,
@@ -240,11 +221,9 @@ exports.add_template = async(req,res)=>{
 //                     } 
 
 //                 var emailDetail =  new template(obj)
-//                 console.log(emailDetail)
 //                 emailDetail.save((err,emailSave)=>{
 //            if(err){
 //               res.send({code:200,msg:'template not save'})
-//               console.log(err)
 //           }
 //           else{
 //             nurturing_folder.findByIdAndUpdate(req.params.folderId,{$push:{template:emailSave._id}})
@@ -267,7 +246,6 @@ exports.remove_template =(req,res)=>{
             res.send({error:'nurturing template is not remove'})
         }
         else{
-            console.log(removeTemplate)
             nurturingFolderModal.update({"template":removeTemplate._id},{$pull:{"template":removeTemplate._id}},
             function(err,temp){
                 if(err){
@@ -294,7 +272,6 @@ exports.all_email_list = async(req,res)=>{
 }
 
 exports.single_tem_update_status =(req,res)=>{
-    console.log(req.body.email_status)
     if(req.body.email_status == true){
         all_temp.updateOne({_id:req.params.tempId},{$set:{email_status:true}},(err,resp)=>{
             if(err){
@@ -335,7 +312,6 @@ exports.status_update_template =(req,res)=>{
                 res.send(err)
             }
             else{
-                console.log(TempData)
                 async.eachSeries(TempData,(obj,done)=>{
                     all_temp.findByIdAndUpdate(obj._id,{$set:{email_status:false}},done)
                     },function Done(err,List){
@@ -356,7 +332,6 @@ exports.status_update_template =(req,res)=>{
                 res.send(err)
             }
             else{
-                console.log(TempData)
                 async.eachSeries(TempData,(obj,done)=>{
                     all_temp.findByIdAndUpdate(obj._id,{$set:{email_status:true}},done)
                     },function Done(err,List){

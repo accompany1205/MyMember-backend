@@ -6,7 +6,6 @@ const memberModel = require("../models/addmember")
 
 exports.createNote = async (req, res) => {
     let memberId = req.params.memberId;
-    console.log("This is the member.... ", memberId)
     if (!memberId) {
         res.send({
             status: true,

@@ -26,7 +26,6 @@ exports.readfolder = (req,res)=>{
     .exec((err,folderList)=>{
         if(err){
             res.send({error:'document folder is not find'})
-            console.log(err)
         }
         else{
             res.send(folderList)

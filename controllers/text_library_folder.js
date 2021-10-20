@@ -6,7 +6,6 @@ exports.create_folder =(req,res)=>{
     folderLObj.save((err,folder)=>{
         if(err){
             res.send({error:'text library folder is not create'})
-            console.log(err)
         }
         else{
             txtLibraryCat.findByIdAndUpdate(req.params.catId,{$push:{ folder:folder._id }})

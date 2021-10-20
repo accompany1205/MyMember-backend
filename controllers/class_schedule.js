@@ -35,7 +35,6 @@ exports.Create = async (req, res) => {
         // task.save((err, data) => {
         //     if (err) {
         //         res.send({ error: 'class schedule is not add', Error: err })
-        //         console.log(err)
         //     }
         //     else {
         //         class_schedule.findByIdAndUpdate({ _id: data._id }, { $set: { userId: req.params.userId } })
@@ -120,7 +119,6 @@ exports.updateAll = async (req, res) => {
             allAttendance.push(NewEvent)
         }
     }
-    // console.log(allAttendance.length)
 
     const data = await class_schedule.deleteMany({
         $and:

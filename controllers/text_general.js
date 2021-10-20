@@ -5,7 +5,6 @@ exports.listCat = (req,res)=>{
     .populate('folder')
     .exec((err,listGen)=>{
         if(err){
-            console.log(err)
             res.send({error:'text genral list not found'})
         }
         else{
@@ -21,7 +20,6 @@ exports.addcategory = (req,res)=>{
             res.send({error:'text genral category is not create'})
         }
         else{
-            console.log(txtGen)
             textGen.findByIdAndUpdate(txtGen._id,{$set:{userId:req.params.userId}})
             .exec((err,txtupdate)=>{
                 if(err){

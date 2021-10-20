@@ -5,9 +5,7 @@ exports.category_list = (req,res)=>{
     .populate('folder')
     .exec((err,categoryList)=>{
         if(err){
-            res.send({error:'text nurturing category is not found'})
-            console.log(err)
-        }
+            res.send({error:'text nurturing category is not found'})        }
         else{
             res.send(categoryList)
         }

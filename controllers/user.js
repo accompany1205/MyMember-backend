@@ -55,8 +55,6 @@ exports.read = (req, res) => {
 
 exports.update = (req, res) => {
     var userId = req.params.userId;
-    console.log(req.files)
-    console.log('===================================================   ========================')
     User
       .findByIdAndUpdate({
         _id: userId

@@ -12,14 +12,11 @@ exports.membershipBuy = (req,res)=>{
     var obj = {expiry_date : expdate.toLocaleDateString()}
         
         var member = _.extend(req.body,obj)
-        console.log(member)
         
         var membership = new BuyMembership(member);
-        console.log(membership)
         membership.save((err,data)=>{
              if(err){
                  res.send({error:'user membership not buy'})
-                 console.log(err)
              }
              else{
                  query = {'_id':req.params.userId}
@@ -30,7 +27,6 @@ exports.membershipBuy = (req,res)=>{
                     userModal.findOneAndUpdate(query,update,(err,stdData)=>{
                      if(err){
                          res.send({error:'user id is not add in student'})
-                         console.log(err)
                      }
                      else{
                          res.send({msg:'user membership purchase successfully'})

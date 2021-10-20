@@ -13,7 +13,7 @@ exports.user_List = (req, res) => {
                 res.send({
                     error: 'user list not found'
                 })
-                console.log(err)
+                
             } else {
                 res.send(userList)
             }
@@ -42,7 +42,7 @@ exports.school_list = (req, res) => {
                 res.send({
                     error: 'user list not found'
                 })
-                console.log(err)
+                
             } else {
                 res.send(userList)
             }
@@ -67,11 +67,10 @@ exports.userInfo = (req, res) => {
 
 exports.create_user = (req, res) => {
     var userObj = new user(req.body);
-    console.log(req.body)
     userObj.save(function (err, User) {
         if (err) {
             res.send(err)
-            console.log(err)
+            
         } else {
             if (req.file) {
                 cloudUrl.imageUrl(req.file).then((subuserImgUrl) => {
@@ -103,14 +102,12 @@ exports.create_user = (req, res) => {
 }
 
 exports.manage_Status = (req, res) => {
-    console.log(req.params.userId)
     user.findById(req.params.userId).exec((err, list) => {
         if (err) {
             res.send({
                 error: 'user list not find'
             })
         } else {
-            console.log(list.status)
             if (list.status == 'Deactivate') {
                 user.findByIdAndUpdate({
                         _id: req.params.userId
@@ -125,7 +122,6 @@ exports.manage_Status = (req, res) => {
                                 error: 'user status not update'
                             })
                         } else {
-                            console.log(updateData)
                             var to = updateData.email
                             const userinfo = {
                                 sendgrid_key: process.env.email,
@@ -137,7 +133,6 @@ exports.manage_Status = (req, res) => {
                             userinfo.content = `<p>email:${updateData.email}</p>
                                             <p>password:${updateData.password}</p>`;
                             sgMail.send_via_sendgrid(userinfo).then(resp => {
-                                console.log(resp)
                                 res.send({
                                     msg: 'your acount is activate please check your email'
                                 })
@@ -173,7 +168,6 @@ exports.manage_Status = (req, res) => {
     })
 }
 exports.update_user = (req, res) => {
-    console.log(req.body)
     user.updateOne({
         _id: req.params.userId
     }, req.body).exec((err, updateUser) => {
@@ -215,7 +209,6 @@ exports.update_user_by_admin = async (req, res) => {
         "role": 0,
         "_id": query.userId
     };
-    console.log(filter)
     let update = {
         "status": data.status,
         "location": data.location
