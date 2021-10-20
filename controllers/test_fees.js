@@ -1,7 +1,6 @@
 var testFee = require('../models/TestingFees')
 var _ = require('lodash')
 exports.create = (req, res) => {
-    console.log(req.body)
     var test_fees = req.body;
     
     // var testData = _.extend(test_fees,req.params)
@@ -9,7 +8,6 @@ exports.create = (req, res) => {
     testFeeObj.save(function (err, FeeData){
         if(err){
             res.send(err)
-            console.log(err)
         }
         else{   
            testFee.findByIdAndUpdate(FeeData._id,{userId:req.params.userId})
@@ -49,7 +47,6 @@ exports.fee_info = (req, res) => {
 }
 
 exports.deletetestfee = (req, res) => {
-    console.log('id', req.params)
     var testID = req.params.feeId;
     testFee.findByIdAndDelete(testID).exec((err, data) => {
         if (err) {
@@ -64,7 +61,6 @@ exports.deletetestfee = (req, res) => {
 exports.updatetestFee = (req, res) => {
     var feeID = req.params.feeId;
     var data = req.body
-    console.log(data);
     testFee.findByIdAndUpdate({ _id: feeID },{
         fees_name: data.fees_name,
         fees_description: data.fees_description,

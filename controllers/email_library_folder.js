@@ -6,10 +6,8 @@ exports.create_folder = (req,res)=>{
     folderObj.save((err,folder)=>{
         if(err){
             res.send({error:'library folder is not create'})
-            console.log(err)
         }
         else{
-            console.log(folder)
             libraryCat.findByIdAndUpdate(req.params.catId,{$push:{ folder:folder._id }})
             .exec((err,folderUpdate)=>{
                 if(err){

@@ -101,7 +101,6 @@ exports.send_email = (req, res) => {
     sgMail.send(emailData, function (err, data) {
         if (err) {
             res.send({ error: 'email not sent' })
-            console.log(err)
         }
         else {
             res.send({ msg: 'email send successfully',data:data })
@@ -111,7 +110,6 @@ exports.send_email = (req, res) => {
 
 exports.send_sms = (req, res) => {
     var number = req.body.number
-    console.log(number)
     client.messages.create({
         to: number,
         from: '+12679301602',
@@ -120,7 +118,6 @@ exports.send_sms = (req, res) => {
     }, function (err, data) {
         if (err) {
             res.send({ error: 'msg not set' })
-            console.log(err)
         }
         else {
             res.send(data)

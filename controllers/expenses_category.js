@@ -4,14 +4,11 @@ const totalExp = require("../models/totalExp");
 var mongo = require("mongoose")
 
 exports.create = (req,res)=> {
-    console.log(req.body)
     var userID = mongo.Types.ObjectId(req.params.userId)
     var expCategory = new expenses_category(req.body)  
-    console.log(expCategory)
     expCategory.save((err,data)=>{
         if(err){
             res.send({error:'expenses category is not add'})
-            console.log(err)
         }
         else{
             expenses_category.findByIdAndUpdate({_id:data._id},{$set:{userId:userID}})
@@ -34,7 +31,6 @@ exports.read = (req,res)=> {
         .exec((err,categoryList)=>{
             if(err){
                 res.send({error:'category list not found'})
-                console.log(err)
             }
             else{
                 res.send(categoryList)
@@ -44,7 +40,6 @@ exports.read = (req,res)=> {
 
 exports.category_total = (req,res)=>{
     var userID = mongo.Types.ObjectId(req.params.userId)
-    console.log(userID,typeof userID)
     expenses_category.aggregate([
         {"$match":{userId:userID}},  
         {
@@ -73,7 +68,6 @@ exports.category_total = (req,res)=>{
    ]).exec((err,data)=>{
         if(err){
             res.send({error:'list not found'})
-            console.log(err)
         }
         else{
             res.send(data)
@@ -112,7 +106,6 @@ exports.remove_category =(req,res)=>{
                 res.send({error:'category is not remove'})
             }
             else{
-                console.log(removeCat)
                 var catName = removeCat.expense_category_type
                 var userId = removeCat.userId
                 expenses.deleteMany({$and:[{"category":catName,"userId":userId}]},

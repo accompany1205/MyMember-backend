@@ -69,16 +69,16 @@ exports.recomendStudent = async (req, res) => {
         studentId: Joi.string().required(),
         firstName: Joi.string().required(),
         lastName: Joi.string().required(),
-        memberprofileImage: Joi.string().required(),
-        phone: Joi.string().required(),
+        memberprofileImage: Joi.string(),
+        phone: Joi.string(),
         program: Joi.string().required(),
         status: Joi.string().required(),
         rating: Joi.number().required(),
-        current_rank: Joi.string().required(),
+        current_rank: Joi.string(),
         userId: Joi.string().required(),
-        next_rank: Joi.string().required(),
-        current_rank_name: Joi.string().required(),
-        next_rank_name: Joi.string().required(),
+        next_rank: Joi.string(),
+        current_rank_name: Joi.string(),
+        next_rank_name: Joi.string().default("1"),
 
     })
 
@@ -100,7 +100,6 @@ exports.recomendStudent = async (req, res) => {
             // let isStudentExists = await RecommendedForTest.find({
             //     "studentId": student.studentId
             // });
-            // console.log(isStudentExists)
             // if (isStudentExists.length > 0) {
             //     recommendedStudentsForTest.push(student)
             // }
@@ -185,7 +184,6 @@ exports.payAndPromoteTheStudent = async (req, res) => {
     } else {
         //If moving the student to the registerd list for the fist time.
         let studentData = await Member.findById(studentId)
-        console.log(studentData)
         let registerd = await RegisterdForTest.create({
             "studentId": studentId,
             "firstName": studentData.firstName,
@@ -201,7 +199,6 @@ exports.payAndPromoteTheStudent = async (req, res) => {
             "phone": phone,
             "program": studentData.program
         });
-        console.log(registerd)
         if (!registerd) {
             res.json({
                 status: false,

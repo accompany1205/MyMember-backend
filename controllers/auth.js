@@ -40,8 +40,6 @@ exports.signup = async (req, res) => {
   admins.map(email => {
     sendToAllAdmins.push(email["email"])
   })
-  console.log("Here we can send the emails", sendToAllAdmins)
-  console.log(admins);
 
   //todo Pavan - Need to restructure the mail body as per the requirement
   let msg = {
@@ -55,7 +53,6 @@ exports.signup = async (req, res) => {
   }
   user.save((err, user) => {
     if (err) {
-      console.log(err);
       return res.status(400).json({
         // error: errorHandler(err)
         error: "Email is taken",
@@ -68,10 +65,8 @@ exports.signup = async (req, res) => {
     sgMail
       .send(msg)
       .then(() => {
-        console.log('Email sent')
       })
       .catch((error) => {
-        console.error(error)
       })
     res.json({
       user
@@ -114,10 +109,9 @@ exports.approveUserRequestByAdmin = async (req, res) => {
   sgMail
     .send(msg)
     .then(() => {
-      console.log('Email sent')
     })
     .catch((error) => {
-      console.error(error)
+      res.send(error)
     })
   res.send({
     "status": true,
@@ -171,7 +165,7 @@ exports.forgetpasaword = (req, res) => {
                 res.send({
                   error: "email not sent"
                 });
-                console.log(err);
+                res.send(err);
               } else {
                 res.send({
                   msg: "email send successfully reset link sent your email",
@@ -200,7 +194,6 @@ exports.resetPassword = (req, res) => {
             error: "incorrect token or it expire"
           });
         } else {
-          console.log(decodeToken);
           User.findByIdAndUpdate({
             _id: decodeToken._id
           }, {
@@ -230,7 +223,6 @@ exports.resetPassword = (req, res) => {
 };
 
 // exports.signup = (req, res) => {
-//     // console.log("req.body", req.body);
 //     // const info = req.body;
 //     const email = req.body.email;
 //     const token = jwt.sign(req.body, process.env.JWT_ACC_ACTIVATE, { expiresIn: '60m' })
@@ -248,7 +240,6 @@ exports.resetPassword = (req, res) => {
 //             sgMail.send(emailData, function (err, data) {
 //                 if (err) {
 //                     res.send({ error: 'email not sent' })
-//                     console.log(err)
 //                 }
 //                 else {
 //                     res.send({ msg: 'email send successfully please verify your email',data:data })
@@ -271,18 +262,14 @@ exports.resetPassword = (req, res) => {
 //                 res.send({ error: 'expire or invaild token' })
 //             }
 //             else {
-//                 console.log(decodedToken)
 //                 const detailsUser = decodedToken.info;
 //                 const user = new User(detailsUser);
 //                 const obj= {
 //                     isverify:true
 //                 }
 //                 const newUser = _.extend(user,obj)
-//                 console.log(newUser)
-//                         console.log(user)
 //                         user.save((err, user) => {
 //                             if (err) {
-//                                 console.log(err)
 //                                 return res.status(400).json({
 //                                     // error: errorHandler(err)
 //                                     error: 'user is not signup'
@@ -307,7 +294,6 @@ exports.resetPassword = (req, res) => {
 // exports.signup = async (req, res) => {
 //     try {
 //         const user = await new User(req.body);
-//         console.log(req.body);
 
 //         await user.save((err, user) => {
 //             if (err) {
@@ -319,7 +305,6 @@ exports.resetPassword = (req, res) => {
 //             res.status(200).json({ user });
 //         });
 //     } catch (err) {
-//         console.error(err.message);
 //     }
 // };
 
@@ -329,17 +314,14 @@ exports.signin = (req, res) => {
     username,
     password
   } = req.body;
-  console.log(req.body);
   User.findOne({
     username
   }).exec((err, data) => {
     if (err || !data) {
-      console.log(err);
       return res.status(400).json({
         error: "User with that email does not exist. Please signup",
       });
     } else {
-      console.log('data', data)
       if (data.password == req.body.password) {
         if (data.role == 0) {
           if (data.status == "Active") {
@@ -363,7 +345,6 @@ exports.signin = (req, res) => {
               logo,
               location_name,
             } = data;
-            console.log(data);
             return res.json({
               token,
               data: {
@@ -436,8 +417,6 @@ exports.requireSignin = expressJwt({
 });
 
 exports.isAuth = (req, res, next) => {
-  console.log("data", req.auth);
-  // console.log('data',req.profile)
   let user = req.profile && req.auth && req.profile._id == req.auth._id;
   if (!user) {
     return res.status(403).json({
@@ -460,7 +439,6 @@ exports.verifySchool = (req, res, next) => {
 
   if (typeof bearerToken !== "undefined") {
     jwt.verify(bearerToken, process.env.JWT_SECRET, (err, authData) => {
-      console.log(authData, req.params.userId);
       if (err) {
         res.sendStatus(403);
       } else {
@@ -490,12 +468,10 @@ exports.isAdmin = (req, res, next) => {
   const bearerToken = bearer[1];
   if (typeof bearerToken !== "undefined") {
     jwt.verify(bearerToken, process.env.JWT_SECRET, (err, adminData) => {
-      console.log(adminData, req.params.userId, "run");
       if (err) {
         res.sendStatus(403);
       } else {
         if (adminData.id == req.params.adminId && adminData.role == 1) {
-          console.log(adminData);
           next();
         } else {
           res.sendStatus(403);
@@ -595,7 +571,6 @@ function navbar_custom(user_id) {
   ];
 
   navbar.insertMany(Data).then((response) => {
-    console.log(response);
   });
 }
 
@@ -679,11 +654,9 @@ exports.updateUser = async (req, res) => {
   await User.findByIdAndUpdate(req.params.userId, req.body)
     .exec((err, data) => {
       if (err) {
-        console.log(err);
         res.send({ error: "User is not updated!", status: "failure" })
       }
       else {
-        console.log(data);
         res.status(200).send({ msg: 'User is updated successfully', status: "success" })
       }
     })

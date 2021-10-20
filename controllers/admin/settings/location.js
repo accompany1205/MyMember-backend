@@ -38,7 +38,6 @@ exports.updateLocation = (req,res)=>{
         res.send({msg:'location is update successfully'})
     }).catch((err)=>{
         res.send({error:'location is not update'})
-        console.log(err)
     })
 }
 

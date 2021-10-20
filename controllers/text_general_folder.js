@@ -6,10 +6,8 @@ exports.addFolder=(req,res)=>{
     genfolder.save((err,folder)=>{
         if(err){
             res.send({error:'folder is not create'})
-            console.log(err)
         }
         else{
-            console.log(folder)
             GenCat.findByIdAndUpdate(req.params.catId,{$push:{folder:folder._id}})
             .exec((err,folderUpdate)=>{
                 if(err){

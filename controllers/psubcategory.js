@@ -3,12 +3,10 @@ const pcategory = require("../models/pcategory");
 const { deleteOne, $where } = require("../models/psubcategory");
 
 exports.create = (req, res) => {
-    console.log(req.body)
     var categoryId = req.params.catId;
     var subcategory = req.body.category;
     
         var psubcategoryObj = new psubcategory(subcategory)
-        console.log(psubcategoryObj)
         psubcategoryObj.save((err, data) => {
             if (err) {
 
@@ -16,7 +14,7 @@ exports.create = (req, res) => {
             }
             else{
                 
-                pcategory.findByIdAndUpdate({ _id: categoryId }, { $push: { program_subcategory: data._id } })
+                psubcategory.findByIdAndUpdate({ _id: categoryId }, { $push: { program_subcategory: data._id } })
                     .exec((err, data) => {
                         if (err) {
                             res.send({ error: 'subcategory not push in category' })

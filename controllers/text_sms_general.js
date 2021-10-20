@@ -6,7 +6,6 @@ require('dotenv').config()
 // const MessagingResponse = require('twilio').twiml.MessagingResponse
 // exports.recieve =(req,res)=>{
 //  const twiml = new MessagingResponse() 
-//  console.log('run')
 //  twiml.messages('hello world')
 //  res.writeHead(200,{'Content-Type':'text/xml'})
 //  res.end(twiml.toString())
@@ -36,7 +35,6 @@ exports.send_sms =(req,res)=>{
         .services(textKey.MSG_SERVICE_SID) 
         .notifications.create(notificationOpts) 
         .then((resp)=>{
-            console.log(resp)
             var txt = new textSentSave(req.body)
             txt.save((err,txtMsg)=>{
                 if(err){
@@ -76,11 +74,8 @@ exports.save_sms =(req,res)=>{
             res.send({Error:'text auth key is not find'})
         }
         else{
-            // console.log(txtData)
             // var dt = new Date(req.body.schedule_date)
-            // console.log(dt)
-            // console.log(dt.getDate())
-            // console.log(new Date())
+           
             var obj ={
                 from:req.body.from,
                 to:req.body.to,
@@ -141,7 +136,6 @@ exports.update_sms = (req,res)=>{
     textSentSave.updateOne({_id:req.params.textId},req.body,(err,updateText)=>{
         if(err){
             res.send({error:'text sms is not update'})
-            console.log(err)
         }
         else{
             res.send(updateText)

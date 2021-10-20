@@ -11,8 +11,7 @@ exports.signup = (req, res) => {
     const user = new administrate(req.body);
     user.save((err, user)=>{
         if (err) {
-            console.log(err)
-            return res.status(400).json({
+                        return res.status(400).json({
                 // error: errorHandler(err)
                 error: 'Email is already taken'
             });
@@ -47,9 +46,7 @@ exports.signup = (req, res) => {
 };
 
 // exports.prfile_update = (req, res) => {
-//     console.log("req.body", req.body);
 //     const id = req.params.uid;
-//     console.log(req.file)
 //     administrate.findByIdAndUpdate({ _id: id },req.body)
 //     .then((resp) => {
 //             if(req.file){
@@ -75,13 +72,10 @@ exports.signup = (req, res) => {
 
 exports.signin = (req, res) => {
     // find the user based on email
-    console.log(req.body)
     const { email, password } = req.body;
     administrate.findOne({ email },(err, user) => {
-        console.log(user)
         if (err || !user) {
-            console.log(err)
-            return res.status(400).json({
+                        return res.status(400).json({
                 error: 'User with that email does not exist. Please signup'
             });
         }
@@ -100,7 +94,6 @@ exports.signin = (req, res) => {
         // if user is found make sure the email and password match
         // create authenticate method in user model
         // if (!user.authenticate(password)){
-        //     console.log(password)
         //     return res.status(401).json({
         //         error: 'Email and password dont match'
         //     });
@@ -168,14 +161,11 @@ exports.remove = (req, res)=>{
 }
 
 exports.edit_userInfo = (req, res) => {
-    console.log('run')
     var sub_user_id = req.params.sub_user_id;
-    console.log(sub_user_id)
     administrate.findById(sub_user_id).exec((err, userData) => {
         if (err) {
             res.send({ error: 'user data is not found' })
-            console.log(err)
-        }
+                    }
         else {
             res.send(userData)
         }
@@ -202,7 +192,7 @@ exports.update = (req, res) => {
                 res.send({ msg: 'user is update successfully' });
             }
         }).catch((err) => {
-            console.log(err);
+            
             res.send(err);
         });
 }

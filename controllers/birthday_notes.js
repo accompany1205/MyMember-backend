@@ -17,16 +17,12 @@ exports.create = (req,res)=>{
                 notes:studetData.notes
 
             }
-            //console.log("log-- ", req.body)
             var birthday = new birthdayNote(req.body);
             birthdayObj = _.extend(birthday,obj) 
-            console.log("birthdayObj ->", birthdayObj)
 
             birthdayObj.save((err,note)=>{
-                console.log("notes -> ", note)
                 if(err){
                     res.send({error:'birthday notes is not create'})
-                    console.log(err)
                 }
                 else{
                     student.findByIdAndUpdate(req.params.studentId,{$push: { birthday_notes: note._id }})
@@ -61,10 +57,8 @@ exports.remove = (req,res)=>{
             res.send({error:'notes is not delete'})
         }
         else{
-            console.log(removeNote)
             student.update({"birthday_notes":removeNote._id},{$pull:{"birthday_notes":removeNote._id}})
             .exec((err,noteUpdateStd)=>{
-                console.log(noteUpdateStd)
                 if(err){
                     res.send({error:'notes is not remove in student'});
                 }
@@ -86,7 +80,6 @@ exports.remove = (req,res)=>{
 
 exports.updateNote = (req,res)=>{
     var notesid = req.params.notesId
-    console.log(req.body)
     birthdayNote.findByIdAndUpdate(notesid,req.body).exec((err,updateNote)=>{
         if(err){
             res.send({error:'birthday notes is not update'})
@@ -99,7 +92,6 @@ exports.updateNote = (req,res)=>{
 
 exports.birth_this_week = async(req,res)=>{
     //     var cur = new Date()
-    // console.log(cur)
     // try{
     // var data = await memberModal.find({$expr:{$eq:[{"$month":"$dob"},6]}})
     // res.send(data)
@@ -108,9 +100,7 @@ exports.birth_this_week = async(req,res)=>{
     // }
     
     
-    console.log('run')
     var cur = new Date()
-    console.log(cur)
     // { $expr: { $eq: [{ $month: '$DateT' }, { $month: curdat }] } },
     memberModal.aggregate([
         {
@@ -134,7 +124,6 @@ exports.birth_this_week = async(req,res)=>{
     ]).exec((err,resp)=>{
         if(err){
             res.json({code:400,msg:'this week birthday not found'})
-            console.log(err)
         }
         else{
             res.json({code:200,msg:resp})

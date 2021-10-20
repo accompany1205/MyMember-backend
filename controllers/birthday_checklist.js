@@ -4,7 +4,6 @@ const user = require("../models/user");
 var _ = require("lodash");
 
 exports.BirthChecklist = (req, res) => {
-    console.log(req.body)
     student.findById(req.params.studentId).exec((err, studentData) => {
         if (err) {
             res.send({ error: 'student data not found' })
@@ -16,7 +15,6 @@ exports.BirthChecklist = (req, res) => {
                 userId: req.params.userId
             }
             var checklist = _.extend(req.body, obj)
-            console.log(checklist)
             var birthdaycheck = new birthdayChecklist(checklist);
             birthdaycheck.save((err, birthdaydata) => {
                 if (err) {

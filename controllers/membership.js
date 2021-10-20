@@ -12,16 +12,13 @@ exports.create = async (req, res) => {
         res.send({msg:"working!"})
         
     } catch (error) {
-        console.log(error)
     }
     // membershipObj.save((err, data) => {
     //     if (err) {
-    //         console.log(err)
     //         res.send({ error: 'membership not add' })
     //     }
     //     membershipModal.findByIdAndUpdate({ _id: data._id }, { $set: { userId: userId } })
     //         .exec((err, membershipData) => {
-    //             console.log("data---", data)
     //             if (err) {
     //                 res.send({ error: 'user id is not add in membership' });
     //             }
@@ -33,7 +30,6 @@ exports.create = async (req, res) => {
 }
 
 exports.read = (req, res) => {
-    console.log("params -> ", req.params.userId)
     membershipModal.find({ userId: req.params.userId }).exec((err, data) => {
 
         if (err) {

@@ -7,12 +7,11 @@ exports.create = (req, res) => {
     var supportObj = new supportModal(req.body);
     supportObj.save((err,ticket)=>{
         if(err){
-            console.log(err)
+            res.send(err)
         }
         else{
             if(req.file){
               cloudUrl.imageUrl(req.file).then((ticketImgUrl)=>{
-                   console.log(ticketImgUrl)
                    supportModal.findByIdAndUpdate(ticket._id,{$set:{ticket_image:ticketImgUrl,userId:req.params.userId}})
                    .then((response) => {
                            res.send(response)
@@ -40,7 +39,7 @@ exports.create = (req, res) => {
 }
 
 exports.read=(req,res)=>{
-    supportModal.find().exec((err,data)=>{
+    supportModal.find({ userId: req.params.userId }).exec((err,data)=>{
         if(err){
             res.send({ error : 'ticket list not found' })
         }
@@ -49,11 +48,13 @@ exports.read=(req,res)=>{
                 res.send(data) 
             }
             else{
-                res.send({ error : 'list is empty' })
+                res.send({ msg:'list is empty' })
             }
         }
     })
 }
+
+
 
 exports.closeList=(req,res)=>{
     supportModal.find({$and:[{userId:req.params.userId},{status:'Closed'}]})

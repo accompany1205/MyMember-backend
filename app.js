@@ -138,7 +138,7 @@ mongoose
   )
   .then(() => console.log("DB Connected"));
 //all cron job
-// const statusCheck = require("./notice/status")
+const statusCheck = require("./notice/status")
 
 // middlewares
 app.use(express.json());
@@ -269,7 +269,6 @@ app.use("/api", student_menu);
 const port = process.env.PORT || 3001;
 
 // var server = https.createServer(credentials1, app).listen(port, function(){
-//     console.log("Express server listening on port " + port);
 // });
 
 app.listen(port, () => {

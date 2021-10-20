@@ -30,7 +30,6 @@ exports.read = (req,res)=>{
             res.send({error:'all total not get'})
         }
         else{
-            console.log(data)
             Expenses.aggregate([
                 {"$match":{userId:userID}},
                 {"$group":{
@@ -52,19 +51,15 @@ exports.Create = (req,res)=>{
     var userID = mongo.Types.ObjectId(req.params.userId)
     const exp = new Expenses(req.body)
     exp.dateM = req.body.date
-    console.log(exp)
     exp.save((err,expData)=>{
-        console.log(expData)
         if(err){
             res.send(err)
-            console.log(err)
         }
         else{
             if(req.file){
                 cloudUrl.imageUrl(req.file).then((expimgUrl)=>{ 
                     Expenses.findByIdAndUpdate(expData._id,{$set:{userId:userID,expense_image:expimgUrl}})
                     .exec((err,updateExp)=>{
-                        console.log(updateExp)
                 if(err){
                         res.send({error:'user id is not add in expense'})
                       }
@@ -129,7 +124,6 @@ exports.update = (req, res)=>{
                 cloudUrl.imageUrl(req.file).then((expimgUrl)=>{ 
                 Expenses.findByIdAndUpdate(expUpdate._id,{$set:{expense_image:expimgUrl}})
                 .exec((err,updateExp)=>{
-                        console.log(updateExp)
                 if(err){
                         res.send({error:'expense image is not update'})
                       }
@@ -152,10 +146,8 @@ exports.remove = (req, res)=>{
     const id = req.params.expenseId
     Expenses.deleteOne({ _id: id })
         .then((resp) => {
-            console.log(resp)
             res.json("Expenses has been deleted successfully")
         }).catch((err) => {
-            console.log(err)
             res.send(err)
         })
 };

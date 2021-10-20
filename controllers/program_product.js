@@ -52,7 +52,6 @@ exports.create = (req, res) => {
     }
     product.save((err, result) => {
         if (err) {
-            console.log('PRODUCT CREATE ERROR ', err);
             return res.status(400).json({
                 error: errorHandler(err)
             });
@@ -95,7 +94,6 @@ exports.update = (req, res) => {
     }
     program_product.updateOne({ _id: product_id }, data)
         .then((response) => {
-            console.log(req.file)
             cloudenary.config({
                 cloud_name: process.env.cloud_name,
                 api_key: process.env.cloud_api_key,
@@ -108,12 +106,10 @@ exports.update = (req, res) => {
                 { public_id: `product_photo/${uniqueFilename}`, tags: `photo` }, // directory and tags are optional
                 function (err, image) {
                     if (err) return res.send(err)
-                    console.log('file uploaded to Cloudinary')
                     const fs = require('fs')
                     fs.unlinkSync(path)
                     program_product.updateOne({ _id: product_id }, { $set: { photo: image.url } })
                         .then((response) => {
-                            console.log(response)
                             res.send(response)
                         });
                 }
@@ -194,9 +190,7 @@ exports.listBySearch = (req, res) => {
     let skip = parseInt(req.body.skip);
     let findArgs = {};
 
-    // console.log(order, sortBy, limit, skip, req.body.filters);
-    // console.log("findArgs", findArgs);
-
+ 
     for (let key in req.body.filters) {
         if (req.body.filters[key].length > 0) {
             if (key === 'price') {

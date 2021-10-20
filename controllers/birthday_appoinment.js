@@ -26,14 +26,11 @@ exports.birthlist =(req,res)=>{
                 firstName:std_data.firstName,
                 lastName:std_data.lastName
             }
-            console.log("---> ", req.body)
             var birth_app = new birthdayApp(req.body)
             var birthdayAppoinment = _.extend(birth_app, obj)
-            console.log("..> ",birthdayAppoinment)
           
             birthdayAppoinment.save((err,appoinmentData)=>{
                 if(err){
-                    console.log("--> ", err)
                     res.send({error:'student birthday appoinment is not create'})
                 }
                 else{

@@ -24,20 +24,14 @@ function randomString(len, charSet) {
 
 router.post('/sent_resetPass_link', parser, (req, res) => {
     const tokens = randomString(15, 'PICKCHAR45SFROM789THI123SSET');
-    console.log(tokens)
     var emails = req.body.email
-    console.log(emails)
     User.findOne({ email: emails })
         .then((result) => {
-            console.log(result)
             if (result === null) {
                 res.send("email not found")
             }
             else {
                 const hr = "http://localhost:4200/reset_pass/"+tokens
-                console.log(hr)
-                // const tokens = token()
-                // console.log(tokens)
                 User.update({ email: emails }, { $set: { resetPasswordToken: tokens, resetPasswordExpires: Date.now() + 3600000 } })
                     .then((resp) => {
                         let mailTransporter = nodemailer.createTransport({
@@ -57,12 +51,9 @@ router.post('/sent_resetPass_link', parser, (req, res) => {
                         };
                         mailTransporter.sendMail(mailDetails, function (err, data) {
                             if (err) {
-                                console.log(err)
-                                console.log('Error Occurs');
                                 res.send(err);
                             } else {
                                 res.send(data);
-                                console.log('Email sent successfully');
                                 res.json("email send sucussfully");
                             }
                         });

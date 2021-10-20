@@ -21,14 +21,11 @@ exports.create = (req, res) => {
         var path = req.file.path;
         var uniquefilename = filename+(Date.now())
 
-        console.log(uniquefilename)
         cloudenary.uploader.upload(
             path,
             { public_id: `manageStripe/${uniquefilename}`, tags: `manageStripe` }, // directory and tags are optional
             function (err, image) {
-                console.log(image)
                 if (err) return res.send(err)
-                console.log('file uploaded to Cloudinary')
                 const fs = require('fs')
                 fs.unlinkSync(path)
                 manageStripe.findByIdAndUpdate(data._id,{ $set: { manage_stripe_image: image.url }})
@@ -72,14 +69,12 @@ exports.create = (req, res) => {
 //         .then((category) => {
 //             res.json(category)
 //         }).catch((err) => {
-//             console.log(err);
 //             res.send(err)
 //         })
 // };
 
 exports.update = (req, res) => {
     const manage_stripeId = req.params.manage_stripeId;
-    console.log(req.body,req.file)
     manageStripe.updateOne({ _id: manage_stripeId }, req.body)
         .then((result) => {
             if (req.file) {
@@ -99,7 +94,6 @@ exports.update = (req, res) => {
                     { public_id: `manageStripe/${uniquefilename}`, tags: `manageStripe` }, // directory and tags are optional
                     function (err, image) {
                         if (err) return res.send(err)
-                        console.log('file uploaded to Cloudinary')
                         const fs = require('fs')
                         fs.unlinkSync(path)
                         manageStripe.findByIdAndUpdate(manage_stripeId, { $set: { manage_stripe_image: image.url } })
@@ -110,10 +104,8 @@ exports.update = (req, res) => {
                 );
             } else {
                 res.send({msg:'manage stripe is update'})
-                console.log(result);
             }
         }).catch((err) => {
-            console.log(err);
             res.send(err);
         });
 }

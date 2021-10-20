@@ -7,7 +7,6 @@ exports.read = (req,res)=>{
              .populate('program_subcategory')
              .exec((err,data)=>{
                 if(err){
-                    console.log(err)
                     res.send({error:'subcategory is not populate'})
                 }
                 else{
@@ -38,19 +37,16 @@ exports.create = (req,res)=>{
     categoryDetails.category = category;
     categoryDetails.programName = programName;
     categoryDetails.userId = req.params.userId;
-    console.log(categoryDetails)
 
                 var categoryObj = new pcategory(categoryDetails)
-                console.log(categoryObj)
                 categoryObj.save((err,categoryData)=>{
                     if(err){
-                        console.log(err)
+                        res.send(err)
                     }   
                     else{
                         program.updateOne({programName:programName},{$push:{ program_category : categoryData._id }})
                             .exec((err,data)=>{
                                 if(err){
-                                    console.log(err)
                                     res.send({error:'category is not added'})
                                 }
                                 else{
@@ -76,14 +72,12 @@ exports.update = (req,res)=>{
                 res.send({msg:'category added successfully',result})
                 
             }).catch((err) => {
-                console.log(err);
                 res.send(err);
             })
             
         
     })
     .catch((err) => {
-        console.log(err);
         res.send(err);
     })
     

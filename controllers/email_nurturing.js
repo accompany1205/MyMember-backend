@@ -8,7 +8,6 @@ const AuthKey = require('../models/email_key')
 function TimeZone(){
     const str = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
     const date_time =str.split(',')
-    console.log(date_time)
     const date = date_time[0]
     const time = date_time[1]
     return { Date:date,Time:time}
@@ -33,7 +32,6 @@ exports.category_list =(req,res)=>{
     .exec((err,categoryList)=>{
         if(err){
             res.send({error:'compose category is not found'})
-            console.log(err)
         }
         else{
             res.send(categoryList)
@@ -110,15 +108,12 @@ exports.sendEmail = (req,res)=>{
         emailData.content = req.body.template;
     
         sgMail.send_via_sendgrid(emailData).then(resp=>{
-            console.log(resp)
            var DT = TimeZone() 
            var emailDetail =  new emailSent(req.body)
            emailDetail.sent_date = DT.Date
            emailDetail.sent_time = DT.Time
-           console.log(emailDetail)
            emailDetail.save((err,emailSave)=>{
                if(err){
-                   console.log(err);
                    res.send({error:'email details is not save'})
                }
                else{
@@ -134,7 +129,6 @@ exports.sendEmail = (req,res)=>{
                }
            })
         }).catch(err=>{
-            console.log({err});
             res.send({error:'email not send',error:err})
         })
 

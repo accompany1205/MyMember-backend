@@ -35,7 +35,6 @@ exports.Create = async (req, res) => {
         // task.save((err, data) => {
         //     if (err) {
         //         res.send({ error: 'class schedule is not add', Error: err })
-        //         console.log(err)
         //     }
         //     else {
         //         class_schedule.findByIdAndUpdate({ _id: data._id }, { $set: { userId: req.params.userId } })
@@ -58,7 +57,7 @@ exports.Create = async (req, res) => {
 
 exports.read = async (req, res) => {
     try {
-        let result = await class_schedule.find({})
+        let result = await class_schedule.find({ userId: req.params.userId })
         res.send({ data: result, success: true })
     } catch (error) {
         res.send({ error: error.message.replace(/\"/g, ""), success: false })
@@ -120,7 +119,6 @@ exports.updateAll = async (req, res) => {
             allAttendance.push(NewEvent)
         }
     }
-    // console.log(allAttendance.length)
 
     const data = await class_schedule.deleteMany({
         $and:
@@ -163,6 +161,13 @@ exports.updateAll = async (req, res) => {
                     success: true
                 })
             }
+            // else {
+            //     const res1 = await class_schedule.insertMany({ $and:[{ userId: req.params.userId },allAttendance]});
+            //     res.status(200).json({
+            //         message: 'All class schedule has been updated Successfully',
+            //         success: true
+            //     })
+            // }
         }).catch((error) => {
             res.send({ error: error.message.replace(/\"/g, ""), success: false })
         })

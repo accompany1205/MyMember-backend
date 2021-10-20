@@ -2,15 +2,12 @@ const program = require("../models/program");
 
 
 exports.create = (req, res) => {
-    console.log(req.body, req.file)
     const Id = req.params.userId;
 
     var prog = new program(req.body)
     prog.save((err, data) => {
-        console.log(data)
         if (err) {
             res.send({ error: 'program is not create' })
-            console.log(err)
         }
         else {
             if (req.file) {
@@ -23,7 +20,6 @@ exports.create = (req, res) => {
 
                 var filename = req.file.originalname;
                 var path = req.file.path;
-                console.log(path)
                 var uniquefilename = filename + (Date.now())
 
                 cloudenary.uploader.upload(
@@ -31,15 +27,13 @@ exports.create = (req, res) => {
                     { public_id: `program/${uniquefilename}`, tags: `program` }, // directory and tags are optional
                     function (err, image) {
                         if (err) return res.send(err)
-                        console.log('file uploaded to Cloudinary',image)
                         const fs = require('fs')
                         fs.unlinkSync(path)
                         program.findByIdAndUpdate({ _id: data._id }, { $set: { program_image: image.url, userId: Id } })
                             .then((response) => {
                                 res.send(response)
                             }).catch((error) => {
-                                res.send("image not add in program")
-                                console.log(error)
+                                res.send({msg:"image not add in program", error})
                             });
                     }
                 );
@@ -81,13 +75,11 @@ exports.read = (req, res) => {
 
 exports.programs_detail = (req, res) => {
     var id = req.params.proId
-    console.log(id)
     program.findById(id)
         .populate('program_category')
         .populate('program_rank')
         .exec((err, data) => {
             if (err) {
-                console.log(err)
                 res.send({ error: 'category is not populate' })
             }
             else {
@@ -98,13 +90,11 @@ exports.programs_detail = (req, res) => {
 
 exports.program_rank = (req, res) => {
     var id = req.params.proId
-    console.log(id)
     program.findById(id)
         .select('programName')
         .populate('program_rank')
         .exec((err, data) => {
             if (err) {
-                console.log(err)
                 res.send({ error: 'rank is not populate' })
             }
             else {
@@ -133,7 +123,6 @@ exports.update = (req, res) => {
                     { public_id: `program/${uniquefilename}`, tags: `program` }, // directory and tags are optional
                     function (err, image) {
                         if (err) return res.send(err)
-                        console.log('file uploaded to Cloudinary')
                         const fs = require('fs')
                         fs.unlinkSync(path)
 
@@ -148,7 +137,6 @@ exports.update = (req, res) => {
     
             }
         }).catch((err) => {
-            console.log(err);
             res.send({message:err.message.replace(/\"/g, ""),success:false} );
         })
 }
@@ -158,7 +146,6 @@ exports.remove = (req, res) => {
     const uid = req.params.proId;
     program.remove({ _id: uid })
         .then((resp) => {
-            console.log(resp);
             res.json({ data: resp, message: "program deleted succesfuly" });
         }).catch((err) => {
             res.send(err)
