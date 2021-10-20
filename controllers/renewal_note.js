@@ -91,6 +91,7 @@ exports.updateNote = (req,res)=>{
 exports.expireStd = async(req,res)=>{
     try{
     var dataExpire = await student.find({status:"expired"},{firstName:1,lastName:1,age:1,memberprofileImage:1,last_contact_renewal:1})
+    console.log(dataExpire)
     res.send(dataExpire)
     }catch(e){
         res.send({error:'expire student data not fount'})

@@ -49,9 +49,7 @@ exports.getRank = async (req, res) => {
 
     try {
         const studentId = req.params.studentId
-        console.log(studentId)
         const data = await student_info_Rank.find({ studentId: studentId })
-        console.log(data)
         res.send({ data: data })
     }
     catch (err) {
