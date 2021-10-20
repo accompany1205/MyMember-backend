@@ -6,7 +6,6 @@ exports.category_list =(req,res)=>{
     .exec((err,categoryList)=>{
         if(err){
             res.send({error:'library category is not found'})
-            console.log(err)
         }
         else{
             res.send(categoryList)

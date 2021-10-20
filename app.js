@@ -136,7 +136,7 @@ mongoose
   )
   .then(() => console.log("DB Connected"));
 //all cron job
-// const statusCheck = require("./notice/status")
+const statusCheck = require("./notice/status")
 
 // middlewares
 app.use(express.json());

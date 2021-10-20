@@ -3,7 +3,9 @@ const mongoose = require("mongoose");
 const recommendedForTest = new mongoose.Schema({
 
     studentId: {
-        type: String
+        type: String,
+        required:true,
+        unique:true
     },
     userId:{
         type: String
@@ -25,7 +27,7 @@ const recommendedForTest = new mongoose.Schema({
     },
     lastPromotedDate:{
         type:Date,
-        default: new Date()
+        default: new Date(),
     },
     status:{
         type:String
@@ -39,10 +41,16 @@ const recommendedForTest = new mongoose.Schema({
     next_rank:{
         type:String
     },
+    next_rank_name:{
+        type:String
+    },
     isDeleted:{
         type: Boolean,
         default: false
-    }
+    },
+    current_rank_name:{
+        type:String
+        }
 
 });
 

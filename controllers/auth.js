@@ -40,8 +40,6 @@ exports.signup = async (req, res) => {
   admins.map(email => {
     sendToAllAdmins.push(email["email"])
   })
-  console.log("Here we can send the emails", sendToAllAdmins)
-  console.log(admins);
 
   //todo Pavan - Need to restructure the mail body as per the requirement
   let msg = {
@@ -55,7 +53,6 @@ exports.signup = async (req, res) => {
   }
   user.save((err, user) => {
     if (err) {
-      console.log(err);
       return res.status(400).json({
         // error: errorHandler(err)
         error: "Email is taken",
@@ -329,17 +326,14 @@ exports.signin = (req, res) => {
     username,
     password
   } = req.body;
-  console.log(req.body);
   User.findOne({
     username
   }).exec((err, data) => {
     if (err || !data) {
-      console.log(err);
       return res.status(400).json({
         error: "User with that email does not exist. Please signup",
       });
     } else {
-      console.log('data', data)
       if (data.password == req.body.password) {
         if (data.role == 0) {
           if (data.status == "Active") {
@@ -363,7 +357,6 @@ exports.signin = (req, res) => {
               logo,
               location_name,
             } = data;
-            console.log(data);
             return res.json({
               token,
               data: {
@@ -436,8 +429,6 @@ exports.requireSignin = expressJwt({
 });
 
 exports.isAuth = (req, res, next) => {
-  console.log("data", req.auth);
-  // console.log('data',req.profile)
   let user = req.profile && req.auth && req.profile._id == req.auth._id;
   if (!user) {
     return res.status(403).json({
@@ -460,7 +451,6 @@ exports.verifySchool = (req, res, next) => {
 
   if (typeof bearerToken !== "undefined") {
     jwt.verify(bearerToken, process.env.JWT_SECRET, (err, authData) => {
-      console.log(authData, req.params.userId);
       if (err) {
         res.sendStatus(403);
       } else {
@@ -490,12 +480,10 @@ exports.isAdmin = (req, res, next) => {
   const bearerToken = bearer[1];
   if (typeof bearerToken !== "undefined") {
     jwt.verify(bearerToken, process.env.JWT_SECRET, (err, adminData) => {
-      console.log(adminData, req.params.userId, "run");
       if (err) {
         res.sendStatus(403);
       } else {
         if (adminData.id == req.params.adminId && adminData.role == 1) {
-          console.log(adminData);
           next();
         } else {
           res.sendStatus(403);
@@ -679,11 +667,9 @@ exports.updateUser = async (req, res) => {
   await User.findByIdAndUpdate(req.params.userId, req.body)
     .exec((err, data) => {
       if (err) {
-        console.log(err);
         res.send({ error: "User is not updated!", status: "failure" })
       }
       else {
-        console.log(data);
         res.status(200).send({ msg: 'User is updated successfully', status: "success" })
       }
     })

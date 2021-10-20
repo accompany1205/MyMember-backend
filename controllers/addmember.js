@@ -22,7 +22,6 @@ const sgmail = require("sendgrid-v3-node");
 //             res.send(err)
 //         }
 //         else{
-//             console.log(data)
 //         }
 //     })
 // }
@@ -102,7 +101,6 @@ exports.std_program = async (req, res) => {
       } else {
         if (resp.length > 0) {
           var ary = []
-          console.log(resp)
           var list = resp
           Promise.all(list.map(async (item) => {
             var obj = {}
@@ -136,7 +134,6 @@ exports.std_program = async (req, res) => {
             res.send({
               error: 'data not found'
             })
-            console.log(err)
           })
         } else {
           res.send({
@@ -157,7 +154,6 @@ exports.bluckStd = async (req, res) => {
       memberObj.userId = req.params.userId;
       memberObj.save(function (err, data) {
         if (err) {
-          console.log(err);
           res.send({
             error: "member is not add"
           });
@@ -226,7 +222,6 @@ exports.bluckStd = async (req, res) => {
                 });
               });
           } else {
-            console.log(memberdetails.program);
             program
               .findOne({
                 programName: memberdetails.program
@@ -245,7 +240,6 @@ exports.bluckStd = async (req, res) => {
                   });
                 } else {
                   var d = proData.program_rank[0];
-                  console.log(d, "fs");
                   await addmemberModal.findByIdAndUpdate({
                     _id: data._id
                   }, {
@@ -315,7 +309,6 @@ exports.listMember = (req, res) => {
     .select("lastName")
     .exec((err, data) => {
       if (err) {
-        console.log(err);
         res.send({
           error: "member list is not found"
         });
@@ -358,7 +351,6 @@ exports.studentCount = (req, res) => {
         stdCount.forEach((ele) => {
           Total = Total + ele.count;
         });
-        console.log(Total);
         res.send({
           code: 200,
           Total_std: Total,
@@ -378,9 +370,8 @@ exports.addmember = async (req, res) => {
   // memberObj.programColor = pDetail.color
   memberObj.save(function (err, data) {
     if (err) {
-      console.log(err);
       res.send({
-        error: "member is not add"
+        error: "member is not added"
       });
     } else {
       if (req.file) {
@@ -407,7 +398,6 @@ exports.addmember = async (req, res) => {
                   })
                   .exec((err, proData) => {
                     if (err) {
-                      console.log("------>", err)
                       res.send({
                         code: 400,
                         msg: "program not found"
@@ -466,7 +456,6 @@ exports.addmember = async (req, res) => {
               });
             } else {
               var d = proData.program_rank[0];
-              console.log(d, "fs");
               addmemberModal.findByIdAndUpdate({
                 _id: data._id
               }, {
@@ -504,7 +493,6 @@ exports.read = (req, res) => {
     .populate("manage_change_rank")
     .exec((err, data) => {
       if (err) {
-        console.log(err);
         res.send({
           error: "member list is not found"
         });
@@ -658,7 +646,7 @@ exports.studentinfo = (req, res) => {
         res.send({
           error: "member is not found"
         });
-        console.log(err);
+        
       } else {
         res.send(data);
       }
@@ -737,7 +725,7 @@ exports.missuCall_list = (req, res) => {
         res.send({
           error: "student list not find"
         });
-        console.log(err);
+        
       } else {
         res.send(list_missUCall);
       }
@@ -766,7 +754,7 @@ exports.missuCall_list_urjent = (req, res) => {
         res.send({
           error: "student list not find"
         });
-        console.log(err);
+        
       } else {
         res.send(list_missUCall);
       }
@@ -795,7 +783,6 @@ exports.expire_this_month = (req, res) => {
 };
 
 exports.birth_this_month = (req, res) => {
-  console.log("run");
   var curDate = new Date();
   addmemberModal.aggregate(
     [{
@@ -844,7 +831,7 @@ exports.birth_this_month = (req, res) => {
         res.send({
           error: "this month birthday data not found"
         });
-        console.log(err);
+        
       } else {
         var options = {
           path: "birthday_checklist",
@@ -969,7 +956,7 @@ exports.birth_next_month = (req, res) => {
         res.send({
           error: "next month birthday data not found"
         });
-        console.log(err);
+        
       } else {
         var options = {
           path: "birthday_checklist", //array name in addmember modal
@@ -1031,7 +1018,7 @@ exports.this_month_lead = (req, res) => {
         res.send({
           error: "leads this month data not found"
         });
-        console.log(err);
+        
       } else {
         res.send(leadMonth);
       }
@@ -1077,7 +1064,7 @@ exports.last_three_month = (req, res) => {
     .exec((err, mon) => {
       if (err) {
         res.send("data not found");
-        console.log(err);
+        
       } else {
         res.send(mon);
       }
@@ -1085,7 +1072,6 @@ exports.last_three_month = (req, res) => {
 };
 
 exports.deletemember = (req, res) => {
-  console.log("id", req.params);
   var memberID = req.params.memberID;
   addmemberModal.findByIdAndDelete(memberID).exec((err, data) => {
     if (err) {
@@ -1120,7 +1106,6 @@ exports.delete_multipal_member = (req, res) => {
 
 exports.updatemember = (req, res) => {
   var memberID = req.params.memberID;
-  console.log(req.body);
   addmemberModal
     .findByIdAndUpdate({
       _id: memberID
@@ -1174,7 +1159,6 @@ function TimeZone() {
     timeZone: "Asia/Kolkata"
   });
   const date_time = str.split(",");
-  console.log(date_time);
   const date = date_time[0];
   const time = date_time[1];
   return {
@@ -1184,7 +1168,6 @@ function TimeZone() {
 }
 
 exports.send_mail_std = (req, res) => {
-  console.log(process.env.Email_Key);
   if (req.body.email_type == "Email") {
     const emaildata = {
       sendgrid_key: process.env.Email_Key,
@@ -1199,12 +1182,10 @@ exports.send_mail_std = (req, res) => {
     sgmail
       .send_via_sendgrid(emaildata)
       .then((resp) => {
-        console.log(resp);
         var DT = TimeZone();
         var emailDetail = new sentEmail(req.body);
         emailDetail.sent_date = DT.Date;
         emailDetail.sent_time = DT.Time;
-        console.log(emailDetail);
         emailDetail.save((err, resp) => {
           res.send({
             code: 200,
@@ -1226,7 +1207,6 @@ const client = require("twilio")(process.env.aid, process.env.authkey);
 exports.send_sms_std = (req, res) => {
   var number = req.body.number;
   var code = "+1";
-  console.log(number);
   client.messages.create({
     to: number,
     from: "+12192445425",
@@ -1237,7 +1217,7 @@ exports.send_sms_std = (req, res) => {
         res.send({
           error: "msg not set"
         });
-        console.log(err);
+        
       } else {
         res.send({
           msg: "text sms send successfully"
@@ -1249,8 +1229,6 @@ exports.send_sms_std = (req, res) => {
 
 
 exports.getActiveStudents = async (req, res) => {
-  console.log("I am able to call the api");
-  console.log(req.params.userId)
   let userId = req.params.userId;
   if (!userId) {
     return res.json({
@@ -1316,7 +1294,6 @@ exports.getRankUpdateStripeHistoryByStudentId = async (req, res) => {
 
 exports.getRankUpdateTestHistoryByStudentId = async (req, res) => {
   let studentId = req.params.studentId;
-  console.log("--->", studentId)
   if (!studentId) {
     res.json({
       status: false,
@@ -1331,7 +1308,6 @@ exports.getRankUpdateTestHistoryByStudentId = async (req, res) => {
     });
   }
   let rankTestHistory = student.rank_update_test_history;
-  console.log(rankTestHistory.lenght)
   if (rankTestHistory.lenght ===0) {
     return res.json({
       stasus: false,

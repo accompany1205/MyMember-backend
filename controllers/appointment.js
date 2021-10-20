@@ -7,13 +7,13 @@ exports.Create = (req, res) => {
 
     if(appoinemnt.app_type == 'Event'){
     var App = _.extend(appoinemnt,req.params)
-    console.log(App)
+    
     const campaigns = new appoint(App);
     campaigns.app_color ='#ff0000'    
     campaigns.save((err, appdata) => {
         if (err) {
             res.send({error:'appoinment is not add'})        
-            console.log(err)    
+                
         }
         else{
             res.send(appdata)
@@ -23,13 +23,13 @@ exports.Create = (req, res) => {
 
     else if(appoinemnt.app_type == 'Appoinment'){
         var App = _.extend(appoinemnt,req.params)
-        console.log(App)
+        
         const campaigns = new appoint(App);
         campaigns.app_color ='#75c900'    
         campaigns.save((err, appdata) => {
             if (err) {
                 res.send({error:'appoinment is not add'})        
-                console.log(err)    
+                    
             }
             else{
                 res.send(appdata)
@@ -38,13 +38,13 @@ exports.Create = (req, res) => {
           }
     else if(appoinemnt.app_type == 'Testing'){
             var App = _.extend(appoinemnt,req.params)
-            console.log(App)
+            
             const campaigns = new appoint(App);
             campaigns.app_color ='#b66e7b'    
             campaigns.save((err, appdata) => {
                 if (err) {
                     res.send({error:'appoinment is not add'})        
-                    console.log(err)    
+                        
                 }
                 else{
                     res.send(appdata)
@@ -53,13 +53,13 @@ exports.Create = (req, res) => {
         }
     else if(appoinemnt.app_type == 'Camp'){
                 var App = _.extend(appoinemnt,req.params)
-                console.log(App)
+                
                 const campaigns = new appoint(App);
                 campaigns.app_color ='#b66e7b'    
                 campaigns.save((err, appdata) => {
                     if (err) {
                         res.send({error:'appoinment is not add'})        
-                        console.log(err)    
+                            
                     }
                     else{
                         res.send(appdata)
@@ -95,10 +95,9 @@ exports.update = (req, res) => {
     const id = req.params.appointId;
     appoint.findByIdAndUpdate(id, { $set: req.body })
         .then((update_resp) => {
-            console.log(update_resp)
             res.send("Appointment has been updated successfully")
         }).catch((err) => {
-            console.log(err)
+            
             res.send(err)
         })
 };
@@ -107,10 +106,9 @@ exports.remove =(req, res) => {
     const id = req.params.appointId
     appoint.deleteOne({ _id: id })
         .then((resp) => {
-            console.log(resp)
             res.json("Appointment has been deleted successfully")
         }).catch((err) => {
-            console.log(err)
+            
             res.send(err)
         })
 };

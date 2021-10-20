@@ -4,31 +4,27 @@ const user = require("../models/user")
 const cloudUrl = require("../gcloud/imageUrl")
 
 exports.create = (req, res) => {
-    console.log(req.body)
     const prog = new manage_rank(req.body)
     prog.save((err, data) => {
         if (err) {
             res.send({ error: 'manage rank is not add' })
-            console.log(err)
         }
         else {
             if (req.file) {
                 cloudUrl.imageUrl(req.file).then((result) => {
-                    console.log('Result', result)
                     manage_rank.findByIdAndUpdate(data._id, { $set: { rank_image: result } })
                         .exec((err, rankdata) => {
                             if (err) {
                                 res.send({ error: 'image is not add in rank' })
                             }
                             else {
-                                console.log(data)
                                 program.updateOne({ programName: req.body.programName }, { $push: { program_rank: data._id } })
                                     .exec((err, data) => {
                                         if (err) {
                                             res.send({ error: 'rank is not add in program' })
                                         }
                                         else {
-                                            res.send({ msg: 'rank is add in program with image', rankData: rankdata })
+                                            res.send({ msg: 'rank added successfully', rankData: rankdata })
                                         }
                                     })
                             }
@@ -36,7 +32,6 @@ exports.create = (req, res) => {
 
                 }).catch((error) => {
                     res.send({error:'image url is not create'})
-                    console.log(error)
                 })
             }
             else {
@@ -46,7 +41,7 @@ exports.create = (req, res) => {
                             res.send({ error: 'rank is not add in program' })
                         }
                         else {
-                            res.send({ msg: 'rank is add in program', rankData: data })
+                            res.send({ msg: 'rank added successfully', rankData: data })
                         }
                     })
             }
@@ -61,7 +56,6 @@ exports.read = (req, res) => {
         .then((category) => {
             res.json(category)
         }).catch((err) => {
-            console.log(err);
             res.send(err)
         })
 };
@@ -93,24 +87,21 @@ exports.update = (req, res) => {
                     { public_id: `program_rank/${uniqueFilename}`, tags: `program_rank` }, // directory and tags are optional
                     function (err, image) {
                         if (err) return res.send(err)
-                        console.log('file uploaded to Cloudinary')
                         const fs = require('fs')
                         fs.unlinkSync(path)
                         manage_rank.findByIdAndUpdate(program_rank_id, { $set: { rank_image: image.url } })
                             .then((response) => {
-                                res.json({ msg: 'program rank is update with image' })
-                                console.log('image is update and')
+                                res.json({ msg: 'program rank is update with image', success: true })
                             });
                     }
                 );
             } else {
-                res.send(result);
-                console.log(result);
+                res.send({ msg: 'program rank is update with image', success: true });
+               
             }
             // res.send(result);
             // console.log(result);
         }).catch((err) => {
-            console.log(err);
             res.send(err);
         })
 }

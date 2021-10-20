@@ -57,7 +57,7 @@ user.aggregate([
 ]).exec((err,appData)=>{
     if(err){
         res.send({error:'appoinment not found'})
-        console.log(err)
+        
     }
     else{
         res.send(appData)

@@ -2,15 +2,12 @@ const folderNur = require("../models/email_nurturing_folder");
 const nurturingCat = require('../models/email_nurturing')
 
 exports.create_folder = (req,res)=>{
-    console.log(req.body)
     var folderObj = new folderNur(req.body)
     folderObj.save((err,folder)=>{
         if(err){
             res.send({error:'nurturing folder is not create'})
-            console.log(err)
         }
         else{
-            console.log(folder)
             nurturingCat.findByIdAndUpdate(req.params.catId,{$push:{ folder:folder._id }})
             .exec((err,folderUpdate)=>{
                 if(err){

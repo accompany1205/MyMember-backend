@@ -2,6 +2,8 @@ const User = require('../models/user');
 const { Order } = require('../models/order');
 const { errorHandler } = require('../helpers/dbErrorHandler');
 const navbar = require('../models/navbar.js')
+const cloudUrl = require("../gcloud/imageUrl")
+
 
 exports.userById = (req, res, next, id) => {
     User.findById(id).exec((err, user) => {
@@ -22,7 +24,6 @@ exports.read = (req, res) => {
 };
 
 // exports.update = (req, res) => {
-//     console.log('user update', req.body);
 //     req.body.role = 0; // role will always be 0
 //     User.findOneAndUpdate({ _id: req.profile._id }, { $set: req.body }, { new: true }, (err, user) => {
 //         if (err) {
@@ -36,47 +37,84 @@ exports.read = (req, res) => {
 //     });
 // };
 
+// exports.update = (req, res) => {
+//     const id = req.params.userId;
+//     User.updateOne({ _id: id }, req.body).exec((err, data) => {
+//         if (err) {
+//             res.send(err)
+//         }
+//         else {
+
+//             res.send({ message: "User updated successfully", success: true })
+
+//         }
+//     })
+// }
+
+
+
 exports.update = (req, res) => {
-    // console.log('UPDATE USER - req.user', req.user, 'UPDATE DATA', req.body);
-    const { name, password } = req.body;
-
-    User.findOne({ _id: req.profile._id }, (err, user) => {
-        if (err || !user) {
-            return res.status(400).json({
-                error: 'User not found'
-            });
-        }
-        if (!name) {
-            return res.status(400).json({
-                error: 'Name is required'
-            });
+    var userId = req.params.userId;
+    console.log(req.files)
+    console.log('===================================================   ========================')
+    User
+      .findByIdAndUpdate({
+        _id: userId
+      }, req.body)
+      .exec((err, data) => {
+        if (err) {
+          res.send({
+            status: false,
+            error: "member is not update"
+          });
         } else {
-            user.name = name;
-        }
-
-        if (password) {
-            if (password.length < 6) {
-                return res.status(400).json({
-                    error: 'Password should be min 6 characters long'
+          if (req.file) {
+            cloudUrl
+              .imageUrl(req.file)
+              .then((stdimagUrl) => {
+                User
+                  .findByIdAndUpdate(data._id, {
+                    $set: {
+                        profile_image: stdimagUrl
+                    },
+                  })
+                  .then((response) => {
+                    res.send({
+                      msg: "profile image is update"
+                    });
+                  })
+                  .catch((error) => {
+                    res.send({
+                      error: "student image is not update"
+                    });
+                  });
+              })
+              .catch((error) => {
+                res.send({
+                  status: false,
+                  error: "image url is not create"
                 });
-            } else {
-                user.password = password;
-            }
+              });
+          } else {
+            res.send({
+              status: true,
+              msg: "profile is update successfully"
+            });
+          }
         }
+      });
+  };
 
-        user.save((err, updatedUser) => {
-            if (err) {
-                console.log('USER UPDATE ERROR', err);
-                return res.status(400).json({
-                    error: 'User update failed'
-                });
-            }
-            updatedUser.hashed_password = undefined;
-            updatedUser.salt = undefined;
-            res.json(updatedUser);
-        });
-    });
-};
+
+
+
+
+
+
+
+
+
+
 
 exports.addOrderToUserHistory = (req, res, next) => {
     let history = [];

@@ -11,8 +11,7 @@ exports.signup = (req, res) => {
     const user = new administrate(req.body);
     user.save((err, user)=>{
         if (err) {
-            console.log(err)
-            return res.status(400).json({
+                        return res.status(400).json({
                 // error: errorHandler(err)
                 error: 'Email is already taken'
             });
@@ -80,8 +79,7 @@ exports.signin = (req, res) => {
     administrate.findOne({ email },(err, user) => {
         console.log(user)
         if (err || !user) {
-            console.log(err)
-            return res.status(400).json({
+                        return res.status(400).json({
                 error: 'User with that email does not exist. Please signup'
             });
         }
@@ -174,8 +172,7 @@ exports.edit_userInfo = (req, res) => {
     administrate.findById(sub_user_id).exec((err, userData) => {
         if (err) {
             res.send({ error: 'user data is not found' })
-            console.log(err)
-        }
+                    }
         else {
             res.send(userData)
         }
@@ -202,7 +199,7 @@ exports.update = (req, res) => {
                 res.send({ msg: 'user is update successfully' });
             }
         }).catch((err) => {
-            console.log(err);
+            
             res.send(err);
         });
 }

@@ -2,7 +2,9 @@ require('dotenv').config();
 const User = require('../models/user');
 const Member = require('../models/addmember');
 const RecommendedForTest = require('../models/recommendedForTest');
-const RegisterdForTest = require('../models/registerdForTest')
+const RegisterdForTest = require('../models/registerdForTest');
+const Joi = require('@hapi/joi');
+
 
 
 exports.getRecommededForTest = async (req, res) => {
@@ -41,12 +43,12 @@ exports.getRegisteredForTest = async (req, res) => {
 
     let students = await RegisterdForTest.find({
         "isDeleted": false
-    });    
+    });
     if (!students.length) {
         res.json({
             status: false,
             msg: "There no data available for this query!!",
-            data:students
+            data: students
         })
     }
     res.json({
@@ -60,65 +62,72 @@ exports.getRegisteredForTest = async (req, res) => {
 
 exports.recomendStudent = async (req, res) => {
     //only accepte array of objects
-    
+
     let students = req.body;
     let userId = req.params.userId;
-    if (!students) {
-        res.json({
-            status: false,
-            msg: "You haven't selected any student!"
-        })
-    }
+    let recommendedFortestSchema = Joi.object({
+        studentId: Joi.string().required(),
+        firstName: Joi.string().required(),
+        lastName: Joi.string().required(),
+        memberprofileImage: Joi.string(),
+        phone: Joi.string(),
+        program: Joi.string().required(),
+        status: Joi.string().required(),
+        rating: Joi.number().required(),
+        current_rank: Joi.string(),
+        userId: Joi.string().required(),
+        next_rank: Joi.string(),
+        current_rank_name: Joi.string(),
+        next_rank_name: Joi.string().default("1"),
 
-    const recommendedStudentsForTest = [];
-    for (let student of students) {
-        let {
-            _id: studentId,
-            firstName,
-            lastName,
-            rating,
-            current_rank_name,
-            next_rank_name,
-            memberprofileImage,
-            phone,
-            program,
-            status,
-            lastPromotedDate
-        } = student;
-        let isStudentExists = await RecommendedForTest.find({
-            "studentId": studentId
-        });
-        if (!isStudentExists.length) {
-            recommendedStudentsForTest.push({
-                "studentId": studentId,
-                "firstName": firstName,
-                "lastName": lastName,
-                "rating": rating,
-                "current_rank_name": current_rank_name,
-                "next_rank_name": next_rank_name,
-                "userId": userId,
-                "memberprofileImage":memberprofileImage,
-                "phone":phone,
-                "program":program,
-                "lastPromotedDate":lastPromotedDate,
-                "status":status
+    })
+
+    try {
+
+        if (!students) {
+            res.json({
+                status: false,
+                msg: "You haven't selected any student!"
             })
         }
+
+        const recommendedStudentsForTest = [];
+        for (let student of students) {
+            student.userId = userId
+            await recommendedFortestSchema.validateAsync(student);
+            recommendedStudentsForTest.push(student)
+
+            // let isStudentExists = await RecommendedForTest.find({
+            //     "studentId": student.studentId
+            // });
+            // console.log(isStudentExists)
+            // if (isStudentExists.length > 0) {
+            //     recommendedStudentsForTest.push(student)
+            // }
+        }
+        await RecommendedForTest.insertMany(recommendedStudentsForTest);
+        res.send({
+            success: true,
+            msg: "Selected students got recomended successfully.",
+        })
+        // try{
+        //     await RecommendedForTest.insertMany(recommendedStudentsForTest);
+        //     res.send({
+        //         success: true,
+        //         msg: "Selected students got recomended successfully.",
+        //     })
+        // }catch(eror){
+        //     res.send({ error: error.message.replace(/\"/g, ""), success: false })
+        // }
+
+    } catch (error) {
+        let errorFound = error.message.replace(/\"/g, "")
+        if (errorFound.includes('duplicate key')) {
+            res.send({ error: 'Student already exist in recommend list !', success: false })
+        }
+        res.send({ error: error.message.replace(/\"/g, ""), success: false })
     }
 
-    let recommended = await RecommendedForTest.insertMany(recommendedStudentsForTest);
-    if (!recommended.length) {
-        res.json({
-            status: false,
-            msg: "Having some issue while createing the recommended list!!"
-        })
-    } else {
-        res.json({
-            status: true,
-            msg: "Selected students got recomended successfully.",
-            data: recommended
-        })
-    }
 
 };
 
@@ -128,8 +137,6 @@ exports.payAndPromoteTheStudent = async (req, res) => {
     let {
         testId,
         studentId,
-        firstName,
-        lastName,
         rating,
         current_rank,
         next_rank,
@@ -159,7 +166,7 @@ exports.payAndPromoteTheStudent = async (req, res) => {
             "studentId": studentId
         }, {
             "isDeleted": false,
-            "userId":userId
+            "userId": userId
         }, {
             new: true
         });
@@ -178,20 +185,23 @@ exports.payAndPromoteTheStudent = async (req, res) => {
     } else {
         //If moving the student to the registerd list for the fist time.
         let studentData = await Member.findById(studentId)
+        console.log(studentData)
         let registerd = await RegisterdForTest.create({
             "studentId": studentId,
-            "firstName": firstName,
-            "lastName": lastName,
+            "firstName": studentData.firstName,
+            "testId": testId,
+            "lastName": studentData.lastName,
             "rating": rating,
             "current_rank": current_rank,
             "next_rank": next_rank,
             "userId": userId,
-            "current_rank_img":studentData.current_rank_img,
-            "method":method,
+            "current_rank_img": current_rank_img,
+            "method": method,
             "memberprofileImage": studentData.memberprofileImage,
-            "phone":phone,
-            "program":studentData.program
+            "phone": phone,
+            "program": studentData.program
         });
+        console.log(registerd)
         if (!registerd) {
             res.json({
                 status: false,
@@ -200,11 +210,11 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         }
         let date = new Date();
         let history = {
-            "current_rank":current_rank,
-            "program":studentData.program,
-            "current_rank_img":current_rank_img,
-            "testPaid":date,
-            "promoted":date
+            "current_rank": current_rank,
+            "program": studentData.program,
+            "current_rank_img": current_rank_img,
+            "testPaid": date,
+            "promoted": date
         }
         let updatedTestPurchasing = await Member.findByIdAndUpdate(studentId, {
             $push: {
