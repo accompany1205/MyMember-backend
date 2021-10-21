@@ -1458,16 +1458,20 @@ exports.invoice_details = (req, res) => {
   // var userinfo = req.params.userId;
   addmemberModal
     .find({ _id: studentinfo },
-      {
-        firstName: 1,
-        lastName: 1,
-        address: 1,
-        country: 1,
-        state: 1,
-        zipPostalCode: 1,
-        school: 1
-
-      }
+      {billing_to:{
+        firstName:"$firstName" ,
+        lastName:"$lastName" ,
+        address:"$address" ,
+        country:"$country" ,
+        state:"$state" ,
+        zipPostalCode: "$zipPostalCode"
+      },
+      paid_to:{
+        school:"$school"
+      },
+      _id:0
+      
+    }
     )
     .populate("membership_details", { payment_type: 1, totalp: 1, due_every_month: 1, pay_latter: 1 })
     .exec((err, data) => {
