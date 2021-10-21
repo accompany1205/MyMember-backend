@@ -1420,17 +1420,17 @@ exports.filter_members = async (req, res) => {
 }
 
 exports.invoice_listing = (req, res) => {
- //STATUS SHOULD BE THERE=>PAID AND OVERDUE
+  //STATUS SHOULD BE THERE=>PAID AND OVERDUE
   var studentinfo = req.params.StudentId;
   var userinfo = req.params.userId;
   addmemberModal
-    .find({_id: studentinfo},
+    .find({ _id: studentinfo },
       {
         firstName: 1
-      
+
       }
-      )
-    .populate("membership_details",{"membership_name":1,"membership_status":1,"payment_type":1,"totalp":1,"expiry_date":1})
+    )
+    .populate("membership_details", { "membership_name": 1, "membership_status": 1, "payment_type": 1, "totalp": 1, "expiry_date": 1 })
     .exec((err, data) => {
       if (err) {
         res.send({ error: 'membership list is not find' });
@@ -1444,30 +1444,31 @@ exports.invoice_listing = (req, res) => {
 
 
 exports.invoice_details = (req, res) => {
-//PAYMENT-METHOD MUST BE THERE
+  //PAYMENT-METHOD MUST BE THERE
   var studentinfo = req.params.StudentId;
   var userinfo = req.params.userId;
   addmemberModal
-    .find({_id: studentinfo},
+    .find({ _id: studentinfo },
       {
-        firstName:1,
-        lastName:1,
-        address:1,
-        country:1,
-        state:1,
-        zipPostalCode:1,
-        school:1
-      
+        firstName: 1,
+        lastName: 1,
+        address: 1,
+        country: 1,
+        state: 1,
+        zipPostalCode: 1,
+        school: 1
+
       }
-      )
-    .populate("membership_details",{"payment_type":1,"totalp":1,due_every_month:1,pay_latter:1})
+    )
+    .populate("membership_details", { payment_type: 1, totalp: 1, due_every_month: 1, pay_latter: 1 })
     .populate("finance_details")
     .exec((err, data) => {
       if (err) {
-        res.send({ error: 'invoice  is not find' });
+        res.send({ error: err.message.replace(/\"/g, ""), success: false })
+
       }
       else {
-        res.send(data)
+        res.status(200).send({ data: data, success: true })
 
       }
     })
