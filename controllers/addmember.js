@@ -1464,7 +1464,7 @@ exports.invoice_details = (req, res) => {
     .populate("finance_details")
     .exec((err, data) => {
       if (err) {
-        res.send({ error: 'membership list is not find' });
+        res.send({ error: 'invoice  is not find' });
       }
       else {
         res.send(data)
