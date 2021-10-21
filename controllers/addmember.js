@@ -1399,11 +1399,11 @@ exports.filter_members = async (req, res) => {
 
               }
             })
-            res.send(filterInfo)
-            // res.status(200).send({ 
-            //   status: "success",
-            //   data: data
-            // })
+
+            res.status(200).send({
+              status: "success",
+              data: filterInfo
+            })
           }
         }
       })
@@ -1419,24 +1419,33 @@ exports.filter_members = async (req, res) => {
 
 }
 
-exports.invoice_listing = (req, res) => {
+exports.invoice_listing = async (req, res) => {
   //STATUS SHOULD BE THERE=>PAID AND OVERDUE
   var studentinfo = req.params.StudentId;
   var userinfo = req.params.userId;
   addmemberModal
     .find({ _id: studentinfo },
       {
-        firstName: 1
-
+        _id: 1
       }
     )
-    .populate("membership_details", { "membership_name": 1, "membership_status": 1, "payment_type": 1, "totalp": 1, "expiry_date": 1 })
+    .populate("membership_details",
+      {
+        membership_name: 1,
+        membership_status: 1,
+        ptype: 1,
+        totalp: 1,
+        due_every_month: 1,
+        // "status": {
+        //   $cond: [{ $gt: ["$due_every_month", "$payment_Date"] }, "overdue", "paid"]
+        // }
+      })
     .exec((err, data) => {
       if (err) {
         res.send({ error: 'membership list is not find' });
       }
       else {
-        res.send(data)
+        res.status(200).send({ data: data, success: true })
 
       }
     })
@@ -1446,7 +1455,7 @@ exports.invoice_listing = (req, res) => {
 exports.invoice_details = (req, res) => {
   //PAYMENT-METHOD MUST BE THERE
   var studentinfo = req.params.StudentId;
-  var userinfo = req.params.userId;
+  // var userinfo = req.params.userId;
   addmemberModal
     .find({ _id: studentinfo },
       {
@@ -1461,7 +1470,6 @@ exports.invoice_details = (req, res) => {
       }
     )
     .populate("membership_details", { payment_type: 1, totalp: 1, due_every_month: 1, pay_latter: 1 })
-    .populate("finance_details")
     .exec((err, data) => {
       if (err) {
         res.send({ error: err.message.replace(/\"/g, ""), success: false })

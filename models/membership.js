@@ -46,10 +46,9 @@ const membershipSchema = new mongoose.Schema({
     //     type:String,
     //     required:true
     // },
-    // pay:{
-    //     type:Number,
-    //     required:true
-    // },
+    payment_Date:{
+        type:Date
+    },
     due_every:{
         type:String,
         required:true
