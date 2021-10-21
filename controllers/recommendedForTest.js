@@ -100,7 +100,6 @@ exports.recomendStudent = async (req, res) => {
             // let isStudentExists = await RecommendedForTest.find({
             //     "studentId": student.studentId
             // });
-            // console.log(isStudentExists)
             // if (isStudentExists.length > 0) {
             //     recommendedStudentsForTest.push(student)
             // }
@@ -185,7 +184,6 @@ exports.payAndPromoteTheStudent = async (req, res) => {
     } else {
         //If moving the student to the registerd list for the fist time.
         let studentData = await Member.findById(studentId)
-        console.log(studentData)
         let registerd = await RegisterdForTest.create({
             "studentId": studentId,
             "firstName": studentData.firstName,
@@ -201,7 +199,6 @@ exports.payAndPromoteTheStudent = async (req, res) => {
             "phone": phone,
             "program": studentData.program
         });
-        console.log(registerd)
         if (!registerd) {
             res.json({
                 status: false,

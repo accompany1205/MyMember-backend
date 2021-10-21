@@ -13,7 +13,6 @@ exports.create = (req,res)=>{
         test_purchase.save((err,purchase_data)=>{
             if(err){
                 res.send({error:'test is not purchase'})
-                console.log(err)
             }
             else{
                 testFee.findById(testId)
@@ -28,8 +27,6 @@ exports.create = (req,res)=>{
                         res.send({error:'fee details not found'})
                     }
                     else{
-                        z
-                        console.log(purchase_data)
                         testpurchaseModal.findByIdAndUpdate(purchase_data._id,{$push:{test_info:feeData}})
                         .exec((err,test_purchase)=>{
                         if(err){

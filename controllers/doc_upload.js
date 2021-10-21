@@ -23,14 +23,12 @@ exports.docupload =(req,res)=>{
       res.send({error:'document is not add database'})
     }
     else{
-      console.log('Doc file details: ', docFileDetails);
       docsubfolder.updateOne({subFolderName:req.body.subFolder},{$push:docFileDetails},
         function(err,updateDoc){
           if(err){
             res.send({error:'File not added.'})
           }
           else{
-            console.log('After update: ', updateDoc);
             res.send({result:updateDoc,Doc:docdata})
           }
         })
@@ -43,14 +41,12 @@ exports.docremove =(req,res)=>{
     document:req.body.document,
   }
   docfile.findOneAndRemove({document: req.body.document}, {}, function (err, doc) {
-    console.log('Doc: ', doc);
     docsubfolder.updateOne({subFolderName: req.body.subFolderName},{$pull:docFileDetails},
       function(err,updateDoc){
         if(err){
           res.send({error:'File not removed.'})
         }
         else{
-          console.log('After update: ', updateDoc);
           res.send({result: updateDoc, Doc: doc});
           //res.send({result:updateDoc,Doc:docdata})
         }

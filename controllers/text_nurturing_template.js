@@ -80,7 +80,6 @@ exports.update_sms = (req,res)=>{
     TextSentSave.updateOne({_id:req.params.textId},req.body,(err,updateText)=>{
         if(err){
             res.send({error:'text sms is not update'})
-            console.log(err)
         }
         else{
             res.send(updateText)

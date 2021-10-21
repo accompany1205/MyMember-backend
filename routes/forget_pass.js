@@ -32,7 +32,6 @@ router.post('/sent_resetPass_link', parser, (req, res) => {
             }
             else {
                 const hr = "http://localhost:4200/reset_pass/"+tokens
-                // console.log(tokens)
                 User.update({ email: emails }, { $set: { resetPasswordToken: tokens, resetPasswordExpires: Date.now() + 3600000 } })
                     .then((resp) => {
                         let mailTransporter = nodemailer.createTransport({

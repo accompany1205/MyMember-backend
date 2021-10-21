@@ -43,7 +43,6 @@ if(req.body.contact_type == 'Email'){
         .select('primaryPhone')
         .select("userId")
         .exec((err,data)=>{
-          console.log(data)
           texttempList.insertMany(data).then((result)=>{
              async.eachSeries(result,(obj,done)=>{
                 tempList.findByIdAndUpdate(obj._id,{$set:{contact_type:req.body.contact_type}},done)

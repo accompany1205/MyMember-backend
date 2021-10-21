@@ -21,13 +21,11 @@ exports.create = (req,res) =>{
            groupDetails.student_type = student_type;
            groupDetails.date = new Date().toLocaleDateString();
 
-           console.log(groupDetails)
 
            var groupObj = new groupModal(groupDetails)
            groupObj.save((err,groupData)=>{
                if(err){
                    res.send({error:'family is not add'})
-                   console.log(err)
                }
                else{
                    addmemberModal.findByIdAndUpdate({_id:student_id},{$push:{myGroup:groupData._id}})

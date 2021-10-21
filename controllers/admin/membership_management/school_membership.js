@@ -17,7 +17,6 @@ exports.createMembership = (req,res)=>{
     var membership = new Membership(membershipDetails);
     membership.save((err,data)=>{
         if(err){
-            console.log(err)
             res.send(err)
         }
         Membership.findByIdAndUpdate({_id:data._id},{$set:{ adminId:Id }})

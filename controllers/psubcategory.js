@@ -3,12 +3,10 @@ const pcategory = require("../models/pcategory");
 const { deleteOne, $where } = require("../models/psubcategory");
 
 exports.create = (req, res) => {
-    console.log(req.body)
     var categoryId = req.params.catId;
     var subcategory = req.body.category;
     
         var psubcategoryObj = new psubcategory(subcategory)
-        console.log(psubcategoryObj)
         psubcategoryObj.save((err, data) => {
             if (err) {
 
