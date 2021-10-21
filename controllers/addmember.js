@@ -1466,9 +1466,6 @@ exports.invoice_details = (req, res) => {
         state:"$state" ,
         zipPostalCode: "$zipPostalCode"
       },
-      paid_to:{
-        school:"$school"
-      },
       _id:0
       
     }
