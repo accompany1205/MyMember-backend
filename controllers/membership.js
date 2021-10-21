@@ -9,10 +9,10 @@ exports.create = async (req, res) => {
     try {
         let meberObj = await membershipObj.save();
         let obj = await membershipModal.findByIdAndUpdate({ _id: membershipObj._id }, { $set: { userId: userId } })
-        res.send({msg:"working!"})
-        
+        res.send({ msg: "working!", success: true })
+
     } catch (error) {
-        console.log(error)
+        res.send({ error: err.message.replace(/\"/g, ""), success: false })
     }
     // membershipObj.save((err, data) => {
     //     if (err) {
