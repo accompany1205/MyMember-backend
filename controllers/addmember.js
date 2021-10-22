@@ -1426,7 +1426,7 @@ exports.invoice_listing = async (req, res) => {
   addmemberModal
     .find({ _id: studentinfo },
       {
-        _id: 0
+        _id: 1
       }
     )
     .populate("membership_details",
