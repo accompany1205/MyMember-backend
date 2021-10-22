@@ -1426,7 +1426,7 @@ exports.invoice_listing = async (req, res) => {
   addmemberModal
     .find({ _id: studentinfo },
       {
-        _id: 1
+        _id: 0
       }
     )
     .populate("membership_details",
@@ -1445,7 +1445,7 @@ exports.invoice_listing = async (req, res) => {
         res.send({ error: 'membership list is not find' });
       }
       else {
-        res.status(200).send({ data: data, success: true })
+        res.status(200).send({ data: data[0], success: true })
 
       }
     })
