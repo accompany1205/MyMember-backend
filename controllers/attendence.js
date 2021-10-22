@@ -86,7 +86,7 @@ exports.create = async (req, res) => {
       }
     });
   } else {
-    res.send({ msg: "schedule data not come" });
+    res.send({ msg: "invalid info provided" ,success:false});
   }
 };
 

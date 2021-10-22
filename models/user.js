@@ -60,7 +60,6 @@ const userSchema = new schema(
             type: String,
             trim: true,
             unique:true,
-           
             maxlength: 100
         },
         email: {

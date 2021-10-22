@@ -646,7 +646,7 @@ exports.studentinfo = (req, res) => {
         res.send({
           error: "member is not found"
         });
-        
+
       } else {
         res.send(data);
       }
@@ -725,7 +725,7 @@ exports.missuCall_list = (req, res) => {
         res.send({
           error: "student list not find"
         });
-        
+
       } else {
         res.send(list_missUCall);
       }
@@ -754,7 +754,7 @@ exports.missuCall_list_urjent = (req, res) => {
         res.send({
           error: "student list not find"
         });
-        
+
       } else {
         res.send(list_missUCall);
       }
@@ -831,7 +831,7 @@ exports.birth_this_month = (req, res) => {
         res.send({
           error: "this month birthday data not found"
         });
-        
+
       } else {
         var options = {
           path: "birthday_checklist",
@@ -956,7 +956,7 @@ exports.birth_next_month = (req, res) => {
         res.send({
           error: "next month birthday data not found"
         });
-        
+
       } else {
         var options = {
           path: "birthday_checklist", //array name in addmember modal
@@ -1018,7 +1018,7 @@ exports.this_month_lead = (req, res) => {
         res.send({
           error: "leads this month data not found"
         });
-        
+
       } else {
         res.send(leadMonth);
       }
@@ -1064,7 +1064,7 @@ exports.last_three_month = (req, res) => {
     .exec((err, mon) => {
       if (err) {
         res.send("data not found");
-        
+
       } else {
         res.send(mon);
       }
@@ -1217,7 +1217,7 @@ exports.send_sms_std = (req, res) => {
         res.send({
           error: "msg not set"
         });
-        
+
       } else {
         res.send({
           msg: "text sms send successfully"
@@ -1308,11 +1308,11 @@ exports.getRankUpdateTestHistoryByStudentId = async (req, res) => {
     });
   }
   let rankTestHistory = student.rank_update_test_history;
-  if (rankTestHistory.lenght ===0) {
+  if (rankTestHistory.lenght === 0) {
     return res.json({
       stasus: false,
       error: "No rank history available for this student!!",
-      data:rankTestHistory
+      data: rankTestHistory
     })
   }
   return res.json({
@@ -1323,30 +1323,47 @@ exports.getRankUpdateTestHistoryByStudentId = async (req, res) => {
 }
 
 exports.filter_members = async (req, res) => {
+  let userId = req.params.userId;
+  let cat = req.body.category;
+  let pro = req.body.program;
+  let subcat = req.body.subcategory;
   try {
-    await addmemberModal
-      .find({
-        $and:
-          [{
-            $or: [
-              { "category": req.body.category },
-              { "program": req.body.program },
-              { "subcategory": req.body.subcategory }
-            ]
-          }]
-      },
-        {
-          firstName: 1,
-          lastName: 1,
-          program: 1,
-          category: 1,
-          subcategory: 1,
-          status: 1,
-          current_rank_img: 1,
-          primaryPhone: 1,
-          class_count: 1,
-          updatedAt: 1
-        })
+    await addmemberModal.aggregate(
+      [
+        { $match: { "userId": userId } },
+        { $group: { _id: { program: pro } } },
+      ])
+      // conosle.log(res)
+      // await addmemberModal
+      //   .find({
+      //     userId: userId
+      //     // $and:
+      //     //   [
+      //     //     { userId: userId },
+
+      //     //     {
+      //     //       $or: [
+      //     //         // { "category": req.body.category },
+      //     //         { "program": req.body.program },
+      //     //         // { "subcategory": req.body.subcategory }
+      //     //       ]
+
+      //     //     }
+      //     //   ]
+      //   },
+      //     {
+      //       firstName: 1,
+      //       lastName: 1,
+      //       program: 1,
+      //       category: 1,
+      //       subcategory: 1,
+      //       status: 1,
+      //       current_rank_img: 1,
+      //       primaryPhone: 1,
+      //       class_count: 1,
+      //       updatedAt: 1
+      //     })
+
 
       .exec((er, data) => {
         if (er) {
@@ -1356,10 +1373,38 @@ exports.filter_members = async (req, res) => {
           })
         }
         else {
-          res.status(200).send({
-            status: "success",
-            data: data
-          })
+          if (data.length < 1) {
+            res.status(403).send({
+              status: "false",
+              data: "not found"
+            })
+          }
+          else {
+            let filterInfo = data.filter(item => {
+              if (cat && pro && subcat) {
+                return (item.program == pro && item.category == cat && item.subcategory == subcat)
+              }
+              else if (cat && pro && !subcat) {
+                return (item.program == pro && item.category == cat)
+              }
+              else if (pro && subcat && !cat) {
+                return (item.program == pro && item.subcategory == subcat)
+
+              }
+              else if (subcat && cat && !pro) {
+                return (item.subcategory == subcat && item.category == cat)
+              }
+              else {
+                return ((item.program == pro) || (item.category == cat) || (item.subcategory == subcat))
+
+              }
+            })
+
+            res.status(200).send({
+              status: "success",
+              data: filterInfo
+            })
+          }
         }
       })
 
@@ -1372,4 +1417,68 @@ exports.filter_members = async (req, res) => {
 
   }
 
+}
+
+exports.invoice_listing = async (req, res) => {
+  //STATUS SHOULD BE THERE=>PAID AND OVERDUE
+  var studentinfo = req.params.StudentId;
+  var userinfo = req.params.userId;
+  addmemberModal
+    .find({ _id: studentinfo },
+      {
+        _id: 1
+      }
+    )
+    .populate("membership_details",
+      {
+        membership_name: 1,
+        membership_status: 1,
+        ptype: 1,
+        totalp: 1,
+        due_every_month: 1,
+        // "status": {
+        //   $cond: [{ $gt: ["$due_every_month", "$payment_Date"] }, "overdue", "paid"]
+        // }
+      })
+    .exec((err, data) => {
+      if (err) {
+        res.send({ error: 'membership list is not find' });
+      }
+      else {
+        res.status(200).send({ data: data, success: true })
+
+      }
+    })
+}
+
+
+exports.invoice_details = (req, res) => {
+  //PAYMENT-METHOD MUST BE THERE
+  var studentinfo = req.params.StudentId;
+  // var userinfo = req.params.userId;
+  addmemberModal
+    .find({ _id: studentinfo },
+      {billing_to:{
+        firstName:"$firstName" ,
+        lastName:"$lastName" ,
+        address:"$address" ,
+        country:"$country" ,
+        state:"$state" ,
+        zipPostalCode: "$zipPostalCode"
+      },
+      _id:0
+      
+    }
+    )
+    .populate("membership_details", { payment_type: 1, totalp: 1, due_every_month: 1, pay_latter: 1 })
+    .exec((err, data) => {
+      if (err) {
+        res.send({ error: err.message.replace(/\"/g, ""), success: false })
+
+      }
+      else {
+        res.status(200).send({ data: data, success: true })
+
+      }
+    })
 }
