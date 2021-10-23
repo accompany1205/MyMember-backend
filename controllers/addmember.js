@@ -1328,87 +1328,102 @@ exports.filter_members = async (req, res) => {
   let pro = req.body.program;
   let subcat = req.body.subcategory;
   try {
-    await addmemberModal.aggregate(
-      [
-        { $match: { "userId": userId } },
-        { $group: { _id: { program: pro } } },
-      ])
-      // conosle.log(res)
-      // await addmemberModal
-      //   .find({
-      //     userId: userId
-      //     // $and:
-      //     //   [
-      //     //     { userId: userId },
+    // await addmemberModal.aggregate(
+    //   [
+    //     { $match: { "userId": userId } },
+    //     { $group: { _id: { program: pro } } },
+    //   ])
 
-      //     //     {
-      //     //       $or: [
-      //     //         // { "category": req.body.category },
-      //     //         { "program": req.body.program },
-      //     //         // { "subcategory": req.body.subcategory }
-      //     //       ]
-
-      //     //     }
-      //     //   ]
-      //   },
-      //     {
-      //       firstName: 1,
-      //       lastName: 1,
-      //       program: 1,
-      //       category: 1,
-      //       subcategory: 1,
-      //       status: 1,
-      //       current_rank_img: 1,
-      //       primaryPhone: 1,
-      //       class_count: 1,
-      //       updatedAt: 1
-      //     })
-
-
-      .exec((er, data) => {
-        if (er) {
-          res.status(500).send({
-            status: "failure",
-            data: er
+    // conosle.log(res)
+    if (cat && pro && subcat) {
+      const response = await addmemberModal
+        .find({
+          userId: userId,
+          $and: [
+            { program: pro },
+            { category: cat },
+            { subcategory: subcat }
+          ]
+        },
+          {
+            firstName: 1,
+            lastName: 1,
+            program: 1,
+            category: 1,
+            subcategory: 1,
+            status: 1,
+            current_rank_img: 1,
+            primaryPhone: 1,
+            class_count: 1,
+            updatedAt: 1
           })
-        }
-        else {
-          if (data.length < 1) {
-            res.status(403).send({
-              status: "false",
-              data: "not found"
-            })
-          }
-          else {
-            let filterInfo = data.filter(item => {
-              if (cat && pro && subcat) {
-                return (item.program == pro && item.category == cat && item.subcategory == subcat)
-              }
-              else if (cat && pro && !subcat) {
-                return (item.program == pro && item.category == cat)
-              }
-              else if (pro && subcat && !cat) {
-                return (item.program == pro && item.subcategory == subcat)
+      res.status(200).send({
+        status: "success",
+        data: response
+      })
+    }
+    else if (cat && pro && !subcat) {
+      const response = await addmemberModal
+        .find({
+          userId: userId,
+          $and: [
+            { program: pro },
+            { category: cat }
+          ]
+        },
+          {
+            firstName: 1,
+            lastName: 1,
+            program: 1,
+            category: 1,
+            subcategory: 1,
+            status: 1,
+            current_rank_img: 1,
+            primaryPhone: 1,
+            class_count: 1,
+            updatedAt: 1
+          })
 
-              }
-              else if (subcat && cat && !pro) {
-                return (item.subcategory == subcat && item.category == cat)
-              }
-              else {
-                return ((item.program == pro) || (item.category == cat) || (item.subcategory == subcat))
-
-              }
-            })
-
-            res.status(200).send({
-              status: "success",
-              data: filterInfo
-            })
-          }
-        }
+      res.status(200).send({
+        status: "success",
+        data: response
       })
 
+    }
+    else if (!cat && pro && !subcat) {
+      const response = await addmemberModal
+        .find({
+          userId: userId,
+          $and: [
+            { program: pro }
+          ]
+        },
+          {
+            firstName: 1,
+            lastName: 1,
+            program: 1,
+            category: 1,
+            subcategory: 1,
+            status: 1,
+            current_rank_img: 1,
+            primaryPhone: 1,
+            class_count: 1,
+            updatedAt: 1
+          })
+
+      res.status(200).send({
+        status: "success",
+        data: response
+      })
+    }
+    else {
+      res.status(403).send({
+        status: "false",
+        data: "not found"
+      })
+    }
   }
+
   catch (er) {
     res.status(500).send({
       message: er,
@@ -1427,7 +1442,7 @@ exports.invoice_listing = async (req, res) => {
     .find({ _id: studentinfo },
       {
         _id: 1
-        }
+      }
     )
     .populate("membership_details",
       {
@@ -1458,17 +1473,18 @@ exports.invoice_details = (req, res) => {
   // var userinfo = req.params.userId;
   addmemberModal
     .find({ _id: studentinfo },
-      {billing_to:{
-        firstName:"$firstName" ,
-        lastName:"$lastName" ,
-        address:"$address" ,
-        country:"$country" ,
-        state:"$state" ,
-        zipPostalCode: "$zipPostalCode"
-      },
-      _id:0
-      
-    }
+      {
+        billing_to: {
+          firstName: "$firstName",
+          lastName: "$lastName",
+          address: "$address",
+          country: "$country",
+          state: "$state",
+          zipPostalCode: "$zipPostalCode"
+        },
+        _id: 0
+
+      }
     )
     .populate("membership_details", { payment_type: 1, totalp: 1, due_every_month: 1, pay_latter: 1 })
     .exec((err, data) => {
