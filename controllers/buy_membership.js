@@ -126,7 +126,7 @@ exports.create = async (req, res)  => {
                 membershipDetails = _.extend(req.body, status)
             }
             else {
-                status = { membership_status: 'Due' }
+                status = { membership_status: 'Overdue' }
                 membershipDetails = _.extend(req.body, status)
             }
             var membership = new buyMembership(membershipDetails);

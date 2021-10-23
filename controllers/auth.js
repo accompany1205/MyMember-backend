@@ -344,6 +344,10 @@ exports.signin = (req, res) => {
               role,
               logo,
               location_name,
+              bussinessAddress,
+              country,
+              state,
+              city,
             } = data;
             return res.json({
               token,
@@ -354,7 +358,11 @@ exports.signin = (req, res) => {
                 name,
                 role,
                 logo,
-                location_name
+                location_name,
+                bussinessAddress,
+                city,
+                state,
+                country
               },
             });
           } else {
