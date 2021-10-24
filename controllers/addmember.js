@@ -1435,7 +1435,6 @@ exports.filter_members = async (req, res) => {
 }
 
 exports.invoice_listing = async (req, res) => {
-  //STATUS SHOULD BE THERE=>PAID AND OVERDUE
   var studentinfo = req.params.StudentId;
   var userinfo = req.params.userId;
   addmemberModal

@@ -5,7 +5,7 @@ var addmemberModal = require('../models/addmember')
 const { errorHandler } = require('../helpers/dbErrorHandler');
 const _ = require('lodash')
 const Joi = require('@hapi/joi')
-
+const ScheduleDateArray = require('../Services/scheduleDateArray')
 
 exports.membership_Info = (req, res) => {
     const id = req.params.membershipId
@@ -46,17 +46,18 @@ exports.remove = (req, res) => {
 };
 
 
-exports.create = async (req, res)  => {
+exports.create = async (req, res) => {
     var studentId = req.params.studentId;
     var Id = { userId: req.params.userId }
 
     let buyMembershipSchema = Joi.object({
-        membership_name : Joi.string().required(),
-        mactive_date : Joi.string().required(),
+        membership_name: Joi.string().required(),
+        mactive_date: Joi.string().required(),
         membership_duration: Joi.string().required(),
         expiry_date: Joi.string().required(),
         register_fees: Joi.number().required(),
         totalp: Joi.number().required(),
+        start_payment_Date: Joi.string().required(),
         dpayment: Joi.number().required(),
         ptype: Joi.string().required(),
         balance: Joi.number().required(),
@@ -129,6 +130,8 @@ exports.create = async (req, res)  => {
                 status = { membership_status: 'Overdue' }
                 membershipDetails = _.extend(req.body, status)
             }
+            const ar = ScheduleDateArray(req.body.start_payment_Date,req.body.membership_duration)
+            membershipDetails = _.extend(req.body, { schedulePayments: ar })
             var membership = new buyMembership(membershipDetails);
             memberbuy = _.extend(membership, Id)
             memberbuy.save((err, data) => {
@@ -147,27 +150,28 @@ exports.create = async (req, res)  => {
                         }
                         else {
                             buyMembership.findOneAndUpdate({ _id: data._id }, { $push: { studentInfo: stdData._id } })
-                                .exec((err, result) => {
+                                .exec(async (err, result) => {
                                     if (err) {
                                         res.send({ error: 'student id is not add in buy membership' })
                                     }
                                     else {
+
                                         res.send({ msg: 'membership purchase successfully', data: result })
                                     }
                                 })
                         }
-    
+
                     })
                 }
             })
         }
         else if (req.body.ptype == 'card') {
-    
+
         }
     } catch (error) {
         res.send({ error: error.message.replace(/\"/g, ""), success: false })
     }
-    
+
 }
 
 exports.buyMembership = (req, res) => {
