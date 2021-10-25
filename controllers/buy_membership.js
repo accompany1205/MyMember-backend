@@ -1,4 +1,5 @@
 const membershipModal = require("../models/membership");
+const moment = require('moment')
 const buyMembership = require("../models/buy_membership");
 const AddMember = require("../models/addmember")
 var addmemberModal = require('../models/addmember')
@@ -49,7 +50,10 @@ exports.remove = (req, res) => {
 exports.create = async (req, res) => {
     var studentId = req.params.studentId;
     var Id = { userId: req.params.userId }
-
+    const duration = parseInt(req.body.membership_duration)
+    const startPayment = req.body.start_payment_Date
+    const Amount = req.body.payment_money
+    const paymentMode = req.body.payment_type
     let buyMembershipSchema = Joi.object({
         membership_name: Joi.string().required(),
         mactive_date: Joi.string().required(),
@@ -121,17 +125,75 @@ exports.create = async (req, res) => {
 
     try {
         await buyMembershipSchema.validateAsync(req.body);
+        const paymentArr = new Array(duration).fill(false);
+        const ar = ScheduleDateArray(startPayment, duration, Amount, paymentArr, paymentMode)
         if (req.body.ptype == 'cash' || req.body.ptype == 'check') {
             if (req.body.balance == 0) {
                 status = { membership_status: 'Paid' }
                 membershipDetails = _.extend(req.body, status)
             }
             else {
-                status = { membership_status: 'Overdue' }
+                // a = ar.filter(i => moment(i.date).month() == moment().month())
+                // status = { membership_status: a[0].status }
+                // membershipDetails = _.extend(req.body, status)
+            }
+            membershipDetails = _.extend(req.body, { paymentArr: paymentArr })
+            membershipDetails = _.extend(req.body, { schedulePayments: ar })
+            var membership = new buyMembership(membershipDetails);
+            memberbuy = _.extend(membership, Id)
+
+                memberbuy.save((err, data) => {
+                    if (err) {
+                        res.send({ error: 'membership not buy' })
+                    }
+                    else {
+                        query = { '_id': studentId }
+                        update = {
+                            $set: { status: "active" },
+                            $push: { membership_details: data._id }
+                        }
+                        addmemberModal.findOneAndUpdate(query, update, (err, stdData) => {
+                            if (err) {
+                                res.send({ error: 'membership id is not add in student' })
+                            }
+                            else {
+                                buyMembership.findOneAndUpdate({ _id: data._id }, { $push: { studentInfo: stdData._id } })
+                                    .exec(async (err, result) => {
+                                        if (err) {
+                                            res.send({ error: 'student id is not add in buy membership' })
+                                        }
+                                        else {
+
+                                            res.send({ msg: 'membership purchase successfully', data: result })
+                                        }
+                                    })
+                            }
+
+                        })
+                    }
+                })
+            }
+            else if (req.body.ptype == 'card') {
+
+            }
+        } catch (error) {
+            res.send({ error: error.message.replace(/\"/g, ""), success: false })
+        }
+
+    }
+
+exports.buyMembership = (req, res) => {
+        var Id = { userId: req.params.userId }
+        if (req.body.ptype == 'cash' || req.body.ptype == 'check') {
+
+            if (req.body.balance == 0) {
+                status = { membership_status: 'Paid' }
                 membershipDetails = _.extend(req.body, status)
             }
-            const ar = ScheduleDateArray(req.body.start_payment_Date,req.body.membership_duration)
-            membershipDetails = _.extend(req.body, { schedulePayments: ar })
+            else {
+                status = { membership_status: 'Due' }
+                membershipDetails = _.extend(req.body, status)
+            }
             var membership = new buyMembership(membershipDetails);
             memberbuy = _.extend(membership, Id)
             memberbuy.save((err, data) => {
@@ -139,7 +201,7 @@ exports.create = async (req, res) => {
                     res.send({ error: 'membership not buy' })
                 }
                 else {
-                    query = { '_id': studentId }
+                    query = { 'firstName': req.body.student_name }
                     update = {
                         $set: { status: "active" },
                         $push: { membership_details: data._id }
@@ -149,13 +211,13 @@ exports.create = async (req, res) => {
                             res.send({ error: 'membership id is not add in student' })
                         }
                         else {
+                            // res.send({msg:'membership purchase successfully'})
                             buyMembership.findOneAndUpdate({ _id: data._id }, { $push: { studentInfo: stdData._id } })
-                                .exec(async (err, result) => {
+                                .exec((err, result) => {
                                     if (err) {
                                         res.send({ error: 'student id is not add in buy membership' })
                                     }
                                     else {
-
                                         res.send({ msg: 'membership purchase successfully', data: result })
                                     }
                                 })
@@ -168,75 +230,21 @@ exports.create = async (req, res) => {
         else if (req.body.ptype == 'card') {
 
         }
-    } catch (error) {
-        res.send({ error: error.message.replace(/\"/g, ""), success: false })
     }
 
-}
-
-exports.buyMembership = (req, res) => {
-    var Id = { userId: req.params.userId }
-    if (req.body.ptype == 'cash' || req.body.ptype == 'check') {
-
-        if (req.body.balance == 0) {
-            status = { membership_status: 'Paid' }
-            membershipDetails = _.extend(req.body, status)
+    exports.members_info = async (req, res) => {
+        var studentId = req.params.studentId
+        let studentInfo = await AddMember.findById(studentId)
+        try {
+            let {
+                membership_details
+            } = studentInfo;
+            let membershipDa = await buyMembership.find({ _id: { $in: membership_details } });
+            res.send({
+                msg: "done",
+                data: membershipDa
+            })
+        } catch (error) {
+            res.send({ error: error.message.replace(/\"/g, ""), success: false })
         }
-        else {
-            status = { membership_status: 'Due' }
-            membershipDetails = _.extend(req.body, status)
-        }
-        var membership = new buyMembership(membershipDetails);
-        memberbuy = _.extend(membership, Id)
-        memberbuy.save((err, data) => {
-            if (err) {
-                res.send({ error: 'membership not buy' })
-            }
-            else {
-                query = { 'firstName': req.body.student_name }
-                update = {
-                    $set: { status: "active" },
-                    $push: { membership_details: data._id }
-                }
-                addmemberModal.findOneAndUpdate(query, update, (err, stdData) => {
-                    if (err) {
-                        res.send({ error: 'membership id is not add in student' })
-                    }
-                    else {
-                        // res.send({msg:'membership purchase successfully'})
-                        buyMembership.findOneAndUpdate({ _id: data._id }, { $push: { studentInfo: stdData._id } })
-                            .exec((err, result) => {
-                                if (err) {
-                                    res.send({ error: 'student id is not add in buy membership' })
-                                }
-                                else {
-                                    res.send({ msg: 'membership purchase successfully', data: result })
-                                }
-                            })
-                    }
-
-                })
-            }
-        })
     }
-    else if (req.body.ptype == 'card') {
-
-    }
-}
-
-exports.members_info = async (req, res) => {
-    var studentId = req.params.studentId
-    let studentInfo = await AddMember.findById(studentId)
-    try {
-        let {
-            membership_details
-        } = studentInfo;
-        let membershipDa = await buyMembership.find({ _id: { $in: membership_details } });
-        res.send({
-            msg: "done",
-            data: membershipDa
-        })
-    } catch (error) {
-        res.send({ error: error.message.replace(/\"/g, ""), success: false })
-    }
-}

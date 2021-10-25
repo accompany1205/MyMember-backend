@@ -102,7 +102,7 @@ exports.expireStd = async (req, res) => {
                 let buyMemberShip = await buymembership.find({ _id: ele });
                 let expiry = buyMemberShip[0].expiry_date;
                 var d1 = new Date().getTime();
-                let f = moment(expiry).utc().unix() * 1000;
+                let f = moment(expiry).utc().unix() * 1000;  
                 if (f < d1) {
                     expiredStdArray.push(element)
                 }

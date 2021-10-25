@@ -50,6 +50,10 @@ const Membershipschema = new schema(
             type: Number,
             required: true
         },
+        paymentArr:{
+            type:Array,
+            required:true
+        },
         payment_time: {
             type: Number,
             required: true
