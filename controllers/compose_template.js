@@ -1,3 +1,4 @@
+const cron = require('node-cron')
 const all_temp = require("../models/emailSentSave");
 const compose_folder = require("../models/email_compose_folder")
 const authKey = require("../models/email_key")
@@ -178,7 +179,7 @@ exports.swapAndUpdate_template = async (req, res) => {
                 res.send({ code: 400, msg: 'email list not found' })
             }
             else {
-                res.send({ code: 200, msg:'drag and droped successfully',success:true })
+                res.send({ code: 200, msg: 'drag and droped successfully', success: true })
             }
         })
 }
@@ -196,81 +197,102 @@ exports.list_template = async (req, res) => {
         })
 }
 
-exports.add_template = async (req, res) => {
-    const counts = await all_temp.find({ folderId: req.params.folderId }).countDocuments()
-    let templete_Id = counts + 1
-    // var schedule = req.body.schedule
-    //    authKey.findOne({userId:req.params.userId})      
-    //     .exec((err,key)=>{
-    //         if(err){
-    //             res.send({Error:'email auth key is not find so schedule is not create',error:err})
-    //         }
-    //         else{
+// exports.add_template = async (req, res) => {
+//     const counts = await all_temp.find({ folderId: req.params.folderId }).countDocuments()
+//     let templete_Id = counts + 1
+//     // var schedule = req.body.schedule
+//     //    authKey.findOne({userId:req.params.userId})      
+//     //     .exec((err,key)=>{
+//     //         if(err){
+//     //             res.send({Error:'email auth key is not find so schedule is not create',error:err})
+//     //         }
+//     //         else{
 
-    let { to, from, title, subject, template, sent_time, repeat_mail, follow_up } = req.body || {};
-    let { userId, folderId } = req.params || {};
+//     let { to, from, title, subject, template, sent_time, repeat_mail, sent_date, follow_up } = req.body || {};
+//     let { userId, folderId } = req.params || {};
 
-    const obj = {
-        to,
-        from,
-        title,
-        subject,
-        template,
-        sent_date: nD,
-        sent_time,
-        DateT: date_iso_follow,
-        repeat_mail,
-        follow_up,
-        email_type: 'schedule',
-        email_status: true,
-        category: 'compose',
-        userId,
-        folderId,
-        templete_Id
-    };
+//     const obj = {
+//         to,
+//         from,
+//         title,
+//         subject,
+//         template,
+//         sent_date: nD,
+//         sent_time,
+//         DateT: date_iso_follow,
+//         repeat_mail,
+//         follow_up,
+//         email_type: 'schedule',
+//         email_status: true,
+//         category: 'compose',
+//         userId,
+//         folderId,
+//         templete_Id
+//     };
+//     console.log("--------->", sent_date)
+//     let d = sent_date.split('/');
+//     let cdate = parseInt(d[1]);
+//     let cmon = parseInt(d[0]);
+//     console.log("date, month", cdate, cmon)
 
-    if (req.body.follow_up === 0) {
-        var date_iso = timefun(req.body.sent_date, req.body.sent_time)
-        obj.DateT = date_iso;
-    }
-    else if (req.body.follow_up > 0) {
-        var date_iso_follow = timefun(req.body.sent_date, req.body.sent_time)
-        date_iso_follow.setDate(date_iso_follow.getDate() + req.body.follow_up);
-        var nD = moment(date_iso_follow).format('MM/DD/YYYY')
+//     if (req.body.follow_up === 0) {
+//         var date_iso = timefun(req.body.sent_date, req.body.sent_time)
+//         obj.DateT = date_iso;
+//     }
+//     else if (req.body.follow_up > 0) {
+//         var date_iso_follow = timefun(req.body.sent_date, req.body.sent_time)
+//         date_iso_follow.setDate(date_iso_follow.getDate() + req.body.follow_up);
+//         var nD = moment(date_iso_follow).format('MM/DD/YYYY')
 
-    }
-    else if (req.body.follow_up < 0) {
-        res.send({ code: 400, msg: 'follow up not set less then 0' })
-    }
-
-
-    var emailDetail = new all_temp(obj)
+//     }
+//     else if (req.body.follow_up < 0) {
+//         res.send({ code: 400, msg: 'follow up not set less then 0' })
+//     }
 
 
-    try {
-        let emailSave = await emailDetail.save();
-        let template = await compose_folder.findByIdAndUpdate(folderId, { $push: { template: emailSave._id } })
-        try {
+//     var emailDetail = new all_temp(obj)
 
-            // wrong model
-            // let allData = await compose_folder
-            // .find({})
-            // .populate('template');
 
-            // right model
-            // let allData = await all_temp
-            // .find({})
-            return res.send({ msg: 'compose template details is add in folder', result: emailSave });
-        }
-        catch (err) {
-            return res.send({ error: 'compose template details is not add in folder' })
-        }
-    }
+//     try {
+//         cron.schedule(`* * * ${cdate} ${cmon} *`, async function () {
+//             const emailData = {
+//                 sendgrid_key: process.env.SENDGRID_API_KEY,
+//                 to: req.body.to,
+//                 from_email: req.body.from,
+//                 from_name: 'noreply@gmail.com',
+//             };
+//             emailData.subject = sub;
+//             emailData.content = template;
+//             sgMail.send_via_sendgrid(emailData).then((res) => {
+//                 console.log(res[0].statusCode)
+//             }).catch((error) => {
+//                 console.log(error)
+//             })
+//             let emailSave = await emailDetail.save();
+//             let template = await compose_folder.findByIdAndUpdate(folderId, { $push: { template: emailSave._id } })
+//             try {
 
-    catch (err) {
-        res.send({ Error: 'email details is not save', error: err })
-    }
-}
+//                 // wrong model
+//                 // let allData = await compose_folder
+//                 // .find({})
+//                 // .populate('template');
+
+//                 // right model
+//                 // let allData = await all_temp
+//                 // .find({})
+//                 return res.send({ msg: 'compose template details is add in folder', result: emailSave });
+
+//             }
+//             catch (err) {
+//                 return res.send({ error: 'compose template details is not add in folder' })
+//             }
+//         })
+//     }
+
+//     catch (err) {
+//         res.send({ Error: 'email details is not save', error: err })
+//     }
+// }
 
 exports.update_template = (req, res) => {
     all_temp.updateOne({ _id: req.params.templateId }, req.body, (err, updateTemp) => {
