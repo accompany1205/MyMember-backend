@@ -5,9 +5,9 @@ const attendence = require("../models/attendence");
 const memberShip = require('../models/membership')
 const missYouCallNotes = require('../models/misucall_notes')
 const _ = require("lodash");
-const getNumberOfDays = require('../Services/dayDifference');
+const daysRemaining=require('../Services/daysremaining');
 const misucall_notes = require("../models/misucall_notes");
-
+// console.log(daysRemaining('2021-10-25'))
 
 exports.seven_to_forteen = async (req, res) => {
     try {
@@ -36,14 +36,13 @@ exports.seven_to_forteen = async (req, res) => {
         )
             .then(async (result) => {
                 const newArr = []
-                const current_Date = new Date()
                 newObj = new Object()
                 await result.forEach(i => {
                     a = i.data
                     if (a.length >= 1) {
+        
                         last_Date = (new Date(a[a.length - 1].date))
-
-                        dayDifference = getNumberOfDays(last_Date, current_Date)
+                        dayDifference = -1*(daysRemaining(last_Date)-1)
                         if (dayDifference >= 7 && dayDifference <= 14) {
                             newObj = {
                                 _id: i._id,
@@ -56,7 +55,7 @@ exports.seven_to_forteen = async (req, res) => {
                                 membership_details: membership_details,
                                 last_Class_Attended_date: last_Date,
                                 date: a[a.length - 1].date,
-                                dayDifference: getNumberOfDays(last_Date, current_Date)
+                                dayDifference
                             }
                             newArr.push(newObj)
                         }
@@ -107,7 +106,7 @@ exports.fifteen_to_thirty = async (req, res) => {
                     a = i.data
                     if (a.length >= 1) {
                         last_Date = (new Date(a[a.length - 1].date))
-                        dayDifference = getNumberOfDays(last_Date, current_Date)
+                        dayDifference = -1*(daysRemaining(last_Date)-1)
                         if (dayDifference > 14 && dayDifference <= 30) {
                             newObj = {
                                 _id: i._id,
@@ -119,7 +118,7 @@ exports.fifteen_to_thirty = async (req, res) => {
                                 missYouCall_notes: missYouCall_notes,
                                 membership_details: membership_details,
                                 last_Class_Attended_date: last_Date,
-                                dayDifference: getNumberOfDays(last_Date, current_Date)
+                                dayDifference
                             }
                             newArr.push(newObj)
                         }
@@ -170,7 +169,7 @@ exports.moreThirty = async (req, res) => {
                     a = i.data
                     if (a.length >= 1) {
                         last_Date = (new Date(a[a.length - 1].date))
-                        dayDifference = getNumberOfDays(last_Date, current_Date)
+                        dayDifference = -1*(daysRemaining(last_Date)-1)
                         if (dayDifference > 30) {
                             newObj = {
                                 _id: i._id,
@@ -182,7 +181,7 @@ exports.moreThirty = async (req, res) => {
                                 missYouCall_notes: missYouCall_notes,
                                 membership_details: membership_details,
                                 last_Class_Attended_date: last_Date,
-                                dayDifference: getNumberOfDays(last_Date, current_Date)
+                                dayDifference
                             }
                             newArr.push(newObj)
                         }

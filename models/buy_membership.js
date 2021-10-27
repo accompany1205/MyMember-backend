@@ -100,20 +100,12 @@ const Membershipschema = new schema(
             type: String,
         },
         membership_status: {
-            type: String
+            type: String,
+            required:true
+
         },
         userId: {
             type: String,
-            required: true
-        },
-        createdMonth: {
-            type: String,
-            default: new Date().getMonth(),
-            required: true
-        },
-        createdYear: {
-            type: String,
-            default: new Date().getFullYear(),
             required: true
         },
         studentInfo: [{

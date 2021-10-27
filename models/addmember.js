@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const schema = mongoose.Schema
+
 const addmemberSchema = new schema(
     {
         studentType: {

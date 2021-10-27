@@ -52,3 +52,5 @@ function ScheduleDateArray(startDate, payments, money, paymentArr, payMode) {
 // console.log(moment('2021-10-26').add(7, 'd').format('YYYY/MM/dddd'))
 module.exports = ScheduleDateArray
 
+
+
