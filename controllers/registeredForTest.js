@@ -8,14 +8,49 @@ const ProgramRankModel = require('../models/program_rank');
 
 //TODO - Pavan - Please create logic to find out the next rank.
 exports.promoteStudentRank = async (req, res) => {
-    let registeredId = req.params.registeredId;
-
-    let registeredStudent = await RegisterdForTest.findById(registeredId);
-    let {
-        programName,
-        current_rank_name,
-        next_rank_name
-    } = registeredStudent;
+    try {
+        let current_rank = req.body.current_rank
+        let next_rank = req.body.next_rank
+        let registeredId = req.params.registeredId;
+        let rankUpdate = await RegisterdForTest.findById(registeredId);
+        let {
+            studentId
+        } = rankUpdate;
+        // let isStudentRegisterd = await RegisterdForTest.findOne({
+        //     "studentId": studentId
+        // })
+        if (!rankUpdate.isDeleted) {
+            let removedFromRegister = await RegisterdForTest.findOneAndUpdate({
+                "studentId": studentId
+            }, {
+                "isDeleted": true,
+                "current_rank": current_rank, 
+                "next_rank": next_rank
+            });
+            let memberRankUpdate = await Member.findByIdAndUpdate({ _id: studentId }, { $set: {rankFromRecomendedTest: current_rank, next_rank } })
+            console.log(memberRankUpdate)
+            if (!removedFromRegister) {
+                res.json({
+                    status: false,
+                    msg: "Having issue while removing form recommeded list!!"
+                })
+            }
+        }
+        else{
+            res.json({
+                success: false,
+                statusCode:200,
+                msg: "User is not in registered list"
+            })
+        }
+        res.json({
+            statusCode:200,
+            success: true,
+            msg:"promoted and Rank updated succesFully"
+        })
+    } catch (error) {
+        res.send({ error: error.message.replace(/\"/g, ""), success: false })
+    }
 
 };
 

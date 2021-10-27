@@ -7,6 +7,7 @@ router.get("/all_email_list/:userId",verifySchool,all_email_list)
 router.get("/email_compose/list_template/:userId/:folderId",verifySchool,list_template)
 router.post("/email_compose/add_template/:userId/:folderId",verifySchool,add_template)
 
+// router.post("/email_compose/add_template/:userId/:folderId",verifySchool,add_template)
 router.put("/email_compose/drag_drop_templete/:userId",requireSignin,swapAndUpdate_template)
 
 router.put("/email_compose/update_template/:userId/:templateId",requireSignin,update_template)

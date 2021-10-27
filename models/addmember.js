@@ -201,6 +201,9 @@ const addmemberSchema = new schema(
             type: String,
             
         },
+        rankFromRecomendedTest:{
+            type:Array
+        },
         membership_details: [{
             type: schema.Types.ObjectId,
             ref: 'Buy_Membership',
