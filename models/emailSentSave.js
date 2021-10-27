@@ -76,4 +76,4 @@ const EmailSchema = schema({
     { timestamps: true }
 )
 
-module.exports = mongoose.model('sentOrscheduleEmail', EmailSchema)
+module.exports = mongoose.model('sentOrscheduleEmail', EmailSchema)         

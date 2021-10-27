@@ -6,19 +6,19 @@ const Membershipschema = new schema(
         student_name: {
             type: String,
         },
-        membership_name:{
-            type:String,
-            required:true
+        membership_name: {
+            type: String,
+            required: true
         },
         mactive_date: {
             type: String,
             required: true
         },
-        membership_duration:{
+        membership_duration: {
             type: String,
             required: true
         },
-        expiry_date:{
+        expiry_date: {
             type: String,
             required: true
         },
@@ -29,6 +29,14 @@ const Membershipschema = new schema(
         totalp: {
             type: Number,
             required: true
+        },
+        start_payment_Date: {
+            type: String,
+            required: true
+        },
+        schedulePayments: {
+            type: Array,
+            requred: true
         },
         dpayment: {
             type: Number,
@@ -42,6 +50,10 @@ const Membershipschema = new schema(
             type: Number,
             required: true
         },
+        paymentArr:{
+            type:Array,
+            required:true
+        },
         payment_time: {
             type: Number,
             required: true
@@ -50,60 +62,58 @@ const Membershipschema = new schema(
             type: String,
             required: true
         },
-        payment_money:{
-            type:Number,
-            required:true
+        payment_money: {
+            type: Number,
+            required: true
         },
-        due_every:{
-            type:Number,
-            required:true
+        due_every: {
+            type: Number,
+            required: true
         },
-        due_every_month:{
-            type:String,
-            required:true
+        due_every_month: {
+            type: String,
+            required: true
         },
-        pay_inout:{type:String,required:true},
+        pay_inout: {
+            type: String,
+            required: true
+        },
 
-        pay_latter:{type:String,required:true},
+        pay_latter: {
+            type: String,
+            required: true
+        },
 
-        check_number:{
-            type:String,
+        check_number: {
+            type: String,
         },
-        card_number:{
-            type:String
+        card_number: {
+            type: String
         },
-        card_holder_name:{
-            type:String,
+        card_holder_name: {
+            type: String,
         },
-        cvv_number:{
-            type:String,
+        cvv_number: {
+            type: String,
         },
-       card_expiry_date:{
-            type:String,
+        card_expiry_date: {
+            type: String,
         },
-        membership_status:{
-            type:String
-        },
-        userId:{
-            type:String,
+        membership_status: {
+            type: String,
             required:true
+
         },
-        createdMonth:{
-            type:String,
-            default: new Date().getMonth(),
-            required:true
+        userId: {
+            type: String,
+            required: true
         },
-        createdYear:{
-            type:String,
-            default: new Date().getFullYear(),
-            required:true
-        },
-        studentInfo:[{
-            type:schema.Types.ObjectId,
-            ref:"member",
-            required:true
+        studentInfo: [{
+            type: schema.Types.ObjectId,
+            ref: "member",
+            required: true
         }]
-  },
+    },
     { timestamps: true }
 );
 

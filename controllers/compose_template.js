@@ -168,13 +168,17 @@ exports.all_email_list = async (req, res) => {
 
 
 exports.swapAndUpdate_template = async (req, res) => {
+    if (req.body.length<1) {
+        res.send({ message: 'invalid input' })
+    }
+    else{
     const updateTO = req.body.updateTo
     const ObjectIdOfupdateTo = req.body.ObjectIdOfupdateTo
-    
+
     const updateFrom = req.body.updateFrom
     const ObjectIdOfupdateFrom = req.body.ObjectIdOfupdateFrom
-    const first = await all_temp.findByIdAndUpdate( ObjectIdOfupdateTo , { templete_Id: updateFrom })
-    const second = await all_temp.findByIdAndUpdate( ObjectIdOfupdateFrom ,{ templete_Id: updateTO })
+    const first = await all_temp.findByIdAndUpdate(ObjectIdOfupdateTo, { templete_Id: updateFrom })
+    const second = await all_temp.findByIdAndUpdate(ObjectIdOfupdateFrom, { templete_Id: updateTO })
 
 
         .exec((err, allTemp) => {
@@ -184,11 +188,11 @@ exports.swapAndUpdate_template = async (req, res) => {
             else {
                 res.send({ code: 200, msg: 'drag and droped successfully', success: true })
             }
-        })
+        })}
 }
 
 exports.list_template = async (req, res) => {
-    compose_folder.findById(req.params.folderId)    
+    compose_folder.findById(req.params.folderId)
         .populate({ path: 'template', options: { sort: { templete_Id: 1 } } })
         .exec((err, template_data) => {
             if (err) {
