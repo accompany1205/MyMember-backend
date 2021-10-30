@@ -168,13 +168,13 @@ exports.all_email_list = async (req, res) => {
 
 
 exports.swapAndUpdate_template = async (req, res) => {
+
     if (req.body.length < 1) {
         res.send({ message: 'invalid input' })
     }
     else {
         const updateTO = req.body.updateTo
         const ObjectIdOfupdateTo = req.body.ObjectIdOfupdateTo
-
         const updateFrom = req.body.updateFrom
         const ObjectIdOfupdateFrom = req.body.ObjectIdOfupdateFrom
         const first = await all_temp.findByIdAndUpdate(ObjectIdOfupdateTo, { templete_Id: updateFrom })
