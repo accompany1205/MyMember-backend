@@ -4,6 +4,7 @@ const user = require("../models/user");
 const buymembership = require("../models/buy_membership")
 const _ = require("lodash");
 const moment = require('moment')
+const dayRemaining = require("../Services/daysremaining")
 const { forEach } = require("lodash");
 
 exports.create = (req, res) => {
@@ -32,7 +33,7 @@ exports.create = (req, res) => {
                                 res.send({ error: 'renewal notes is not add in student' })
                             }
                             else {
-                                // res.send(note)
+                                // res.send(note)2021
                                 user.findByIdAndUpdate(req.params.userId, { $push: { renewal_history: note._id } })
                                     .exec((err, renewalUser) => {
                                         if (err) {
@@ -92,23 +93,17 @@ exports.updateNote = (req, res) => {
 }
 
 exports.expireStd = async (req, res) => {
-    var expiredStdArray = [];
     try {
         let userId = req.params.userId;
-        var allMembers = await student.find({ userId: userId });
-        allMembers.forEach(async element => {
-            buyMembershipInfo = await element.membership_details;
-            buyMembershipInfo.forEach(async ele => {
-                let buyMemberShip = await buymembership.find({ _id: ele });
-                let expiry = buyMemberShip[0].expiry_date;
-                var d1 = new Date().getTime();
-                let f = moment(expiry).utc().unix() * 1000;
-                if (f < d1) {
-                    expiredStdArray.push(element)
-                }
-                res.send({data:expiredStdArray})
+        let allMembers = await student.find({ userId: userId, membership_details: { $exists: true, $not: { $size: 0 } } },
+            { firstName: 1, lastName: 1, age: 1, memberprofileImage: 1, last_contact_renewal: 1 })
+            .populate({
+                path: 'membership_details',
+                match: { membership_status: "Active" },
+                select: 'membership_name membership_status expiry_date'
             })
-        });
+
+        res.send(allMembers)
     } catch (e) {
         res.send({ error: 'expire student data not found' })
     }
@@ -116,18 +111,52 @@ exports.expireStd = async (req, res) => {
 
 exports.expire_thirty_std = async (req, res) => {
     try {
-        var dataExpire = await student.find({ days_expire: "30" }, { firstName: 1, lastName: 1, age: 1, memberprofileImage: 1, last_contact_renewal: 1 })
-        res.send(dataExpire)
+        let userId = req.params.userId;
+        let dataExpire = await student.find({
+            userId: userId, membership_details: { $exists: true, $not: { $size: 0 }, $ne: [] }
+        }, { firstName: 1, lastName: 1, age: 1, memberprofileImage: 1, last_contact_renewal: 1 })
+            .populate({
+                path: 'membership_details',
+                match: { membership_status: "Expired" },
+                select: 'membership_name membership_status expiry_date'
+            })
+        let a = await dataExpire.filter(i => i.membership_details.length !== 0 && 30 > dayRemaining(i.membership_details[0].expiry_date))
+        res.send(a)
     } catch (e) {
-        res.send({ error: 'expire student data not fount' })
+        res.send({ error: 'expire student data not fount', a: e })
 
     }
 }
 
 exports.expire_sixty_std = async (req, res) => {
     try {
-        var dataExpire = await student.find({ days_expire: "60" }, { firstName: 1, lastName: 1, age: 1, memberprofileImage: 1, last_contact_renewal: 1 })
-        res.send(dataExpire)
+        let userId = req.params.userId;
+        let dataExpire = await student.find({
+            userId: userId, membership_details: { $exists: true, $not: { $size: 0 }, $ne: [] }
+        }, { firstName: 1, lastName: 1, age: 1, memberprofileImage: 1, last_contact_renewal: 1 })
+            .populate({
+                path: 'membership_details',
+                select: 'membership_name membership_status expiry_date'
+            })
+        let a = await dataExpire.filter(i => {
+           if (i.membership_details.length !== 0 
+        ) {
+            x=[]
+            for(j of i.membership_details){
+                // j['days_left']= dayRemaining(j.expiry_date)
+            if(64>dayRemaining(j.expiry_date)){
+                x.push(j)
+            }   
+
+            }
+            
+
+            // && 60 > dayRemaining(i.membership_details[0].expiry_date)
+            return i
+        }}
+        )
+
+        res.send(a)
     } catch (e) {
         res.send({ error: 'expire student data not fount' })
 

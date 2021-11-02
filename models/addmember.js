@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const schema = mongoose.Schema
+
 const addmemberSchema = new schema(
     {
         studentType: {
@@ -199,6 +200,9 @@ const addmemberSchema = new schema(
         userId: {
             type: String,
             
+        },
+        rankFromRecomendedTest:{
+            type:Array
         },
         membership_details: [{
             type: schema.Types.ObjectId,

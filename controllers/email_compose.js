@@ -79,6 +79,7 @@ exports.sendEmail = (req,res)=>{
                 from_email: req.body.from,
                 from_name: 'noreply@gmail.com',
             };
+
             
             emailData.subject = req.body.subject;
             emailData.content = req.body.template;
