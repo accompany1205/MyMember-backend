@@ -71,6 +71,10 @@ const EmailSchema = schema({
     is_Favorite: {
         type: Boolean,
         default:false
+    },
+    is_Sent: {
+        type: Boolean,
+        default:false
     }
 },
     { timestamps: true }
