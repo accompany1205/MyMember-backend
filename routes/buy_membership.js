@@ -4,7 +4,7 @@ const { update,create,members_info,remove,buyMembership } = require("../controll
 const { requireSignin,isAuth,verifySchool } = require("../controllers/auth");
 
 // router.post("/membership/buy_membership/:user_id",requireSignin,buy_membership.Create);
-// router.get("/membership/list_of_buy_membership/:user_id",requireSignin,buy_membership.read);
+// router.get("/membership/list_of_:user_id",requireSignin,buy_membership.read);
 // router.get("/membership/list_of_buy_membership_info/:user_id/:membershipId",requireSignin,buy_membership.membership_Info)
 
 router.get("/membership/buy_membership_info/:userId/:studentId",requireSignin,members_info)

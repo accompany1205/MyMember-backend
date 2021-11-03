@@ -307,17 +307,22 @@ exports.listMember = (req, res) => {
     })
     .select("firstName")
     .select("lastName")
+    .select("memberprofileImage")
+    .select("primaryPhone")
+    .select("studentType")
     .exec((err, data) => {
       if (err) {
         res.send({
-          error: "member list is not found"
+          msg: "member list is not found",
+          success:false
         });
       } else {
         if (data.length > 0) {
           res.send(data);
         } else {
           res.send({
-            msg: "member list is empty"
+            msg: "No member found",
+            success:false
           });
         }
       }
