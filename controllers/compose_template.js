@@ -200,7 +200,7 @@ exports.list_template = async (req, res) => {
         .populate({ path: 'template', options: { sort: { templete_Id: 1 } } })
         .exec((err, template_data) => {
             if (err) {
-                res.send(err)
+                res.send({ error: 'Compose template list not found' })
             }
             else {
                 res.send(template_data)
@@ -229,7 +229,7 @@ exports.add_template = async (req, res) => {
         title,
         subject,
         template,
-        sent_date: moment(sent_date).format('YYYY-MM-DD'),
+        sent_date: nD,
         sent_time,
         DateT: date_iso_follow,
         repeat_mail,
@@ -262,6 +262,7 @@ exports.add_template = async (req, res) => {
     }
 
     emailDetail = new all_temp(obj)
+
     emailDetail.save((er, data) => {
         if (er) {
             res.send({ error: "Email not saved", success: false })
@@ -301,9 +302,7 @@ exports.add_template = async (req, res) => {
                         }
                         )
                     }).catch((err) => {
-                        console.log('hello')
                         res.send({ error: err.message.replace(/\"/g, ""), success: false })
-
                     })
 
                 })
