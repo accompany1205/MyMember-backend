@@ -229,7 +229,7 @@ exports.add_template = async (req, res) => {
         title,
         subject,
         template,
-        sent_date: moment(sent_date).format('YYYY-MM-DD'),
+        sent_date: nD,
         sent_time,
         DateT: date_iso_follow,
         repeat_mail,
@@ -262,6 +262,7 @@ exports.add_template = async (req, res) => {
     }
 
     emailDetail = new all_temp(obj)
+    
     emailDetail.save((er, data) => {
         if (er) {
             res.send({ error: "Email not saved", success: false })
@@ -305,7 +306,7 @@ exports.add_template = async (req, res) => {
                         res.send({ error: err.message.replace(/\"/g, ""), success: false })
 
                     })
-
+ 
                 })
             }
             catch (err) {

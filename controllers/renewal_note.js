@@ -5,7 +5,7 @@ const buymembership = require("../models/buy_membership")
 const _ = require("lodash");
 const moment = require('moment')
 const dayRemaining = require("../Services/daysremaining")
-const { forEach } = require("lodash");
+// const { forEach } = require("lodash");
 
 exports.create = (req, res) => {
     student.findById(req.params.studentId).exec((err, studetData) => {
@@ -112,16 +112,39 @@ exports.expireStd = async (req, res) => {
 exports.expire_thirty_std = async (req, res) => {
     try {
         let userId = req.params.userId;
-        let dataExpire = await student.find({
+        await student.find({
             userId: userId, membership_details: { $exists: true, $not: { $size: 0 }, $ne: [] }
         }, { firstName: 1, lastName: 1, age: 1, memberprofileImage: 1, last_contact_renewal: 1 })
             .populate({
                 path: 'membership_details',
-                match: { membership_status: "Expired" },
                 select: 'membership_name membership_status expiry_date'
             })
-        let a = await dataExpire.filter(i => i.membership_details.length !== 0 && 30 > dayRemaining(i.membership_details[0].expiry_date))
-        res.send(a)
+            .exec((er, data) => {
+                if (er) {
+                    res.send(er);
+                }
+                x = []
+                data.forEach((element, j) => {
+                    (element.membership_details).forEach((e, i) => {
+                        if (30 > dayRemaining(e.expiry_date)) {
+                            e.daysLeft = dayRemaining(e.expiry_date)
+                            if(!x.includes(element)){
+                                x.push(element)
+                    
+                            }
+                    
+
+                        } else {
+                            element.membership_details.pop(i)
+                        }
+                    })
+      
+
+                });
+                res.send({ data: x, success: true })
+
+            })
+
     } catch (e) {
         res.send({ error: 'expire student data not fount', a: e })
 
@@ -131,32 +154,37 @@ exports.expire_thirty_std = async (req, res) => {
 exports.expire_sixty_std = async (req, res) => {
     try {
         let userId = req.params.userId;
-        let dataExpire = await student.find({
+        await student.find({
             userId: userId, membership_details: { $exists: true, $not: { $size: 0 }, $ne: [] }
         }, { firstName: 1, lastName: 1, age: 1, memberprofileImage: 1, last_contact_renewal: 1 })
             .populate({
                 path: 'membership_details',
                 select: 'membership_name membership_status expiry_date'
             })
-        let a = await dataExpire.filter(i => {
-           if (i.membership_details.length !== 0 
-        ) {
-            x=[]
-            for(j of i.membership_details){
-                // j['days_left']= dayRemaining(j.expiry_date)
-            if(64>dayRemaining(j.expiry_date)){
-                x.push(j)
-            }   
+            .exec((er, data) => {
+                if (er) {
+                    res.send(er);
+                }
+                x = []
+                data.forEach((element, j) => {
+                    (element.membership_details).forEach((e, i) => {
+                        if (60 > dayRemaining(e.expiry_date)) {
+                            e.daysLeft = dayRemaining(e.expiry_date)
+                            if(!x.includes(element)){
+                                x.push(element)
+                    
+                            }
+                            
 
-            }
-            
+                        } else {
+                            element.membership_details.pop(i)
+                        }
+                    })
+                });
+                res.send({ data: x, success: true })
 
-            // && 60 > dayRemaining(i.membership_details[0].expiry_date)
-            return i
-        }}
-        )
+            })
 
-        res.send(a)
     } catch (e) {
         res.send({ error: 'expire student data not fount' })
 
