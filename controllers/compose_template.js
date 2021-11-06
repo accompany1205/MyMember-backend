@@ -252,68 +252,70 @@ exports.add_template = async (req, res) => {
         var date_iso = timefun(req.body.sent_date, req.body.sent_time)
         obj.DateT = date_iso;
     }
-    else if (req.body.follow_up > 0) {
-        var date_iso_follow = timefun(req.body.sent_date, req.body.sent_time)
-        date_iso_follow.setDate(date_iso_follow.getDate() + req.body.follow_up);
-        var nD = moment(date_iso_follow).format('MM/DD/YYYY')
-    }
+
     else if (req.body.follow_up < 0) {
         res.send({ code: 400, msg: 'follow up not set less then 0' })
     }
 
-    emailDetail = new all_temp(obj)
+    else {
+        var date_iso_follow = timefun(req.body.sent_date, req.body.sent_time)
+        date_iso_follow.setDate(date_iso_follow.getDate() + req.body.follow_up);
+        var nD = moment(date_iso_follow).format('MM/DD/YYYY')
 
-    emailDetail.save((er, data) => {
-        if (er) {
-            res.send({ error: "Email not saved", success: false })
+        emailDetail = new all_temp(obj)
 
-        }
-        else {
-            console.log('email saved And scheduled At', sent_date)
-            mailId = data.id
-            try {
-                cron.schedule(`59 23 ${scheduleDateOfMonth} ${scheduleMonth} ${scheduleDay}`, async function () {
-                    const emailData = {
-                        sendgrid_key: process.env.SENDGRID_API_KEY,
-                        to: req.body.to,
-                        from_email: req.body.from,
-                        from_name: 'noreply@gmail.com'
-                    };
+        emailDetail.save((er, data) => {
+            if (er) {
+                res.send({ error: "Email not saved", success: false })
 
-                    emailData.subject = subject;
-                    emailData.content = template;
-                    sgMail.send_via_sendgrid(emailData).then((data) => {
-                        all_temp.findByIdAndUpdate(mailId, { is_Sent: true }, async (er, data) => {
-                            if (er) {
-                                res.send({ error: "Email not saved", success: false })
+            }
+            else {
+             
+                mailId = data.id
+                try {
+                    cron.schedule(`59 23 ${scheduleDateOfMonth} ${scheduleMonth} ${scheduleDay}`, async function () {
+                        const emailData = {
+                            sendgrid_key: process.env.SENDGRID_API_KEY,
+                            to: req.body.to,
+                            from_email: req.body.from,
+                            from_name: 'noreply@gmail.com'
+                        };
+
+                        emailData.subject = subject;
+                        emailData.content = template;
+                        sgMail.send_via_sendgrid(emailData).then((data) => {
+                            all_temp.findByIdAndUpdate(mailId, { is_Sent: true }, async (er, data) => {
+                                if (er) {
+                                    res.send({ error: "Email not saved", success: false })
+                                }
+                                else {
+                                    await compose_folder.findOneAndUpdate(folderId, { $push: { template: data._id } }, (er, data) => {
+                                        if (er) {
+                                            res.send({ error: 'compose template details is not add in folder', success: false })
+                                        }
+                                        else {
+
+                                            res.send({ msg: 'Email sent Successfully', success: true });
+
+                                        }
+                                    })
+                                }
                             }
-                            else {
-                                await compose_folder.findOneAndUpdate(folderId, { $push: { template: data._id } }, (er, data) => {
-                                    if (er) {
-                                        res.send({ error: 'compose template details is not add in folder', success: false })
-                                    }
-                                    else {
+                            )
+                        }).catch((err) => {
+                            res.send({ error: err.message.replace(/\"/g, ""), success: false })
+                        })
 
-                                        res.send({ msg: 'Email sent Successfully', success: true });
-
-                                    }
-                                })
-                            }
-                        }
-                        )
-                    }).catch((err) => {
-                        res.send({ error: err.message.replace(/\"/g, ""), success: false })
                     })
+                }
+                catch (err) {
+                    res.send({ error: 'email details is not save', success: false })
 
-                })
+                }
+
             }
-            catch (err) {
-                res.send({ error: 'email details is not save', success: false })
-
-            }
-
-        }
-    })
+        })
+    }
 
 
 }
