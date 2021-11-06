@@ -40,16 +40,15 @@ exports.signup = async (req, res) => {
   admins.map(email => {
     sendToAllAdmins.push(email["email"])
   })
+  let sendingMailToUser = req.body.email;
 
   //todo Pavan - Need to restructure the mail body as per the requirement
   let msg = {
-    to: sendToAllAdmins, // Change to your recipient
+    to: sendingMailToUser, // Change to your recipient
     from: from_email, // Change to your verified sender
     subject: 'Varification Email For User',
-    text: 'Please find the below URL to activate your resent registered user - ',
-    html: `<h2>Please click on given link to accept the user's request</h2>
-                          <p>${process.env.RESET_URL}</p>
-                          `,
+    text: 'Thanks for signing-up in ',
+    html: `<h2>Worth waiting! Soon you will get login credential once Admin aproove your request :)</h2>`,
   }
   user.save((err, user) => {
     if (err) {
@@ -83,9 +82,11 @@ exports.approveUserRequestByAdmin = async (req, res) => {
     "role": 0,
     "_id": query.userId
   };
+  let password = Math.random().toString(36).slice(2);
   let update = {
     "status": data.status,
-    "isverify": data.isverify
+    "isverify": data.isverify,
+    "password": password
   }
 
   let updatedUser = await User.findOneAndUpdate(filter, update, {
@@ -103,6 +104,7 @@ exports.approveUserRequestByAdmin = async (req, res) => {
     subject: 'Registration process with My_Member',
     text: 'Congratulation, your request has been accepted.',
     html: `<h2>congratulation, your registration with My Member is completed.</h2>
+                          <p>Login using this passward - ${password} </p> 
                           <p>You can login here - ${process.env.RESET_URL}</p>
                           `,
   }
