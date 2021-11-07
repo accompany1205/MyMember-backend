@@ -35,13 +35,6 @@ exports.promoteStudentRank = async (req, res) => {
                     newCurrentImg = await programRankInfo.rank_image;
                     await Member.findByIdAndUpdate({ _id: studentId },
                         { $set: { current_rank_img: newCurrentImg, current_rank_name: current_rank } })
-                    if (!newCurrentImg) {
-                        res.json({
-                            success: false,
-                            statusCode: 200,
-                            msg: "no current rank matched"
-                        })
-                    }
                 }
                 if (next_rank === programRankInfo.rank_name) {
                     newNextImg = await programRankInfo.rank_image;
@@ -55,7 +48,7 @@ exports.promoteStudentRank = async (req, res) => {
                         "next_rank": next_rank
                     });
                     await RecommendedForTest.findOneAndUpdate({"studentId":studentId}, {
-                        "current_rank":current_rank, "next_rank":next_rank, "isDeleted":true
+                        "current_rank":current_rank, "next_rank":next_rank, "isDeleted":false
                     });
                     if (!newNextImg) {
                         res.json({
@@ -73,6 +66,7 @@ exports.promoteStudentRank = async (req, res) => {
                    
                 }
             });
+            console.log("jhj",newCurrentImg)
         }
         else {
             res.json({
