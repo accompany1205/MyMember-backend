@@ -82,29 +82,6 @@ exports.approveUserRequestByAdmin = async (req, res) => {
     "role": 0,
     "_id": query.userId
   };
-<<<<<<< HEAD
-  let password = Math.random().toString(36).slice(2);
-  let update = {
-    "status": data.status,
-    "isverify": data.isverify,
-    "password": password
-  }
-  let updatedUser = await User.findOneAndUpdate(filter, update, {
-    returnOriginal: false
-  }).exec();
-  if (!updatedUser) {
-    res.send({
-      "staus": false,
-      "msg": "unable to update user"
-    })
-  }
-  let msg = {
-    to: updatedUser.email, // Change to your recipient
-    from: from_email, // Change to your verified sender
-    subject: 'Registration process with My_Member',
-    text: 'Congratulation, your request has been accepted.',
-    html: `<h2>congratulation, your registration with My Member is completed.</h2>
-=======
   let isActive = await User.findOne(filter);
 
   if (isActive.status === 'Inactive') {
@@ -130,7 +107,6 @@ exports.approveUserRequestByAdmin = async (req, res) => {
       subject: 'Registration process with My_Member',
       text: 'Congratulation, your request has been accepted.',
       html: `<h2>congratulation, your registration with My Member is completed.</h2>
->>>>>>> 0c4a4a913b481aafdd774440caa9c158ebc9aee6
                           <p>Login using this passward - ${password} </p> 
                           <p>You can login here - ${process.env.RESET_URL}</p>
                           `,
