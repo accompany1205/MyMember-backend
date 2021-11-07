@@ -63,12 +63,14 @@ exports.promoteStudentRank = async (req, res) => {
                             statusCode: 200,
                             msg: "no next rank matched"
                         })
+                    }else {
+                        res.json({
+                            success: true,
+                            statusCode: 200,
+                            msg: "Rank and Image promoted succesfully"
+                        })
                     }
-                    res.json({
-                        success: true,
-                        statusCode: 200,
-                        msg: "Rank and Image promoted succesfully"
-                    })
+                   
                 }
             });
         }
