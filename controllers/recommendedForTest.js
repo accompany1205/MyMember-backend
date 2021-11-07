@@ -17,7 +17,8 @@ exports.getRecommededForTest = async (req, res) => {
     }
 
     let students = await RecommendedForTest.find({
-        "userId": userId
+        "userId": userId,
+        "isDeleted":false
     });
     if (!students.length) {
         res.json({
