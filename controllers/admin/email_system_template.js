@@ -4,7 +4,6 @@ const user = require("../../models/user")
 const async = require('async')
 moment = require('moment')
 const cron = require('node-cron')
-
 const sgMail = require("sendgrid-v3-node");
 
 function timefun(sd, st) {
