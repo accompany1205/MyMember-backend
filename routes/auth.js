@@ -13,7 +13,8 @@ const {
     edit_navbar_ui,
     isAdmin,
     approveUserRequestByAdmin,
-    updateUser
+    updateUser,
+    school_listing
 } = require("../controllers/auth");
 const { userSignupValidator } = require("../validator");
 
@@ -31,5 +32,5 @@ router.put("/updateUser/:userId",updateUser)
 router.get("/get_navbar", get_navbar);
 router.post("/edit_navbar_li", edit_navbar_li);
 router.post("/edit_navbar_ui", edit_navbar_ui)
-
+router.get("/school_listing",school_listing)
 module.exports = router;

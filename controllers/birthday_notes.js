@@ -100,28 +100,32 @@ exports.birth_this_week = async(req,res)=>{
     // }
     
     
-    var cur = new Date()
-    // { $expr: { $eq: [{ $month: '$DateT' }, { $month: curdat }] } },
-    memberModal.aggregate([
-        {
-            $match: {
-                $and: [{ userId: req.params.userId },
-                { $expr: { $eq: [{ "$month":'$dob' },{"$month":cur}] } }]
-            }
-        }, {
-            $project: {
-                firstName: 1,
-                lastName: 1,
-                memberprofileImage:1,
-                dob: 1,
-                age: 1,
-                day_left: 1,
-                primaryPhone: 1,
-                rank: 1,
-                day_left:1
-            }
-        }
-    ]).exec((err,resp)=>{
+    // var cur = new Date()
+    // // { $expr: { $eq: [{ $month: '$DateT' }, { $month: curdat }] } },
+    // memberModal.aggregate([
+    //     {
+    //         $match: {
+    //             $and: [{ userId: req.params.userId },
+    //             { $expr: { $eq: [{ "$month":'$dob' },{"$month":cur}] } }]
+    //         }
+    //     }, {
+    //         $project: {
+    //             firstName: 1,
+    //             lastName: 1,
+    //             memberprofileImage:1,
+    //             dob: 1,
+    //             age: 1,
+    //             day_left: 1,
+    //             primaryPhone: 1,
+    //             rank: 1,
+    //             day_left:1
+    //         }
+    //     }
+    // ])
+    console.log(req.params.userId)
+    
+    memberModal.find({userId:req.params.userId})
+    .exec((err,resp)=>{
         if(err){
             res.json({code:400,msg:'this week birthday not found'})
         }

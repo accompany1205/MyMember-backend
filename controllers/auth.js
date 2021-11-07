@@ -40,16 +40,15 @@ exports.signup = async (req, res) => {
   admins.map(email => {
     sendToAllAdmins.push(email["email"])
   })
+  let sendingMailToUser = req.body.email;
 
   //todo Pavan - Need to restructure the mail body as per the requirement
   let msg = {
-    to: sendToAllAdmins, // Change to your recipient
+    to: sendingMailToUser, // Change to your recipient
     from: from_email, // Change to your verified sender
     subject: 'Varification Email For User',
-    text: 'Please find the below URL to activate your resent registered user - ',
-    html: `<h2>Please click on given link to accept the user's request</h2>
-                          <p>${process.env.RESET_URL}</p>
-                          `,
+    text: 'Thanks for signing-up in ',
+    html: `<h2>Worth waiting! Soon you will get login credential once Admin aproove your request :)</h2>`,
   }
   user.save((err, user) => {
     if (err) {
@@ -83,44 +82,61 @@ exports.approveUserRequestByAdmin = async (req, res) => {
     "role": 0,
     "_id": query.userId
   };
-  let update = {
-    "status": data.status,
-    "isverify": data.isverify
-  }
+  let isActive = await User.findOne(filter);
 
-  let updatedUser = await User.findOneAndUpdate(filter, update, {
-    returnOriginal: false
-  }).exec();
-  if (!updatedUser) {
-    res.send({
-      "staus": false,
-      "msg": "unable to update user"
-    })
-  }
-  let msg = {
-    to: updatedUser.email, // Change to your recipient
-    from: from_email, // Change to your verified sender
-    subject: 'Registration process with My_Member',
-    text: 'Congratulation, your request has been accepted.',
-    html: `<h2>congratulation, your registration with My Member is completed.</h2>
+  if (isActive.status === 'Inactive') {
+    let password = Math.random().toString(36).slice(2);
+    let update = {
+      "status": data.status,
+      "isverify": data.isverify,
+      "password": password
+    }
+
+    let updatedUser = await User.findOneAndUpdate(filter, update, {
+      returnOriginal: false
+    }).exec();
+    if (!updatedUser) {
+      res.send({
+        "staus": false,
+        "msg": "unable to update user"
+      })
+    }
+    let msg = {
+      to: updatedUser.email, // Change to your recipient
+      from: from_email, // Change to your verified sender
+      subject: 'Registration process with My_Member',
+      text: 'Congratulation, your request has been accepted.',
+      html: `<h2>congratulation, your registration with My Member is completed.</h2>
+                          <p>Login using this passward - ${password} </p> 
                           <p>You can login here - ${process.env.RESET_URL}</p>
                           `,
-  }
-  sgMail
-    .send(msg)
-    .then(() => {
-    })
-    .catch((error) => {
-      res.send(error)
-    })
-  res.send({
-    "status": true,
-    "msg": "User has been updated successfully",
-    "data": {
-      "status": updatedUser["status"],
-      "location": updatedUser["isverify"]
     }
-  })
+    sgMail
+      .send(msg)
+      .then(() => {
+      })
+      .catch((error) => {
+        res.send(error)
+      })
+    res.send({
+      "status": true,
+      "msg": "User has been updated successfully",
+      "data": {
+        "status": updatedUser["status"],
+        "location": updatedUser["isverify"]
+      }
+    })
+  }else {
+    let updates = {
+      "status":data.status,
+      "isverify": data.isverify
+    }
+      await User.findOneAndUpdate(filter,updates);
+      res.json({
+        "msg":"user is succesfully Inactivated",
+        success:true
+      })
+  }
 }
 
 exports.forgetpasaword = (req, res) => {
@@ -670,6 +686,20 @@ exports.updateUser = async (req, res) => {
     })
 }
 
+
+
+exports.school_listing = async (req, res) => {
+
+  await User.find({ role: 0, status: 'Inactive' })
+    .exec((err, data) => {
+      if (err) {
+        res.send({ error: "User is not updated!", status: "failure" })
+      }
+      else {
+        res.status(200).send({ msg: data, status: "success" })
+      }
+    })
+}
 
 
 
