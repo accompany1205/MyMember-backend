@@ -690,7 +690,7 @@ exports.updateUser = async (req, res) => {
 
 exports.school_listing = async (req, res) => {
 
-  await User.find({ role: 0, status: 'Inactive' })
+  await User.find({ role: 0 })
     .exec((err, data) => {
       if (err) {
         res.send({ error: "User is not updated!", status: "failure" })
