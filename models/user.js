@@ -28,7 +28,7 @@ const userSchema = new schema(
         },
         status:{
             type:String,
-            default:'Deactivate' // school status active and diactive by admin
+            default:'Inactive' // school status active and diactive by admin
         },
         bussinessname: {
             type: String,
