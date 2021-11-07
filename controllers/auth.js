@@ -82,6 +82,7 @@ exports.approveUserRequestByAdmin = async (req, res) => {
     "role": 0,
     "_id": query.userId
   };
+<<<<<<< HEAD
   let password = Math.random().toString(36).slice(2);
   let update = {
     "status": data.status,
@@ -103,25 +104,63 @@ exports.approveUserRequestByAdmin = async (req, res) => {
     subject: 'Registration process with My_Member',
     text: 'Congratulation, your request has been accepted.',
     html: `<h2>congratulation, your registration with My Member is completed.</h2>
+=======
+  let isActive = await User.findOne(filter);
+
+  if (isActive.status === 'Inactive') {
+    let password = Math.random().toString(36).slice(2);
+    let update = {
+      "status": data.status,
+      "isverify": data.isverify,
+      "password": password
+    }
+
+    let updatedUser = await User.findOneAndUpdate(filter, update, {
+      returnOriginal: false
+    }).exec();
+    if (!updatedUser) {
+      res.send({
+        "staus": false,
+        "msg": "unable to update user"
+      })
+    }
+    let msg = {
+      to: updatedUser.email, // Change to your recipient
+      from: from_email, // Change to your verified sender
+      subject: 'Registration process with My_Member',
+      text: 'Congratulation, your request has been accepted.',
+      html: `<h2>congratulation, your registration with My Member is completed.</h2>
+>>>>>>> 0c4a4a913b481aafdd774440caa9c158ebc9aee6
                           <p>Login using this passward - ${password} </p> 
                           <p>You can login here - ${process.env.RESET_URL}</p>
                           `,
-  }
-  sgMail
-    .send(msg)
-    .then(() => {
-    })
-    .catch((error) => {
-      res.send(error)
-    })
-  res.send({
-    "status": true,
-    "msg": "User has been updated successfully",
-    "data": {
-      "status": updatedUser["status"],
-      "location": updatedUser["isverify"]
     }
-  })
+    sgMail
+      .send(msg)
+      .then(() => {
+      })
+      .catch((error) => {
+        res.send(error)
+      })
+    res.send({
+      "status": true,
+      "msg": "User has been updated successfully",
+      "data": {
+        "status": updatedUser["status"],
+        "location": updatedUser["isverify"]
+      }
+    })
+  } else {
+    let updates = {
+      "status": data.status,
+      "isverify": data.isverify
+    }
+    await User.findOneAndUpdate(filter, updates);
+    res.json({
+      "msg": "user is succesfully Inactivated",
+      success: true
+    })
+  }
 }
 
 exports.forgetpasaword = (req, res) => {
@@ -671,6 +710,28 @@ exports.updateUser = async (req, res) => {
     })
 }
 
+
+
+exports.school_listing = async (req, res) => {
+  var per_page = parseInt(req.body.per_page) || 10
+  var page_no = parseInt(req.params.page_no) || 1
+  var totalCount=await User.find({role:0}).count()
+  var pagination = {
+    limit: per_page,
+    skip: per_page * (page_no - 1)
+  }
+  await User.find({ role: 0 })
+    .limit(pagination.limit)
+    .skip(pagination.skip)
+    .exec((err, data) => {
+      if (err) {
+        res.send({ error: "User is not updated!", status: "failure" })
+      }
+      else {
+        res.status(200).send({ msg: data, status: "success",totalCount:totalCount})
+      }
+    })
+}
 
 
 
