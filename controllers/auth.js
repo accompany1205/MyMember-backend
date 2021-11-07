@@ -126,16 +126,16 @@ exports.approveUserRequestByAdmin = async (req, res) => {
         "location": updatedUser["isverify"]
       }
     })
-  }else {
+  } else {
     let updates = {
-      "status":data.status,
+      "status": data.status,
       "isverify": data.isverify
     }
-      await User.findOneAndUpdate(filter,updates);
-      res.json({
-        "msg":"user is succesfully Inactivated",
-        success:true
-      })
+    await User.findOneAndUpdate(filter, updates);
+    res.json({
+      "msg": "user is succesfully Inactivated",
+      success: true
+    })
   }
 }
 
@@ -689,14 +689,22 @@ exports.updateUser = async (req, res) => {
 
 
 exports.school_listing = async (req, res) => {
-
+  var per_page = parseInt(req.body.per_page) || 10
+  var page_no = parseInt(req.params.page_no) || 1
+  var totalCount=await User.find({role:0}).count()
+  var pagination = {
+    limit: per_page,
+    skip: per_page * (page_no - 1)
+  }
   await User.find({ role: 0 })
+    .limit(pagination.limit)
+    .skip(pagination.skip)
     .exec((err, data) => {
       if (err) {
         res.send({ error: "User is not updated!", status: "failure" })
       }
       else {
-        res.status(200).send({ msg: data, status: "success" })
+        res.status(200).send({ msg: data, status: "success",totalCount:totalCount})
       }
     })
 }

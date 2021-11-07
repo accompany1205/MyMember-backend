@@ -32,5 +32,5 @@ router.put("/updateUser/:userId",updateUser)
 router.get("/get_navbar", get_navbar);
 router.post("/edit_navbar_li", edit_navbar_li);
 router.post("/edit_navbar_ui", edit_navbar_ui)
-router.get("/school_listing",school_listing)
+router.get("/school_listing/:page_no",school_listing)
 module.exports = router;
