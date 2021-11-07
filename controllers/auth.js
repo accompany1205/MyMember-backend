@@ -88,7 +88,6 @@ exports.approveUserRequestByAdmin = async (req, res) => {
     "isverify": data.isverify,
     "password": password
   }
-
   let updatedUser = await User.findOneAndUpdate(filter, update, {
     returnOriginal: false
   }).exec();

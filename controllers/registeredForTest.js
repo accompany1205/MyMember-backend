@@ -17,7 +17,6 @@ exports.promoteStudentRank = async (req, res) => {
                 statusCode: 404,
                 success: false,
                 msg: 'please provide valid registered student Id',
-
             });
         }
         let current_rank = req.body.current_rank;
@@ -25,45 +24,52 @@ exports.promoteStudentRank = async (req, res) => {
         let registeredData = await RegisterdForTest.findById(registeredId);
         let { studentId } = registeredData;
         if (!registeredData.isDeleted) {
-            let removedFromRegister = await RegisterdForTest.findOneAndUpdate({
-                "studentId": studentId
-            }, {
-                "isDeleted": true,
-                "current_rank": current_rank,
-                "next_rank": next_rank
-            });
             let studentInfo = await Member.findById(studentId);
             let { program } = studentInfo;
             let programInfo = await Program.findOne({ programName: program }, { program_rank: 1 })
+            let newCurrentImg;
+            let newNextImg;
             programInfo.program_rank.forEach(async element => {
                 let programRankInfo = await ProgramRankModel.findById(element);
                 if (current_rank === programRankInfo.rank_name) {
-
-                    let memberRankUpdate = await Member.findByIdAndUpdate({ _id: studentId },
-                        { $set: { current_rank_img: programRankInfo.rank_image, current_rank_name: current_rank } })
-                }else{
-                    res.json({
-                        success: false,
-                        statusCode: 200,
-                        msg: "no current rank matched"
-                    })
+                    newCurrentImg = await programRankInfo.rank_image;
+                    await Member.findByIdAndUpdate({ _id: studentId },
+                        { $set: { current_rank_img: newCurrentImg, current_rank_name: current_rank } })
+                    if (!newCurrentImg) {
+                        res.json({
+                            success: false,
+                            statusCode: 200,
+                            msg: "no current rank matched"
+                        })
+                    }
                 }
                 if (next_rank === programRankInfo.rank_name) {
-                    let memberRankUpdate = await Member.findByIdAndUpdate({ _id: studentId },
-                        { $set: { next_rank_img: programRankInfo.rank_image, next_rank_name: next_rank } })
+                    newNextImg = await programRankInfo.rank_image;
+                    await Member.findByIdAndUpdate({ _id: studentId },
+                        { $set: { next_rank_img: newNextImg, next_rank_name: next_rank } })
+                    await RegisterdForTest.findOneAndUpdate({
+                        "studentId": studentId
+                    }, {
+                        "isDeleted": true,
+                        "current_rank": current_rank,
+                        "next_rank": next_rank
+                    });
+                    await RecommendedForTest.findOneAndUpdate({"studentId":studentId}, {
+                        "current_rank":current_rank, "next_rank":next_rank, "isDeleted":true
+                    });
+                    if (!newNextImg) {
+                        res.json({
+                            success: false,
+                            statusCode: 200,
+                            msg: "no next rank matched"
+                        })
+                    }
                     res.json({
-                        statusCode: 200,
                         success: true,
-                        msg: "promoted and Rank updated succesFully"
-                    })
-                }else{
-                    res.json({
-                        success: false,
                         statusCode: 200,
-                        msg: "no next rank matched"
+                        msg: "Rank and Image promoted succesfully"
                     })
                 }
-
             });
         }
         else {
