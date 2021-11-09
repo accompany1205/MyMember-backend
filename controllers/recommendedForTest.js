@@ -142,79 +142,82 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         next_rank,
         current_rank_img,
         method,
-        phone
+        phone,
+        firstName,
+        lastName,
+        memberprofileImage,
+        program
     } = req.body;
-
     //If student removed by mistake and adding again to the registerd list...
-    let isStudentRegisterd = await RegisterdForTest.findOne({
-        "studentId": studentId
-    })
-    if (isStudentRegisterd) {
-        let removedFromRecommended = await RecommendedForTest.findOneAndUpdate({
-            "studentId": studentId
-        }, {
-            "isDeleted": false
-        });
-        if (!removedFromRecommended) {
-            res.json({
-                status: false,
-                msg: "Having issue while removing form recommeded list!!"
-            })
-        }
+    // let isStudentRegisterd = await RegisterdForTest.findOne({
+    //     "studentId": studentId
+    // })
+    // if (isStudentRegisterd) {
+    //     let removedFromRecommended = await RecommendedForTest.findOneAndUpdate({
+    //         "studentId": studentId
+    //     }, {
+    //         "isDeleted": false
+    //     });
+    //     if (!removedFromRecommended) {
+    //         res.json({
+    //             status: false,
+    //             msg: "Having issue while removing form recommeded list!!"
+    //         })
+    //     }
 
-        let updateIsDeleted = await RegisterdForTest.findOneAndUpdate({
-            "studentId": studentId
-        }, {
-            "isDeleted": false,
-            "userId": userId
-        }, {
-            new: true
-        });
-        if (!updateIsDeleted) {
-            res.json({
-                status: false,
-                msg: "Unable to reflect into the registerd again!!"
-            })
-        }
-        res.json({
-            status: true,
-            msg: "Student successfully promoted to registerd list!!",
-            data: updateIsDeleted
-        })
+    //     let updateIsDeleted = await RegisterdForTest.findOneAndUpdate({
+    //         "studentId": studentId
+    //     }, {
+    //         "isDeleted": false,
+    //         "userId": userId
+    //     }, {
+    //         new: true
+    //     });
+    //     if (!updateIsDeleted) {
+    //         res.json({
+    //             status: false,
+    //             msg: "Unable to reflect into the registerd again!!"
+    //         })
+    //     }
+    //     res.json({
+    //         status: true,
+    //         msg: "Student successfully promoted to registerd list!!",
+    //         data: updateIsDeleted
+    //     })
 
-    } else {
+    // } 
+    //else {
         //If moving the student to the registerd list for the fist time.
-        let studentData = await Member.findById(studentId)
         let registerd = await RegisterdForTest.create({
             "studentId": studentId,
-            "firstName": studentData.firstName,
+            "firstName": firstName,
             "testId": testId,
-            "lastName": studentData.lastName,
+            "lastName": lastName,
             "rating": rating,
             "current_rank": current_rank,
             "next_rank": next_rank,
             "userId": userId,
             "current_rank_img": current_rank_img,
             "method": method,
-            "memberprofileImage": studentData.memberprofileImage,
+            "memberprofileImage": memberprofileImage,
             "phone": phone,
-            "program": studentData.program
+            "program": program
         });
-        if (!registerd) {
+        if (registerd === null) {
             res.json({
                 status: false,
-                msg: "Having some issue while register!!"
+                msg: "Having some issue while register!!!!!!!"
             })
         }
         let date = new Date();
         let history = {
             "current_rank": current_rank,
-            "program": studentData.program,
+            "program": program,
             "current_rank_img": current_rank_img,
             "testPaid": date,
             "promoted": date
         }
-        let updatedTestPurchasing = await Member.findByIdAndUpdate(studentId, {
+        let updatedTestPurchasing = await Member.findOneAndUpdate(studentId, {
             $push: {
                 test_purchasing: testId,
                 rank_update_test_history: history
@@ -222,7 +225,7 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         }, {
             new: true
         })
-        if (!updatedTestPurchasing) {
+        if (updatedTestPurchasing === null) {
             res.json({
                 status: false,
                 msg: "Having some issue while register!!"
@@ -235,7 +238,6 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         }, {
             new: true
         });
-
         if (!removedFromRecommended) {
             res.json({
                 status: false,
@@ -248,7 +250,7 @@ exports.payAndPromoteTheStudent = async (req, res) => {
             msg: "Student successfully promoted to registerd list!!",
             data: registerd
         })
-    }
+    //}
 }
 
 
