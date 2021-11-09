@@ -4,8 +4,8 @@ const {Storage} = require("@google-cloud/storage")
 const sampleFile = require("../models/admin/upload_sample_file")
 const std = require("../models/addmember")
 
-// var uid = require("uuid")
-// var uidv1 = uid.v1
+// const {v4:uuidv4} = require('uuid');
+// uuidv4()
 require("dotenv").config()
 const storage = new Storage({projectId: process.env.GCLOUD_PROJECT,credentials:{client_email:process.env.GCLOUD_CLIENT_EMAIL,private_key:process.env.GCLOUD_PRIVATE_KEY}})
 const bucket = storage.bucket(process.env.GCS_BUCKET)
