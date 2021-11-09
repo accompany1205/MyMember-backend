@@ -3,8 +3,8 @@ function clourUrl(){
     this.imageUrl = (file) => {
         const { Storage } = require("@google-cloud/storage");
         const path = require('path')
-        var uid = require("uuid");
-        var uidv1 = uid.v1;
+        // const {v4:uuidv4} = require('uuid');
+        // uuidv4()
         require("dotenv").config();
         const storage = new Storage({ projectId: process.env.GCLOUD_PROJECT, keyFilename: path.join(__dirname, "./mad-for-chicken-243518-28ef1834055d.json")});
         const bucket = storage.bucket(process.env.GCS_BUCKET);

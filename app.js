@@ -26,6 +26,8 @@ const orderRoutes = require("./routes/order");
 //ttl
 const TTL = require("./routes/attl")
 
+//middlewear
+const middleware = require('./middlewear/middlewear')
 
 //shivani's
 const administrate_user = require("./routes/administrater_user");
@@ -122,9 +124,10 @@ const textTemplateRoutes = require('./routes/text_templates_routes');
 
 const app = express();
 // app.use(fileUpload({ safeFileNames: true, preserveExtension: true }))
-const uuidv1 = require("uuid/v1");
+const { v4: uuidv4 } = require('uuid');
+
 const followup_notes = require("./models/followup_notes");
-uuidv1();
+uuidv4()
 // status check expire or not
 
 mongoose
@@ -243,6 +246,9 @@ app.use("/api", recomendedForTestRoutes);
 app.use("/api", registeredForTestRoutes);
 app.use("/api", recommendedCandidatesRoutes);
 
+//
+app.use(middleware.errorHandler);
+app.use(middleware.unknownEndpoint);
 // menu middle
 app.use("/api", student_menu);
 

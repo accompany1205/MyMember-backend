@@ -7,8 +7,8 @@ const parser = bodyParser.urlencoded({
     extended: false
 });
 const crypto = require("crypto")
-const uuidv1 = require('uuid/v1');
-uuidv1()
+const {v4:uuidv4} = require('uuid');
+uuidv4()
 const bcrypt = require('bcryptjs');
 
 
