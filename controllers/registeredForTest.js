@@ -5,7 +5,6 @@ const RecommendedForTest = require('../models/recommendedForTest');
 const RegisterdForTest = require('../models/registerdForTest');
 const ProgramRankModel = require('../models/program_rank');
 const Program = require('../models/program');
-const { forEach } = require('lodash');
 
 
 
@@ -24,6 +23,13 @@ exports.promoteStudentRank = async (req, res) => {
         let registeredData = await RegisterdForTest.findById(registeredId);
         let { studentId } = registeredData;
         if (!registeredData.isDeleted) {
+            await RegisterdForTest.findOneAndUpdate({
+                "studentId": studentId
+            }, {
+                "isDeleted": true,
+                "current_rank": current_rank,
+                "next_rank": next_rank
+            });
             let studentInfo = await Member.findById(studentId);
             let { program } = studentInfo;
             let programInfo = await Program.findOne({ programName: program }, { program_rank: 1 })
@@ -40,13 +46,6 @@ exports.promoteStudentRank = async (req, res) => {
                     newNextImg = await programRankInfo.rank_image;
                     await Member.findByIdAndUpdate({ _id: studentId },
                         { $set: { next_rank_img: newNextImg, next_rank_name: next_rank } })
-                    await RegisterdForTest.findOneAndUpdate({
-                        "studentId": studentId
-                    }, {
-                        "isDeleted": true,
-                        "current_rank": current_rank,
-                        "next_rank": next_rank
-                    });
                     await RecommendedForTest.findOneAndUpdate({"studentId":studentId}, {
                         "current_rank":current_rank, "next_rank":next_rank
                     });
