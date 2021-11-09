@@ -101,13 +101,14 @@ exports.approveUserRequestByAdmin = async (req, res) => {
         "msg": "unable to update user"
       })
     }
+    console.log(updatedUser.username)
     let msg = {
       to: updatedUser.email, // Change to your recipient
       from: from_email, // Change to your verified sender
       subject: 'Registration process with My_Member',
       text: 'Congratulation, your request has been accepted.',
       html: `<h2>congratulation, your registration with My Member is completed.</h2>
-                          <p>Login using this passward - ${password} </p> 
+                          <p>Your username is ${updatedUser.username},  Login using this passward - ${password} </p> 
                           <p>You can login here - ${process.env.RESET_URL}</p>
                           `,
     }
