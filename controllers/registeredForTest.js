@@ -50,7 +50,7 @@ exports.promoteStudentRank = async (req, res) => {
                     await RecommendedForTest.findOneAndUpdate({"studentId":studentId}, {
                         "current_rank":current_rank, "next_rank":next_rank
                     });
-                    if (!newNextImg) {
+                    if (newNextImg === null) {
                         res.json({
                             success: false,
                             statusCode: 200,
