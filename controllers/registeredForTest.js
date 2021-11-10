@@ -26,7 +26,7 @@ exports.promoteStudentRank = async (req, res) => {
         let { studentId } = registeredData;
         if (!registeredData.isDeleted) {
             let temp = await RegisterdForTest.findOneAndUpdate({
-                _id:registeredId
+                _id: registeredId
             }, {
                 isDeleted: true,
                 current_rank: current_rank,
@@ -44,7 +44,7 @@ exports.promoteStudentRank = async (req, res) => {
             }
             studentRankInfo = await student_info_Rank.findOne({ "studentId": studentId })
             if (studentRankInfo !== null) {
-                await studentRankInfo.findOneAndUpdate({ studentId: studentId }, { "rank_name": current_rank })
+                await student_info_Rank.findOneAndUpdate({ studentId: studentId }, { rank_name: current_rank })
             } else {
                 const resp = new student_info_Rank({
                     programName: currentprogramName,
@@ -64,42 +64,6 @@ exports.promoteStudentRank = async (req, res) => {
                 statusCode: 200,
                 msg: "Rank and Image promoted succesfully"
             })
-            // console.log("----->",reg)
-            // let studentInfo = await Member.findById(studentId);
-            // let { program } = studentInfo;
-            // let programInfo = await Program.findOne({ programName: program }, { program_rank: 1 })
-            // let newCurrentImg;
-            // let newNextImg;
-            // programInfo.program_rank.forEach(async element => {
-            //     let programRankInfo = await ProgramRankModel.findById(element);
-            //     if (current_rank === programRankInfo.rank_name) {
-            //         newCurrentImg = await programRankInfo.rank_image;
-            //         await Member.findByIdAndUpdate({ _id: studentId },
-            //             { $set: { current_rank_img: newCurrentImg, current_rank_name: current_rank } })
-            //     }
-            //     if (next_rank === programRankInfo.rank_name) {
-            //         newNextImg = await programRankInfo.rank_image;
-            //         await Member.findByIdAndUpdate({ _id: studentId },
-            //             { $set: { next_rank_img: newNextImg, next_rank_name: next_rank } })
-            //         await RecommendedForTest.findOneAndUpdate({ "studentId": studentId }, {
-            //             "current_rank": current_rank, "next_rank": next_rank
-            //         });
-            //         if (newNextImg === null) {
-            //             res.json({
-            //                 success: false,
-            //                 statusCode: 200,
-            //                 msg: "no next rank matched"
-            //             })
-            //         } else {
-            //             res.json({
-            //                 success: true,
-            //                 statusCode: 200,
-            //                 msg: "Rank and Image promoted succesfully"
-            //             })
-            //         }
-
-            //     }
-            // });
         }
         else {
             res.json({
@@ -108,57 +72,6 @@ exports.promoteStudentRank = async (req, res) => {
                 msg: "User is not in registered list"
             })
         }
-
-        // let current_rank = req.body.current_rank
-        // let next_rank = req.body.next_rank
-        // let registeredId = req.params.registeredId;
-        // let rankUpdate = await RegisterdForTest.findById(registeredId);
-        // let {
-        //     studentId
-        // } = rankUpdate;
-        // if (!rankUpdate.isDeleted) {
-        //     let removedFromRegister = await RegisterdForTest.findOneAndUpdate({
-        //         "studentId": studentId
-        //     }, {
-        //         "isDeleted": true,
-        //         "current_rank": current_rank,
-        //         "next_rank": next_rank
-        //     });
-        //     let studentInfo = await Member.findById(studentId);
-        //     let { programId } = studentInfo;
-        //     let programInfo = await Program.findById(programId);
-        //     let {
-        //         program_rank
-        //     } = programInfo;
-        //     if (!program_rank) {
-        //         res.json({
-        //             statusCode: 200,
-        //             success: true,
-        //             msg: "No rank found in program-rank"
-        //         })
-        //     };
-        //     //let rankImg = 
-        //     let memberRankUpdate = await Member.findByIdAndUpdate({ _id: studentId }, { $set: { rankFromRecomendedTest: current_rank, next_rank } })
-        //     //console.log(memberRankUpdate)
-        //     if (!removedFromRegister) {
-        //         res.json({
-        //             status: false,
-        //             msg: "Having issue while removing form recommeded list!!"
-        //         })
-        //     }
-        // }
-        // else {
-        //     res.json({
-        //         success: false,
-        //         statusCode: 200,
-        //         msg: "User is not in registered list"
-        //     })
-        // }
-        // res.json({
-        //     statusCode: 200,
-        //     success: true,
-        //     msg: "promoted and Rank updated succesFully"
-        // })
     } catch (error) {
         res.send({ error: error.message.replace(/\"/g, ""), success: false })
     }
