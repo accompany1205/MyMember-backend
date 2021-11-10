@@ -121,10 +121,6 @@ exports.recomendStudent = async (req, res) => {
         // }
 
     } catch (error) {
-        let errorFound = error.message.replace(/\"/g, "")
-        if (errorFound.includes('duplicate key')) {
-            res.send({ error: 'Student already exist in recommend list !', success: false })
-        }
         res.send({ error: error.message.replace(/\"/g, ""), success: false })
     }
 
