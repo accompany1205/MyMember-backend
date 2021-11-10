@@ -44,7 +44,7 @@ exports.promoteStudentRank = async (req, res) => {
             }
             studentRankInfo = await student_info_Rank.findOne({ "studentId": studentId })
             if (studentRankInfo !== null) {
-                await studentRankInfo.findOneAndUpdate({ "studentId": studentId }, { "rank_name": current_rank })
+                await studentRankInfo.findOneAndUpdate({ studentId: studentId }, { "rank_name": current_rank })
             } else {
                 const resp = new student_info_Rank({
                     programName: currentprogramName,
