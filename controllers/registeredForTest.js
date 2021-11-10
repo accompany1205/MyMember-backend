@@ -39,10 +39,11 @@ exports.promoteStudentRank = async (req, res) => {
             await Member.findByIdAndUpdate({ _id: studentId },
                 { $set: { current_rank_name: current_rank, next_rank_name: next_rank, current_rank_img: currentImage } });
             let recommend = await RecommendedForTest.findOne({ studentId: studentId });
+            console.log(recommend)
             if (recommend !== null) {
                 await RecommendedForTest.deleteOne({ studentId });
             }
-            studentRankInfo = await student_info_Rank.findOne({ "studentId": studentId })
+            studentRankInfo = await student_info_Rank.findOne({ "studentId": studentId, "programName":currentprogramName})
             if (studentRankInfo !== null) {
                 await student_info_Rank.findOneAndUpdate({ studentId: studentId }, { rank_name: current_rank })
             } else {
