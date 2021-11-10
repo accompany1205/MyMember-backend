@@ -18,16 +18,20 @@ exports.membership_Info = (req, res) => {
         })
 };
 
-exports.update = (req, res) => {
-    // const id = req.params.membershipId;
-    // { 'paymentArr.0.1_installment': true }
-    buyMembership.findByIdAndUpdate(req.params.membershipId, req.body)
-        .then((update_resp) => {
-            res.send(update_resp)
-        }).catch((err) => {
-            res.send(err)
-        })
+exports.update = async (req, res) => {
+    try {
+
+        const membershipId = req.params.membershipId;
+        await buyMembership.updateOne({_id:membershipId}, req.body)
+        res.status(200).send({ message: 'buyMembership updated successfully', success: true })
+    }
+    catch (er) {
+        res.send({ error: err.message.replace(/\"/g, ""), success: false })
+
+    }
 };
+
+
 exports.updatePayments = async (req, res) => {
     try {
         const membershipId = req.params.membershipId;
@@ -93,7 +97,7 @@ exports.create = async (req, res) => {
             start_payment_Date: Joi.string().required(),
             dpayment: Joi.number().required(),
             ptype: Joi.string().required(),
-            balance: Joi.number().required(),   
+            balance: Joi.number().required(),
             payment_time: Joi.number().required(),
             payment_type: Joi.string().required(),
             payment_money: Joi.number().required(),
