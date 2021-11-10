@@ -2,7 +2,12 @@ const program = require("../models/program");
 const program_rank = require("../models/program_rank");
 const addmemberModal = require("../models/addmember");
 const student_info_Rank = require('../models/student_info_Rank')
+const RecommendedForTest = require('../models/recommendedForTest');
+const RegisterdForTest = require('../models/registerdForTest');
+const Member = require('../models/addmember');
+
 const Joi = require('@hapi/joi')
+
 
 
 exports.addRank = async (req, res) => {
@@ -15,8 +20,19 @@ exports.addRank = async (req, res) => {
     try {
         await studentInfoRankModal.validateAsync(req.body);
         const studentId = req.params.studentId
+        const Crank = req.body.rank_name
+        const Nrank = req.body.next_rank
+        const program = req.body.programName
         const data = await program_rank.findOne({ rank_name: req.body.rank_name }, { _id: 0, rank_image: 1, rank_name: 1, day_to_ready: 1 })
-
+        const recommedtTest = await RecommendedForTest.findOne({"studentId":studentId})
+        if(recommedtTest !== null){
+            const recommedtTest = await RecommendedForTest.findOneAndUpdate({"studentId":studentId}, {"current_rank":Crank, "next_rank":Nrank, "program":program})
+        }
+        const registerTest = await RegisterdForTest.findOne({"studentId":studentId})
+        if(registerTest !== null){
+            const registerTest = await RegisterdForTest.findOneAndUpdate({"studentId":studentId}, {"current_rank":Crank, "next_rank":Nrank, "program":program})
+        }
+        const student = await Member.findOneAndUpdate({"studentId":studentId}, {current_rank_name: Crank, current_rank_img:data.rank_image})
         const resp = new student_info_Rank({
             programName: req.body.programName,
             rank_name: req.body.rank_name,
@@ -60,8 +76,23 @@ exports.getRank = async (req, res) => {
 
 exports.updateRank = async (req, res) => {
     try {
-        const rankId = req.params.rankId
-        await student_info_Rank.findByIdAndUpdate(rankId, { $set: req.body })
+        const rankId = req.params.rankId;
+        const studentId = req.params.studentId;
+        const cRank = req.body.current_rank;
+        const nRank = req.body.next_rank;
+        const program = req.body.program;
+        const data1 = await program_rank.findOne({ rank_name: cRank }, { _id: 0, rank_image: 1, rank_name: 1, day_to_ready: 1 })
+        const data2 = await program_rank.findOne({ rank_name: nRank }, { _id: 0, rank_image: 1, rank_name: 1, day_to_ready: 1 })
+        await student_info_Rank.findByIdAndUpdate(rankId, { $set: {rank_name:cRank} })
+        const student = await Member.findOneAndUpdate({"studentId":studentId}, {current_rank_name: cRank, current_rank_img:data1.rank_image});
+        const recommedtTest = await RecommendedForTest.findOne({"studentId":studentId})
+        if(recommedtTest !== null){
+            const recommedtTest = await RecommendedForTest.findOneAndUpdate({"studentId":studentId}, {"current_rank":cRank, "next_rank":Nrank, "program":program})
+        }
+        const registerTest = await RegisterdForTest.findOne({"studentId":studentId})
+        if(registerTest !== null){
+            const registerTest = await RegisterdForTest.findOneAndUpdate({"studentId":studentId}, {"current_rank":data1.rank_name, "next_rank":data2.rank_name, "program":program})
+        }
         res.status(200).send({ message: 'rank_update_history is updated Successfully', success: true })
 
     }
