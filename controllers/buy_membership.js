@@ -93,7 +93,7 @@ exports.create = async (req, res) => {
             start_payment_Date: Joi.string().required(),
             dpayment: Joi.number().required(),
             ptype: Joi.string().required(),
-            balance: Joi.number().required(),
+            balance: Joi.number().required(),   
             payment_time: Joi.number().required(),
             payment_type: Joi.string().required(),
             payment_money: Joi.number().required(),

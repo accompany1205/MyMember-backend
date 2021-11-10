@@ -39,7 +39,10 @@ const { addmember,
     getRankUpdateTestHistoryByStudentId,
     filter_members,
     invoice_listing,
-    invoice_details
+    invoice_details,
+    ActiveMemberslist,
+    ActiveMemberslistByProgramName
+
 } = require("../controllers/addmember")
 const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 const upload = require('../handler/multer');
@@ -68,9 +71,9 @@ router.get("/member/member_list_name/:userId", verifySchool, listMember)
 router.get('/member/member_list/:userId', verifySchool, read);
 router.get('/member/member_info/:userId/:StudentId', verifySchool, studentinfo);
 
-router.get('/member/invoice_listing/:userId/:StudentId',verifySchool,invoice_listing)
+router.get('/member/invoice_listing/:userId/:StudentId', verifySchool, invoice_listing)
 
-router.get('/member/invoice_details/:userId/:StudentId',verifySchool,invoice_details)
+router.get('/member/invoice_details/:userId/:StudentId', verifySchool, invoice_details)
 
 router.post('/member/add_member/:userId', verifySchool, upload.single('memberprofileImage'), addmember);
 
@@ -92,7 +95,7 @@ router.post('/member/email_send_student', send_mail_std)
 router.post('/member/text_sms_send', send_sms_std)
 
 //filter member by category, subcategory , program
-router.post("/member/filter_members/:userId",filter_members )
+router.post("/member/filter_members/:userId", filter_members)
 
 
 // student by program
@@ -106,6 +109,12 @@ router.get('/member/get_students_by_category/:userId/:category', getStudentsByCa
 router.get('/member/get_student_rank_update_hisrory/:userId/:studentId', getRankUpdateStripeHistoryByStudentId);
 router.get('/member/get_student_rank_update_test_hisrory/:userId/:studentId', getRankUpdateTestHistoryByStudentId);
 router.get("/member/get_active_members/:userId", getActiveStudents);
+
+
+
+//studeent by status
+router.get('/member/get_students_by_Active_Status/:userId', requireSignin, ActiveMemberslist)
+router.get('/member/get_Active_member_by_Program/:userId/:programName', ActiveMemberslistByProgramName)
 
 
 
