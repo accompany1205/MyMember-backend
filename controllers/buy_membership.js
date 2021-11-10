@@ -93,14 +93,14 @@ exports.create = async (req, res) => {
                         res.send({ error: 'membership not buy' })
                     }
                     else {
-                        
+
                         query = { _id: studentId }
                         console.log(query)
                         update = {
                             $set: { status: "active" },
                             $push: { membership_details: data._id }
                         }
-                        
+
                         addmemberModal.findOneAndUpdate(query, update, (err, stdData) => {
                             if (err) {
                                 res.send({ error: 'membership id is not add in student' })
@@ -270,6 +270,20 @@ exports.buyMembership = (req, res) => {
         res.send({ error: error.message.replace(/\"/g, ""), success: false })
     }
 }
+exports.membership_InfoById = async (req, res) => {
+    var membershipID = req.params.membershipID
+    var userId = req.params.userId
+    try {
+        membershipData = await buyMembership.find({ _id: membershipID, userId: userId })
+        res.send({
+            msg: "done",
+            data: membershipData
+        })
+    } catch (error) {
+        res.send({ error: error.message.replace(/\"/g, ""), success: false })
+    }
+}
+
 
 exports.members_info = async (req, res) => {
     var studentId = req.params.studentId
@@ -280,12 +294,12 @@ exports.members_info = async (req, res) => {
             membership_details
         } = studentInfo;
         let membershipDa = await buyMembership.find({ _id: { $in: membership_details } });
-        membershipDa.filter(i => {
-            if (moment(currentDate).isSameOrAfter(i.expiry_date)) {
-                console.log(i)
-                i.membership_status = 'Expired'
-            }
-        })
+        // membershipDa.filter(i => {
+        //     if (moment(currentDate).isSameOrAfter(i.expiry_date)) {
+        //         console.log(i)
+        //         i.membership_status = 'Expired'
+        //     }
+        // })   
         res.send({
             msg: "done",
             data: membershipDa
