@@ -21,8 +21,7 @@ exports.membership_Info = (req, res) => {
 exports.update = (req, res) => {
     // const id = req.params.membershipId;
     // { 'paymentArr.0.1_installment': true }
-    buyMembership.find({ _id: "61784d11b97e9a1c3f301bf2", "schedulePayments.date": "2021-11-19" })
-        // { $set: { "schedulePayments.status": 'paid' } })
+    buyMembership.findByIdAndUpdate(req.params.membershipId, req.body)
         .then((update_resp) => {
             res.send(update_resp)
         }).catch((err) => {
