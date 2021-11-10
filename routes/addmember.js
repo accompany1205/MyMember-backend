@@ -39,7 +39,8 @@ const { addmember,
     getRankUpdateTestHistoryByStudentId,
     filter_members,
     invoice_listing,
-    invoice_details
+    invoice_details,
+    collectionModify
 } = require("../controllers/addmember")
 const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 const upload = require('../handler/multer');
@@ -59,6 +60,7 @@ router.get('/member/miss_you_call/:userId', verifySchool, missuCall_list);
 router.get('/member/miss_you_call_urjent/:userId', verifySchool, missuCall_list_urjent)
 router.get('/member/this_month_birth/:userId', verifySchool, birth_this_month);
 router.get('/member/next_month_birth/:userId', verifySchool, birth_next_month);
+router.post("/member/collectionModify/:userId", collectionModify)
 
 router.get('/member/lead_this_month/:userId', verifySchool, this_month_lead)
 router.get('/member/lead_past_three_month/:userId', verifySchool, last_three_month)

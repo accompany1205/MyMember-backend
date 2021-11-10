@@ -3,8 +3,10 @@ const User = require('../models/user');
 const Member = require('../models/addmember');
 const RecommendedForTest = require('../models/recommendedForTest');
 const RegisterdForTest = require('../models/registerdForTest');
-const ProgramRankModel = require('../models/program_rank');
 const Program = require('../models/program');
+const program_rank = require("../models/program_rank");
+const student_info_Rank = require('../models/student_info_Rank')
+
 
 
 
@@ -23,49 +25,81 @@ exports.promoteStudentRank = async (req, res) => {
         let registeredData = await RegisterdForTest.findById(registeredId);
         let { studentId } = registeredData;
         if (!registeredData.isDeleted) {
-            await RegisterdForTest.findOneAndUpdate({
-                "studentId": studentId
+            let temp = await RegisterdForTest.findOneAndUpdate({
+                _id:registeredId
             }, {
-                "isDeleted": true,
-                "current_rank": current_rank,
-                "next_rank": next_rank
+                isDeleted: true,
+                current_rank: current_rank,
+                next_rank: next_rank
             });
-            let studentInfo = await Member.findById(studentId);
-            let { program } = studentInfo;
-            let programInfo = await Program.findOne({ programName: program }, { program_rank: 1 })
-            let newCurrentImg;
-            let newNextImg;
-            programInfo.program_rank.forEach(async element => {
-                let programRankInfo = await ProgramRankModel.findById(element);
-                if (current_rank === programRankInfo.rank_name) {
-                    newCurrentImg = await programRankInfo.rank_image;
-                    await Member.findByIdAndUpdate({ _id: studentId },
-                        { $set: { current_rank_img: newCurrentImg, current_rank_name: current_rank } })
-                }
-                if (next_rank === programRankInfo.rank_name) {
-                    newNextImg = await programRankInfo.rank_image;
-                    await Member.findByIdAndUpdate({ _id: studentId },
-                        { $set: { next_rank_img: newNextImg, next_rank_name: next_rank } })
-                    await RecommendedForTest.findOneAndUpdate({"studentId":studentId}, {
-                        "current_rank":current_rank, "next_rank":next_rank
-                    });
-                    if (newNextImg === null) {
-                        res.json({
-                            success: false,
-                            statusCode: 200,
-                            msg: "no next rank matched"
-                        })
-                    }else {
-                        res.json({
-                            success: true,
-                            statusCode: 200,
-                            msg: "Rank and Image promoted succesfully"
-                        })
+            const data = await program_rank.findOne({ rank_name: current_rank }, { _id: 0, rank_image: 1, rank_name: 1, day_to_ready: 1, programName: 1 })
+            let currentImage = data.rank_image
+            let currentprogramName = data.programName
+            let currentday_to_ready = data.day_to_ready
+            await Member.findByIdAndUpdate({ _id: studentId },
+                { $set: { current_rank_name: current_rank, next_rank_name: next_rank, current_rank_img: currentImage } });
+            let recommend = await RecommendedForTest.findOne({ studentId: studentId });
+            if (recommend !== null) {
+                await RecommendedForTest.deleteOne({ studentId });
+            }
+            studentRankInfo = await student_info_Rank.findOne({ "studentId": studentId })
+            if (studentRankInfo !== null) {
+                await studentRankInfo.findOneAndUpdate({ "studentId": studentId }, { "rank_name": current_rank })
+            } else {
+                const resp = new student_info_Rank({
+                    programName: currentprogramName,
+                    rank_name: current_rank,
+                    day_to_ready: currentday_to_ready,
+                    rank_image: currentImage,
+                    studentId: studentId
+                });
+                resp.save(async (er, data) => {
+                    if (er) {
+                        res.send({ error: err.message.replace(/\"/g, ""), success: false })
                     }
-                   
-                }
-            });
-            console.log("jhj",newCurrentImg)
+                })
+            }
+            res.json({
+                success: true,
+                statusCode: 200,
+                msg: "Rank and Image promoted succesfully"
+            })
+            // console.log("----->",reg)
+            // let studentInfo = await Member.findById(studentId);
+            // let { program } = studentInfo;
+            // let programInfo = await Program.findOne({ programName: program }, { program_rank: 1 })
+            // let newCurrentImg;
+            // let newNextImg;
+            // programInfo.program_rank.forEach(async element => {
+            //     let programRankInfo = await ProgramRankModel.findById(element);
+            //     if (current_rank === programRankInfo.rank_name) {
+            //         newCurrentImg = await programRankInfo.rank_image;
+            //         await Member.findByIdAndUpdate({ _id: studentId },
+            //             { $set: { current_rank_img: newCurrentImg, current_rank_name: current_rank } })
+            //     }
+            //     if (next_rank === programRankInfo.rank_name) {
+            //         newNextImg = await programRankInfo.rank_image;
+            //         await Member.findByIdAndUpdate({ _id: studentId },
+            //             { $set: { next_rank_img: newNextImg, next_rank_name: next_rank } })
+            //         await RecommendedForTest.findOneAndUpdate({ "studentId": studentId }, {
+            //             "current_rank": current_rank, "next_rank": next_rank
+            //         });
+            //         if (newNextImg === null) {
+            //             res.json({
+            //                 success: false,
+            //                 statusCode: 200,
+            //                 msg: "no next rank matched"
+            //             })
+            //         } else {
+            //             res.json({
+            //                 success: true,
+            //                 statusCode: 200,
+            //                 msg: "Rank and Image promoted succesfully"
+            //             })
+            //         }
+
+            //     }
+            // });
         }
         else {
             res.json({

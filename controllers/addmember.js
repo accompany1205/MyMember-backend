@@ -314,7 +314,7 @@ exports.listMember = (req, res) => {
       if (err) {
         res.send({
           msg: "member list is not found",
-          success:false
+          success: false
         });
       } else {
         if (data.length > 0) {
@@ -322,7 +322,7 @@ exports.listMember = (req, res) => {
         } else {
           res.send({
             msg: "No member found",
-            success:false
+            success: false
           });
         }
       }
@@ -916,6 +916,22 @@ exports.trial_this_month = (req, res) => {
     }
   );
 };
+
+exports.collectionModify = async (req, res) => {
+  let userId = req.body.userId;
+  try {
+    let schoolData = await addmemberModal.find(userId);
+    schoolData.forEach(async element => {
+      let id = element._id;
+      if (element.castId === null) {
+        let data = await addmemberModal.findByIdAndUpdate(id, {$set: {customId: " "}})
+      }
+    });
+    res.json({msg:"done"})
+  } catch (err) {
+    console.log(err)
+  }
+}
 
 exports.birth_next_month = (req, res) => {
   var curDate = new Date();
