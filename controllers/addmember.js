@@ -1518,3 +1518,58 @@ exports.invoice_details = (req, res) => {
       }
     })
 }
+
+
+exports.ActiveMemberslist = async (req, res) => {
+  try {
+    let userId = req.params.userId;
+
+    await addmemberModal.find({ userId: userId, status: 'Active' }).exec((err, user) => {
+      if (err || !user) {
+        return res.status(400).json({
+          error: 'User not found'
+        });
+      }
+      else {
+        return res.status(200).send({
+          data: user,
+          success: true,
+          error: false
+        })
+      }
+    });
+  }
+
+  catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false })
+
+  }
+};
+
+
+exports.ActiveMemberslistByProgramName = async (req, res) => {
+  try {
+    let program = req.params.programName
+    let userId = req.params.userId;
+
+    await addmemberModal.find({ userId: userId, status: 'Active', program: program }).exec((err, user) => {
+      if (err || !user) {
+        return res.status(400).json({
+          error: 'User not found'
+        });
+      }
+      else {
+        return res.status(200).send({
+          data: user,
+          success: true,
+          error: false
+        })
+      }
+    });
+  }
+
+  catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false })
+
+  }
+};
