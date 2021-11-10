@@ -28,6 +28,32 @@ exports.update = (req, res) => {
             res.send(err)
         })
 };
+exports.updatePayments = async (req, res) => {
+    try {
+        const membershipId = req.params.membershipId;
+        update_resp = await buyMembership.find({ _id: membershipId })
+        arr = []
+        update_resp[0].schedulePayments
+            .map(function (element) {
+                if (element.date == req.body.date) {
+                    element.status = 'Paid'
+                    arr.push(element)
+                } else {
+                    arr.push(element)
+                }
+            })
+
+        updatePay = await buyMembership.findByIdAndUpdate(membershipId, { schedulePayments: arr })
+        res.send({ message: "paymentStatus updated successfully", succes: true, error: false })
+
+    }
+    catch (err) {
+        res.send({ error: err.message.replace(/\"/g, ""), success: false })
+    }
+
+
+};
+
 
 exports.remove = (req, res) => {
     const id = req.params.membershipId
