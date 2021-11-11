@@ -55,45 +55,30 @@ exports.read = (req, res) => {
 
 exports.update = (req, res) => {
   var userId = req.params.userId;
-  User
-    .findByIdAndUpdate({
-      _id: userId
-    }, req.body)
+  User.findByIdAndUpdate( userId , req.body)  
     .exec((err, data) => {
       if (err) {
         res.send({
           status: false,
           error: "member is not update"
         });
-      } else {
+      }
+      else {
         if (req.file) {
-          cloudUrl
-            .imageUrl(req.file)
-            .then((stdimagUrl) => {
-              User
-                .findByIdAndUpdate(data._id, {
-                  $set: {
-                    profile_image: stdimagUrl
-                  },
-                })
-                .then((response) => {
-                  res.send({
-                    msg: "profile image is update"
-                  });
-                })
-                .catch((error) => {
-                  res.send({
-                    error: "student image is not update"
-                  });
-                });
-            })
-            .catch((error) => {
-              res.send({
-                status: false,
-                error: "image url is not create"
-              });
-            });
-        } else {
+          console.log('___________________')
+          cloudUrl.imageUrl(req.file).then((subuserImgUrl) => {
+            User.findByIdAndUpdate(userId, { $set: { profile_image: subuserImgUrl } })
+              .then((response) => {
+                res.json({ message: "your profile image updated successfully",success:true })
+              }).catch((error) => {
+                res.send({ error: 'sub user image is not update' })
+              })
+          }).catch((error) => {
+            res.send({ error: 'image url is not create' })
+          })
+        }
+        else {
+          console.log(req.file)
           res.send({
             status: true,
             msg: "profile is update successfully"
@@ -153,3 +138,15 @@ exports.purchaseHistory = (req, res) => {
     });
 };
 
+
+
+// exports.deleteUser = (req, res) => {
+//  a= User.find({ username: {$nin:['champion', 'Admin', "pvndhamu"] } })
+// //  console.log(a)
+//     .then(data => {
+//       res.send(data)
+//     })
+//     .catch(er => {
+//       res.send(er)
+//     })
+// };
