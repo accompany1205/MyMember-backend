@@ -41,14 +41,14 @@ const recommendedForTest = new mongoose.Schema({
     next_rank:{
         type:String
     },
-    next_rank_name:{
+    next_rank_image:{
         type:String
     },
     isDeleted:{
         type: Boolean,
         default: false
     },
-    current_rank_name:{
+    current_rank_image:{
         type:String
         }
 
