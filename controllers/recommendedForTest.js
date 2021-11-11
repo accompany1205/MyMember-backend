@@ -3,6 +3,7 @@ const User = require('../models/user');
 const Member = require('../models/addmember');
 const RecommendedForTest = require('../models/recommendedForTest');
 const RegisterdForTest = require('../models/registerdForTest');
+const program_rank = require("../models/program_rank");
 const Joi = require('@hapi/joi');
 
 
@@ -62,7 +63,6 @@ exports.getRegisteredForTest = async (req, res) => {
 
 
 exports.recomendStudent = async (req, res) => {
-    //only accepte array of objects
 
     let students = req.body;
     let userId = req.params.userId;
@@ -78,8 +78,8 @@ exports.recomendStudent = async (req, res) => {
         current_rank: Joi.string(),
         userId: Joi.string().required(),
         next_rank: Joi.string(),
-        current_rank_name: Joi.string(),
-        next_rank_name: Joi.string().default("1"),
+        current_rank_image: Joi.string(),
+        next_rank_image: Joi.string().default("1"),
         lastPromotedDate: Joi.string().required()
     })
 
@@ -91,35 +91,24 @@ exports.recomendStudent = async (req, res) => {
                 msg: "You haven't selected any student!"
             })
         }
-
+        const data = await program_rank.findOne({ rank_name: students.current_rank }, { _id: 0, rank_image: 1})
+        const data1 = await program_rank.findOne({ rank_name: students.next_rank }, { _id: 0, rank_image: 1})
         const recommendedStudentsForTest = [];
         for (let student of students) {
-            student.userId = userId
+            student.userId = userId;
+            student.current_rank_image = data.rank_image;
+            student.next_rank_image = data1.rank_image;
             await recommendedFortestSchema.validateAsync(student);
             recommendedStudentsForTest.push(student)
 
-            // let isStudentExists = await RecommendedForTest.find({
-            //     "studentId": student.studentId
-            // });
-            // if (isStudentExists.length > 0) {
-            //     recommendedStudentsForTest.push(student)
-            // }
         }
         await RecommendedForTest.insertMany(recommendedStudentsForTest);
         res.send({
+            recommendedStudentsForTestl,
             success: true,
             msg: "Selected students got recomended successfully.",
         })
-        // try{
-        //     await RecommendedForTest.insertMany(recommendedStudentsForTest);
-        //     res.send({
-        //         success: true,
-        //         msg: "Selected students got recomended successfully.",
-        //     })
-        // }catch(eror){
-        //     res.send({ error: error.message.replace(/\"/g, ""), success: false })
-        // }
-
+        
     } catch (error) {
         res.send({ error: error.message.replace(/\"/g, ""), success: false })
     }
