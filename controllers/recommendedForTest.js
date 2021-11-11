@@ -226,13 +226,14 @@ exports.payAndPromoteTheStudent = async (req, res) => {
             msg: "Having some issue while register!!"
         })
     }
-    let removedFromRecommended = await RecommendedForTest.findOneAndUpdate({
+    let removedFromRecommended = await RecommendedForTest.updateMany({
         "studentId": studentId
     }, {
         "isDeleted": true
     }, {
         new: true
     });
+    console.log("removed", removedFromRecommended)
     if (!removedFromRecommended) {
         res.json({
             status: false,

@@ -40,7 +40,7 @@ exports.promoteStudentRank = async (req, res) => {
                 { $set: { current_rank_name: current_rank, next_rank_name: next_rank, current_rank_img: currentImage } });
             studentRankInfo = await student_info_Rank.findOne({ "studentId": studentId, "programName":currentprogramName})
             if (studentRankInfo !== null) {
-                await student_info_Rank.findOneAndUpdate({ studentId: studentId }, { rank_name: current_rank })
+                await student_info_Rank.findOneAndUpdate({ studentId: studentId, programName:currentprogramName }, { rank_name: current_rank,  day_to_ready: currentday_to_ready, rank_image: currentImage })
             } else {
                 const resp = new student_info_Rank({
                     programName: currentprogramName,
