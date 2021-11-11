@@ -29,6 +29,9 @@ const registerdForTest = new mongoose.Schema({
     current_rank_img:{
         type:String
     },
+    next_rank_img:{
+        type:String
+    },
     date: {
         type: Date,
         default: new Date()
