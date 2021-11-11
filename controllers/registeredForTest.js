@@ -12,62 +12,56 @@ const student_info_Rank = require('../models/student_info_Rank')
 
 exports.promoteStudentRank = async (req, res) => {
     try {
-        let registeredId = req.params.registeredId;
-        if (!registeredId) {
-            res.json({
-                statusCode: 404,
-                success: false,
-                msg: 'please provide valid registered student Id',
-            });
-        }
-        let current_rank = req.body.current_rank;
-        let next_rank = req.body.next_rank;
-        let registeredData = await RegisterdForTest.findById(registeredId);
-        let { studentId } = registeredData;
-        if (!registeredData.isDeleted) {
-            let temp = await RegisterdForTest.findOneAndUpdate({
-                _id: registeredId
-            }, {
-                isDeleted: true,
-                current_rank: current_rank,
-                next_rank: next_rank
-            });
-            const data = await program_rank.findOne({ rank_name: current_rank }, { _id: 0, rank_image: 1, rank_name: 1, day_to_ready: 1, programName: 1 })
-            let currentImage = data.rank_image
-            let currentprogramName = data.programName
-            let currentday_to_ready = data.day_to_ready
-            await Member.findByIdAndUpdate({ _id: studentId },
-                { $set: { current_rank_name: current_rank, next_rank_name: next_rank, current_rank_img: currentImage } });
-            studentRankInfo = await student_info_Rank.findOne({ "studentId": studentId, "programName":currentprogramName})
-            if (studentRankInfo !== null) {
-                await student_info_Rank.findOneAndUpdate({ studentId: studentId, programName:currentprogramName }, { rank_name: current_rank,  day_to_ready: currentday_to_ready, rank_image: currentImage })
-            } else {
-                const resp = new student_info_Rank({
-                    programName: currentprogramName,
-                    rank_name: current_rank,
-                    day_to_ready: currentday_to_ready,
-                    rank_image: currentImage,
-                    studentId: studentId
+        const studentData = req.body
+        for (let resgister of studentData) {
+            let registeredId = resgister.registerdId;
+            let current_rank = resgister.current_rank;
+            let next_rank = resgister.next_rank;
+            let registeredData = await RegisterdForTest.findById(registeredId);
+            let { studentId } = registeredData;
+            if (!registeredData.isDeleted) {
+                const data = await program_rank.findOne({ rank_name: current_rank }, { _id: 0, rank_image: 1, rank_name: 1, day_to_ready: 1, programName: 1 })
+                const data1 = await program_rank.findOne({ rank_name: next_rank }, { _id: 0, rank_image: 1 })
+                let nextImage = data1.rank_image;
+                let currentImage = data.rank_image;
+                let currentprogramName = data.programName
+                let currentday_to_ready = data.day_to_ready
+                await RegisterdForTest.findOneAndUpdate({
+                    _id: registeredId
+                }, {
+                    isDeleted: true,
+                    current_rank: current_rank,
+                    next_rank: next_rank,
+                    next_rank_img: nextImage,
+                    current_rank_img: currentImage
                 });
-                resp.save(async (er, data) => {
-                    if (er) {
-                        res.send({ error: err.message.replace(/\"/g, ""), success: false })
-                    }
-                })
-            }
-            res.json({
-                success: true,
-                statusCode: 200,
-                msg: "Rank and Image promoted succesfully"
-            })
+                await Member.findByIdAndUpdate({ _id: studentId },
+                    { $set: { current_rank_name: current_rank, next_rank_name: next_rank, current_rank_img: currentImage, next_rank_name: next_rank, next_rank_img: nextImage, isRecommended: false } });
+                studentRankInfo = await student_info_Rank.findOne({ "studentId": studentId, "programName": currentprogramName })
+                if (studentRankInfo !== null) {
+                    await student_info_Rank.findOneAndUpdate({ studentId: studentId, programName: currentprogramName }, { rank_name: current_rank, day_to_ready: currentday_to_ready, rank_image: currentImage })
+                } else {
+                    const resp = new student_info_Rank({
+                        programName: currentprogramName,
+                        rank_name: current_rank,
+                        day_to_ready: currentday_to_ready,
+                        rank_image: currentImage,
+                        studentId: studentId
+                    });
+                    resp.save(async (er, data) => {
+                        if (er) {
+                            res.send({ error: err.message.replace(/\"/g, ""), success: false })
+                        }
+                    })
+                }
+                
+            } 
         }
-        else {
-            res.json({
-                success: false,
-                statusCode: 200,
-                msg: "User is not in registered list"
-            })
-        }
+        res.json({
+            success: true,
+            statusCode: 200,
+            msg: "Rank and Image promoted succesfully"
+        })
     } catch (error) {
         res.send({ error: error.message.replace(/\"/g, ""), success: false })
     }

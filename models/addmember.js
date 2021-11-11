@@ -211,8 +211,12 @@ const addmemberSchema = new schema(
         },
         rank_update_test_history: {
             type: Array,
+        },
+        isRecommended: {
+            default :false
         }
     },
+    
     { timestamps: true }
 );
 
