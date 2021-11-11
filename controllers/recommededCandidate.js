@@ -61,7 +61,7 @@ exports.recomendStudent = async (req, res) => {
         res.json({
             statusCode : 422,
             status: false,
-            msg: "Either the student is areadey in recommeded list or it is not eligible!!"
+            msg: "No student selected"
         })
     } else {
         res.json({
