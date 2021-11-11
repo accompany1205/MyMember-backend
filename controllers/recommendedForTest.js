@@ -80,7 +80,8 @@ exports.recomendStudent = async (req, res) => {
         next_rank: Joi.string(),
         current_rank_image: Joi.string(),
         next_rank_image: Joi.string().default("1"),
-        lastPromotedDate: Joi.string().required()
+        lastPromotedDate: Joi.string().required(),
+        isRecommended:Joi.boolean().required()
     })
 
     try {
@@ -94,23 +95,36 @@ exports.recomendStudent = async (req, res) => {
         const data = await program_rank.findOne({ rank_name: students.current_rank }, { _id: 0, rank_image: 1 })
         const data1 = await program_rank.findOne({ rank_name: students.next_rank }, { _id: 0, rank_image: 1 })
         const recommendedStudentsForTest = [];
+        var alredyRecomend = "";
         for (let student of students) {
-            student.userId = userId;
-            if (data !== null) {
-                student.current_rank_image = data.rank_image;
-            }else{
-                student.current_rank_image = "no data"
-            }
-            if (data1 !== null) {
-                student.next_rank_image = data1.rank_image;
+            if (!student.isRecommended) {
+                student.userId = userId;
+                if (data !== null) {
+                    student.current_rank_image = data.rank_image;
+                } else {
+                    student.current_rank_image = "no data"
+                }
+                if (data1 !== null) {
+                    student.next_rank_image = data1.rank_image;
+                } else {
+                    student.next_rank_image = "no data"
+                }
+                await recommendedFortestSchema.validateAsync(student);
+                recommendedStudentsForTest.push(student)
+                let studentId = student.studentId
+                await Member.findByIdAndUpdate({_id:studentId},{isRecommended:true})
             }else {
-                student.next_rank_image = "no data"
+                alredyRecomend += `${student.firstName} ${student.lastName}, `
             }
-            await recommendedFortestSchema.validateAsync(student);
-            recommendedStudentsForTest.push(student)
-
         }
         await RecommendedForTest.insertMany(recommendedStudentsForTest);
+        if(alredyRecomend){
+             res.send({
+                recommendedStudentsForTest,
+                success: false,
+                msg:`${alredyRecomend}, these students are alredy in recommended list`
+             })
+        }
         res.send({
             recommendedStudentsForTest,
             success: true,

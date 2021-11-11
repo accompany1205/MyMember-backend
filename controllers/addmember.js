@@ -918,15 +918,16 @@ exports.trial_this_month = (req, res) => {
 };
 
 exports.collectionModify = async (req, res) => {
-  let userId = req.body.userId;
+  // let userId = req.body.userId;
   try {
-    let schoolData = await addmemberModal.find(userId);
-    schoolData.forEach(async element => {
-      let id = element._id;
-      if (element.castId === null) {
-        let data = await addmemberModal.findByIdAndUpdate(id, {$set: {customId: " "}})
-      }
-    });
+    // let schoolData = await addmemberModal.find(userId);
+    // schoolData.forEach(async element => {
+    //   let id = element._id;
+    //   if (element.castId === null) {
+    //     let data = await addmemberModal.findByIdAndUpdate(id, {$set: {customId: " "}})
+    //   }
+    // });
+    await addmemberModal.updateMany({}, {$set: {isRecommended: false}})
     res.json({msg:"done"})
   } catch (err) {
     console.log(err)
