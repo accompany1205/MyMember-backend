@@ -123,7 +123,7 @@ exports.recomendStudent = async (req, res) => {
             res.send({
                 recommendedStudentsForTest,
                 success: false,
-                msg: `${alredyRecomend}, these students are alredy in recommended list`
+                msg: `${alredyRecomend},  either these students are alredy in recommended list or program is not selected`
             })
         }
         res.send({
@@ -274,6 +274,15 @@ exports.removeFromRecomended = async (req, res) => {
         res.json({
             status: false,
             msg: "Please give the recomended id in params!"
+        })
+    }
+    recon = await RecommendedForTest.findById(recommededId);
+    let studentId =recon.studentId;
+    let deleteRecommended = await Member.findOneAndUpdate(studentId, {isRecommended:false})
+    if(!deleteRecommended){
+        res.json({
+            status: false,
+            msg: "Unable to remove the student!!"
         })
     }
     let isDeleted = await RecommendedForTest.findByIdAndDelete(recommededId);
