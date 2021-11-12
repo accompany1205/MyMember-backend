@@ -81,11 +81,10 @@ exports.recomendStudent = async (req, res) => {
         current_rank_image: Joi.string(),
         next_rank_image: Joi.string().default("1"),
         lastPromotedDate: Joi.string().required(),
-        isRecommended:Joi.boolean().required()
+        isRecommended: Joi.boolean().required()
     })
 
     try {
-
         if (!students) {
             res.json({
                 status: false,
@@ -96,8 +95,9 @@ exports.recomendStudent = async (req, res) => {
         const data1 = await program_rank.findOne({ rank_name: students.next_rank }, { _id: 0, rank_image: 1 })
         const recommendedStudentsForTest = [];
         var alredyRecomend = "";
+        const promises = [];
         for (let student of students) {
-            if (!student.isRecommended) {
+            if (!student.isRecommended && student.program) {
                 student.userId = userId;
                 if (data !== null) {
                     student.current_rank_image = data.rank_image;
@@ -112,18 +112,19 @@ exports.recomendStudent = async (req, res) => {
                 await recommendedFortestSchema.validateAsync(student);
                 recommendedStudentsForTest.push(student)
                 let studentId = student.studentId
-                await Member.findByIdAndUpdate({_id:studentId},{isRecommended:true})
-            }else {
+                promises.push(updateStudentsById(studentId))
+            } else {
                 alredyRecomend += `${student.firstName} ${student.lastName}, `
             }
         }
+        await Promise.all(promises);
         await RecommendedForTest.insertMany(recommendedStudentsForTest);
-        if(alredyRecomend){
-             res.send({
+        if (alredyRecomend) {
+            res.send({
                 recommendedStudentsForTest,
                 success: false,
-                msg:`${alredyRecomend}, these students are alredy in recommended list`
-             })
+                msg: `${alredyRecomend}, these students are alredy in recommended list`
+            })
         }
         res.send({
             recommendedStudentsForTest,
@@ -134,9 +135,11 @@ exports.recomendStudent = async (req, res) => {
     } catch (error) {
         res.send({ error: error.message.replace(/\"/g, ""), success: false })
     }
-
-
 };
+
+const updateStudentsById = async (studentId) => {
+    return Member.findByIdAndUpdate({ _id: studentId }, { isRecommended: true })
+}
 
 
 exports.payAndPromoteTheStudent = async (req, res) => {
@@ -147,8 +150,8 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         rating,
         current_rank,
         next_rank,
-        current_rank_img,
-        next_rank_img,
+        current_rank_image,
+        next_rank_image,
         method,
         phone,
         firstName,
@@ -205,10 +208,10 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         "current_rank": current_rank,
         "next_rank": next_rank,
         "userId": userId,
-        "current_rank_img": current_rank_img,
+        "current_rank_image": current_rank_image,
         "method": method,
         "memberprofileImage": memberprofileImage,
-        "next_rank_img": next_rank_img,
+        "next_rank_image": next_rank_image,
         "phone": phone,
         "program": program
     });
@@ -222,7 +225,7 @@ exports.payAndPromoteTheStudent = async (req, res) => {
     let history = {
         "current_rank": current_rank,
         "program": program,
-        "current_rank_img": current_rank_img,
+        "current_rank_image": current_rank_image,
         "testPaid": date,
         "promoted": date
     }
