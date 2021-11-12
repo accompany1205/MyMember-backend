@@ -1151,14 +1151,14 @@ exports.updatemember = (req, res) => {
                 })
                 .then((response) => {
                   res.send({
-                    success:true,
-                    msg: "member details and profile is update"
+                    msg: "member details and profile is update",
+                    success:true
                   });
                 })
                 .catch((error) => {
                   res.send({
-                    success:false,
-                    error: "student image is not update"
+                    error: "student image is not update",
+                    success:false
                   });
                 });
             })
