@@ -213,7 +213,8 @@ const addmemberSchema = new schema(
             type: Array,
         },
         isRecommended: {
-            default :false
+            default :false,
+            type: Boolean
         }
     },
     
