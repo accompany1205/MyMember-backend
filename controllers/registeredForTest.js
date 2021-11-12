@@ -51,7 +51,7 @@ async function promoteStudents(registerdId, current_rank, next_rank) {
             current_rank_image: currentImage
         });
         await Member.findByIdAndUpdate({ _id: studentId },
-            { $set: { current_rank_name: current_rank, next_rank_name: next_rank, current_rank_image: currentImage, next_rank_name: next_rank, next_rank_image: nextImage, isRecommended: false } });
+            { $set: { current_rank_name: current_rank, next_rank_name: next_rank, current_rank_img: currentImage, next_rank_name: next_rank, next_rank_img: nextImage, isRecommended: false } });
         studentRankInfo = await student_info_Rank.findOne({ "studentId": studentId, "programName": currentprogramName })
         
         if (studentRankInfo !== null) {
