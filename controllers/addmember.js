@@ -1135,7 +1135,7 @@ exports.updatemember = (req, res) => {
     .exec((err, data) => {
       if (err) {
         res.send({
-          status: false,
+          success: false,
           error: "member is not update"
         });
       } else {
@@ -1164,13 +1164,13 @@ exports.updatemember = (req, res) => {
             })
             .catch((error) => {
               res.send({
-                status: false,
+                success: false,
                 error: "image url is not create"
               });
             });
         } else {
           res.send({
-            status: true,
+            success: true,
             msg: "member is update successfully"
           });
         }
