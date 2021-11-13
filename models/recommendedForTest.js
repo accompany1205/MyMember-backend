@@ -34,10 +34,10 @@ const recommendedForTest = new mongoose.Schema({
     rating: {
         type: String
     },
-    current_rank:{
+    current_rank_name:{
         type: String
     },
-    next_rank:{
+    next_rank_name:{
         type:String
     },
     next_rank_img:{
