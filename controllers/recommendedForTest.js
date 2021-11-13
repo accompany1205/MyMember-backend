@@ -91,24 +91,12 @@ exports.recomendStudent = async (req, res) => {
                 msg: "You haven't selected any student!"
             })
         }
-        const data = await program_rank.findOne({ rank_name: students.current_rank_name }, { _id: 0, rank_image: 1 })
-        const data1 = await program_rank.findOne({ rank_name: students.next_rank_name }, { _id: 0, rank_image: 1 })
         const recommendedStudentsForTest = [];
         var alredyRecomend = "";
         const promises = [];
         for (let student of students) {
             if (!student.isRecommended && student.program) {
                 student.userId = userId;
-                if (data !== null) {
-                    student.current_rank_img = data.rank_image;
-                } else {
-                    student.current_rank_img = "no data"
-                }
-                if (data1 !== null) {
-                    student.next_rank_img = data1.rank_image;
-                } else {
-                    student.next_rank_img = "no data"
-                }
                 await recommendedFortestSchema.validateAsync(student);
                 recommendedStudentsForTest.push(student)
                 let studentId = student.studentId
