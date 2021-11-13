@@ -917,6 +917,7 @@ exports.trial_this_month = (req, res) => {
   );
 };
 
+//need to cha
 exports.collectionModify = async (req, res) => {
   // let userId = req.body.userId;
   try {
@@ -928,7 +929,8 @@ exports.collectionModify = async (req, res) => {
     //   }
     // });
     await addmemberModal.updateMany({}, {$set: {isRecommended: false}})
-    res.json({msg:"done"})
+  //  await addmemberModal.find({isRecommended :{$ne: null}})
+    res.json({msg:'success'})
   } catch (err) {
     console.log(err)
   }

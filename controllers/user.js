@@ -62,7 +62,7 @@ exports.update = (req, res) => {
     .exec((err, data) => {
       if (err) {
         res.send({
-          status: false,
+          success: false,
           error: "member is not update"
         });
       } else {
@@ -95,7 +95,7 @@ exports.update = (req, res) => {
             });
         } else {
           res.send({
-            status: true,
+            succe: true,
             msg: "profile is update successfully"
           });
         }

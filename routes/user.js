@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const upload = require('../handler/multer');
 
 const { requireSignin, isAuth, isAdmin } = require('../controllers/auth');
 
@@ -12,7 +13,7 @@ router.get('/secret', requireSignin, (req, res) => {
 });
 
 router.get('/user/:userId', requireSignin, read);
-router.put('/user/:userId', requireSignin, update);
+router.put('/user/:userId', upload.single('profile_image'), requireSignin, update);
 router.get('/orders/by/user/:userId', requireSignin, isAuth, purchaseHistory);
 
 router.param('userId', userById);
