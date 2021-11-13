@@ -38,7 +38,7 @@ async function promoteStudents(registerdId, current_rank_name, next_rank_name) {
         const data = await program_rank.findOne({ rank_name: current_rank_name }, { _id: 0, rank_image: 1, rank_name: 1, day_to_ready: 1, programName: 1 })
         const data1 = await program_rank.findOne({ rank_name: next_rank_name }, { _id: 0, rank_image: 1 })
         let nextImage = data1 ? data1.rank_image : "no data";
-        let currentImage = data? rank_image : "no data";
+        let currentImage = data? data.rank_image : "no data";
         let currentprogramName = data.programName
         let currentday_to_ready = data.day_to_ready
         await RegisterdForTest.findOneAndUpdate({
@@ -93,6 +93,13 @@ exports.removeFromRegisterd = async (req, res) => {
     let {
         studentId
     } = await RegisterdForTest.findById(registeredId);
+    let deleteForRegistered = await Member.findOneAndUpdate(studentId, {isRecommended:false})
+    if (!deleteForRegistered){
+        res.json({
+            status: false,
+            msg: "Unable to remove from Registered list"
+        })
+    };
     let reflectedToRecommendedAgain = await RecommendedForTest.findOneAndUpdate({
         "studentId": studentId
     }, {
