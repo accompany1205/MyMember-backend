@@ -47,8 +47,8 @@ async function promoteStudents(registerdId, current_rank, next_rank) {
             isDeleted: true,
             current_rank: current_rank,
             next_rank: next_rank,
-            next_rank_image: nextImage,
-            current_rank_image: currentImage
+            next_rank_img: nextImage,
+            current_rank_img: currentImage
         });
         await Member.findByIdAndUpdate({ _id: studentId },
             { $set: { current_rank_name: current_rank, next_rank_name: next_rank, current_rank_img: currentImage, next_rank_name: next_rank, next_rank_img: nextImage, isRecommended: false } });

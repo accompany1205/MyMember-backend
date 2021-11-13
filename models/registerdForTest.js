@@ -26,10 +26,10 @@ const registerdForTest = new mongoose.Schema({
     next_rank:{
         type:String
     },
-    current_rank_image:{
+    current_rank_img:{
         type:String
     },
-    next_rank_image:{
+    next_rank_img:{
         type:String
     },
     date: {
