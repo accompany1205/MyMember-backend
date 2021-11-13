@@ -37,8 +37,8 @@ async function promoteStudents(registerdId, current_rank_name, next_rank_name) {
     if (!registeredData.isDeleted) {
         const data = await program_rank.findOne({ rank_name: current_rank_name }, { _id: 0, rank_image: 1, rank_name: 1, day_to_ready: 1, programName: 1 })
         const data1 = await program_rank.findOne({ rank_name: next_rank_name }, { _id: 0, rank_image: 1 })
-        let nextImage = data1.rank_image;
-        let currentImage = data.rank_image;
+        let nextImage = data1 ? data1.rank_image : "no data";
+        let currentImage = data? rank_image : "no data";
         let currentprogramName = data.programName
         let currentday_to_ready = data.day_to_ready
         await RegisterdForTest.findOneAndUpdate({
