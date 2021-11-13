@@ -78,8 +78,8 @@ exports.recomendStudent = async (req, res) => {
         current_rank: Joi.string(),
         userId: Joi.string().required(),
         next_rank: Joi.string(),
-        current_rank_image: Joi.string(),
-        next_rank_image: Joi.string().default("1"),
+        current_rank_img: Joi.string(),
+        next_rank_img: Joi.string(),
         lastPromotedDate: Joi.string().required(),
         isRecommended: Joi.boolean().required()
     })
@@ -100,14 +100,14 @@ exports.recomendStudent = async (req, res) => {
             if (!student.isRecommended && student.program) {
                 student.userId = userId;
                 if (data !== null) {
-                    student.current_rank_image = data.rank_image;
+                    student.current_rank_img = data.rank_image;
                 } else {
-                    student.current_rank_image = "no data"
+                    student.current_rank_img = "no data"
                 }
                 if (data1 !== null) {
-                    student.next_rank_image = data1.rank_image;
+                    student.next_rank_img = data1.rank_image;
                 } else {
-                    student.next_rank_image = "no data"
+                    student.next_rank_img = "no data"
                 }
                 await recommendedFortestSchema.validateAsync(student);
                 recommendedStudentsForTest.push(student)
@@ -150,8 +150,8 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         rating,
         current_rank,
         next_rank,
-        current_rank_image,
-        next_rank_image,
+        current_rank_img,
+        next_rank_img,
         method,
         phone,
         firstName,
@@ -208,10 +208,10 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         "current_rank": current_rank,
         "next_rank": next_rank,
         "userId": userId,
-        "current_rank_image": current_rank_image,
+        "current_rank_img": current_rank_img,
         "method": method,
         "memberprofileImage": memberprofileImage,
-        "next_rank_image": next_rank_image,
+        "next_rank_img": next_rank_img,
         "phone": phone,
         "program": program
     });
@@ -225,7 +225,7 @@ exports.payAndPromoteTheStudent = async (req, res) => {
     let history = {
         "current_rank": current_rank,
         "program": program,
-        "current_rank_image": current_rank_image,
+        "current_rank_img": current_rank_img,
         "testPaid": date,
         "promoted": date
     }
