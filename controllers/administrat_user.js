@@ -191,7 +191,8 @@ exports.update = (req, res) => {
            else{
                 res.send({ msg: 'user is update successfully' });
             }
-        }).catch((err) => {
+        }
+        ).catch((err) => {
             
             res.send(err);
         });
