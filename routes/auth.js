@@ -14,7 +14,8 @@ const {
     isAdmin,
     approveUserRequestByAdmin,
     updateUser,
-    school_listing
+    school_listing,
+    searchUser
 } = require("../controllers/auth");
 const { userSignupValidator } = require("../validator");
 
@@ -28,6 +29,7 @@ router.put("/get_user_approved_by_admin/:adminId/:userId",isAdmin, approveUserRe
 
 //
 router.put("/updateUser/:userId",updateUser)
+router.get("/searchUser/:userId",searchUser)
 
 router.get("/get_navbar", get_navbar);
 router.post("/edit_navbar_li", edit_navbar_li);
