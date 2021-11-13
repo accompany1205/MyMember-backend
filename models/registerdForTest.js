@@ -20,10 +20,10 @@ const registerdForTest = new mongoose.Schema({
     rating: {
         type: String
     },
-    current_rank:{
+    current_rank_name:{
         type: String
     },
-    next_rank:{
+    next_rank_name:{
         type:String
     },
     current_rank_img:{

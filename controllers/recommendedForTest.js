@@ -75,9 +75,9 @@ exports.recomendStudent = async (req, res) => {
         program: Joi.string().required(),
         status: Joi.string().required(),
         rating: Joi.number().required(),
-        current_rank: Joi.string(),
+        current_rank_name: Joi.string(),
         userId: Joi.string().required(),
-        next_rank: Joi.string(),
+        next_rank_name: Joi.string(),
         current_rank_img: Joi.string(),
         next_rank_img: Joi.string(),
         lastPromotedDate: Joi.string().required(),
@@ -91,8 +91,8 @@ exports.recomendStudent = async (req, res) => {
                 msg: "You haven't selected any student!"
             })
         }
-        const data = await program_rank.findOne({ rank_name: students.current_rank }, { _id: 0, rank_image: 1 })
-        const data1 = await program_rank.findOne({ rank_name: students.next_rank }, { _id: 0, rank_image: 1 })
+        const data = await program_rank.findOne({ rank_name: students.current_rank_name }, { _id: 0, rank_image: 1 })
+        const data1 = await program_rank.findOne({ rank_name: students.next_rank_name }, { _id: 0, rank_image: 1 })
         const recommendedStudentsForTest = [];
         var alredyRecomend = "";
         const promises = [];
@@ -148,8 +148,8 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         testId,
         studentId,
         rating,
-        current_rank,
-        next_rank,
+        current_rank_name,
+        next_rank_name,
         current_rank_img,
         next_rank_img,
         method,
@@ -205,8 +205,8 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         "testId": testId,
         "lastName": lastName,
         "rating": rating,
-        "current_rank": current_rank,
-        "next_rank": next_rank,
+        "current_rank_name": current_rank_name,
+        "next_rank_name": next_rank_name,
         "userId": userId,
         "current_rank_img": current_rank_img,
         "method": method,
@@ -223,7 +223,7 @@ exports.payAndPromoteTheStudent = async (req, res) => {
     }
     let date = new Date();
     let history = {
-        "current_rank": current_rank,
+        "current_rank_name": current_rank_name,
         "program": program,
         "current_rank_img": current_rank_img,
         "testPaid": date,
