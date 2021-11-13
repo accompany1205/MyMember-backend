@@ -267,7 +267,6 @@ exports.add_template = async (req, res) => {
         emailDetail.save((er, data) => {
             if (er) {
                 res.send({ error: "Email not saved", success: false })
-
             }
             else {
              

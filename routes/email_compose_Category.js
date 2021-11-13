@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { category_list,sendEmail,addCategory,updateCategory,removeCategory,smartList,tempList,userEmailList }  = require("../controllers/email_compose")
+const { category_list,sendEmail,addCategory,updateCategory,removeCategory,smartList,tempList,userEmailList }  = require("../controllers/email_compose_Category")
 const { requireSignin,isAuth,verifySchool } = require("../controllers/auth");
 
 router.get("/user_email_id_list/:userId",verifySchool,userEmailList)

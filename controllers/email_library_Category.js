@@ -1,4 +1,4 @@
-const emailLibrary = require("../models/email_library")
+const emailLibrary = require("../models/email_library_Category")
 
 exports.category_list =(req,res)=>{
     emailLibrary.find({userId:req.params.userId})

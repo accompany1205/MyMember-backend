@@ -1,5 +1,5 @@
 const user = require('../models/user')
-const emailNurturing = require("../models/email_nurturing")
+const emailNurturing = require("../models/email_nurturing_Category")
 const emailSent = require('../models/emailSentSave')
 const sgMail = require('sendgrid-v3-node');
 const  Member = require('../models/addmember') 

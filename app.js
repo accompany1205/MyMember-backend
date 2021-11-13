@@ -73,11 +73,11 @@ const support = require("./routes/support");
 const misucall_appoinment = require("./routes/misucall_appoinment");
 const misucall_notes = require("./routes/misucall_notes");
 const all_appoinment = require("./routes/all_appoinment");
-const email_compose = require("./routes/email_compose");
+const email_compose = require("./routes/email_compose_Category");
 const email_compose_folder = require("./routes/email_compose_folder");
-const email_nurturing = require("./routes/email_nurturing");
+const email_nurturing = require("./routes/email_nurturing_Category");
 const email_nurturing_folder = require("./routes/email_nurturing_folder");
-const email_library = require("./routes/email_library");
+const email_library = require("./routes/email_library_Category");
 const email_library_folder = require("./routes/email_library_folder");
 const compose_template = require("./routes/compose_template");
 const nurturing_template = require("./routes/nurturing_template");
@@ -100,7 +100,7 @@ const student_text = require("./routes/std_text_list");
 
 //admin routes
 const manage_user = require("./routes/admin/manage_user");
-const email_system = require("./routes/admin/email_system");
+const email_system = require("./routes/admin/email_system_Category");
 const email_system_folder = require("./routes/admin/email_system_folder");
 const email_system_template = require("./routes/admin/email_system_template");
 const location = require("./routes/admin/settings/location");

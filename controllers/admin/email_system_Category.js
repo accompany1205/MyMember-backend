@@ -1,4 +1,4 @@
-const emailSystem = require("../../models/email_system")
+const emailSystem = require("../../models/email_system_Category")
 
 exports.category_list = (req, res) => {
     emailSystem.find({ adminId: req.params.adminId })
