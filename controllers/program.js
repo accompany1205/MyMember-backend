@@ -1,55 +1,77 @@
 const program = require("../models/program");
 
 
-exports.create = (req, res) => {
+exports.create = async (req, res) => {
     const Id = req.params.userId;
-
-    var prog = new program(req.body)
-    prog.save((err, data) => {
-        if (err) {
-            res.send({ error: 'program is not create' })
-        }
-        else {
-            if (req.file) {
-                const cloudenary = require("cloudinary").v2
-                cloudenary.config({
-                    cloud_name: process.env.cloud_name,
-                    api_key: process.env.cloud_api_key,
-                    api_secret: process.env.cloud_api_secret
-                });
-
-                var filename = req.file.originalname;
-                var path = req.file.path;
-                var uniquefilename = filename + (Date.now())
-
-                cloudenary.uploader.upload(
-                    path,
-                    { public_id: `program/${uniquefilename}`, tags: `program` }, // directory and tags are optional
-                    function (err, image) {
-                        if (err) return res.send(err)
-                        const fs = require('fs')
-                        fs.unlinkSync(path)
-                        program.findByIdAndUpdate({ _id: data._id }, { $set: { program_image: image.url, userId: Id } })
-                            .then((response) => {
-                                res.send(response)
-                            }).catch((error) => {
-                                res.send({msg:"image not add in program", error})
-                            });
-                    }
-                );
-            } else {
-                program.findByIdAndUpdate({ _id: data._id }, { $set: { userId: Id } })
-                    .exec((err, programData) => {
-                        if (err) {
-                            res.send({ error: 'user id is not add in program' })
-                        }
-                        else {
-                            res.send({msg:'Program updated successfully ',programData:programData})
-                        }
-                    })
+    const programName = req.body.programName;
+    console.log("---",programName )
+    const programeName = await program.find({$and: [
+        { $or: [ { userId: Id } ] },
+        { $or: [ { programName: programName } ] }
+    ]})
+    console.log("---",programeName)
+    if(!programeName[0]){
+        var prog = new program({
+            "programName":req.body.programName,
+            "color":req.body.color,
+            "lable":req.body.lable,
+            "total_rank":req.body.total_rank,
+            "progression":req.body.progression,
+            "type":req.body.type,
+            "requirement":req.body.requirement
+        })
+        prog.save((err, data) => {
+            if (err) {
+                res.send({ error: 'program is not create' })
             }
-        }
-    });
+            else {
+                if (req.file) {
+                    const cloudenary = require("cloudinary").v2
+                    cloudenary.config({
+                        cloud_name: process.env.cloud_name,
+                        api_key: process.env.cloud_api_key,
+                        api_secret: process.env.cloud_api_secret
+                    });
+    
+                    var filename = req.file.originalname;
+                    var path = req.file.path;
+                    var uniquefilename = filename + (Date.now())
+    
+                    cloudenary.uploader.upload(
+                        path,
+                        { public_id: `program/${uniquefilename}`, tags: `program` }, // directory and tags are optional
+                        function (err, image) {
+                            if (err) return res.send(err)
+                            const fs = require('fs')
+                            fs.unlinkSync(path)
+                            program.findByIdAndUpdate({ _id: data._id }, { $set: { program_image: image.url, userId: Id } })
+                                .then((response) => {
+                                    res.send(response)
+                                }).catch((error) => {
+                                    res.send({msg:"image not add in program", error})
+                                });
+                        }
+                    );
+                } else {
+                    program.findByIdAndUpdate({ _id: data._id }, { $set: { userId: Id } })
+                        .exec((err, programData) => {
+                            if (err) {
+                                res.send({ error: 'user id is not add in program' })
+                            }
+                            else {
+                                res.send({msg:'Program updated successfully ',programData:programData})
+                            }
+                        })
+                }
+            }
+        });
+    }else {
+        res.json({
+            msg:"Program Alredy exist for the school",
+            success:false
+        })
+    }
+    
 };
 
 exports.read = (req, res) => {
