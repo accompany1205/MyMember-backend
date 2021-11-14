@@ -1,16 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const multer = require("multer")
-var storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, '/home/abc/Documents/MYmember_sveltose_backend/uploads/')
-    },
-    filename: (req, file, cb) => {
-        cb(null, file.originalname + '-' + Date.now())
-    }
-});
-var upload = multer({ storage: storage });
-
+const upload = require("../handler/multer");
 const {
     signup,
     signin,
@@ -22,7 +12,7 @@ const {
 } = require("../controllers/administrat_user");
 const { userSignupValidator } = require("../validator");
 const { requireSignin,isAuth,verifySchool } = require("../controllers/auth");
-var upload = require('../handler/multer');
+
 
 router.post("/sub_user_signin", signin);
 // router.post("/sub_user/update_profile/:uid",upload.single("profile_image"),prfile_update)

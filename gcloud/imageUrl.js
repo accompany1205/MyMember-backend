@@ -1,15 +1,14 @@
-function clourUrl(){
-    
+function clourUrl() {
+
     this.imageUrl = (file) => {
         const { Storage } = require("@google-cloud/storage");
         const path = require('path')
-        // const {v4:uuidv4} = require('uuid');
-        // uuidv4()
+        const { v4: uuidv4 } = require('uuid');
         require("dotenv").config();
-        const storage = new Storage({ projectId: process.env.GCLOUD_PROJECT, keyFilename: path.join(__dirname, "./mad-for-chicken-243518-28ef1834055d.json")});
+        const storage = new Storage({ projectId: process.env.GCLOUD_PROJECT, keyFilename: path.join(__dirname, "./mad-for-chicken-243518-28ef1834055d.json") });
         const bucket = storage.bucket(process.env.GCS_BUCKET);
 
-        const newFileName = uidv1() + "-" + file.originalname;
+        const newFileName = uuidv4() + "-" + file.originalname;
         const doc = bucket.file('All-Images/' + newFileName);
 
         const blogStream = doc.createWriteStream({ resumable: false });

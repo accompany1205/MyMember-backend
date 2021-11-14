@@ -122,7 +122,7 @@ exports.birth_this_week = async(req,res)=>{
     //         }
     //     }
     // ])
-    console.log(req.params.userId)
+    // console.log(req.params.userId)
     
     memberModal.find({userId:req.params.userId})
     .exec((err,resp)=>{

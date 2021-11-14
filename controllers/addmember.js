@@ -314,7 +314,7 @@ exports.listMember = (req, res) => {
       if (err) {
         res.send({
           msg: "member list is not found",
-          success:false
+          success: false
         });
       } else {
         if (data.length > 0) {
@@ -322,7 +322,7 @@ exports.listMember = (req, res) => {
         } else {
           res.send({
             msg: "No member found",
-            success:false
+            success: false
           });
         }
       }
@@ -917,6 +917,25 @@ exports.trial_this_month = (req, res) => {
   );
 };
 
+//need to cha
+exports.collectionModify = async (req, res) => {
+  // let userId = req.body.userId;
+  try {
+    // let schoolData = await addmemberModal.find(userId);
+    // schoolData.forEach(async element => {
+    //   let id = element._id;
+    //   if (element.castId === null) {
+    //     let data = await addmemberModal.findByIdAndUpdate(id, {$set: {customId: " "}})
+    //   }
+    // });
+    await addmemberModal.updateMany({}, {$set: {isRecommended: false}})
+  //  await addmemberModal.find({isRecommended :{$ne: null}})
+    res.json({msg:'success'})
+  } catch (err) {
+    console.log(err)
+  }
+}
+
 exports.birth_next_month = (req, res) => {
   var curDate = new Date();
   var next_month = new Date(
@@ -1118,7 +1137,7 @@ exports.updatemember = (req, res) => {
     .exec((err, data) => {
       if (err) {
         res.send({
-          status: false,
+          success: false,
           error: "member is not update"
         });
       } else {
@@ -1134,24 +1153,26 @@ exports.updatemember = (req, res) => {
                 })
                 .then((response) => {
                   res.send({
-                    msg: "member details and profile is update"
+                    msg: "member details and profile is update",
+                    success:true
                   });
                 })
                 .catch((error) => {
                   res.send({
-                    error: "student image is not update"
+                    error: "student image is not update",
+                    success:false
                   });
                 });
             })
             .catch((error) => {
               res.send({
-                status: false,
+                success: false,
                 error: "image url is not create"
               });
             });
         } else {
           res.send({
-            status: true,
+            success: true,
             msg: "member is update successfully"
           });
         }
@@ -1502,3 +1523,58 @@ exports.invoice_details = (req, res) => {
       }
     })
 }
+
+
+exports.ActiveMemberslist = async (req, res) => {
+  try {
+    let userId = req.params.userId;
+
+    await addmemberModal.find({ userId: userId, status: 'Active' }).exec((err, user) => {
+      if (err || !user) {
+        return res.status(400).json({
+          error: 'User not found'
+        });
+      }
+      else {
+        return res.status(200).send({
+          data: user,
+          success: true,
+          error: false
+        })
+      }
+    });
+  }
+
+  catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false })
+
+  }
+};
+
+
+exports.ActiveMemberslistByProgramName = async (req, res) => {
+  try {
+    let program = req.params.programName
+    let userId = req.params.userId;
+
+    await addmemberModal.find({ userId: userId, status: 'Active', program: program }).exec((err, user) => {
+      if (err || !user) {
+        return res.status(400).json({
+          error: 'User not found'
+        });
+      }
+      else {
+        return res.status(200).send({
+          data: user,
+          success: true,
+          error: false
+        })
+      }
+    });
+  }
+
+  catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false })
+
+  }
+};

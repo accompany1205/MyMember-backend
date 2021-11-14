@@ -692,7 +692,7 @@ exports.updateUser = async (req, res) => {
 exports.school_listing = async (req, res) => {
   var per_page = parseInt(req.body.per_page) || 10
   var page_no = parseInt(req.params.page_no) || 1
-  var totalCount=await User.find({role:0}).count()
+  var totalCount = await User.find({ role: 0 }).count()
   var pagination = {
     limit: per_page,
     skip: per_page * (page_no - 1)
@@ -705,10 +705,27 @@ exports.school_listing = async (req, res) => {
         res.send({ error: "User is not updated!", status: "failure" })
       }
       else {
-        res.status(200).send({ msg: data, status: "success",totalCount:totalCount})
+        res.status(200).send({ msg: data, status: "success", totalCount: totalCount })
       }
     })
 }
 
+exports.searchUser = async (req, res) => {
+  const search = req.query.search;
+
+  try {
+    // const data = await User.find({ status: { $in: [{ eventName: req.body.eventName, city: req.body.city }] } })
+    const data = await User.find({
+      $or: [
+        { username: { $regex: search, '$options': 'i' } },
+        { email: { $regex: search, '$options': 'i' } },
+        { firstname: { $regex: search, '$options': 'i' } }] 
+    }, { username: 1, firstname: 1 })
+
+    res.send(data)
+  } catch (er) {
+    console.log(er);
+  }
+}
 
 

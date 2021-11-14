@@ -18,17 +18,46 @@ exports.membership_Info = (req, res) => {
         })
 };
 
-exports.update = (req, res) => {
-    // const id = req.params.membershipId;
-    // { 'paymentArr.0.1_installment': true }
-    buyMembership.find({ _id: "61784d11b97e9a1c3f301bf2", "schedulePayments.date": "2021-11-19" })
-        // { $set: { "schedulePayments.status": 'paid' } })
-        .then((update_resp) => {
-            res.send(update_resp)
-        }).catch((err) => {
-            res.send(err)
-        })
+exports.update = async (req, res) => {
+    try {
+
+        const membershipId = req.params.membershipId;
+        await buyMembership.updateOne({_id:membershipId}, req.body)
+        res.status(200).send({ message: 'buyMembership updated successfully', success: true })
+    }
+    catch (er) {
+        res.send({ error: err.message.replace(/\"/g, ""), success: false })
+
+    }
 };
+
+
+exports.updatePayments = async (req, res) => {
+    try {
+        const membershipId = req.params.membershipId;
+        update_resp = await buyMembership.find({ _id: membershipId })
+        arr = []
+        update_resp[0].schedulePayments
+            .map(function (element) {
+                if (element.date == req.body.date) {
+                    element.status = 'Paid'
+                    arr.push(element)
+                } else {
+                    arr.push(element)
+                }
+            })
+
+        updatePay = await buyMembership.findByIdAndUpdate(membershipId, { schedulePayments: arr })
+        res.send({ message: "paymentStatus updated successfully", succes: true, error: false })
+
+    }
+    catch (err) {
+        res.send({ error: err.message.replace(/\"/g, ""), success: false })
+    }
+
+
+};
+
 
 exports.remove = (req, res) => {
     const id = req.params.membershipId
@@ -94,14 +123,14 @@ exports.create = async (req, res) => {
                         res.send({ error: 'membership not buy' })
                     }
                     else {
-                        
+
                         query = { _id: studentId }
                         console.log(query)
                         update = {
                             $set: { status: "active" },
                             $push: { membership_details: data._id }
                         }
-                        
+
                         addmemberModal.findOneAndUpdate(query, update, (err, stdData) => {
                             if (err) {
                                 res.send({ error: 'membership id is not add in student' })
@@ -271,6 +300,20 @@ exports.buyMembership = (req, res) => {
         res.send({ error: error.message.replace(/\"/g, ""), success: false })
     }
 }
+exports.membership_InfoById = async (req, res) => {
+    var membershipID = req.params.membershipID
+    var userId = req.params.userId
+    try {
+        membershipData = await buyMembership.find({ _id: membershipID, userId: userId })
+        res.send({
+            msg: "done",
+            data: membershipData
+        })
+    } catch (error) {
+        res.send({ error: error.message.replace(/\"/g, ""), success: false })
+    }
+}
+
 
 exports.members_info = async (req, res) => {
     var studentId = req.params.studentId
@@ -281,12 +324,12 @@ exports.members_info = async (req, res) => {
             membership_details
         } = studentInfo;
         let membershipDa = await buyMembership.find({ _id: { $in: membership_details } });
-        membershipDa.filter(i => {
-            if (moment(currentDate).isSameOrAfter(i.expiry_date)) {
-                console.log(i)
-                i.membership_status = 'Expired'
-            }
-        })
+        // membershipDa.filter(i => {
+        //     if (moment(currentDate).isSameOrAfter(i.expiry_date)) {
+        //         console.log(i)
+        //         i.membership_status = 'Expired'
+        //     }
+        // })   
         res.send({
             msg: "done",
             data: membershipDa

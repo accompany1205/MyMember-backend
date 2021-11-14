@@ -4,9 +4,8 @@ const recommendedForTest = new mongoose.Schema({
 
     studentId: {
         type: String,
-        required:true,
-        unique:true
-    },
+        required:true
+        },
     userId:{
         type: String
     },
@@ -35,20 +34,20 @@ const recommendedForTest = new mongoose.Schema({
     rating: {
         type: String
     },
-    current_rank:{
+    current_rank_name:{
         type: String
     },
-    next_rank:{
+    next_rank_name:{
         type:String
     },
-    next_rank_name:{
+    next_rank_img:{
         type:String
     },
     isDeleted:{
         type: Boolean,
         default: false
     },
-    current_rank_name:{
+    current_rank_img:{
         type:String
         }
 

@@ -12,21 +12,10 @@ exports.create = async (req, res) => {
         res.send({ msg: "working!", success: true })
 
     } catch (error) {
+        res.send({ error: error.message.replace(/\"/g, ""), success: false })
+
     }
-    // membershipObj.save((err, data) => {
-    //     if (err) {
-    //         res.send({ error: 'membership not add' })
-    //     }
-    //     membershipModal.findByIdAndUpdate({ _id: data._id }, { $set: { userId: userId } })
-    //         .exec((err, membershipData) => {
-    //             if (err) {
-    //                 res.send({ error: 'user id is not add in membership' });
-    //             }
-    //             else {
-    //                 res.send({ msg: 'membership add successfully', result: membershipData });
-    //             }
-    //         })
-    // })
+
 }
 
 exports.read = (req, res) => {

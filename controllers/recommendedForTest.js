@@ -3,6 +3,7 @@ const User = require('../models/user');
 const Member = require('../models/addmember');
 const RecommendedForTest = require('../models/recommendedForTest');
 const RegisterdForTest = require('../models/registerdForTest');
+const program_rank = require("../models/program_rank");
 const Joi = require('@hapi/joi');
 
 
@@ -18,7 +19,7 @@ exports.getRecommededForTest = async (req, res) => {
 
     let students = await RecommendedForTest.find({
         "userId": userId,
-        "isDeleted":false
+        "isDeleted": false
     });
     if (!students.length) {
         res.json({
@@ -62,7 +63,6 @@ exports.getRegisteredForTest = async (req, res) => {
 
 
 exports.recomendStudent = async (req, res) => {
-    //only accepte array of objects
 
     let students = req.body;
     let userId = req.params.userId;
@@ -75,61 +75,59 @@ exports.recomendStudent = async (req, res) => {
         program: Joi.string().required(),
         status: Joi.string().required(),
         rating: Joi.number().required(),
-        current_rank: Joi.string(),
-        userId: Joi.string().required(),
-        next_rank: Joi.string(),
         current_rank_name: Joi.string(),
-        next_rank_name: Joi.string().default("1"),
-        lastPromotedDate: Joi.string().required()
+        userId: Joi.string().required(),
+        next_rank_name: Joi.string(),
+        current_rank_img: Joi.string(),
+        next_rank_img: Joi.string(),
+        lastPromotedDate: Joi.string().required(),
+        isRecommended: Joi.boolean().required()
     })
 
     try {
-
         if (!students) {
             res.json({
                 status: false,
                 msg: "You haven't selected any student!"
             })
         }
-
         const recommendedStudentsForTest = [];
+        var alredyRecomend = "";
+        const promises = [];
         for (let student of students) {
-            student.userId = userId
-            await recommendedFortestSchema.validateAsync(student);
-            recommendedStudentsForTest.push(student)
-
-            // let isStudentExists = await RecommendedForTest.find({
-            //     "studentId": student.studentId
-            // });
-            // if (isStudentExists.length > 0) {
-            //     recommendedStudentsForTest.push(student)
-            // }
+            if (!student.isRecommended && student.program) {
+                student.userId = userId;
+                await recommendedFortestSchema.validateAsync(student);
+                recommendedStudentsForTest.push(student)
+                let studentId = student.studentId
+                promises.push(updateStudentsById(studentId))
+            } else {
+                alredyRecomend += `${student.firstName} ${student.lastName}, `
+            }
         }
+        await Promise.all(promises);
         await RecommendedForTest.insertMany(recommendedStudentsForTest);
+        if (alredyRecomend) {
+            res.send({
+                recommendedStudentsForTest,
+                success: false,
+                msg: `${alredyRecomend},  either these students are alredy in recommended list or program is not selected`
+            })
+        }
         res.send({
+            recommendedStudentsForTest,
             success: true,
             msg: "Selected students got recomended successfully.",
         })
-        // try{
-        //     await RecommendedForTest.insertMany(recommendedStudentsForTest);
-        //     res.send({
-        //         success: true,
-        //         msg: "Selected students got recomended successfully.",
-        //     })
-        // }catch(eror){
-        //     res.send({ error: error.message.replace(/\"/g, ""), success: false })
-        // }
 
     } catch (error) {
-        let errorFound = error.message.replace(/\"/g, "")
-        if (errorFound.includes('duplicate key')) {
-            res.send({ error: 'Student already exist in recommend list !', success: false })
-        }
         res.send({ error: error.message.replace(/\"/g, ""), success: false })
     }
-
-
 };
+
+const updateStudentsById = async (studentId) => {
+    return Member.findByIdAndUpdate({ _id: studentId }, { isRecommended: true })
+}
 
 
 exports.payAndPromoteTheStudent = async (req, res) => {
@@ -138,9 +136,10 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         testId,
         studentId,
         rating,
-        current_rank,
-        next_rank,
+        current_rank_name,
+        next_rank_name,
         current_rank_img,
+        next_rank_img,
         method,
         phone,
         firstName,
@@ -187,69 +186,71 @@ exports.payAndPromoteTheStudent = async (req, res) => {
 
     // } 
     //else {
-        //If moving the student to the registerd list for the fist time.
-        let registerd = await RegisterdForTest.create({
-            "studentId": studentId,
-            "firstName": firstName,
-            "testId": testId,
-            "lastName": lastName,
-            "rating": rating,
-            "current_rank": current_rank,
-            "next_rank": next_rank,
-            "userId": userId,
-            "current_rank_img": current_rank_img,
-            "method": method,
-            "memberprofileImage": memberprofileImage,
-            "phone": phone,
-            "program": program
-        });
-        if (registerd === null) {
-            res.json({
-                status: false,
-                msg: "Having some issue while register!!!!!!!"
-            })
-        }
-        let date = new Date();
-        let history = {
-            "current_rank": current_rank,
-            "program": program,
-            "current_rank_img": current_rank_img,
-            "testPaid": date,
-            "promoted": date
-        }
-        let updatedTestPurchasing = await Member.findOneAndUpdate(studentId, {
-            $push: {
-                test_purchasing: testId,
-                rank_update_test_history: history
-            }
-        }, {
-            new: true
-        })
-        if (updatedTestPurchasing === null) {
-            res.json({
-                status: false,
-                msg: "Having some issue while register!!"
-            })
-        }
-        let removedFromRecommended = await RecommendedForTest.findOneAndUpdate({
-            "studentId": studentId
-        }, {
-            "isDeleted": true
-        }, {
-            new: true
-        });
-        if (!removedFromRecommended) {
-            res.json({
-                status: false,
-                msg: "Having issue while removing form recommeded list!!"
-            })
-        }
-
+    //If moving the student to the registerd list for the fist time.
+    let registerd = await RegisterdForTest.create({
+        "studentId": studentId,
+        "firstName": firstName,
+        "testId": testId,
+        "lastName": lastName,
+        "rating": rating,
+        "current_rank_name": current_rank_name,
+        "next_rank_name": next_rank_name,
+        "userId": userId,
+        "current_rank_img": current_rank_img,
+        "method": method,
+        "memberprofileImage": memberprofileImage,
+        "next_rank_img": next_rank_img,
+        "phone": phone,
+        "program": program
+    });
+    if (registerd === null) {
         res.json({
-            status: true,
-            msg: "Student successfully promoted to registerd list!!",
-            data: registerd
+            status: false,
+            msg: "Having some issue while register!!!!!!!"
         })
+    }
+    let date = new Date();
+    let history = {
+        "current_rank_name": current_rank_name,
+        "program": program,
+        "current_rank_img": current_rank_img,
+        "testPaid": date,
+        "promoted": date
+    }
+    let updatedTestPurchasing = await Member.findOneAndUpdate(studentId, {
+        $push: {
+            test_purchasing: testId,
+            rank_update_test_history: history
+        }
+    }, {
+        new: true
+    })
+    if (updatedTestPurchasing === null) {
+        res.json({
+            status: false,
+            msg: "Having some issue while register!!"
+        })
+    }
+    let removedFromRecommended = await RecommendedForTest.updateMany({
+        "studentId": studentId
+    }, {
+        "isDeleted": true
+    }, {
+        new: true
+    });
+    console.log("removed", removedFromRecommended)
+    if (!removedFromRecommended) {
+        res.json({
+            status: false,
+            msg: "Having issue while removing form recommeded list!!"
+        })
+    }
+
+    res.json({
+        status: true,
+        msg: "Student successfully promoted to registerd list!!",
+        data: registerd
+    })
     //}
 }
 
@@ -261,6 +262,15 @@ exports.removeFromRecomended = async (req, res) => {
         res.json({
             status: false,
             msg: "Please give the recomended id in params!"
+        })
+    }
+    recon = await RecommendedForTest.findById(recommededId);
+    let studentId =recon.studentId;
+    let deleteRecommended = await Member.findOneAndUpdate(studentId, {isRecommended:false})
+    if(!deleteRecommended){
+        res.json({
+            status: false,
+            msg: "Unable to remove the student!!"
         })
     }
     let isDeleted = await RecommendedForTest.findByIdAndDelete(recommededId);
