@@ -24,6 +24,7 @@ exports.create_folder = (req,res)=>{
 exports.update_folder = (req,res)=>{
     Folder.findByIdAndUpdate(req.params.folderId,req.body)
     .exec((err,updateFolder)=>{
+        console.log(updateFolder)
         if(err){
             res.send({error:'folder is not update'})
         }
