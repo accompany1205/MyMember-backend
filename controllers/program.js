@@ -4,12 +4,10 @@ const program = require("../models/program");
 exports.create = async (req, res) => {
     const Id = req.params.userId;
     const programName = req.body.programName;
-    console.log("---",programName )
     const programeName = await program.find({$and: [
         { $or: [ { userId: Id } ] },
         { $or: [ { programName: programName } ] }
     ]})
-    console.log("---",programeName)
     if(!programeName[0]){
         var prog = new program({
             "programName":req.body.programName,
@@ -125,9 +123,15 @@ exports.program_rank = (req, res) => {
         })
 };
 
-exports.update = (req, res) => {
+exports.update = async (req, res) => {
     const uid = req.params.proId;
-    program.updateOne({ _id: uid }, req.body)
+    const userId = req.params.userId;
+    const programeName = await program.find({$and: [
+        { $or: [ { userId: userId } ] },
+        { $or: [ { programName: req.body.programName } ] }
+    ]});
+    if(!programeName[0]){
+        program.updateOne({ _id: uid }, req.body)
         .then((result) => {
             if (req.file) {
                 const cloudenary = require("cloudinary").v2
@@ -161,6 +165,14 @@ exports.update = (req, res) => {
         }).catch((err) => {
             res.send({message:err.message.replace(/\"/g, ""),success:false} );
         })
+    }else{
+        res.json({
+            msg:"Update not Allowed for alredy existed programm name!",
+            success:false,
+            successCode:204
+        })
+    }
+    
 }
 
 
