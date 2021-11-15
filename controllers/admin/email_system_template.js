@@ -90,8 +90,6 @@ exports.add_template = async (req, res) => {
 
 
 exports.update_template = async (req, res) => {
-
-
     let { to, from, sent_time, repeat_mail, sent_date, follow_up } = req.body || {};
     let { adminId, templateId } = req.params || {};
 
@@ -202,7 +200,7 @@ exports.remove_template = (req, res) => {
 }
 
 exports.status_update_template = (req, res) => {
-    if (req.body.status == 'false') {
+    if (req.body.status == false) {
         addTemp.find({ $and: [{ adminId: req.params.adminId }, { folderId: req.params.folderId }] })
             .exec((err, TempData) => {
                 if (err) {
@@ -222,7 +220,7 @@ exports.status_update_template = (req, res) => {
                 }
             })
     }
-    else if (req.body.status == 'true') {
+    else if (req.body.status == true) {
         addTemp.find({ $and: [{ adminId: req.params.adminId }, { folderId: req.params.folderId }] })
             .exec((err, TempData) => {
                 if (err) {

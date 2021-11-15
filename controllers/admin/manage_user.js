@@ -5,15 +5,15 @@ const cloudUrl = require("../../gcloud/imageUrl")
 
 exports.user_List = (req, res) => {
     user.find({
-            role: 0
-        })
+        role: 0
+    })
         .populate('user_membership_details', 'membershipName startDate expiry_date')
         .exec((err, userList) => {
             if (err || !userList) {
                 res.send({
                     error: 'user list not found'
                 })
-                
+
             } else {
                 res.send(userList)
             }
@@ -27,22 +27,22 @@ exports.user_List = (req, res) => {
  */
 exports.school_list = (req, res) => {
     user.find({
-            role: 0
-        }, {
-            status: 1,
-            firstname: 1,
-            username: 1,
-            email: 1,
-            phone: 1,
-            password: 1,
-            location: 1
-        })
+        role: 0
+    }, {
+        status: 1,
+        firstname: 1,
+        username: 1,
+        email: 1,
+        phone: 1,
+        password: 1,
+        location: 1
+    })
         .exec((err, userList) => {
             if (err || !userList) {
                 res.send({
                     error: 'user list not found'
                 })
-                
+
             } else {
                 res.send(userList)
             }
@@ -51,8 +51,8 @@ exports.school_list = (req, res) => {
 
 exports.userInfo = (req, res) => {
     user.findOne({
-            _id: req.params.userId
-        })
+        _id: req.params.userId
+    })
         .populate('user_membership_details')
         .exec((err, userinfo) => {
             if (err) {
@@ -70,15 +70,15 @@ exports.create_user = (req, res) => {
     userObj.save(function (err, User) {
         if (err) {
             res.send(err)
-            
+
         } else {
             if (req.file) {
                 cloudUrl.imageUrl(req.file).then((subuserImgUrl) => {
                     user.findByIdAndUpdate(User._id, {
-                            $set: {
-                                logo: subuserImgUrl
-                            }
-                        })
+                        $set: {
+                            logo: subuserImgUrl
+                        }
+                    })
                         .then((response) => {
                             res.json(response)
                         }).catch((error) => {
@@ -110,12 +110,12 @@ exports.manage_Status = (req, res) => {
         } else {
             if (list.status == 'Deactivate') {
                 user.findByIdAndUpdate({
-                        _id: req.params.userId
-                    }, {
-                        $set: {
-                            status: 'Active'
-                        }
-                    })
+                    _id: req.params.userId
+                }, {
+                    $set: {
+                        status: 'Active'
+                    }
+                })
                     .exec((err, updateData) => {
                         if (err) {
                             res.send({
@@ -145,12 +145,12 @@ exports.manage_Status = (req, res) => {
                     })
             } else if (list.status == 'Active') {
                 user.findByIdAndUpdate({
-                        _id: req.params.userId
-                    }, {
-                        $set: {
-                            status: 'Deactivate'
-                        }
-                    })
+                    _id: req.params.userId
+                }, {
+                    $set: {
+                        status: 'Deactivate'
+                    }
+                })
                     .exec((err, updateData) => {
                         if (err) {
                             res.send({
@@ -177,10 +177,10 @@ exports.update_user = (req, res) => {
             if (req.file) {
                 cloudUrl.imageUrl(req.file).then((subuserImgUrl) => {
                     user.findByIdAndUpdate(req.params.userId, {
-                            $set: {
-                                logo: subuserImgUrl
-                            }
-                        })
+                        $set: {
+                            logo: subuserImgUrl
+                        }
+                    })
                         .then((response) => {
                             res.json(response)
                         }).catch((error) => {
@@ -248,4 +248,19 @@ exports.remove = (req, res) => {
             });
         }
     })
+}
+
+exports.removeAll = (req, res) => {
+    user.remove({})
+        .exec((err, removeData) => {
+            if (err) {
+                res.send({
+                    error: 'user is not remove'
+                });
+            } else {
+                res.send({
+                    msg: 'user remove successfully'
+                });
+            }
+        })
 }
