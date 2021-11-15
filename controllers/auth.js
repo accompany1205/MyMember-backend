@@ -59,7 +59,7 @@ exports.signup = async (req, res) => {
     }
 
     user.salt = undefined;
-    user.hashed_password = undefined;
+    //user.hashed_password = undefined;
     navbar_custom(user.id);
     sgMail
       .send(msg)

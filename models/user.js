@@ -70,7 +70,6 @@ const userSchema = new schema(
         },
         password: {
             type: String,
-            required: true
         },
         about: {
             type: String,

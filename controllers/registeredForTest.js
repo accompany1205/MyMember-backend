@@ -16,9 +16,9 @@ exports.promoteStudentRank = async (req, res) => {
         const promises = [];
         for (let resgister of studentData) {
             let registerdId = resgister.registerdId;
-            let current_rank = resgister.current_rank;
-            let next_rank = resgister.next_rank;
-            promises.push(promoteStudents(registerdId, current_rank, next_rank))
+            let current_rank_name = resgister.current_rank_name;
+            let next_rank_name = resgister.next_rank_name;
+            promises.push(promoteStudents(registerdId, current_rank_name, next_rank_name))
         }
         await Promise.all(promises);
         res.json({
@@ -31,35 +31,35 @@ exports.promoteStudentRank = async (req, res) => {
     }
 };
 
-async function promoteStudents(registerdId, current_rank, next_rank) {
+async function promoteStudents(registerdId, current_rank_name, next_rank_name) {
     let registeredData = await RegisterdForTest.findById(registerdId);
     let { studentId } = registeredData;
     if (!registeredData.isDeleted) {
-        const data = await program_rank.findOne({ rank_name: current_rank }, { _id: 0, rank_image: 1, rank_name: 1, day_to_ready: 1, programName: 1 })
-        const data1 = await program_rank.findOne({ rank_name: next_rank }, { _id: 0, rank_image: 1 })
-        let nextImage = data1.rank_image;
-        let currentImage = data.rank_image;
+        const data = await program_rank.findOne({ rank_name: current_rank_name }, { _id: 0, rank_image: 1, rank_name: 1, day_to_ready: 1, programName: 1 })
+        const data1 = await program_rank.findOne({ rank_name: next_rank_name }, { _id: 0, rank_image: 1 })
+        let nextImage = data1 ? data1.rank_image : "no data";
+        let currentImage = data? data.rank_image : "no data";
         let currentprogramName = data.programName
         let currentday_to_ready = data.day_to_ready
         await RegisterdForTest.findOneAndUpdate({
             _id: registerdId
         }, {
             isDeleted: true,
-            current_rank: current_rank,
-            next_rank: next_rank,
+            current_rank_name: current_rank_name,
+            next_rank_name: next_rank_name,
             next_rank_img: nextImage,
             current_rank_img: currentImage
         });
         await Member.findByIdAndUpdate({ _id: studentId },
-            { $set: { current_rank_name: current_rank, next_rank_name: next_rank, current_rank_img: currentImage, next_rank_name: next_rank, next_rank_img: nextImage, isRecommended: false } });
+            { $set: { current_rank_name: current_rank_name, next_rank_name: next_rank_name, current_rank_img: currentImage, next_rank_name: next_rank_name, next_rank_img: nextImage, isRecommended: false } });
         studentRankInfo = await student_info_Rank.findOne({ "studentId": studentId, "programName": currentprogramName })
         
         if (studentRankInfo !== null) {
-            await student_info_Rank.findOneAndUpdate({ studentId: studentId, programName: currentprogramName }, { rank_name: current_rank, day_to_ready: currentday_to_ready, rank_image: currentImage })
+            await student_info_Rank.findOneAndUpdate({ studentId: studentId, programName: currentprogramName }, { rank_name: current_rank_name, day_to_ready: currentday_to_ready, rank_image: currentImage })
         } else {
             const resp = new student_info_Rank({
                 programName: currentprogramName,
-                rank_name: current_rank,
+                rank_name: current_rank_name,
                 day_to_ready: currentday_to_ready,
                 rank_image: currentImage,
                 studentId: studentId
@@ -93,6 +93,13 @@ exports.removeFromRegisterd = async (req, res) => {
     let {
         studentId
     } = await RegisterdForTest.findById(registeredId);
+    let deleteForRegistered = await Member.findOneAndUpdate(studentId, {isRecommended:false})
+    if (!deleteForRegistered){
+        res.json({
+            status: false,
+            msg: "Unable to remove from Registered list"
+        })
+    };
     let reflectedToRecommendedAgain = await RecommendedForTest.findOneAndUpdate({
         "studentId": studentId
     }, {
