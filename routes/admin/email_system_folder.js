@@ -7,4 +7,4 @@ router.post("/email_system/create_folder/:adminId/:catId",isAdmin,create_folder)
 router.put("/email_system/update_folder/:adminId/:folderId",isAdmin,update_folder)
 router.delete("/email_system/delete_folder/:adminId/:folderId",isAdmin,delete_folder)
 
-module.exports = router;
+module.exports = router; 

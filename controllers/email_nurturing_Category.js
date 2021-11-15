@@ -1,8 +1,8 @@
-const user = require('../models/user')
 const emailNurturing = require("../models/email_nurturing_Category")
 const emailSent = require('../models/emailSentSave')
 const sgMail = require('sendgrid-v3-node');
 const  Member = require('../models/addmember') 
+const user = require('../models/user')
 const AuthKey = require('../models/email_key')
 
 function TimeZone(){
@@ -96,17 +96,19 @@ exports.tempList = (req,res)=>{
     })
 }
 
-exports.sendEmail = (req,res)=>{
+exports.sendEmail =  (req,res)=>{
+    if (!req.body.subject || !req.body.template || !req.body.to) {
+        res.send({ error: "invalid input", success: false })
+    } else{
     const emailData = {
-            sendgrid_key: process.env.Email_Key,
+            sendgrid_key: process.env.SENDGRID_API_KEY,
             to: req.body.to,
-            from_email: req.body.from,
+            from_email:process.env.from_email,
             from_name: 'noreply@gmail.com',
+            subject: req.body.subject,
+            content: req.body.template
         };
-        
-        emailData.subject = req.body.subject;
-        emailData.content = req.body.template;
-    
+  
         sgMail.send_via_sendgrid(emailData).then(resp=>{
            var DT = TimeZone() 
            var emailDetail =  new emailSent(req.body)
@@ -132,4 +134,4 @@ exports.sendEmail = (req,res)=>{
             res.send({error:'email not send',error:err})
         })
 
-}
+}}

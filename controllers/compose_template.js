@@ -229,7 +229,7 @@ exports.add_template = async (req, res) => {
         title,
         subject,
         template,
-        sent_date: nD,
+        sent_date,
         sent_time,
         DateT: date_iso_follow,
         repeat_mail,
@@ -242,11 +242,10 @@ exports.add_template = async (req, res) => {
         templete_Id
     };
 
-    // sent_date = moment(sent_date).format('YYYY-MM-DD')
+    sent_date = moment(sent_date).format('YYYY-MM-DD')
     let scheduleDateOfMonth = moment(sent_date).format('DD')
     let scheduleMonth = moment(sent_date).format('MM')
     let scheduleDay = moment(sent_date).format('dddd')
-
 
     if (req.body.follow_up === 0) {
         var date_iso = timefun(req.body.sent_date, req.body.sent_time)
@@ -272,7 +271,7 @@ exports.add_template = async (req, res) => {
              
                 mailId = data.id
                 try {
-                    cron.schedule(`59 23 ${scheduleDateOfMonth} ${scheduleMonth} ${scheduleDay}`, async function () {
+                    cron.schedule(`57 18 ${scheduleDateOfMonth} ${scheduleMonth} ${scheduleDay}`, async function () {
                         const emailData = {
                             sendgrid_key: process.env.SENDGRID_API_KEY,
                             to: req.body.to,
