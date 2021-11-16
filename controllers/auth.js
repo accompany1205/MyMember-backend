@@ -74,6 +74,55 @@ exports.signup = async (req, res) => {
 };
 //...signup ending.
 
+exports.adminApproval = async (req, res) => {
+  try {
+    const adminId = req.body.adminId;
+    const userId = req.body.userId;
+    let adminRole = await User.findById(adminId, { role: 1 });
+    if (adminRole.role === 1) {
+      userData = await User.findById(userId)
+      if (userData) {
+        if (userData.status === "Active") {
+          token = jwt.sign({
+            id: userId
+          }, process.env.JWT_SECRET);
+          res.cookie("t", token, {
+            expire: new Date() + 9999
+          });
+          res.send({
+            data: {
+            "token":token,
+            "data":userData
+            },
+            success:true
+          }
+          )
+        } else {
+          res.josn({
+            msg: "User Status is not Active",
+            success:false
+          })
+        }
+      } else {
+        res.json({
+          msg: "UserNot found",
+          success: false
+        })
+        throw new Error("user Not Found")
+      }
+    } else {
+      res.json({
+        msg: "Unauthorised",
+        success: false
+      })
+      throw new Error("Unauthorised for this action")
+    }
+  } catch (error) {
+    res.send({ error: error.message.replace(/\"/g, ""), success: false })
+  }
+
+}
+
 exports.approveUserRequestByAdmin = async (req, res) => {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   let data = req.body;
@@ -719,7 +768,7 @@ exports.searchUser = async (req, res) => {
       $or: [
         { username: { $regex: search, '$options': 'i' } },
         { email: { $regex: search, '$options': 'i' } },
-        { firstname: { $regex: search, '$options': 'i' } }] 
+        { firstname: { $regex: search, '$options': 'i' } }]
     }, { username: 1, firstname: 1 })
 
     res.send(data)
