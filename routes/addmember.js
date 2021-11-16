@@ -86,11 +86,11 @@ router.put('/member/update_member/:userId/:memberID', upload.single('memberprofi
 //student type 
 router.get('/member/active_trial/:userId/:page_no/', verifySchool, active_trial_Std);
 router.get('/member/active_student/:userId/:page_no', verifySchool, active_Std);
-router.get('/member/Former_trial/:userId/;:page_no', verifySchool, Former_trial_Std);
+router.get('/member/Former_trial/:userId/:page_no', verifySchool, Former_trial_Std);
 router.get('/member/Former_student/:userId/:page_no', verifySchool, Former_Std);
-router.get('/member/Leads/:userId/:page_no', leads_Std);
-router.get('/member/camp_student/:userId', verifySchool, camp_Std);
-router.get('/member/after_school_student/:userId', verifySchool, after_school_Std);
+router.get('/member/Leads/:userId/:page_no',verifySchool, leads_Std);
+router.get('/member/camp_student/:userId/:page_no', verifySchool, camp_Std);
+router.get('/member/after_school_student/:userId/:page_no', verifySchool, after_school_Std);
 
 // email and text sms send perticular student
 router.post('/member/email_send_student', send_mail_std)
