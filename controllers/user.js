@@ -55,7 +55,7 @@ exports.read = (req, res) => {
 
 exports.update = (req, res) => {
   var userId = req.params.userId;
-  User.findByIdAndUpdate( userId , req.body)  
+  User.findByIdAndUpdate(userId, req.body)
     .exec((err, data) => {
       if (err) {
         res.send({
@@ -65,11 +65,10 @@ exports.update = (req, res) => {
       }
       else {
         if (req.file) {
-          console.log('___________________')
           cloudUrl.imageUrl(req.file).then((subuserImgUrl) => {
             User.findByIdAndUpdate(userId, { $set: { profile_image: subuserImgUrl } })
               .then((response) => {
-                res.json({ message: "your profile image updated successfully",success:true })
+                res.json({ message: "your profile image updated successfully", success: true })
               }).catch((error) => {
                 res.send({ error: 'sub user image is not update' })
               })
@@ -140,13 +139,17 @@ exports.purchaseHistory = (req, res) => {
 
 
 
-// exports.deleteUser = (req, res) => {
-//  a= User.find({ username: {$nin:['champion', 'Admin', "pvndhamu"] } })
-// //  console.log(a)
-//     .then(data => {
-//       res.send(data)
-//     })
-//     .catch(er => {
-//       res.send(er)
-//     })
-// };
+exports.deleteUser = async (req, res) => {
+  try {
+
+    userId = req.params.userId
+    resp = await User.findByIdAndDelete(userId)
+    res.send({ message: "User Deleted Successfullly", success: true })
+    
+  }
+  catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false })
+
+  }
+
+};

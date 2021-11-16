@@ -4,9 +4,7 @@ const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 const { add_template, list_template, remove_template, update_template, status_update_template, single_tem_updte_status, multipal_temp_remove ,swapAndUpdate_template} = require("../controllers/library_template")
 
 router.get("/email_library/list_template/:userId/:folderId", verifySchool, list_template)
-
 router.post("/email_library/add_template/:userId/:folderId", verifySchool, add_template)
-
 router.put("/email_compose/drag_drop_templete/:userId",requireSignin,swapAndUpdate_template)
 router.put("/email_library/update_template/:userId/:templateId", verifySchool, update_template)
 router.put("/email_library/single_template_status_change/:userId/:tempId", verifySchool, single_tem_updte_status)// single library template status change

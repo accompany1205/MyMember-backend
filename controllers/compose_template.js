@@ -1,10 +1,10 @@
-const cron = require('node-cron')
 const all_temp = require("../models/emailSentSave");
 const compose_folder = require("../models/email_compose_folder")
 const authKey = require("../models/email_key")
 const async = require('async')
 const sgMail = require("sendgrid-v3-node");
 const moment = require('moment');
+const cron = require('node-cron')
 
 // compose template
 
@@ -263,7 +263,7 @@ exports.add_template = async (req, res) => {
              
                 mailId = data.id
                 try {
-                    cron.schedule(`57 18 ${scheduleDateOfMonth} ${scheduleMonth} ${scheduleDay}`, async function () {
+                    cron.schedule(`59 23 ${scheduleDateOfMonth} ${scheduleMonth} ${scheduleDay}`, async function () {
                         const emailData = {
                             sendgrid_key: process.env.SENDGRID_API_KEY,
                             to: req.body.to,
@@ -317,7 +317,7 @@ exports.update_template = (req, res) => {
             res.send({ code: 400, msg: 'template is not update' })
         }
         else {
-            res.send({ code: 200, msg: 'template update success', result: updateTemp })
+            res.send({ code: 200, msg: 'template update success' })
         }
     })
 }

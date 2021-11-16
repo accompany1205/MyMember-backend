@@ -513,92 +513,162 @@ exports.read = (req, res) => {
     });
 };
 
-exports.active_trial_Std = (req, res) => {
+exports.active_trial_Std = async (req, res) => {
+  var totalCount = await addmemberModal.find({
+    userId: req.params.userId,
+    studentType: "Active Trial"
+  }).countDocuments()
+
+
+  var per_page = parseInt(req.body.per_page) || 10
+  var page_no = parseInt(req.params.page_no) || 1
+  var pagination = {
+    limit: per_page,
+    skip: per_page * (page_no - 1)
+  }
   addmemberModal
     .find({
       userId: req.params.userId,
       studentType: "Active Trial"
     })
     .populate("membership_details")
+    .limit(pagination.limit)
+    .skip(pagination.skip)
     .exec((err, active_trial) => {
       if (err) {
         res.send({
           error: "active trial student is not found"
         });
       } else {
-        res.send(active_trial);
+        res.send({ active_trial, totalCount: totalCount, success: true });
       }
     });
 };
 
-exports.leads_Std = (req, res) => {
+exports.leads_Std = async (req, res) => {
+  var totalCount = await addmemberModal.find({
+    userId: req.params.userId,
+    studentType: "Leads"
+  }).countDocuments()
+
+  var per_page = parseInt(req.body.per_page) || 10
+  var page_no = parseInt(req.params.page_no) || 1
+  var pagination = {
+    limit: per_page,
+    skip: per_page * (page_no - 1)
+  }
   addmemberModal
     .find({
       userId: req.params.userId,
       studentType: "Leads"
     })
     .populate("membership_details")
+    .limit(pagination.limit)
+    .skip(pagination.skip)
+
     .exec((err, lead) => {
       if (err) {
         res.send({
           error: "leads student is not found"
         });
       } else {
-        res.send(lead);
+        res.send({ lead, totalCount: totalCount, success: true });
       }
     });
 };
 
-exports.Former_Std = (req, res) => {
+exports.Former_Std = async (req, res) => {
+  var totalCount = await addmemberModal.find({
+    userId: req.params.userId,
+    studentType: "Former Student"
+  }).countDocuments()
+
+
+  var per_page = parseInt(req.body.per_page) || 10
+  var page_no = parseInt(req.params.page_no) || 1
+  var pagination = {
+    limit: per_page,
+    skip: per_page * (page_no - 1)
+  }
   addmemberModal
     .find({
       userId: req.params.userId,
       studentType: "Former Student"
     })
     .populate("membership_details")
+    .limit(pagination.limit)
+    .skip(pagination.skip)
     .exec((err, former) => {
       if (err) {
         res.send({
           error: "former student is not found"
         });
       } else {
-        res.send(former);
+        res.send({ former, totalCount: totalCount, success: true });
       }
     });
 };
 
-exports.active_Std = (req, res) => {
+exports.active_Std = async (req, res) => {
+  var totalCount = await addmemberModal.find({
+    userId: req.params.userId,
+    studentType: "Active Student"
+  }).countDocuments()
+
+
+  var per_page = parseInt(req.body.per_page) || 10
+  var page_no = parseInt(req.params.page_no) || 1
+  var pagination = {
+    limit: per_page,
+    skip: per_page * (page_no - 1)
+  }
   addmemberModal
     .find({
       userId: req.params.userId,
       studentType: "Active Student"
     })
     .populate("membership_details")
+    .limit(pagination.limit)
+    .skip(pagination.skip)
     .exec((err, active_std) => {
       if (err) {
         res.send({
           error: "active student is not found"
         });
       } else {
-        res.send(active_std);
+        res.send({ active_std, totalCount: totalCount, success: true });
       }
     });
 };
 
-exports.Former_trial_Std = (req, res) => {
+exports.Former_trial_Std = async (req, res) => {
+  var totalCount = await addmemberModal.find({
+    userId: req.params.userId,
+    studentType: "Former Trial"
+  }).countDocuments()
+
+
+  var per_page = parseInt(req.body.per_page) || 10
+  var page_no = parseInt(req.params.page_no) || 1
+  var pagination = {
+    limit: per_page,
+    skip: per_page * (page_no - 1)
+  }
   addmemberModal
     .find({
       userId: req.params.userId,
       studentType: "Former Trial"
     })
     .populate("membership_details")
+    .limit(pagination.limit)
+    .skip(pagination.skip)
     .exec((err, former_trial) => {
       if (err) {
         res.send({
           error: "former trial student is not found"
         });
       } else {
-        res.send(former_trial);
+        res.send({ former_trial, totalCount: totalCount, success: true });
       }
     });
 };
@@ -928,9 +998,9 @@ exports.collectionModify = async (req, res) => {
     //     let data = await addmemberModal.findByIdAndUpdate(id, {$set: {customId: " "}})
     //   }
     // });
-    await addmemberModal.updateMany({}, {$set: {isRecommended: false}})
-  //  await addmemberModal.find({isRecommended :{$ne: null}})
-    res.json({msg:'success'})
+    await addmemberModal.updateMany({}, { $set: { isRecommended: false } })
+    //  await addmemberModal.find({isRecommended :{$ne: null}})
+    res.json({ msg: 'success' })
   } catch (err) {
     console.log(err)
   }
@@ -1154,13 +1224,13 @@ exports.updatemember = (req, res) => {
                 .then((response) => {
                   res.send({
                     msg: "member details and profile is update",
-                    success:true
+                    success: true
                   });
                 })
                 .catch((error) => {
                   res.send({
                     error: "student image is not update",
-                    success:false
+                    success: false
                   });
                 });
             })

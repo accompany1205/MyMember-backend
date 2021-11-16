@@ -2,6 +2,10 @@ const all_temp = require("../models/emailSentSave")
 const nurturingFolderModal = require("../models/email_nurturing_folder")
 const key = require("../models/email_key")
 const moment = require('moment')
+const async = require('async')
+const sgMail = require("sendgrid-v3-node");
+const cron = require('node-cron')
+
 function timefun(sd, st) {
     var date = sd
     var stime = st
@@ -100,16 +104,7 @@ exports.list_template = (req, res) => {
 exports.add_template = async (req, res) => {
     const counts = await all_temp.find({ folderId: req.params.folderId }).countDocuments()
     let templete_Id = counts + 1
-
-    // var schedule = req.body.schedule
-    //    authKey.findOne({userId:req.params.userId})      
-    //     .exec((err,key)=>{
-    //         if(err){
-    //             res.send({Error:'email auth key is not find so schedule is not create',error:err})
-    //         }
-    //         else{
-
-    let { to, from, title, subject, template, sent_time, repeat_mail, follow_up } = req.body || {};
+    let { to, from, title, subject, template, sent_time, repeat_mail, sent_date, follow_up } = req.body || {};
     let { userId, folderId } = req.params || {};
 
     const obj = {
@@ -118,7 +113,7 @@ exports.add_template = async (req, res) => {
         title,
         subject,
         template,
-        sent_date: nD,
+        sent_date,
         sent_time,
         DateT: date_iso_follow,
         repeat_mail,
@@ -130,39 +125,37 @@ exports.add_template = async (req, res) => {
         folderId,
         templete_Id
     };
+
+    sent_date = moment(sent_date).format('YYYY-MM-DD')
     let scheduleDateOfMonth = moment(sent_date).format('DD')
     let scheduleMonth = moment(sent_date).format('MM')
     let scheduleDay = moment(sent_date).format('dddd')
-
     if (req.body.follow_up === 0) {
         var date_iso = timefun(req.body.sent_date, req.body.sent_time)
         obj.DateT = date_iso;
     }
-    else if (req.body.follow_up > 0) {
-        var date_iso_follow = timefun(req.body.sent_date, req.body.sent_time)
-        date_iso_follow.setDate(date_iso_follow.getDate() + req.body.follow_up);
-        var nD = moment(date_iso_follow).format('MM/DD/YYYY')
 
-    }
     else if (req.body.follow_up < 0) {
         res.send({ code: 400, msg: 'follow up not set less then 0' })
     }
 
+    else {
 
-    var emailDetail = new all_temp(obj)
+        var date_iso_follow = timefun(req.body.sent_date, req.body.sent_time)
+        date_iso_follow.setDate(date_iso_follow.getDate() + req.body.follow_up);
+        var nD = moment(date_iso_follow).format('MM/DD/YYYY')
 
+        emailDetail = new all_temp(obj)
 
-    try {
         emailDetail.save((er, data) => {
             if (er) {
                 res.send({ error: "Email not saved", success: false })
-
             }
             else {
-                console.log('email saved And scheduled At', sent_date)
+
                 mailId = data.id
                 try {
-                    cron.schedule(`59 23 ${scheduleDateOfMonth} ${scheduleMonth} ${scheduleDay}`, async function () {
+                    cron.schedule(`57 18 ${scheduleDateOfMonth} ${scheduleMonth} ${scheduleDay}`, async function () {
                         const emailData = {
                             sendgrid_key: process.env.SENDGRID_API_KEY,
                             to: req.body.to,
@@ -178,7 +171,7 @@ exports.add_template = async (req, res) => {
                                     res.send({ error: "Email not saved", success: false })
                                 }
                                 else {
-                                    await compose_folder.findOneAndUpdate(folderId, { $push: { template: data._id } }, (er, data) => {
+                                    await nurturingFolderModal.findOneAndUpdate(folderId, { $push: { template: data._id } }, (er, data) => {
                                         if (er) {
                                             res.send({ error: 'compose template details is not add in folder', success: false })
                                         }
@@ -192,9 +185,7 @@ exports.add_template = async (req, res) => {
                             }
                             )
                         }).catch((err) => {
-                            console.log('hello')
                             res.send({ error: err.message.replace(/\"/g, ""), success: false })
-
                         })
 
                     })
@@ -208,11 +199,8 @@ exports.add_template = async (req, res) => {
         })
     }
 
-    catch (err) {
-        res.send({ Error: 'email details is not save', error: err })
-    }
-}
 
+}
 // exports.add_template = (req,res)=>{
 //             if(req.body.follow_up === 0){
 //                 var date_iso = timefun(req.body.sent_date,req.body.sent_time)
@@ -349,7 +337,7 @@ exports.update_template = (req, res) => {
             res.send({ error: 'template is not update' })
         }
         else {
-            res.send(updateTemp)
+            res.send({message:'updated successfully',success:true})
         }
     })
 }
