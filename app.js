@@ -54,6 +54,7 @@ const psubcategory = require("./routes/psubcategory");
 const add_membership = require("./routes/membership");
 const finance_info = require("./routes/finance_info");
 const bymember_ship = require("./routes/buy_membership");
+const purchaseMembership = require("./routes/purchaseMemberships");
 const candidates = require("./routes/candidate");
 const withdraw_funds = require("./routes/withdraw_fund");
 const family_member = require("./routes/family_member");
@@ -139,7 +140,8 @@ mongoose
   )
   .then(() => console.log("DB Connected"));
 //all cron job
-const statusCheck = require("./notice/status")
+const statusCheck = require("./notice/status");
+const purchaseMemberships = require("./models/purchaseMemberships");
 
 // middlewares
 app.use(express.json());
@@ -235,6 +237,7 @@ app.use("/api", email_system_template);
 app.use("/api", location);
 app.use("/api", user_membership);
 app.use("/api", buy_user_membership);
+app.use("/api", purchaseMembership);
 app.use("/api", sample_doc);
 // school auth key middleware
 app.use("/api", emailKey);
