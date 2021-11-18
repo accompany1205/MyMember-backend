@@ -15,7 +15,6 @@ exports.create = async (req, res) => {
         res.send({ error: error.message.replace(/\"/g, ""), success: false })
 
     }
-
 }
 
 exports.read = (req, res) => {
