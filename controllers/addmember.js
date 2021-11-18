@@ -522,7 +522,7 @@ exports.active_trial_Std = async (req, res) => {
   }).countDocuments()
 
 
-  var per_page = parseInt(req.body.per_page) || 10
+  var per_page = parseInt(req.params.per_page) || 10
   var page_no = parseInt(req.params.page_no) || 1
   var pagination = {
     limit: per_page,
@@ -553,7 +553,7 @@ exports.leads_Std = async (req, res) => {
     studentType: "Leads"
   }).countDocuments()
 
-  var per_page = parseInt(req.body.per_page) || 10
+  var per_page = parseInt(req.params.per_page) || 10
   var page_no = parseInt(req.params.page_no) || 1
   var pagination = {
     limit: per_page,
@@ -586,7 +586,7 @@ exports.Former_Std = async (req, res) => {
   }).countDocuments()
 
 
-  var per_page = parseInt(req.body.per_page) || 10
+  var per_page = parseInt(req.params.per_page) || 10
   var page_no = parseInt(req.params.page_no) || 1
   var pagination = {
     limit: per_page,
@@ -618,7 +618,7 @@ exports.active_Std = async (req, res) => {
   }).countDocuments()
 
 
-  var per_page = parseInt(req.body.per_page) || 10
+  var per_page = parseInt(req.params.per_page) || 10
   var page_no = parseInt(req.params.page_no) || 1
   var pagination = {
     limit: per_page,
@@ -650,7 +650,7 @@ exports.Former_trial_Std = async (req, res) => {
   }).countDocuments()
 
 
-  var per_page = parseInt(req.body.per_page) || 10
+  var per_page = parseInt(req.params.per_page) || 10
   var page_no = parseInt(req.params.page_no) || 1
   var pagination = {
     limit: per_page,
@@ -680,7 +680,7 @@ exports.camp_Std =async (req, res) => {
     userId: req.params.userId,
     intrested: "Camp"
   }).countDocuments()
-  var per_page = parseInt(req.body.per_page) || 10
+  var per_page = parseInt(req.params.per_page) || 10
   var page_no = parseInt(req.params.page_no) || 1
   var pagination = {
     limit: per_page,
@@ -710,7 +710,7 @@ exports.after_school_Std = async(req, res) => {
     userId: req.params.userId,
     intrested: "After School"
   }).countDocuments()
-  var per_page = parseInt(req.body.per_page) || 10
+  var per_page = parseInt(req.params.per_page) || 10
   var page_no = parseInt(req.params.page_no) || 1
   var pagination = {
     limit: per_page,
