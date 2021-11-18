@@ -1,5 +1,16 @@
 const purchaseMembership = require("../models/purchaseMemberships");
 const _ = require("lodash");
+exports.getpurchaseMembership = async (req, res) => {
+  try {
+    let { userId, memberId } = req.params;
+   const data= await purchaseMembership.findById(memberId, req.body)
+    res.status(200).send({msg:data,success:true})
+  } catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+  }
+};
+
+
 exports.buyMembership = async (req, res) => {
   try {
     let { userId, memberId } = req.params;
@@ -50,10 +61,10 @@ exports.buyMembership = async (req, res) => {
         }
       });
     } else {
-      let obj1={
-        due_status : "paid"
-      }
-      obj=_.extend(obj,obj1)
+      let obj1 = {
+        due_status: "paid",
+      };
+      obj = _.extend(obj, obj1);
       let purchaseData = new purchaseMembership(obj);
 
       purchaseData.save((err, data) => {
@@ -62,8 +73,18 @@ exports.buyMembership = async (req, res) => {
         } else {
           res.status(200).send({ data: data, success: true });
         }
-      });
+      }); 
     }
+  } catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+  }
+};
+
+exports.updatepurchaseMembership = async (req, res) => {
+  try {
+    let { userId, membershipId } = req.params;
+    await purchaseMembership.findByIdAndUpdate(membershipId, req.body)
+    res.status(200).send({msg:"membership updated Successfully",success:true})
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
