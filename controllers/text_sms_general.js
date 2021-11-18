@@ -1,11 +1,12 @@
 const txtKey = require("../models/text_key")
 const textSentSave = require("../models/textSentSave")
+const getText = require("../models/get_text")
 const generalfolder = require("../models/text_general_folder")
 require('dotenv').config()
 // textKey
 // const MessagingResponse = require('twilio').twiml.MessagingResponse
 // exports.recieve =(req,res)=>{
-//  const twiml = new MessagingResponse() 
+//  const twiml = new MessagingResponse()
 //  twiml.messages('hello world')
 //  res.writeHead(200,{'Content-Type':'text/xml'})
 //  res.end(twiml.toString())
@@ -15,25 +16,67 @@ require('dotenv').config()
 // const msgService = 'ISb21aa5fdf2d5a8c60dd25d5dd7389d7f'
 // const client = require('twilio')(asid, authtoken)
 
+// Dummy API to test SMS
+exports.send_message = async (req,res) => {
+    const accountSid = process.env.aid;
+    const authToken = process.env.authkey;
+    const phone = process.env.phone;
+    const toPhone = '+918963993333';
+    const client = await require('twilio')(accountSid, authToken);
+    client.messages.create({
+        body: 'This is test text message', // Dummy message
+        to: toPhone, // Put your phone number
+        from: phone // This is registered number for Twilio
+    }).then((message) => {
+        res.send({msg: 'Text message sent to ' + toPhone});
+        console.log('Message: ', message);
+    }).catch((error) => {
+        res.send({error: 'Failed to send text message to ' + toPhone});
+        console.log('Error: ', error);
+    }).done();
+};
+
+// Incoming Message API to test SMS
+exports.get_message = async (req, res) => {
+    const msg = req.body.hasOwnProperty('Body') ? req.body.Body : 'Failed to receive sms';
+    const from = req.from.hasOwnProperty('From') ? req.from.From : 'Unknown sender';
+    const to =  process.env.phone;
+
+    const obj = {
+        from: from,
+        msg: msg,
+        to:  to,
+    };
+
+    let text = new getText(obj);
+
+    text.save().then(textMessage => {
+        res.send({msg:'text sms sent successfully'})
+    }).catch(error => {
+        res.send({error:'txt msg not send'})
+    });
+
+}
+
 exports.send_sms =(req,res)=>{
     function sendBulkMessages(msg,to,textKey){
         const client = require('twilio')(textKey.ACCOUNT_SID, textKey.AUTH_TOKEN);
-       
-        var numbers = []; 
-        for(i = 0; i < to.length; i++) 
-        { 
-            numbers.push(JSON.stringify({  
-            binding_type: 'sms', address: to[i]})) 
-        } 
-       
-        const notificationOpts = { 
-          toBinding: numbers, 
-          body: msg, 
-        }; 
-       
-         client.notify 
-        .services(textKey.MSG_SERVICE_SID) 
-        .notifications.create(notificationOpts) 
+
+        var numbers = [];
+        for(i = 0; i < to.length; i++)
+        {
+            numbers.push(JSON.stringify({
+            binding_type: 'sms', address: to[i]}))
+        }
+
+        const notificationOpts = {
+          toBinding: numbers,
+          body: msg,
+        };
+
+         client.notify
+        .services(textKey.MSG_SERVICE_SID)
+        .notifications.create(notificationOpts)
         .then((resp)=>{
             var txt = new textSentSave(req.body)
             txt.save((err,txtMsg)=>{
@@ -55,7 +98,7 @@ exports.send_sms =(req,res)=>{
         }).catch((error)=>{
             res.send(error)
         })
-    } 
+    }
     txtKey.findOne({userId:req.params.userId})
     .exec((err,textKey)=>{
         if(err){
@@ -75,7 +118,6 @@ exports.save_sms =(req,res)=>{
         }
         else{
             // var dt = new Date(req.body.schedule_date)
-           
             var obj ={
                 from:req.body.from,
                 to:req.body.to,
@@ -111,7 +153,7 @@ exports.save_sms =(req,res)=>{
     }
   })
 }
-   
+
 
 exports.remove_sms = (req,res)=>{
     textSentSave.deleteOne({_id:req.params.textId},(err,removeText)=>{
