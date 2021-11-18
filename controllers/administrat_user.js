@@ -76,7 +76,7 @@ exports.signin = (req, res) => {
     administrate.findOne({ email },(err, user) => {
         if (err || !user) {
                         return res.status(400).json({
-                error: 'User with that email does not exist. Please signup'
+                 msg:"Username doesnt exist!"
             });
         }
         if(req.body.password === user.password){

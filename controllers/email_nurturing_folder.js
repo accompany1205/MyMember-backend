@@ -1,5 +1,5 @@
 const folderNur = require("../models/email_nurturing_folder");
-const nurturingCat = require('../models/email_nurturing')
+const nurturingCat = require('../models/email_nurturing_Category')
 
 exports.create_folder = (req,res)=>{
     var folderObj = new folderNur(req.body)

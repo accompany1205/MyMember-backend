@@ -31,7 +31,7 @@ exports.create = (req, res) => {
                         })
 
                 }).catch((error) => {
-                    res.send({error:'image url is not create'})
+                    res.send({ error: 'image url is not create' })
                 })
             }
             else {
@@ -71,38 +71,51 @@ exports.program_Info = async (req, res) => {
 };
 exports.update = (req, res) => {
     const program_rank_id = req.params.program_rank_id;
-    manage_rank.updateOne({ _id: program_rank_id }, req.body)
-        .then((result) => {
-            if (req.file) {
-                const cloudenary = require("cloudinary").v2
-                cloudenary.config({
-                    cloud_name: process.env.cloud_name,
-                    api_key: process.env.cloud_api_key,
-                    api_secret: process.env.cloud_api_secret
+    manage_rank.findByIdAndUpdate({ _id: program_rank_id },
+        req.body)
+        .exec((err, data) => {
+            if (err) {
+                res.send({
+                    success: false,
+                    error: "rank is not update"
                 });
-                const path = req.file.path
-                const uniqueFilename = new Date().toISOString()
-                cloudenary.uploader.upload(
-                    path,
-                    { public_id: `program_rank/${uniqueFilename}`, tags: `program_rank` }, // directory and tags are optional
-                    function (err, image) {
-                        if (err) return res.send(err)
-                        const fs = require('fs')
-                        fs.unlinkSync(path)
-                        manage_rank.findByIdAndUpdate(program_rank_id, { $set: { rank_image: image.url } })
-                            .then((response) => {
-                                res.json({ msg: 'program rank is update with image', success: true })
-                            });
-                    }
-                );
             } else {
-                res.send({ msg: 'program rank is update with image', success: true });
-               
+                if (req.file) {
+                    cloudUrl
+                        .imageUrl(req.file)
+                        .then((stdimagUrl) => {
+                            manage_rank.
+                                findByIdAndUpdate(program_rank_id, {
+                                    $set:{
+                                         rank_image: stdimagUrl }
+                                })
+                                .then((response) => {
+                                    res.send({
+                                        msg: " program rank and profile is update",
+                                        success: true
+                                    });
+                                })
+                                .catch((error) => {
+                                    res.send({
+                                        error: "program rank image is not update",
+                                        success: false
+                                    });
+                                });
+                        })
+                        .catch((error) => {
+                            res.send({
+                                success: error  ,
+                                error: "image url is not create"
+                            });
+                        });
+                } else {
+                    res.send({
+                        success: true,
+                        msg: "member is update successfully"
+                    });
+                }
             }
-            // res.send(result);
-        }).catch((err) => {
-            res.send(err);
-        })
+        });
 }
 
 

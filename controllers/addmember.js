@@ -9,6 +9,8 @@ const rank_change = require("../models/change_rank");
 const change_rank = require("../models/change_rank");
 const sentEmail = require("../models/emailSentSave");
 const sgmail = require("sendgrid-v3-node");
+const User = require("../models/user");
+const membershipModal = require('../models/membership')
 
 // const ManyStudents = require('../std.js');
 // const students = require('../std.js');
@@ -513,128 +515,222 @@ exports.read = (req, res) => {
     });
 };
 
-exports.active_trial_Std = (req, res) => {
+exports.active_trial_Std = async (req, res) => {
+  var totalCount = await addmemberModal.find({
+    userId: req.params.userId,
+    studentType: "Active Trial"
+  }).countDocuments()
+
+
+  var per_page = parseInt(req.params.per_page) || 10
+  var page_no = parseInt(req.params.page_no) || 1
+  var pagination = {
+    limit: per_page,
+    skip: per_page * (page_no - 1)
+  }
   addmemberModal
     .find({
       userId: req.params.userId,
       studentType: "Active Trial"
     })
     .populate("membership_details")
+    .limit(pagination.limit)
+    .skip(pagination.skip)
     .exec((err, active_trial) => {
       if (err) {
         res.send({
           error: "active trial student is not found"
         });
       } else {
-        res.send(active_trial);
+        res.send({ active_trial, totalCount: totalCount, success: true });
       }
     });
 };
 
-exports.leads_Std = (req, res) => {
+exports.leads_Std = async (req, res) => {
+  var totalCount = await addmemberModal.find({
+    userId: req.params.userId,
+    studentType: "Leads"
+  }).countDocuments()
+
+  var per_page = parseInt(req.params.per_page) || 10
+  var page_no = parseInt(req.params.page_no) || 1
+  var pagination = {
+    limit: per_page,
+    skip: per_page * (page_no - 1)
+  }
   addmemberModal
     .find({
       userId: req.params.userId,
       studentType: "Leads"
     })
     .populate("membership_details")
+    .limit(pagination.limit)
+    .skip(pagination.skip)
+
     .exec((err, lead) => {
       if (err) {
         res.send({
           error: "leads student is not found"
         });
       } else {
-        res.send(lead);
+        res.send({ lead, totalCount: totalCount, success: true });
       }
     });
 };
 
-exports.Former_Std = (req, res) => {
+exports.Former_Std = async (req, res) => {
+  var totalCount = await addmemberModal.find({
+    userId: req.params.userId,
+    studentType: "Former Student"
+  }).countDocuments()
+
+
+  var per_page = parseInt(req.params.per_page) || 10
+  var page_no = parseInt(req.params.page_no) || 1
+  var pagination = {
+    limit: per_page,
+    skip: per_page * (page_no - 1)
+  }
   addmemberModal
     .find({
       userId: req.params.userId,
       studentType: "Former Student"
     })
     .populate("membership_details")
+    .limit(pagination.limit)
+    .skip(pagination.skip)
     .exec((err, former) => {
       if (err) {
         res.send({
           error: "former student is not found"
         });
       } else {
-        res.send(former);
+        res.send({ former, totalCount: totalCount, success: true });
       }
     });
 };
 
-exports.active_Std = (req, res) => {
+exports.active_Std = async (req, res) => {
+  var totalCount = await addmemberModal.find({
+    userId: req.params.userId,
+    studentType: "Active Student"
+  }).countDocuments()
+
+
+  var per_page = parseInt(req.params.per_page) || 10
+  var page_no = parseInt(req.params.page_no) || 1
+  var pagination = {
+    limit: per_page,
+    skip: per_page * (page_no - 1)
+  }
   addmemberModal
     .find({
       userId: req.params.userId,
       studentType: "Active Student"
     })
     .populate("membership_details")
+    .limit(pagination.limit)
+    .skip(pagination.skip)
     .exec((err, active_std) => {
       if (err) {
         res.send({
           error: "active student is not found"
         });
       } else {
-        res.send(active_std);
+        res.send({ active_std, totalCount: totalCount, success: true });
       }
     });
 };
 
-exports.Former_trial_Std = (req, res) => {
+exports.Former_trial_Std = async (req, res) => {
+  var totalCount = await addmemberModal.find({
+    userId: req.params.userId,
+    studentType: "Former Trial"
+  }).countDocuments()
+
+
+  var per_page = parseInt(req.params.per_page) || 10
+  var page_no = parseInt(req.params.page_no) || 1
+  var pagination = {
+    limit: per_page,
+    skip: per_page * (page_no - 1)
+  }
   addmemberModal
     .find({
       userId: req.params.userId,
       studentType: "Former Trial"
     })
     .populate("membership_details")
+    .limit(pagination.limit)
+    .skip(pagination.skip)
     .exec((err, former_trial) => {
       if (err) {
         res.send({
           error: "former trial student is not found"
         });
       } else {
-        res.send(former_trial);
+        res.send({ former_trial, totalCount: totalCount, success: true });
       }
     });
 };
 
-exports.camp_Std = (req, res) => {
+exports.camp_Std =async (req, res) => {
+  var totalCount = await addmemberModal.find({
+    userId: req.params.userId,
+    intrested: "Camp"
+  }).countDocuments()
+  var per_page = parseInt(req.params.per_page) || 10
+  var page_no = parseInt(req.params.page_no) || 1
+  var pagination = {
+    limit: per_page,
+    skip: per_page * (page_no - 1)
+  }
   addmemberModal
     .find({
       userId: req.params.userId,
       intrested: "Camp"
     })
     .populate("membership_details", "mactive_date expiry_date")
+    .limit(pagination.limit)
+    .skip(pagination.skip)
     .exec((err, camp) => {
       if (err) {
         res.send({
           error: "camp student not found"
         });
       } else {
-        res.send(camp);
+        res.send({ camp, totalCount: totalCount, success: true });
       }
     });
 };
 
-exports.after_school_Std = (req, res) => {
+exports.after_school_Std = async(req, res) => {
+  var totalCount = await addmemberModal.find({
+    userId: req.params.userId,
+    intrested: "After School"
+  }).countDocuments()
+  var per_page = parseInt(req.params.per_page) || 10
+  var page_no = parseInt(req.params.page_no) || 1
+  var pagination = {
+    limit: per_page,
+    skip: per_page * (page_no - 1)
+  }
   addmemberModal
     .find({
       userId: req.params.userId,
       intrested: "After School"
     })
     .populate("membership_details")
+    .limit(pagination.limit)
+    .skip(pagination.skip)
     .exec((err, after_school) => {
       if (err) {
         res.send({
           error: "after school student not found"
         });
       } else {
-        res.send(after_school);
+        res.send({ after_school, totalCount: totalCount, success: true  });
       }
     });
 };
@@ -919,18 +1015,22 @@ exports.trial_this_month = (req, res) => {
 
 //need to cha
 exports.collectionModify = async (req, res) => {
-  // let userId = req.body.userId;
+  //619155201e2a465ca222dfe0
   try {
-    // let schoolData = await addmemberModal.find(userId);
-    // schoolData.forEach(async element => {
-    //   let id = element._id;
-    //   if (element.castId === null) {
-    //     let data = await addmemberModal.findByIdAndUpdate(id, {$set: {customId: " "}})
-    //   }
-    // });
-    await addmemberModal.updateMany({}, {$set: {isRecommended: false}})
-  //  await addmemberModal.find({isRecommended :{$ne: null}})
-    res.json({msg:'success'})
+    let users = await User.find();
+    users.forEach(async element => {
+      if(element._id !== "619155201e2a465ca222dfe0"){
+        var membershipObj = new membershipModal(
+          {"isfavorite":0,"membership_name":"BBC 33 Monthly E","color":"#969696","membership_type":"Taekwondo","duration_time":"33","duration_type":"month","total_price":6897,"down_payment":418,"payment_type":"monthly","balance":6479,"due_every":"1","userId":element._id});
+        var member = await membershipObj.save();
+        console.log("member",member)
+      }
+    });
+
+    res.json({ 
+      msg: 'success',
+      users
+    })
   } catch (err) {
     console.log(err)
   }
@@ -1154,13 +1254,13 @@ exports.updatemember = (req, res) => {
                 .then((response) => {
                   res.send({
                     msg: "member details and profile is update",
-                    success:true
+                    success: true
                   });
                 })
                 .catch((error) => {
                   res.send({
                     error: "student image is not update",
-                    success:false
+                    success: false
                   });
                 });
             })

@@ -54,6 +54,7 @@ const psubcategory = require("./routes/psubcategory");
 const add_membership = require("./routes/membership");
 const finance_info = require("./routes/finance_info");
 const bymember_ship = require("./routes/buy_membership");
+const purchaseMembership = require("./routes/purchaseMemberships");
 const candidates = require("./routes/candidate");
 const withdraw_funds = require("./routes/withdraw_fund");
 const family_member = require("./routes/family_member");
@@ -73,11 +74,11 @@ const support = require("./routes/support");
 const misucall_appoinment = require("./routes/misucall_appoinment");
 const misucall_notes = require("./routes/misucall_notes");
 const all_appoinment = require("./routes/all_appoinment");
-const email_compose = require("./routes/email_compose");
+const email_compose = require("./routes/email_compose_Category");
 const email_compose_folder = require("./routes/email_compose_folder");
-const email_nurturing = require("./routes/email_nurturing");
+const email_nurturing = require("./routes/email_nurturing_Category");
 const email_nurturing_folder = require("./routes/email_nurturing_folder");
-const email_library = require("./routes/email_library");
+const email_library = require("./routes/email_library_Category");
 const email_library_folder = require("./routes/email_library_folder");
 const compose_template = require("./routes/compose_template");
 const nurturing_template = require("./routes/nurturing_template");
@@ -100,7 +101,7 @@ const student_text = require("./routes/std_text_list");
 
 //admin routes
 const manage_user = require("./routes/admin/manage_user");
-const email_system = require("./routes/admin/email_system");
+const email_system = require("./routes/admin/email_system_Category");
 const email_system_folder = require("./routes/admin/email_system_folder");
 const email_system_template = require("./routes/admin/email_system_template");
 const location = require("./routes/admin/settings/location");
@@ -141,7 +142,8 @@ mongoose
   )
   .then(() => console.log("DB Connected"));
 //all cron job
-const statusCheck = require("./notice/status")
+const statusCheck = require("./notice/status");
+const purchaseMemberships = require("./models/purchaseMemberships");
 
 // middlewares
 app.use(express.json());
@@ -238,6 +240,7 @@ app.use("/api", email_system_template);
 app.use("/api", location);
 app.use("/api", user_membership);
 app.use("/api", buy_user_membership);
+app.use("/api", purchaseMembership);
 app.use("/api", sample_doc);
 // school auth key middleware
 app.use("/api", emailKey);

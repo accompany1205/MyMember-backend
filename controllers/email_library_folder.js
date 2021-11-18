@@ -1,5 +1,5 @@
 const libFolder = require("../models/email_library_folder");
-const libraryCat = require('../models/email_library')
+const libraryCat = require('../models/email_library_Category')
 
 exports.create_folder = (req,res)=>{
     var folderObj = new libFolder(req.body)
