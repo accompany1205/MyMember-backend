@@ -95,7 +95,9 @@ exports.getData = (req, res) => {
 exports.list_template = (req, res) => {
   nurturingFolderModal
     .findById(req.params.folderId)
-    .populate({ path: "template", options: { sort: { templete_Id: 1 } } })
+    .populate({ path: "template",
+    match: { is_Sent: false ,email_type:'schedule'},
+     options: { sort: { templete_Id: 1 } } })
     .exec((err, template_data) => {
       if (err) {
         res.send({ error: "nurturing template list not found" });

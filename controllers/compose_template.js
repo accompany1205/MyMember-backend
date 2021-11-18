@@ -231,7 +231,11 @@ exports.swapAndUpdate_template = async (req, res) => {
 exports.list_template = async (req, res) => {
   compose_folder
     .findById(req.params.folderId)
-    .populate({ path: "template", options: { sort: { templete_Id: 1 } } })
+    .populate({
+      path: "template",
+      match: { is_Sent: false ,email_type:'schedule'},
+      options: { sort: { templete_Id: 1 } },
+    })
     .exec((err, template_data) => {
       if (err) {
         res.send({ error: "Compose template list not found" });
@@ -296,8 +300,12 @@ exports.add_template = async (req, res) => {
     var nD = moment(date_iso_follow).format("MM/DD/YYYY");
     saveEmailTemplate(obj)
       .then((data) => {
+        console.log(data, folderId);
         compose_folder
-          .findByIdAndUpdate(folderId, { $push: { template: data._id } })
+          .findOneAndUpdate(
+            { _id: folderId },
+            { $push: { template: data._id } }
+          )
           .then((data) => {
             res.send({
               msg: `Email scheduled  Successfully on ${sent_date}`,
@@ -360,10 +368,10 @@ var cronFucntionality = async () => {
             }
           })
           .catch((err) => {
-            Error.message(err)
+            Error.message(err);
           });
       } else {
-        throw new Error('No email Scheduled for this Email')
+        throw new Error("No email Scheduled for this Email");
       }
     }
   });
@@ -373,9 +381,6 @@ var cronFucntionality = async () => {
 cron.schedule(`*/5 * * * *`, () => {
   cronFucntionality();
 });
-
-
-
 
 exports.update_template = (req, res) => {
   all_temp.updateOne(

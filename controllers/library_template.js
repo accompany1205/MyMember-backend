@@ -48,7 +48,9 @@ exports.swapAndUpdate_template = async (req, res) => {
 
 exports.list_template = (req, res) => {
     library_folder.findById(req.params.folderId)
-        .populate({ path: 'template', options: { sort: { templete_Id: 1 } } })
+        .populate({ path: 'template',
+      match: { is_Sent: false ,email_type:'schedule'},
+         options: { sort: { templete_Id: 1 } } })
         .exec((err, template_data) => {
             if (err) {
                 res.send({ error: 'library template list not found' })
