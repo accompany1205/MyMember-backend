@@ -83,7 +83,6 @@ exports.getData = (req, res) => {
         }
     ]).exec((err, resp) => {
         if (err) {
-            console.log(resp)
             res.json({ code: 400, msg: 'data not found' })
         }
         else {
@@ -234,82 +233,79 @@ exports.add_template = async (req, res) => {
         templete_Id
     };
 
+              // Formated Date //
     sent_date = moment(sent_date).format('YYYY-MM-DD')
-    let scheduleDateOfMonth = moment(sent_date).format('DD')
-    let scheduleMonth = moment(sent_date).format('MM')
-    let scheduleDay = moment(sent_date).format('dddd')
+    // let scheduleDateOfMonth = moment(sent_date).format('DD')
+    // let scheduleMonth = moment(sent_date).format('MM')
+    // let scheduleDay = moment(sent_date).format('dddd')
 
     if (req.body.follow_up === 0) {
         var date_iso = timefun(req.body.sent_date, req.body.sent_time)
         obj.DateT = date_iso;
-    }
-
-    else if (req.body.follow_up < 0) {
+    } else if (req.body.follow_up < 0) {
         res.send({ code: 400, msg: 'follow up not set less then 0' })
-    }
-
-    else {
+    } else {
         var date_iso_follow = timefun(req.body.sent_date, req.body.sent_time)
         date_iso_follow.setDate(date_iso_follow.getDate() + req.body.follow_up);
         var nD = moment(date_iso_follow).format('MM/DD/YYYY')
-
-        emailDetail = new all_temp(obj)
-
-        emailDetail.save((er, data) => {
-            if (er) {
-                res.send({ error: "Email not saved", success: false })
-            }
-            else {
-             
-                mailId = data.id
-                try {
-                    cron.schedule(`59 23 ${scheduleDateOfMonth} ${scheduleMonth} ${scheduleDay}`, async function () {
-                        const emailData = {
-                            sendgrid_key: process.env.SENDGRID_API_KEY,
-                            to: req.body.to,
-                            from_email: req.body.from,
-                            from_name: 'noreply@gmail.com'
-                        };
-
-                        emailData.subject = subject;
-                        emailData.content = template;
-                        sgMail.send_via_sendgrid(emailData).then((data) => {
-                            all_temp.findByIdAndUpdate(mailId, { is_Sent: true }, async (er, data) => {
-                                if (er) {
-                                    res.send({ error: "Email not saved", success: false })
-                                }
-                                else {
-                                    await compose_folder.findOneAndUpdate(folderId, { $push: { template: data._id } }, (er, data) => {
-                                        if (er) {
-                                            res.send({ error: 'compose template details is not add in folder', success: false })
-                                        }
-                                        else {
-
-                                            res.send({ msg: 'Email sent Successfully', success: true });
-
-                                        }
-                                    })
-                                }
-                            }
-                            )
-                        }).catch((err) => {
-                            res.send({ error: err.message.replace(/\"/g, ""), success: false })
-                        })
-
-                    })
-                }
-                catch (err) {
-                    res.send({ error: 'email details is not save', success: false })
-
-                }
-
-            }
+        saveEmailTemplate(obj)
+        .then((data) => {
+            compose_folder.findByIdAndUpdate(folderId, { $push: { template: data._id }})
+             .then((data)=>{
+                res.send({ msg: `Email scheduled  Successfully on ${sent_date}`, success: true });
+            }).catch(er=>{
+               res.send( { error: 'compose template details is not add in folder', success: false })})
+        })
+        .catch((ex) => {
+            res.send({
+                success: false,
+                msg: ex.message              
+            })
         })
     }
-
-
 }
 
+function saveEmailTemplate(obj) {
+    return new Promise((resolve, reject) => {
+        let emailDetail = new all_temp(obj)
+        emailDetail.save((err, data) => {
+            if (err) {
+                reject({data: "Data not save in Database!", success: false})
+            } else {
+                resolve(data)
+            } 
+        })
+    })
+}
+
+// function sendEmail(req, mailId, folderId) {
+//     return new Promise((resolve, reject) => {
+//         const emailData = {
+//             sendgrid_key: process.env.SENDGRID_API_KEY,
+//             to: req.body.to,
+//             from_email: process.env.from_email,
+//             from_name: 'noreply@gmail.com'
+//         };
+
+//         emailData.subject = req.body.subject;
+//         emailData.content = req.body.template;
+//         sgMail.send_via_sendgrid(emailData).then((data) => {
+//             all_temp.findByIdAndUpdate(mailId, { is_Sent: true }, async (er, data) => {
+//                 if (er) {
+//                     reject({ error: "Email not saved", success: false })
+//                 } else {
+//                     await compose_folder.findOneAndUpdate(folderId, { $push: { template: data._id } }, (er, data) => {
+//                         if (er) {
+//                             reject({ error: 'compose template details is not add in folder', success: false })
+//                         } else {
+//                             resolve({ msg: 'Email sent Successfully', success: true });
+//                         }
+//                     })
+//                 }
+//             })
+//         })
+//     })
+// }
 
 exports.update_template = (req, res) => {
     all_temp.updateOne({ _id: req.params.templateId }, req.body, (err, updateTemp) => {

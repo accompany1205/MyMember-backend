@@ -675,38 +675,62 @@ exports.Former_trial_Std = async (req, res) => {
     });
 };
 
-exports.camp_Std = (req, res) => {
+exports.camp_Std =async (req, res) => {
+  var totalCount = await addmemberModal.find({
+    userId: req.params.userId,
+    intrested: "Camp"
+  }).countDocuments()
+  var per_page = parseInt(req.body.per_page) || 10
+  var page_no = parseInt(req.params.page_no) || 1
+  var pagination = {
+    limit: per_page,
+    skip: per_page * (page_no - 1)
+  }
   addmemberModal
     .find({
       userId: req.params.userId,
       intrested: "Camp"
     })
     .populate("membership_details", "mactive_date expiry_date")
+    .limit(pagination.limit)
+    .skip(pagination.skip)
     .exec((err, camp) => {
       if (err) {
         res.send({
           error: "camp student not found"
         });
       } else {
-        res.send(camp);
+        res.send({ camp, totalCount: totalCount, success: true });
       }
     });
 };
 
-exports.after_school_Std = (req, res) => {
+exports.after_school_Std = async(req, res) => {
+  var totalCount = await addmemberModal.find({
+    userId: req.params.userId,
+    intrested: "After School"
+  }).countDocuments()
+  var per_page = parseInt(req.body.per_page) || 10
+  var page_no = parseInt(req.params.page_no) || 1
+  var pagination = {
+    limit: per_page,
+    skip: per_page * (page_no - 1)
+  }
   addmemberModal
     .find({
       userId: req.params.userId,
       intrested: "After School"
     })
     .populate("membership_details")
+    .limit(pagination.limit)
+    .skip(pagination.skip)
     .exec((err, after_school) => {
       if (err) {
         res.send({
           error: "after school student not found"
         });
       } else {
-        res.send(after_school);
+        res.send({ after_school, totalCount: totalCount, success: true  });
       }
     });
 };
