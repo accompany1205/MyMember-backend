@@ -1,15 +1,17 @@
 const purchaseMembership = require("../models/purchaseMemberships");
 const _ = require("lodash");
+const createEMIRecord = require("../Services/createEMi");
+const cron = require("node-cron");
+const moment = require("moment");
 exports.getpurchaseMembership = async (req, res) => {
   try {
     let { userId, memberId } = req.params;
-   const data= await purchaseMembership.findById(memberId, req.body)
-    res.status(200).send({msg:data,success:true})
+    const data = await purchaseMembership.findById(memberId, req.body);
+    res.status(200).send({ msg: data, success: true });
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
 };
-
 
 exports.buyMembership = async (req, res) => {
   try {
@@ -28,19 +30,10 @@ exports.buyMembership = async (req, res) => {
     };
 
     if (obj.isEMI) {
-      let emi_record = [
-        {
-          created_by: "stafName",
-          date: "2/20/2022",
-          amount: "$400",
-        },
-        {
-          created_by: "stafName",
-          date: "2/23/2020",
-          amount: "$400",
-        },
-      ];
-      obj.emi_record = emi_record;
+      //   paymentArr = new Array(duration).fill().map((e, i) => {
+      //     i++
+      //     return _.invert({ false: `${i}_installment` })
+      // });
 
       let obj1 = {
         paymentType: req.body.paymentType,
@@ -48,6 +41,15 @@ exports.buyMembership = async (req, res) => {
         number_of_emi: req.body.number_of_emi,
         down_payment: req.body.down_payment,
       };
+      // console.log(createEMIRecord(5, 110, "2021-05-02", "staff", "monthly"));
+      // ScheduleDateArray(active_date, obj1.number_of_emi, Amount, paymentArr, paymentMode)
+      obj.emi_record = createEMIRecord(
+        obj1.number_of_emi,
+        obj.total_amount,
+        obj.active_date,
+        obj.created_by,
+        obj1.emi_type
+      );
 
       obj = _.extend(obj, obj1);
 
@@ -73,7 +75,7 @@ exports.buyMembership = async (req, res) => {
         } else {
           res.status(200).send({ data: data, success: true });
         }
-      }); 
+      });
     }
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
@@ -83,9 +85,28 @@ exports.buyMembership = async (req, res) => {
 exports.updatepurchaseMembership = async (req, res) => {
   try {
     let { userId, membershipId } = req.params;
-    await purchaseMembership.findByIdAndUpdate(membershipId, req.body)
-    res.status(200).send({msg:"membership updated Successfully",success:true})
+    await purchaseMembership.findByIdAndUpdate(membershipId, req.body);
+    res
+      .status(200)
+      .send({ msg: "membership updated Successfully", success: true });
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
 };
+
+async function cronForEmiStatus() {
+  current_Date = moment().format("YYYY-MM-DD");
+  const EmiData = await purchaseMembership.find({ isEMI: true });
+  EmiData.forEach((element) => {
+    let EmiArr = element.emi_record;
+    EmiArr.forEach(async (i) => {
+      if (moment(current_Date).isAfter(i.date)) {
+        await purchaseMembership.updateOne(
+          { _id: element._id, "emi_record.date": i.date },
+          { $set: { "emi_record.$.Status": "overdue" } }
+        );
+      }
+    });
+  });
+}
+cronForEmiStatus();
