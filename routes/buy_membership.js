@@ -9,9 +9,9 @@ const { requireSignin,isAuth,verifySchool } = require("../controllers/auth");
 router.get("/membership/buy_membership_info_BymemberShipId/:userId/:membershipID",requireSignin ,membership_InfoById)
 
 router.get("/membership/buy_membership_info/:userId/:studentId",requireSignin,members_info)
-router.post("/membership/buy_membership/:userId/:studentId",requireSignin,create);
-router.post("/membership/buy_membership/:userId",requireSignin,buyMembership);
-router.put("/membership/update_buy_memberships/:userId/:membershipId",requireSignin,update);
+router.post("/membership/buy_membership/:userId/:studentId",requireSignin,buyMembership);
+// router.post("/membership/buy_membership/:userId",requireSignin,buyMembership);
+router.put("/membership/update_buy_memberships/:userId/:membershipId/:type",requireSignin,update);
 router.delete("/membership/delete_buy_membership/:userId/:membershipId",requireSignin,remove);
 router.put("/membership/update_buy_memberships_Payments/:userId/:membershipId",requireSignin,updatePayments);
 

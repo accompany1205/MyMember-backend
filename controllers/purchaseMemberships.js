@@ -1,5 +1,6 @@
 const purchaseMembership = require("../models/purchaseMemberships");
 const _ = require("lodash");
+var addmemberModal = require("../models/addmember");
 const createEMIRecord = require("../Services/createEMi");
 const cron = require("node-cron");
 const moment = require("moment");
@@ -59,7 +60,14 @@ exports.buyMembership = async (req, res) => {
         if (err) {
           res.send({ error: err.message.replace(/\"/g, ""), success: false });
         } else {
-          res.status(200).send({ data: data, success: true });
+          addmemberModal.findByIdAndUpdate(memberId ,{ status: "active" }, (err, stdData) => {
+            if (err) {
+              res.send({ error: "membership not activated" });
+            } else {
+              res.status(200).send({ data: data, success: true });
+            }
+          });
+          // res.status(200).send({ data: data, success: true });
         }
       });
     } else {
@@ -73,7 +81,14 @@ exports.buyMembership = async (req, res) => {
         if (err) {
           res.send({ error: err.message.replace(/\"/g, ""), success: false });
         } else {
-          res.status(200).send({ data: data, success: true });
+      
+          addmemberModal.findByIdAndUpdate(memberId ,{ status: "active" }, (err, stdData) => {
+            if (err) {
+              res.send({ error: "membership not activated" });
+            } else {
+              res.status(200).send({ data: data, success: true });
+            }
+          });
         }
       });
     }
@@ -94,19 +109,3 @@ exports.updatepurchaseMembership = async (req, res) => {
   }
 };
 
-async function cronForEmiStatus() {
-  current_Date = moment().format("YYYY-MM-DD");
-  const EmiData = await purchaseMembership.find({ isEMI: true });
-  EmiData.forEach((element) => {
-    let EmiArr = element.emi_record;
-    EmiArr.forEach(async (i) => {
-      if (moment(current_Date).isAfter(i.date)) {
-        await purchaseMembership.updateOne(
-          { _id: element._id, "emi_record.date": i.date },
-          { $set: { "emi_record.$.Status": "overdue" } }
-        );
-      }
-    });
-  });
-}
-cronForEmiStatus();
