@@ -12,30 +12,25 @@ const Joi = require('@hapi/joi')
 
 exports.addRank = async (req, res) => {
 
-    let studentInfoRankModal = Joi.object({
-        programName: Joi.string().max(32).required(),
-        rank_name: Joi.string().required()
-        
-    })
     try {
-        await studentInfoRankModal.validateAsync(req.body);
         const studentId = req.params.studentId
-        const Crank = req.body.rank_name
-        const Nrank = req.body.next_rank
+        const Crank = req.body.current_rank_name
+        const Nrank = req.body.next_rank_name
         const program = req.body.programName
-        const data = await program_rank.findOne({ rank_name: req.body.rank_name }, { _id: 0, rank_image: 1, rank_name: 1, day_to_ready: 1 })
-        const recommedtTest = await RecommendedForTest.findOne({"studentId":studentId})
+        const data = await program_rank.findOne({ rank_name: Crank }, { _id: 0, rank_image: 1, rank_name: 1, day_to_ready: 1 })
+        const data1 = await program_rank.findOne({ rank_name: Nrank }, { _id: 0, rank_image: 1, rank_name: 1, day_to_ready: 1 })
+        const recommedtTest = await RecommendedForTest.findOne({"studentId":studentId,"isDeleted":false})
         if(recommedtTest !== null){
-            const recommedtTest = await RecommendedForTest.findOneAndUpdate({"studentId":studentId}, {"current_rank":Crank, "next_rank":Nrank, "program":program})
+            await RecommendedForTest.findOneAndUpdate({"studentId":studentId, "isDeleted":false}, {"current_rank_name":Crank, "next_rank_name":Nrank,"current_rank_img": data.rank_image,"next_rank_img":data1.rank_image,"program":program})
         }
-        const registerTest = await RegisterdForTest.findOne({"studentId":studentId})
+        const registerTest = await RegisterdForTest.findOne({"studentId":studentId, "isDeleted":false})
         if(registerTest !== null){
-            const registerTest = await RegisterdForTest.findOneAndUpdate({"studentId":studentId}, {"current_rank":Crank, "next_rank":Nrank, "program":program})
+            await RegisterdForTest.findOneAndUpdate({"studentId":studentId,"isDeleted":false}, {"current_rank_name":Crank, "next_rank_name":Nrank,"current_rank_img": data.rank_image,"next_rank_img":data1.rank_image,"program":program})
         }
-        const student = await Member.findOneAndUpdate({"studentId":studentId}, {current_rank_name: Crank, current_rank_img:data.rank_image})
+        await Member.findOneAndUpdate({"studentId":studentId}, {current_rank_name: Crank, next_rank_name: Nrank, current_rank_img:data.rank_image,next_rank_img: data1.rank_image, program:program});
         const resp = new student_info_Rank({
-            programName: req.body.programName,
-            rank_name: req.body.rank_name,
+            programName: program,
+            rank_name: Crank,
             day_to_ready: data.day_to_ready,
             rank_image: data.rank_image,
             studentId: studentId
@@ -80,18 +75,21 @@ exports.updateRank = async (req, res) => {
         const studentId = req.params.studentId;
         const cRank = req.body.current_rank;
         const nRank = req.body.next_rank;
-        const program = req.body.program;
+        const program = req.body.programName;
         const data1 = await program_rank.findOne({ rank_name: cRank }, { _id: 0, rank_image: 1, rank_name: 1, day_to_ready: 1 })
         const data2 = await program_rank.findOne({ rank_name: nRank }, { _id: 0, rank_image: 1, rank_name: 1, day_to_ready: 1 })
-        await student_info_Rank.findByIdAndUpdate(rankId, { $set: {rank_name:cRank} })
-        const student = await Member.findOneAndUpdate({"studentId":studentId}, {current_rank_name: cRank, current_rank_img:data1.rank_image});
-        const recommedtTest = await RecommendedForTest.findOne({"studentId":studentId})
-        if(recommedtTest !== null){
-            const recommedtTest = await RecommendedForTest.findOneAndUpdate({"studentId":studentId}, {"current_rank":cRank, "next_rank":Nrank, "program":program})
+        if(!data1.rank_image || !data2.rank_image){
+            throw new Error("Either Current-Rank or Next-Rank don't have rank Image")
         }
-        const registerTest = await RegisterdForTest.findOne({"studentId":studentId})
+        await student_info_Rank.findOneAndUpdate({_id:rankId,studentId:studentId}, { $set: {rank_name:cRank, rank_image:data1.rank_image, programName:program} })
+        await Member.findOneAndUpdate({"studentId":studentId}, {current_rank_name: cRank, current_rank_img:data1.rank_image, program:program, });
+        const recommedtTest = await RecommendedForTest.findOne({"studentId":studentId, isDeleted:false})
+        if(recommedtTest !== null){
+            await RecommendedForTest.findOneAndUpdate({"studentId":studentId,isDeleted:false}, {"current_rank_name":cRank, "next_rank_name":nRank, "current_rank_img": data1.rank_image,"next_rank_img":data2.rank_image,"program":program })
+        }
+        const registerTest = await RegisterdForTest.findOne({"studentId":studentId, isDeleted:false})
         if(registerTest !== null){
-            const registerTest = await RegisterdForTest.findOneAndUpdate({"studentId":studentId}, {"current_rank":data1.rank_name, "next_rank":data2.rank_name, "program":program})
+             await RegisterdForTest.findOneAndUpdate({"studentId":studentId,isDeleted:false}, {"current_rank":data1.rank_name, "next_rank":data2.rank_name, "program":program})
         }
         res.status(200).send({ message: 'rank_update_history is updated Successfully', success: true })
 

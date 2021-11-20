@@ -367,7 +367,7 @@ var cronFucntionality = async () => {
             }
           })
           .catch((err) => {
-            Error.message(err);
+            console.error(err.message)
           });
       } else {
         throw new Error("No email Scheduled for this Email");
