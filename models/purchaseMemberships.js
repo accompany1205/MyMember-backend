@@ -41,11 +41,6 @@ const paidmembershipSchema = new schema(
       type: Number,
     },
     // (based on(total_amount - down_payment) / number of(month / week))
-    isEMI: {
-      type: Boolean,
-      default: false,
-      required:true
-    },
     active_date: {
       type: String,
       required: true,
