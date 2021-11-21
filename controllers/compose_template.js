@@ -6,6 +6,8 @@ const sgMail = require("sendgrid-v3-node");
 const moment = require("moment");
 const cron = require("node-cron");
 const axios = require("axios");
+const cloudUrl = require("../gcloud/imageUrl");
+const ObjectId = require('mongodb').ObjectId;
 // compose template
 
 function timefun(sd, st) {
@@ -26,14 +28,14 @@ function timefun(sd, st) {
 
 exports.getData = (req, res) => {
   let options = {
-      timeZone: "Asia/Kolkata",
-      hour: "numeric",
-      year: "numeric",
-      month: "numeric",
-      day: "numeric",
-      minute: "numeric",
-      second: "numeric",
-    },
+    timeZone: "Asia/Kolkata",
+    hour: "numeric",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    minute: "numeric",
+    second: "numeric",
+  },
     formatter = new Intl.DateTimeFormat([], options);
 
   var a = formatter.format(new Date());
@@ -232,7 +234,7 @@ exports.list_template = async (req, res) => {
     .findById(req.params.folderId)
     .populate({
       path: "template",
-      match: { is_Sent: false ,email_type:'schedule'},
+      match: { is_Sent: false, email_type: 'schedule' },
       options: { sort: { templete_Id: 1 } },
     })
     .exec((err, template_data) => {
@@ -280,8 +282,16 @@ exports.add_template = async (req, res) => {
     userId,
     folderId,
     templete_Id,
+    attachments
   };
-
+  const promises = []
+  if (req.files) {
+    (req.files).map(file => {
+      promises.push(cloudUrl.imageUrl(file))
+    });
+    var attachments = await Promise.all(promises);
+  }
+  obj.attachments = attachments
   // Formated Date //
   sent_date = moment(sent_date).format("YYYY-MM-DD");
   // let scheduleDateOfMonth = moment(sent_date).format('DD')
@@ -346,15 +356,19 @@ var cronFucntionality = async () => {
   scheduledListing.forEach(async (ele) => {
     let sentDate = ele.sent_date;
     let mailId = ele._id;
+    ele.attachments.map(() => {
+
+    })
     let currentDate = moment().format("YYYY-MM-DD");
     if (sentDate === currentDate && !ele.is_Sent) {
       const emailData = {
         sendgrid_key: process.env.SENDGRID_API_KEY,
         to: ele.to,
         from_email: process.env.from_email,
-        from_name: "noreply@gmail.com",
+        //from_name: "noreply@gmail.com",
         subject: ele.subject,
         content: ele.template,
+        //attachments:ele.attachments
       };
       if (ele.is_Sent === false) {
         sgMail
@@ -363,11 +377,11 @@ var cronFucntionality = async () => {
             try {
               await all_temp.findByIdAndUpdate(mailId, { is_Sent: true });
             } catch (err) {
-              Error.message(err);
+              throw new Error("Mail status not updated", err)
             }
           })
           .catch((err) => {
-            Error.message(err);
+            throw new Error("Mail not sent", err)
           });
       } else {
         throw new Error("No email Scheduled for this Email");
@@ -418,12 +432,28 @@ exports.remove_template = (req, res) => {
   });
 };
 
-exports.multipal_temp_remove = (req, res) => {
-  all_temp.deleteMany({ _id: req.body.tempId }).exec((err, resp) => {
-    if (err) {
-      res.json({ code: 400, msg: "templates not remove" });
-    } else {
-      res.json({ code: 200, msg: "template is remove successfully" });
+exports.multipal_temp_remove = async (req, res) => {
+  try {
+    const folderId = req.params.folderId;
+    const templateIds = req.body;
+    const promises = [];
+    for (let id of templateIds) {
+      promises.push(all_temp.remove({ _id: id }));
+      compose_folder.updateOne(
+        { _id: folderId },
+        { $pull: { template: ObjectId(id) } }).then((err, res) => {
+          if (err) {
+            throw new Error('folder not updated')
+          }
+        })
     }
-  });
+    Promise.all(promises);
+    res.send({
+      msg: "successFully removed all templates",
+      success: true
+    });
+  } catch (err) {
+    throw new Error(err);
+  }
+
 };

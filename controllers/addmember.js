@@ -1015,25 +1015,28 @@ exports.trial_this_month = (req, res) => {
 
 //need to cha
 exports.collectionModify = async (req, res) => {
-  //619155201e2a465ca222dfe0
-  try {
-    let users = await User.find();
-    users.forEach(async element => {
-      if(element._id !== "619155201e2a465ca222dfe0"){
-        var membershipObj = new membershipModal(
-          {"isfavorite":0,"membership_name":"BBC 33 Monthly E","color":"#969696","membership_type":"Taekwondo","duration_time":"33","duration_type":"month","total_price":6897,"down_payment":418,"payment_type":"monthly","balance":6479,"due_every":"1","userId":element._id});
-        var member = await membershipObj.save();
-        console.log("member",member)
-      }
-    });
 
-    res.json({ 
-      msg: 'success',
-      users
-    })
-  } catch (err) {
-    console.log(err)
-  }
+  let LittleTiger =  []
+
+  // membership Scrip
+  // try {
+  //   let users = await User.find();
+  //   users.forEach(async element => {
+  //     if(element._id !== "619155201e2a465ca222dfe0"){
+  //       var membershipObj = new membershipModal(
+  //         {"isfavorite":0,"membership_name":"BBC 33 Monthly E","color":"#969696","membership_type":"Taekwondo","duration_time":"33","duration_type":"month","total_price":6897,"down_payment":418,"payment_type":"monthly","balance":6479,"due_every":"1","userId":element._id});
+  //       var member = await membershipObj.save();
+  //       console.log("member",member)
+  //     }
+  //   });
+
+  //   res.json({ 
+  //     msg: 'success',
+  //     users
+  //   })
+  // } catch (err) {
+  //   console.log(err)
+  // }
 }
 
 exports.birth_next_month = (req, res) => {

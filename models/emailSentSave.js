@@ -75,6 +75,9 @@ const EmailSchema = schema({
     is_Sent: {
         type: Boolean,
         default:false
+    },
+    attachments:{
+        type:Array
     }
 },
     { timestamps: true }
