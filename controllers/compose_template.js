@@ -350,7 +350,8 @@ function saveEmailTemplate(obj) {
   });
 }
 
-var cronFucntionality = async () => {
+
+var emailCronFucntionality = async () => {
   let promises = [];
   let scheduledListing = await all_temp.find({ is_Sent: false });
   scheduledListing.forEach(async (ele) => {
@@ -392,7 +393,7 @@ var cronFucntionality = async () => {
 };
 
 cron.schedule(`*/5 * * * *`, () => {
-  cronFucntionality();
+  emailCronFucntionality();
 });
 
 exports.update_template = (req, res) => {
@@ -435,7 +436,7 @@ exports.remove_template = (req, res) => {
 exports.multipal_temp_remove = async (req, res) => {
   try {
     const folderId = req.params.folderId;
-    const templateIds = req.body;
+    const templateIds = req.body.templateId;
     const promises = [];
     for (let id of templateIds) {
       promises.push(all_temp.remove({ _id: id }));
