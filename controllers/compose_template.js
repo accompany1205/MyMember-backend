@@ -200,7 +200,15 @@ exports.all_email_list = async (req, res) => {
     }
   });
 };
-
+exports.isFavorite = async (req, res) => {
+  all_temp.find({ userId: req.params.userId ,is_Favorite:true}).exec((err, allTemp) => {
+    if (err) {
+      res.send({ code: 400, msg: "not found" });
+    } else {
+      res.send({ code: 200, msg: allTemp });
+    }
+  });
+};
 exports.swapAndUpdate_template = async (req, res) => {
   if (req.body.length < 1) {
     res.send({ message: "invalid input" });
