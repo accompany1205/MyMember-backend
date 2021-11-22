@@ -56,7 +56,7 @@ router.get('/memeber/std_count/:userId', verifySchool, std_count)
 
 //dashboard routes
 router.get('/member/student_type_count/:userId', studentCount)
-router.get('/member/latest_member/:userId', verifySchool, lastestMember);
+router.get('/member/latest_member/:userId/:page_no/:per_page', verifySchool, lastestMember);
 router.get('/member/expire_member/:userId', verifySchool, expire_member);
 router.get('/member/expire_this_month_member/:userId', verifySchool, expire_this_month);
 router.get('/member/miss_you_call/:userId', verifySchool, missuCall_list);

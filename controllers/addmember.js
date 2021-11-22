@@ -754,7 +754,17 @@ exports.studentinfo = (req, res) => {
     });
 };
 
-exports.lastestMember = (req, res) => {
+exports.lastestMember = async(req, res) => {
+  var totalCount = await addmemberModal.find({
+    userId: req.params.userId,
+  }).countDocuments()
+
+  var per_page = parseInt(req.params.per_page) || 5 
+  var page_no = parseInt(req.params.page_no) || 1
+  var pagination = {
+    limit: per_page,
+    skip: per_page * (page_no - 1)
+  }
   addmemberModal
     .find({
       userId: req.params.userId
@@ -767,7 +777,8 @@ exports.lastestMember = (req, res) => {
     .sort({
       createdAt: -1
     })
-    .limit(5)
+    .limit(pagination.limit)
+    .skip(pagination.skip)
     .exec((err, memberdata) => {
       if (err) {
         res.send({
