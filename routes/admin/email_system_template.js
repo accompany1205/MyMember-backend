@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { isAdmin } = require("../../controllers/auth")
-const { add_template, list_template, update_template, remove_template, status_update_template, single_temp_update_status, swapAndUpdate_template } = require("../../controllers/admin/email_system_template")
+const { add_template, list_template, update_template, remove_template, status_update_template, single_temp_update_status, swapAndUpdate_template,multipal_temp_remove } = require("../../controllers/admin/email_system_template")
 
 router.get("/email_system/list_template/:adminId/:folderId", isAdmin, list_template)
 
@@ -13,5 +13,7 @@ router.put("/email_system/update_template_status/:adminId/:folderId", isAdmin, s
 router.put("/email_system/single_template_status_change/:adminId/:tempId", isAdmin, single_temp_update_status)//single template status change
 
 router.delete("/email_system/remove_template/:adminId/:templateId", isAdmin, remove_template)
+router.delete("/email_system/multipal_remove_template/:adminId/:folderId",isAdmin,multipal_temp_remove)
+
 
 module.exports = router;

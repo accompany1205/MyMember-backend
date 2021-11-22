@@ -5,6 +5,8 @@ const moment = require("moment");
 const async = require("async");
 const sgMail = require("sendgrid-v3-node");
 const cron = require("node-cron");
+const folderNur = require("../models/email_nurturing_folder");
+const ObjectId = require("mongodb").ObjectId;
 
 function timefun(sd, st) {
   var date = sd;
@@ -95,9 +97,11 @@ exports.getData = (req, res) => {
 exports.list_template = (req, res) => {
   nurturingFolderModal
     .findById(req.params.folderId)
-    .populate({ path: "template",
-    match: { is_Sent: false ,email_type:'schedule'},
-     options: { sort: { templete_Id: 1 } } })
+    .populate({
+      path: "template",
+      match: { is_Sent: false, email_type: "schedule" },
+      options: { sort: { templete_Id: 1 } },
+    })
     .exec((err, template_data) => {
       if (err) {
         res.send({ error: "nurturing template list not found" });
@@ -445,10 +449,22 @@ exports.status_update_template = (req, res) => {
 };
 
 exports.multipal_temp_remove = (req, res) => {
-  all_temp.deleteMany({ _id: req.body.tempId }).exec((err, resp) => {
+  let folderId = req.params.folderId;
+  let templateIds = req.body.templateId;
+  all_temp.remove({ _id: { $in: templateIds } }).exec((err, resp) => {
     if (err) {
       res.json({ code: 400, msg: "templates not remove" });
     } else {
+      for (let id of templateIds) {
+        folderNur.updateOne(
+          { _id: folderId },
+          { $pull: { template: ObjectId(id) } }
+        ).then( (err, res) => {
+          if(err){
+            throw new Error(err);
+          }
+        })
+      }
       res.json({ code: 200, msg: "template is remove successfully" });
     }
   });

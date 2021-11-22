@@ -5,6 +5,7 @@ const async = require("async");
 moment = require("moment");
 const cron = require("node-cron");
 const sgMail = require("sendgrid-v3-node");
+const ObjectId = require("mongodb").ObjectId;
 
 function timefun(sd, st) {
   var date = sd;
@@ -333,3 +334,25 @@ exports.swapAndUpdate_template = async (req, res) => {
       });
   }
 };
+
+exports.multipal_temp_remove = (req, res) => {
+  let folderId = req.params.folderId;
+  let templateIds = req.body.templateId;
+  addTemp.remove({ _id: { $in: templateIds } }).exec((err, resp) => {
+    if (err) {
+      res.json({ code: 400, msg: "templates not remove" });
+    } else {
+      for (let id of templateIds) {
+        systemFolder.updateOne(
+          { _id: folderId },
+          { $pull: { template: ObjectId(id) } }
+        ).then( (err, res) => {
+          if(err){
+            throw new Error(err);
+          }
+        })
+      }
+      res.json({ code: 200, msg: "template is remove successfully" });
+    }
+  });
+}

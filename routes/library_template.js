@@ -10,5 +10,5 @@ router.put("/email_library/update_template/:userId/:templateId", verifySchool, u
 router.put("/email_library/single_template_status_change/:userId/:tempId", verifySchool, single_tem_updte_status)// single library template status change
 router.put("/email_library/update_template_status/:userId/:folderId", verifySchool, status_update_template)//all library template status change
 router.delete("/email_library/remove_template/:userId/:templateId", verifySchool, remove_template)
-router.delete("/email_library/multipal_remove_template/:userId", verifySchool, multipal_temp_remove)
+router.delete("/email_library/multipal_remove_template/:userId/:folderId", verifySchool, multipal_temp_remove)
 module.exports = router;
