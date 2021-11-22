@@ -352,7 +352,7 @@ exports.multipal_temp_remove = (req, res) => {
           }
         })
       }
-      res.json({ code: 200, msg: "template is remove successfully" });
+      res.json({ success:true, msg: "template is remove successfully" });
     }
   });
 }
