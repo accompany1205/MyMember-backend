@@ -234,7 +234,7 @@ exports.remove_template = (req, res) => {
 
 
 exports.multipal_temp_remove = (req, res) => {
-    all_temp.deleteMany({ _id: req.body.tempId }).exec((err, resp) => {
+    All_Temp.deleteMany({ _id: req.body.tempId }).exec((err, resp) => {
         if (err) {
             res.json({ code: 400, msg: 'templates not remove' })
         }
