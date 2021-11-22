@@ -309,7 +309,6 @@ exports.add_template = async (req, res) => {
     var nD = moment(date_iso_follow).format("MM/DD/YYYY");
     saveEmailTemplate(obj)
       .then((data) => {
-        console.log(data, folderId);
         compose_folder
           .findOneAndUpdate(
             { _id: folderId },

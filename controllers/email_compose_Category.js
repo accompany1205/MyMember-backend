@@ -119,7 +119,7 @@ exports.sendEmail = async (req, res) => {
                                         res.send({ error: 'user id is not update in sent email' })
                                     }
                                     else {
-                                        res.send(emailUpdate)
+                                        res.send({ message: "Email Sent Successfully", success: true ,emailUpdate})
                                     }
                                 })
                         }
