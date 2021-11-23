@@ -35,7 +35,6 @@ const Membershipschema = new schema(
     },
     refund: {
       type: Array,
-      default: "",
     },
     isRefund: {
       type: Boolean,

@@ -327,9 +327,10 @@ exports.buyMembership = (req, res) => {
         membershipDetails.balance,
         membershipDetails.mactive_date,
         membershipDetails.createdBy,
-        membershipDetails.emi_type
+        membershipDetails.emi_type,
+        
       );
-
+      membershipDetails.membership_status="Active"
       let membership = new buyMembership(membershipDetails);
       membership.save((err, data) => {
         if (err) {
@@ -367,6 +368,7 @@ exports.buyMembership = (req, res) => {
     } else {
       if (!membershipDetails.isEMI && membershipDetails.balance == 0) {
         membershipDetails.due_status = "paid";
+        membershipDetails.membership_status="Active"
         let membership = new buyMembership(membershipDetails);
         membership.save((err, data) => {
           if (err) {
@@ -405,6 +407,9 @@ exports.buyMembership = (req, res) => {
             );
           }
         });
+      }
+      else{
+        res.send({message:"balance should be zero"})
       }
     }
   } catch (error) {
