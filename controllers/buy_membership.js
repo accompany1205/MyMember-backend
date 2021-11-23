@@ -327,7 +327,7 @@ exports.buyMembership = (req, res) => {
         membershipDetails.balance,
         membershipDetails.mactive_date,
         membershipDetails.createdBy,
-        membershipDetails.emi_type,
+        membershipDetails.payment_type,
         
       );
       membershipDetails.membership_status="Active"
@@ -379,7 +379,7 @@ exports.buyMembership = (req, res) => {
               $push: { membership_details: data._id },
             };
             addmemberModal.findOneAndUpdate(
-              studentId,
+              {_id:studentId},
               update,
               (err, stdData) => {
                 if (err) {

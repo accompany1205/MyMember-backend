@@ -153,3 +153,18 @@ exports.deleteUser = async (req, res) => {
   }
 
 };
+
+exports.deleteMultiple_User= async (req, res) => {
+  try {
+
+    userIds = req.body.userId
+    resp = await User.findByIdAndDelete(userId)
+    res.send({ message: "User Deleted Successfullly", success: true })
+    
+  }
+  catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false })
+
+  }
+
+};

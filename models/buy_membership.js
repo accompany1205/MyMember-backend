@@ -117,7 +117,6 @@ const Membershipschema = new schema(
     },
     emi_type: {
       type: String,
-      required: true,
     },
 
     // check_number: {
