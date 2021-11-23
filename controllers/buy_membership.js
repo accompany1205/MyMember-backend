@@ -324,7 +324,7 @@ exports.buyMembership = (req, res) => {
     if (membershipDetails.isEMI && membershipDetails.balance > 0) {
       membershipDetails.schedulePayments = createEMIRecord(
         membershipDetails.payment_time,
-        membershipDetails.balance,
+        membershipDetails.payment_money,
         membershipDetails.mactive_date,
         membershipDetails.createdBy,
         membershipDetails.payment_type,

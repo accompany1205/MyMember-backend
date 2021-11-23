@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require("uuid");
 function createEMIRecord(noOfEMi, Balance, activationDate, createdBy, payMode) {
   arr = [];
   let i = 0;
+  createdBy=""
   while (i < noOfEMi) {
     i++;
     let obj = {};
