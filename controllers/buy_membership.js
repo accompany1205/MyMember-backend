@@ -340,7 +340,7 @@ exports.buyMembership = (req, res) => {
             $set: { status: "active" },
             $push: { membership_details: data._id },
           };
-          addmemberModal.findOneAndUpdate(studentId, update, (err, stdData) => {
+          addmemberModal.findOneAndUpdate({_id:studentId}, update, (err, stdData) => {
             if (err) {
               res.send({ error: "membership id is not add in student" });
             } else {
