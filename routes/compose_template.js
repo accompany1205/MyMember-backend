@@ -2,9 +2,10 @@ const express = require("express");
 const router = express.Router();
 const upload = require('../handler/multer');
 const { requireSignin,isAuth,verifySchool } = require("../controllers/auth");
-const { add_template,list_template,remove_template,all_email_list,update_template,single_temp_update_status,status_update_template,multipal_temp_remove,getData,swapAndUpdate_template } = require("../controllers/compose_template");
+const { add_template,list_template,remove_template,all_email_list,update_template,single_temp_update_status,status_update_template,multipal_temp_remove,getData,swapAndUpdate_template,isFavorite } = require("../controllers/compose_template");
 
 router.get("/all_email_list/:userId",verifySchool,all_email_list)
+router.get("/all_email_list_of_Favorite/:userId",verifySchool,isFavorite)
 router.get("/email_compose/list_template/:userId/:folderId",verifySchool,list_template)
 router.post("/email_compose/add_template/:userId/:folderId",verifySchool,upload.array('attachments'), add_template)
 router.put("/email_compose/drag_drop_templete/:userId",requireSignin,swapAndUpdate_template)

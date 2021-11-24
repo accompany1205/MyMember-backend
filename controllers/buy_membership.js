@@ -324,12 +324,13 @@ exports.buyMembership = (req, res) => {
     if (membershipDetails.isEMI && membershipDetails.balance > 0) {
       membershipDetails.schedulePayments = createEMIRecord(
         membershipDetails.payment_time,
-        membershipDetails.balance,
+        membershipDetails.payment_money,
         membershipDetails.mactive_date,
         membershipDetails.createdBy,
-        membershipDetails.emi_type
+        membershipDetails.payment_type,
+        
       );
-
+      membershipDetails.membership_status="Active"
       let membership = new buyMembership(membershipDetails);
       membership.save((err, data) => {
         if (err) {
@@ -339,7 +340,7 @@ exports.buyMembership = (req, res) => {
             $set: { status: "active" },
             $push: { membership_details: data._id },
           };
-          addmemberModal.findOneAndUpdate(studentId, update, (err, stdData) => {
+          addmemberModal.findOneAndUpdate({_id:studentId}, update, (err, stdData) => {
             if (err) {
               res.send({ error: "membership id is not add in student" });
             } else {
@@ -367,6 +368,7 @@ exports.buyMembership = (req, res) => {
     } else {
       if (!membershipDetails.isEMI && membershipDetails.balance == 0) {
         membershipDetails.due_status = "paid";
+        membershipDetails.membership_status="Active"
         let membership = new buyMembership(membershipDetails);
         membership.save((err, data) => {
           if (err) {
@@ -377,7 +379,7 @@ exports.buyMembership = (req, res) => {
               $push: { membership_details: data._id },
             };
             addmemberModal.findOneAndUpdate(
-              studentId,
+              {_id:studentId},
               update,
               (err, stdData) => {
                 if (err) {
@@ -405,6 +407,9 @@ exports.buyMembership = (req, res) => {
             );
           }
         });
+      }
+      else{
+        res.send({message:"balance should be zero"})
       }
     }
   } catch (error) {

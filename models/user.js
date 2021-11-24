@@ -68,6 +68,9 @@ const userSchema = new schema(
             trim: true,
             unique: true
         },
+        secondary_Email: {
+            type: String
+        },
         password: {
             type: String,
         },
@@ -94,11 +97,18 @@ const userSchema = new schema(
         city:{
             type:String
         },
+        street:{
+            type:String
+        },
         location_name:{
             type:String
         },
         location_address:{
             type:String
+        },
+        zipPostal_code:{
+            type:String,
+            default:''
         },
         tax_id:{
             type:String
