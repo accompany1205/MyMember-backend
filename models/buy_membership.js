@@ -146,6 +146,13 @@ const Membershipschema = new schema(
       type: String,
       required: true,
     },
+    membershipIds: [
+      {
+        type: schema.Types.ObjectId,
+        ref: "membership",
+        required: true,
+      },
+    ],
     studentInfo: [
       {
         type: schema.Types.ObjectId,
