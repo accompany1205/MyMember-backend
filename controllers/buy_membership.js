@@ -324,16 +324,16 @@ exports.buyMembership = async (req, res) => {
   const membershipData = req.body;
   membershipData.userId = userId;
   try {
-    const memberships = await buyMembership.find({
-      studentInfo: { $in: [studentId] },
-      membershipIds: { $in: [membershipData.membershipId] },
-      membership_status:"Active"
-    });
-    if (memberships.length) {
-      console.log(memberships)
+    // const memberships = await buyMembership.find({
+    //   studentInfo: { $in: [studentId] },
+    //   membershipIds: { $in: [membershipData.membershipId] },
+    //   membership_status:"Active"
+    // });
+    // if (memberships.length) {
+    //   console.log(memberships)
 
-      res.send({message:"this membership already bought!",success:false});
-    } else {
+    //   res.send({message:"this membership already bought!",success:false});
+    // } else {
       if (membershipData.isEMI) {
         if (membershipData.payment_time > 0 && membershipData.balance > 0) {
           membershipData.schedulePayments = createEMIRecord(
@@ -441,7 +441,7 @@ exports.buyMembership = async (req, res) => {
           res.send({ message: "balance should be zero", success: false });
         }
       }
-    }
+    
   } catch (error) {
     res.send({ error: error.message.replace(/\"/g, ""), success: false });
   }
