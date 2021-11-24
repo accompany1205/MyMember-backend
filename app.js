@@ -107,6 +107,7 @@ const email_system_template = require("./routes/admin/email_system_template");
 const location = require("./routes/admin/settings/location");
 const user_membership = require("./routes/admin/membership_management/school_membership");
 const buy_user_membership = require("./routes/admin/membership_management/school_buy_membership");
+const membershipFolderRoute = require("./routes/membershipFolder");
 
 //menu routes
 const student_menu = require("./routes/menu/std_menu/all_student_menu");
@@ -245,6 +246,7 @@ app.use("/api", textkey);
 app.use("/api", recomendedForTestRoutes);
 app.use("/api", registeredForTestRoutes);
 app.use("/api", recommendedCandidatesRoutes);
+app.use("/api", membershipFolderRoute);
 
 //
 app.use(middleware.errorHandler);
