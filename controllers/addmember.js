@@ -785,7 +785,7 @@ exports.lastestMember = async(req, res) => {
           error: "member data is not find"
         });
       } else {
-        res.send(memberdata);
+        res.send({ memberdata, totalCount: totalCount, success: true });
       }
     });
 };
