@@ -366,7 +366,7 @@ exports.buyMembership = (req, res) => {
         }
       });
     } else {
-      if (!membershipDetails.isEMI && membershipDetails.balance == 0) {
+      if (!membershipDetails.isEMI && membershipDetails.payment_time == 0 && membershipDetails.balance==0) {
         membershipDetails.due_status = "paid";
         membershipDetails.membership_status="Active"
         let membership = new buyMembership(membershipDetails);
@@ -409,7 +409,7 @@ exports.buyMembership = (req, res) => {
         });
       }
       else{
-        res.send({message:"balance should be zero"})
+        res.send({message:"balance should be zero and payment_time must be zero ", success:false})
       }
     }
   } catch (error) {
