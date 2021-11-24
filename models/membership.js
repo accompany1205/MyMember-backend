@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-
-const membershipSchema = new mongoose.Schema({
+const schema = mongoose.Schema;
+const membershipSchema = schema({
 
     membership_name:{
         type:String,
@@ -59,6 +59,10 @@ const membershipSchema = new mongoose.Schema({
     },
     userId:{
         type:String
+    },
+    folderId:{
+        type:schema.Types.ObjectId,
+        ref:'membershipFolder'
     },
 
 },
