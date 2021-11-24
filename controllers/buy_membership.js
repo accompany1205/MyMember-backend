@@ -321,52 +321,60 @@ exports.buyMembership = (req, res) => {
   const membershipDetails = req.body;
   membershipDetails.userId = userId;
   try {
-    if (membershipDetails.isEMI && membershipDetails.balance > 0) {
-      membershipDetails.schedulePayments = createEMIRecord(
-        membershipDetails.payment_time,
-        membershipDetails.payment_money,
-        membershipDetails.mactive_date,
-        membershipDetails.createdBy,
-        membershipDetails.payment_type,
-        
-      );
-      membershipDetails.membership_status="Active"
-      let membership = new buyMembership(membershipDetails);
-      membership.save((err, data) => {
-        if (err) {
-          res.send({ error: "membership not buy" });
-        } else {
-          update = {
-            $set: { status: "active" },
-            $push: { membership_details: data._id },
-          };
-          addmemberModal.findOneAndUpdate({_id:studentId}, update, (err, stdData) => {
-            if (err) {
-              res.send({ error: "membership id is not add in student" });
-            } else {
-              buyMembership
-                .findOneAndUpdate(
-                  { _id: data._id },
-                  { $push: { studentInfo: stdData._id } }
-                )
-                .exec(async (err, result) => {
-                  if (err) {
-                    res.send({
-                      error: "student id is not add in buy membership",
-                    });
-                  } else {
-                    res.send({
-                      msg: "membership purchase successfully",
-                      data: result,
-                    });
-                  }
-                });
-            }
-          });
-        }
-      });
+    if (membershipDetails.isEMI ) {
+
+      if(membershipDetails.balance > 0){
+        membershipDetails.schedulePayments = createEMIRecord(
+          membershipDetails.payment_time,
+          membershipDetails.payment_money,
+          membershipDetails.mactive_date,
+          membershipDetails.createdBy,
+          membershipDetails.payment_type,
+          
+        );
+        membershipDetails.membership_status="Active"
+        let membership = new buyMembership(membershipDetails);
+        membership.save((err, data) => {
+          if (err) {
+            res.send({ error: "membership not buy" });
+          } else {
+            update = {
+              $set: { status: "active" },
+              $push: { membership_details: data._id },
+            };
+            addmemberModal.findOneAndUpdate({_id:studentId}, update, (err, stdData) => {
+              if (err) {
+                res.send({ error: "membership id is not add in student" });
+              } else {
+                buyMembership
+                  .findOneAndUpdate(
+                    { _id: data._id },
+                    { $push: { studentInfo: stdData._id } }
+                  )
+                  .exec(async (err, result) => {
+                    if (err) {
+                      res.send({
+                        error: "student id is not add in buy membership",
+                      });
+                    } else {
+                      res.send({
+                        msg: "membership purchase successfully",
+                        data: result,
+                      });
+                    }
+                  });
+              }
+            });
+          }
+        });
+
+      }else{
+        res.send({message:"payment_time must required", success:false})
+
+      }
+      
     } else {
-      if (!membershipDetails.isEMI && membershipDetails.payment_time == 0 && membershipDetails.balance==0) {
+      if (!membershipDetails.isEMI && membershipDetails.balance==0) {
         membershipDetails.due_status = "paid";
         membershipDetails.membership_status="Active"
         let membership = new buyMembership(membershipDetails);
@@ -409,7 +417,7 @@ exports.buyMembership = (req, res) => {
         });
       }
       else{
-        res.send({message:"balance should be zero and payment_time must be zero ", success:false})
+        res.send({message:"balance should be zero", success:false})
       }
     }
   } catch (error) {
