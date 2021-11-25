@@ -136,26 +136,34 @@ exports.update = async (req, res) => {
 
 exports.updatePayments = async (req, res) => {
   try {
-    const membershipId = req.params.membershipId;
-    update_resp = await buyMembership.find({ _id: membershipId });
-    arr = [];
-    update_resp[0].schedulePayments.map(function (element) {
-      if (element.date == req.body.date) {
-        element.status = "Paid";
-        arr.push(element);
-      } else {
-        arr.push(element);
-      }
-    });
+    const buy_membershipId = req.params.membershipId;
+    const emiId = req.params.emiID;
+    const createdBy=req.body.createdBy
 
-    updatePay = await buyMembership.findByIdAndUpdate(membershipId, {
-      schedulePayments: arr,
-    });
-    res.send({
-      message: "paymentStatus updated successfully",
-      succes: true,
-      error: false,
-    });
+    await buyMembership.updateOne({
+        _id:buy_membershipId,
+        "schedulePayments.Id":emiId
+    },
+    {
+      $set:{
+        "schedulePayments.$.status":"paid",
+        "schedulePayments.$.createdBy":createdBy,
+        "schedulePayments.$.paidDate":new Date(),
+      }
+    },
+    (err,data)=>{
+      if(err){
+    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+        
+      }else{
+        res.send({
+          message: "paymentStatus updated successfully",
+          succes: true,
+          error: data,
+        });
+      }
+    })
+
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }

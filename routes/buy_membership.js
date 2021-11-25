@@ -13,7 +13,7 @@ router.post("/membership/buy_membership/:userId/:studentId",requireSignin,buyMem
 // router.post("/membership/buy_membership/:userId",requireSignin,buyMembership);
 router.put("/membership/update_buy_memberships/:userId/:membershipId/:type",requireSignin,update);
 router.delete("/membership/delete_buy_membership/:userId/:membershipId",requireSignin,remove);
-router.put("/membership/update_buy_memberships_Payments/:userId/:membershipId",requireSignin,updatePayments);
+router.put("/membership/update_buy_memberships_Payments/:userId/:membershipId/:emiID",requireSignin,updatePayments);
 
 
 module.exports = router;
