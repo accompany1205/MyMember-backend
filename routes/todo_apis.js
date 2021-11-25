@@ -12,6 +12,7 @@ router.delete("/delete_task/:userId/:todoId",requireSignin,verifySchool,todos.re
 
 //akash upcoming wali bana hai
 router.get("/today_taskread/:userId",verifySchool,todos.today_taskread)
+router.get("/weekTaskRead/:userId", verifySchool,todos.weekTaskRead)
 router.get("/tomorrow_taskread/:userId",verifySchool,todos.tomorrow_taskread)
 router.get("/completed_taskread/:userId",verifySchool,todos.completed_taskread)
 router.get("/not_completed_taskread/:userId",verifySchool,todos.not_completed_taskread)
