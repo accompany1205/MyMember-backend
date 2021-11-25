@@ -31,96 +31,104 @@ exports.update = async (req, res) => {
         .status(200)
         .send({ message: "buyMembership updated successfully", success: true });
     } else if (type == "freeze") {
-      if (req.body.isFreeze) {
-        await buyMembership.findByIdAndUpdate(membershipId, {
-          $set: { isFreeze: true, membership_status: "freeze" },
-          $push: {
-            whenFreeze: { date: req.body.Freezedate, updatedAT: new Date() },
-          },
-        });
-        res.status(200).send({
-          message: "Membership Freezed successfully",
-          success: true,
-        });
-      } else {
-        if (!req.body.isFreeze) {
-          await buyMembership.findByIdAndUpdate(membershipId, {
-            $set: { isFreeze: false, membership_status: "Active" },
-            $push: {
-              whenFreeze: {
-                unFreezedate: req.body.Freezedate,
-                updatedAT: new Date(),
-              },
-            },
-          });
-        }
-        res.send({
-          message: "Membership unFreezed suuccessfully!",
-          success: true,
-        });
-      }
+      await buyMembership.findByIdAndUpdate(membershipId, {
+        $set: { isFreeze: true, membership_status: "freeze" },
+        $push: {
+          whenFreeze: { date: new Date(), reason: req.body.reason },
+        },
+      });
+      res.status(200).send({
+        message: "Membership Freezed successfully",
+        success: true,
+      });
+    } else if (type == "unfreeze") {
+      await buyMembership.findByIdAndUpdate(membershipId, {
+        $set: { isFreeze: false, membership_status: "unfreeze" },
+        $push: {
+          whenFreeze: { date: new Date(), reason: req.body.reason },
+        },
+      });
+      res.status(200).send({
+        message: "Membership unFreezed successfully",
+        success: true,
+      });
     } else if (type == "forfeit") {
-      if (req.body.isForfeit) {
-        await buyMembership.findByIdAndUpdate(membershipId, {
+      await buyMembership.findByIdAndUpdate(
+        membershipId,
+        {
           $set: { isForfeit: true },
           $push: {
-            whenForFeit: { date: req.body.forefeitdate, updatedAT: new Date() },
+            whenForFeit: { date: new Date(), reason: req.body.reason },
           },
-        });
-        res.status(200).send({
-          message: "Membership Forfeit successfully",
-          success: true,
-        });
-      } else {
-        res.send({
-          message: "Membership Forfeit failed!",
-          success: false,
-        });
-      }
+        },
+        (er, data) => {
+          if (er) {
+            res.send({
+              message: "Membership Forfeit failed",
+              success: false,
+            });
+          } else {
+            res.status(200).send({
+              message: "Membership Forfeit successfully",
+              success: true,
+            });
+          }
+        }
+      );
     } else if (type == "terminate") {
-      if (req.body.isTerminate) {
-        await buyMembership.findByIdAndUpdate(membershipId, {
+      await buyMembership.findByIdAndUpdate(
+        membershipId,
+        {
           $set: { isTerminate: true, membership_status: "Terminated" },
           $push: {
             whenTerminate: {
-              date: req.body.terminateDate,
-              updatedAT: new Date(),
+              date: new Date(),
+              reason: req.body.reason,
             },
           },
-        });
-        res.status(200).send({
-          message: "Membership terminated successfully",
-          success: true,
-        });
-      } else {
-        res.send({
-          message: "Membership terminated failed!",
-          success: false,
-        });
-      }
+        },
+        (err, data) => {
+          if (err) {
+            res.send({
+              message: "Membership terminated failed!",
+              success: false,
+            });
+          } else {
+            res.status(200).send({
+              message: "Membership terminated successfully",
+              success: true,
+            });
+          }
+        }
+      );
     } else if (type == "refund") {
-      if (req.body.isRefund) {
+    
         await buyMembership.findByIdAndUpdate(membershipId, {
           $set: { isRefund: true },
           $push: {
             refund: {
-              Amount: req.body.Amount,
-              date: req.body.date,
-              updatedAT: new Date(),
+              Amount: req.body.total_amount,
+              date: new Date(),
+              reason: req.body.reason,
             },
           },
-        });
-        res.status(200).send({
-          message: "Membership refunded successfully",
-          success: true,
-        });
-      } else {
-        res.send({
-          message: "Membership refunded failed!",
-          success: false,
-        });
-      }
-    }
+        },(err,data)=>{
+          if(err){
+            res.send({
+              message: "Membership refunded failed!",
+              success: false,
+            });
+          }
+          else{
+            res.status(200).send({
+              message: "Membership refunded successfully",
+              success: true,
+            });
+          }
+    })  
+
+      } 
+    
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
@@ -334,114 +342,113 @@ exports.buyMembership = async (req, res) => {
 
     //   res.send({message:"this membership already bought!",success:false});
     // } else {
-      if (membershipData.isEMI) {
-        if (membershipData.payment_time > 0 && membershipData.balance > 0) {
-          membershipData.schedulePayments = createEMIRecord(
-            membershipData.payment_time,
-            membershipData.payment_money,
-            membershipData.mactive_date,
-            membershipData.createdBy,
-            membershipData.payment_type
-          );
-          membershipData.membership_status = "Active";
-          let membership = new buyMembership(membershipData);
-          membership.save((err, data) => {
-            if (err) {
-              res.send({ error: "membership not buy" });
-            } else {
-              update = {
-                $set: { status: "active" },
-                $push: { membership_details: data._id },
-              };
-              addmemberModal.findOneAndUpdate(
-                { _id: studentId },
-                update,
-                (err, stdData) => {
-                  if (err) {
-                    res.send({ error: "membership id is not add in student" });
-                  } else {
-                    buyMembership
-                      .findOneAndUpdate(
-                        { _id: data._id },
-                        {
-                          $push: {
-                            studentInfo: stdData._id,
-                            membershipIds: membershipData.membershipId,
-                          },
-                        }
-                      )
-                      .exec(async (err, result) => {
-                        if (err) {
-                          res.send({
-                            error: "student id is not add in buy membership",
-                          });
-                        } else {
-                          res.send({
-                            msg: "membership purchase successfully",
-                            data: result,
-                          });
-                        }
-                      });
-                  }
+    if (membershipData.isEMI) {
+      if (membershipData.payment_time > 0 && membershipData.balance > 0) {
+        membershipData.schedulePayments = createEMIRecord(
+          membershipData.payment_time,
+          membershipData.payment_money,
+          membershipData.mactive_date,
+          membershipData.createdBy,
+          membershipData.payment_type
+        );
+        membershipData.membership_status = "Active";
+        let membership = new buyMembership(membershipData);
+        membership.save((err, data) => {
+          if (err) {
+            res.send({ error: "membership not buy" });
+          } else {
+            update = {
+              $set: { status: "active" },
+              $push: { membership_details: data._id },
+            };
+            addmemberModal.findOneAndUpdate(
+              { _id: studentId },
+              update,
+              (err, stdData) => {
+                if (err) {
+                  res.send({ error: "membership id is not add in student" });
+                } else {
+                  buyMembership
+                    .findOneAndUpdate(
+                      { _id: data._id },
+                      {
+                        $push: {
+                          studentInfo: stdData._id,
+                          membershipIds: membershipData.membershipId,
+                        },
+                      }
+                    )
+                    .exec(async (err, result) => {
+                      if (err) {
+                        res.send({
+                          error: "student id is not add in buy membership",
+                        });
+                      } else {
+                        res.send({
+                          msg: "membership purchase successfully",
+                          data: result,
+                        });
+                      }
+                    });
                 }
-              );
-            }
-          });
-        } else {
-          res.send({ message: "payment_time must required", success: false });
-        }
+              }
+            );
+          }
+        });
       } else {
-        if (!membershipData.isEMI && membershipData.balance == 0) {
-          membershipData.due_status = "paid";
-          membershipData.membership_status = "Active";
-          let membership = new buyMembership(membershipData);
-          membership.save((err, data) => {
-            if (err) {
-              res.send({ error: "membership not buy" });
-            } else {
-              update = {
-                $set: { status: "active" },
-                $push: { membership_details: data._id },
-              };
-              addmemberModal.findOneAndUpdate(
-                { _id: studentId },
-                update,
-                (err, stdData) => {
-                  if (err) {
-                    res.send({ error: "membership id is not add in student" });
-                  } else {
-                    buyMembership
-                      .findOneAndUpdate(
-                        { _id: data._id },
-                        {
-                          $push: {
-                            studentInfo: stdData._id,
-                            membershipIds: membershipData.membershipId,
-                          },
-                        }
-                      )
-                      .exec(async (err, result) => {
-                        if (err) {
-                          res.send({
-                            error: "student id is not add in buy membership",
-                          });
-                        } else {
-                          res.send({
-                            msg: "membership purchase successfully",
-                            data: result,
-                          });
-                        }
-                      });
-                  }
-                }
-              );
-            }
-          });
-        } else {
-          res.send({ message: "balance should be zero", success: false });
-        }
+        res.send({ message: "payment_time must required", success: false });
       }
-    
+    } else {
+      if (!membershipData.isEMI && membershipData.balance == 0) {
+        membershipData.due_status = "paid";
+        membershipData.membership_status = "Active";
+        let membership = new buyMembership(membershipData);
+        membership.save((err, data) => {
+          if (err) {
+            res.send({ error: "membership not buy" });
+          } else {
+            update = {
+              $set: { status: "active" },
+              $push: { membership_details: data._id },
+            };
+            addmemberModal.findOneAndUpdate(
+              { _id: studentId },
+              update,
+              (err, stdData) => {
+                if (err) {
+                  res.send({ error: "membership id is not add in student" });
+                } else {
+                  buyMembership
+                    .findOneAndUpdate(
+                      { _id: data._id },
+                      {
+                        $push: {
+                          studentInfo: stdData._id,
+                          membershipIds: membershipData.membershipId,
+                        },
+                      }
+                    )
+                    .exec(async (err, result) => {
+                      if (err) {
+                        res.send({
+                          error: "student id is not add in buy membership",
+                        });
+                      } else {
+                        res.send({
+                          msg: "membership purchase successfully",
+                          data: result,
+                        });
+                      }
+                    });
+                }
+              }
+            );
+          }
+        });
+      } else {
+        res.send({ message: "balance should be zero", success: false });
+      }
+    }
   } catch (error) {
     res.send({ error: error.message.replace(/\"/g, ""), success: false });
   }
