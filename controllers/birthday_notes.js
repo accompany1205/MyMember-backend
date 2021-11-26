@@ -346,3 +346,72 @@ exports.moreThirty = async (req, res) => {
     throw new Error(err);
   }
 };
+
+exports.this_month = async (req, res) => {
+  let todays = new Date();
+  let userId = req.params.userId;
+  try {
+    const thisMonthBirthday = await student.aggregate([
+      { $match: { userId: userId } },
+
+      {
+        $project: {
+          firstName: 1,
+          dob: 1,
+          daysTillBirthday: {
+            $subtract: [{ $dayOfMonth: "$dob" }, { $dayOfMonth: todays }],
+          },
+        },
+      },
+      {
+        $match: {
+          $expr: { $eq: [{ $month: "$dob" }, { $month: todays }] },
+          daysTillBirthday: { $gt: 0 },
+        },
+      },
+      { $sort: { daysTillBirthday: 1 } },
+    ]);
+
+    res.send({ data: thisMonthBirthday });
+  } catch (er) {
+    throw new Error(er);
+  }
+};
+
+exports.next_month = async (req, res) => {
+  let todays = new Date();
+  let nextMonth = todays.getMonth() + 2;
+  console.log(nextMonth);
+  let userId = req.params.userId;
+  try {
+    const nextMonthBirthday = await student.aggregate([
+      { $match: { userId: userId } },
+
+      {
+        $project: {
+          firstName: 1,
+          dob: 1,
+          daysTillBirthday: {
+            $add: [
+              { $dayOfMonth: "$dob" },
+              { $subtract: [30, { $dayOfMonth: todays }] },
+            ],
+          },
+        },
+      },
+      {
+        $match: {
+          $expr: {
+            $eq: [{ $month: "$dob" }, { $add: [1, { $month: todays }] }],
+          },
+          daysTillBirthday: { $gt: 0 },
+        },
+      },
+      { $sort: { daysTillBirthday: 1 } },
+    ]);
+
+    res.send({ data: nextMonthBirthday });
+  } catch (er) {
+    throw new Error(er);
+  }
+};
