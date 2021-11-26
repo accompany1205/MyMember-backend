@@ -25,110 +25,118 @@ exports.update = async (req, res) => {
   const membershipId = req.params.membershipId;
   const type = req.params.type;
   try {
-    if (type == "others") {
-      await buyMembership.updateOne({ _id: membershipId }, req.body);
-      res
-        .status(200)
-        .send({ message: "buyMembership updated successfully", success: true });
-    } else if (type == "freeze") {
-      await buyMembership.findByIdAndUpdate(membershipId, {
-        $set: { isFreeze: true, membership_status: "freeze" },
-        $push: {
-          whenFreeze: { date: new Date(), reason: req.body.reason },
-        },
-      });
+    if (req.body.isTerminate) {
       res.status(200).send({
-        message: "Membership Freezed successfully",
+        message: "Membership is Terminated!",
         success: true,
       });
-    } else if (type == "unfreeze") {
-      await buyMembership.findByIdAndUpdate(membershipId, {
-        $set: { isFreeze: false, membership_status: "unfreeze" },
-        $push: {
-          whenFreeze: { date: new Date(), reason: req.body.reason },
-        },
-      });
-      res.status(200).send({
-        message: "Membership unFreezed successfully",
-        success: true,
-      });
-    } else if (type == "forfeit") {
-      await buyMembership.findByIdAndUpdate(
-        membershipId,
-        {
-          $set: { isForfeit: true },
-          $push: {
-            whenForFeit: { date: new Date(), reason: req.body.reason },
-          },
-        },
-        (er, data) => {
-          if (er) {
-            res.send({
-              message: "Membership Forfeit failed",
-              success: false,
-            });
-          } else {
-            res.status(200).send({
-              message: "Membership Forfeit successfully",
-              success: true,
-            });
-          }
-        }
-      );
-    } else if (type == "terminate") {
-      await buyMembership.findByIdAndUpdate(
-        membershipId,
-        {
-          $set: { isTerminate: true, membership_status: "Terminated" },
-          $push: {
-            whenTerminate: {
-              date: new Date(),
-              reason: req.body.reason,
-            },
-          },
-        },
-        (err, data) => {
-          if (err) {
-            res.send({
-              message: "Membership terminated failed!",
-              success: false,
-            });
-          } else {
-            res.status(200).send({
-              message: "Membership terminated successfully",
-              success: true,
-            });
-          }
-        }
-      );
-    } else if (type == "refund") {
-    
+    } else {
+      if (type == "others") {
+        await buyMembership.updateOne({ _id: membershipId }, req.body);
+        res.status(200).send({
+          message: "buyMembership updated successfully",
+          success: true,
+        });
+      } else if (type == "freeze") {
         await buyMembership.findByIdAndUpdate(membershipId, {
-          $set: { isRefund: true },
+          $set: { isFreeze: true, membership_status: "freeze" },
           $push: {
-            refund: {
-              Amount: req.body.total_amount,
-              date: new Date(),
-              reason: req.body.reason,
+            whenFreeze: { date: new Date(), reason: req.body.reason },
+          },
+        });
+        res.status(200).send({
+          message: "Membership Freezed successfully",
+          success: true,
+        });
+      } else if (type == "unfreeze") {
+        await buyMembership.findByIdAndUpdate(membershipId, {
+          $set: { isFreeze: false, membership_status: "Active" },
+          $push: {
+            whenFreeze: { date: new Date(), reason: req.body.reason },
+          },
+        });
+        res.status(200).send({
+          message: "Membership unFreezed successfully",
+          success: true,
+        });
+      } else if (type == "forfeit") {
+        await buyMembership.findByIdAndUpdate(
+          membershipId,
+          {
+            $set: { isForfeit: true },
+            $push: {
+              whenForFeit: { date: new Date(), reason: req.body.reason },
             },
           },
-        },(err,data)=>{
-          if(err){
-            res.send({
-              message: "Membership refunded failed!",
-              success: false,
-            });
+          (er, data) => {
+            if (er) {
+              res.send({
+                message: "Membership Forfeit failed",
+                success: false,
+              });
+            } else {
+              res.status(200).send({
+                message: "Membership Forfeit successfully",
+                success: true,
+              });
+            }
           }
-          else{
-            res.status(200).send({
-              message: "Membership refunded successfully",
-              success: true,
-            });
+        );
+      } else if (type == "terminate") {
+        await buyMembership.findByIdAndUpdate(
+          membershipId,
+          {
+            $set: { isTerminate: true, membership_status: "Terminated" },
+            $push: {
+              whenTerminate: {
+                date: new Date(),
+                reason: req.body.reason,
+              },
+            },
+          },
+          (err, data) => {
+            if (err) {
+              res.send({
+                message: "Membership terminated failed!",
+                success: false,
+              });
+            } else {
+              res.status(200).send({
+                message: "Membership terminated successfully",
+                success: true,
+              });
+            }
           }
-    })  
-
-      } 
-    
+        );
+      } else if (type == "refund") {
+        await buyMembership.findByIdAndUpdate(
+          membershipId,
+          {
+            $set: { isRefund: true, membership_status: "Deactivated" },
+            $push: {
+              refund: {
+                Amount: req.body.total_amount,
+                date: new Date(),
+                reason: req.body.reason,
+              },
+            },
+          },
+          (err, data) => {
+            if (err) {
+              res.send({
+                message: "Membership refunded failed!",
+                success: false,
+              });
+            } else {
+              res.status(200).send({
+                message: "Membership refunded successfully",
+                success: true,
+              });
+            }
+          }
+        );
+      }
+    }
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
@@ -138,32 +146,34 @@ exports.updatePayments = async (req, res) => {
   try {
     const buy_membershipId = req.params.membershipId;
     const emiId = req.params.emiID;
-    const createdBy=req.body.createdBy
+    const createdBy = req.body.createdBy;
+    const balance = req.body.balance - req.body.Amount;
 
-    await buyMembership.updateOne({
-        _id:buy_membershipId,
-        "schedulePayments.Id":emiId
-    },
-    {
-      $set:{
-        "schedulePayments.$.status":"paid",
-        "schedulePayments.$.createdBy":createdBy,
-        "schedulePayments.$.paidDate":new Date(),
+    await buyMembership.updateOne(
+      {
+        _id: buy_membershipId,
+        "schedulePayments.Id": emiId,
+      },
+      {
+        $set: {
+          balance: balance,
+          "schedulePayments.$.status": "paid",
+          "schedulePayments.$.createdBy": createdBy,
+          "schedulePayments.$.paidDate": new Date(),
+        },
+      },
+      (err, data) => {
+        if (err) {
+          res.send({ error: err.message.replace(/\"/g, ""), success: false });
+        } else {
+          res.send({
+            message: "paymentStatus updated successfully",
+            succes: true,
+            error: false,
+          });
+        }
       }
-    },
-    (err,data)=>{
-      if(err){
-    res.send({ error: err.message.replace(/\"/g, ""), success: false });
-        
-      }else{
-        res.send({
-          message: "paymentStatus updated successfully",
-          succes: true,
-          error: data,
-        });
-      }
-    })
-
+    );
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
