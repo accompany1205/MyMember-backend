@@ -27,14 +27,14 @@ exports.update = async (req, res) => {
   try {
     if (req.body.isTerminate) {
       res.status(200).send({
-        message: "Membership is Terminated!",
+        message: "Membership is terminated!",
         success: true,
       });
     } else {
       if (type == "others") {
         await buyMembership.updateOne({ _id: membershipId }, req.body);
         res.status(200).send({
-          message: "buyMembership updated successfully",
+          message: "Membership updated successfully!",
           success: true,
         });
       } else if (type == "freeze") {
@@ -45,7 +45,7 @@ exports.update = async (req, res) => {
           },
         });
         res.status(200).send({
-          message: "Membership Freezed successfully",
+          message: "Membership freezed successfully",
           success: true,
         });
       } else if (type == "unfreeze") {
@@ -56,7 +56,7 @@ exports.update = async (req, res) => {
           },
         });
         res.status(200).send({
-          message: "Membership unFreezed successfully",
+          message: "Membership unfreezed successfully",
           success: true,
         });
       } else if (type == "forfeit") {
@@ -71,12 +71,12 @@ exports.update = async (req, res) => {
           (er, data) => {
             if (er) {
               res.send({
-                message: "Membership Forfeit failed",
+                message: "Membership forfeit failed!",
                 success: false,
               });
             } else {
               res.status(200).send({
-                message: "Membership Forfeit successfully",
+                message: "Membership forfeit successfully!",
                 success: true,
               });
             }
@@ -97,7 +97,7 @@ exports.update = async (req, res) => {
           (err, data) => {
             if (err) {
               res.send({
-                message: "Membership terminated failed!",
+                message: "Membership terminate failed!",
                 success: false,
               });
             } else {
@@ -124,12 +124,12 @@ exports.update = async (req, res) => {
           (err, data) => {
             if (err) {
               res.send({
-                message: "Membership refunded failed!",
+                message: "Membership refund failed!",
                 success: false,
               });
             } else {
               res.status(200).send({
-                message: "Membership refunded successfully",
+                message: "Membership refunded successfully!",
                 success: true,
               });
             }
@@ -167,8 +167,8 @@ exports.updatePayments = async (req, res) => {
           res.send({ error: err.message.replace(/\"/g, ""), success: false });
         } else {
           res.send({
-            message: "paymentStatus updated successfully",
-            succes: true,
+            message: "Payment Successfully Updated!",
+            success: true,
             error: false,
           });
         }
