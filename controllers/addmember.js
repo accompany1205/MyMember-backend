@@ -591,10 +591,9 @@ exports.active_trial_Std = async (req, res) => {
       {
         userId: req.params.userId,
         studentType: "Active Trial",
-      },
-      { firstName: 1 }
+      }
     )
-    // .populate("membership_details")  
+    .populate("membership_details")  
     .limit(pagination.limit)
     .skip(pagination.skip)
     .exec((err, active_trial) => {
