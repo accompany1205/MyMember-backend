@@ -7,7 +7,7 @@ const change_rank = require("../models/change_rank");
 const sentEmail = require("../models/emailSentSave");
 const sgmail = require("sendgrid-v3-node");
 const User = require("../models/user");
-const membershipModal = require("../models/membership");
+const buymembershipModal = require("../models/buy_membership");
 
 // const ManyStudents = require('../std.js');
 // const students = require('../std.js');
@@ -584,16 +584,14 @@ exports.active_trial_Std = async (req, res) => {
   var page_no = parseInt(req.params.page_no) || 0;
   var pagination = {
     limit: per_page,
-    skip: per_page * (page_no ),
+    skip: per_page * page_no,
   };
   addmemberModal
-    .find(
-      {
-        userId: req.params.userId,
-        studentType: "Active Trial",
-      }
-    )
-    .populate("membership_details")  
+    .find({
+      userId: req.params.userId,
+      studentType: "Active Trial",
+    })
+    .populate("membership_details")
     .limit(pagination.limit)
     .skip(pagination.skip)
     .exec((err, active_trial) => {
@@ -619,7 +617,7 @@ exports.leads_Std = async (req, res) => {
   var page_no = parseInt(req.params.page_no) || 0;
   var pagination = {
     limit: per_page,
-    skip: per_page * (page_no ),
+    skip: per_page * page_no,
   };
   addmemberModal
     .find({
@@ -653,7 +651,7 @@ exports.Former_Std = async (req, res) => {
   var page_no = parseInt(req.params.page_no) || 0;
   var pagination = {
     limit: per_page,
-    skip: per_page * (page_no ),
+    skip: per_page * page_no,
   };
   addmemberModal
     .find({
@@ -686,7 +684,7 @@ exports.active_Std = async (req, res) => {
   var page_no = parseInt(req.params.page_no) || 0;
   var pagination = {
     limit: per_page,
-    skip: per_page * (page_no ),
+    skip: per_page * page_no,
   };
   addmemberModal
     .find({
@@ -719,7 +717,7 @@ exports.Former_trial_Std = async (req, res) => {
   var page_no = parseInt(req.params.page_no) || 0;
   var pagination = {
     limit: per_page,
-    skip: per_page * (page_no ),
+    skip: per_page * page_no,
   };
   addmemberModal
     .find({
@@ -751,7 +749,7 @@ exports.camp_Std = async (req, res) => {
   var page_no = parseInt(req.params.page_no) || 0;
   var pagination = {
     limit: per_page,
-    skip: per_page * (page_no ),
+    skip: per_page * page_no,
   };
   addmemberModal
     .find({
@@ -783,7 +781,7 @@ exports.after_school_Std = async (req, res) => {
   var page_no = parseInt(req.params.page_no) || 0;
   var pagination = {
     limit: per_page,
-    skip: per_page * (page_no ),
+    skip: per_page * page_no,
   };
   addmemberModal
     .find({
@@ -833,7 +831,7 @@ exports.lastestMember = async (req, res) => {
   var page_no = parseInt(req.params.page_no) || 0;
   var pagination = {
     limit: per_page,
-    skip: per_page * (page_no ),
+    skip: per_page * page_no,
   };
   addmemberModal
     .find({

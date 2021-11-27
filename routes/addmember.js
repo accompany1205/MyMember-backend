@@ -42,7 +42,7 @@ const { addmember,
     invoice_details,
     ActiveMemberslist,
     ActiveMemberslistByProgramName,
-    collectionModify
+    collectionModify,
 
 } = require("../controllers/addmember")
 const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");

@@ -6,6 +6,8 @@ var addmemberModal = require("../models/addmember");
 const { errorHandler } = require("../helpers/dbErrorHandler");
 const _ = require("lodash");
 const Joi = require("@hapi/joi");
+var mongo = require("mongoose");
+
 const createEMIRecord = require("../Services/createEMi");
 // const ScheduleDateArray = require("../Services/scheduleDateArray");
 
@@ -527,4 +529,203 @@ exports.members_info = async (req, res) => {
   } catch (error) {
     res.send({ error: error.message.replace(/\"/g, ""), success: false });
   }
+};
+
+exports.lastestMembership = async (req, res) => {
+  var totalCount = await addmemberModal
+    .find({
+      userId: req.params.userId,
+    })
+    .countDocuments();
+
+  var per_page = parseInt(req.params.per_page) || 5;
+  var page_no = parseInt(req.params.page_no) || 0;
+  var pagination = {
+    limit: per_page,
+    skip: per_page * page_no,
+  };
+  buyMembership
+    .find(
+      {
+        userId: req.params.userId,
+      },
+      {
+        membership_name: 1,
+        totalp: 1,
+        mactive_date: 1,
+        payment_type: 1,
+        membership_status: 1,
+      }
+    )
+    .populate({
+      path: "studentInfo",
+      select: "firstName lastName school program studentType",
+    })
+    .sort({
+      createdAt: -1,
+    })
+    .limit(pagination.limit)
+    .skip(pagination.skip)
+    .exec((err, memberdata) => {
+      if (err) {
+        res.send({
+          error: "member data is not find",
+        });
+      } else {
+        res.send({ memberdata, totalCount: totalCount, success: true });
+      }
+    });
+};
+
+exports.thismonthMembership = async (req, res) => {
+  var totalCount = await addmemberModal
+    .find({
+      userId: req.params.userId,
+    })
+    .countDocuments();
+
+  var per_page = parseInt(req.params.per_page) || 5;
+  var page_no = parseInt(req.params.page_no) || 0;
+  var pagination = {
+    limit: per_page,
+    skip: per_page * page_no,
+  };
+  buyMembership
+    .find(
+      {
+        userId: req.params.userId,
+      },
+      {
+        membership_name: 1,
+        totalp: 1,
+        mactive_date: 1,
+        payment_type: 1,
+        membership_status: 1,
+      }
+    )
+    .populate({
+      path: "studentInfo",
+      select: "firstName lastName school program studentType",
+    })
+    .sort({
+      createdAt: -1,
+    })
+    .limit(pagination.limit)
+    .skip(pagination.skip)
+    .exec((err, memberdata) => {
+      if (err) {
+        res.send({
+          error: "member data is not find",
+        });
+      } else {
+        res.send({ memberdata, totalCount: totalCount, success: true });
+      }
+    });
+};
+
+exports.expiredMembership = async (req, res) => {
+  var totalCount = await addmemberModal
+    .find({
+      userId: req.params.userId,
+    })
+    .countDocuments();
+
+  var per_page = parseInt(req.params.per_page) || 5;
+  var page_no = parseInt(req.params.page_no) || 0;
+  var pagination = {
+    limit: per_page,
+    skip: per_page * page_no,
+  };
+  addmemberModal
+    .aggregate([
+      { $match: { userId: req.params.userId } },
+      {
+        $project: {
+          firstName: 1,
+          lastName: 1,
+          expiry_date: { $toDate: "$expiry_date" },
+          studentInfo: 1,
+          createdAt: 1,
+        },
+      },
+      // {
+      //   $lookup: {
+      //     from: "members",
+      //     localField: "studentInfo",
+      //     foreignField: "_id",
+      //     as: "data",
+      //   },
+      // },
+      {
+        $group: {
+          _id: "$studentInfo",
+          createdAt: { $last: "$createdAt" },
+          membership_name: { $first: "$membership_name" },
+          expiry_date: { $first: "$expiry_date" },
+          membership_name: { $first: "$membership_name" },
+
+          // studentInfo: { $last: "$studentInfo" },
+        },
+      },
+      {
+        $lookup: {
+          from: "members",
+          localField: "_id",
+          foreignField: "_id",
+          as: "data",
+        },
+      },
+      // {
+      //   $replaceRoot: {
+      //     newRoot: {
+      //       $mergeObjects: [{ $arrayElemAt: ["$data", 0] }, "$$ROOT"],
+      //     },
+      //   },
+      // },
+      {
+        $project: {
+          data: 1,
+          expiry_date: 1,
+          membership_name: 1,
+          createdAt: 1,
+          studentInfo: 1,
+        },
+      },
+      {
+        $match: { expiry_date: { $gte: new Date() } },
+      },
+      {
+        $sort: { expiry_date: 1 },
+      },
+    ])
+    // .find(
+    //   {
+    //     userId: req.params.userId,
+    //   },
+    //   {
+    //     membership_name: 1,
+    //     membership_status: 1,
+    //     expiry_date: 1,
+    //     createdAt:1
+    //   }
+    // )
+    // .populate({
+    //   path: "studentInfo",
+    //   select: "firstName lastName school program studentType primaryPhone",
+    //   // options: { sort: [['created', 'dsc']]
+    // })
+    // .sort({
+    //   createdAt: -1,
+    // })
+    // .limit(pagination.limit)
+    // .skip(pagination.skip)
+    .exec((err, memberdata) => {
+      if (err) {
+        res.send({
+          error: err,
+        });
+      } else {
+        res.send({ memberdata, totalCount: totalCount, success: true });
+      }
+    });
 };
