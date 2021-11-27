@@ -1,10 +1,15 @@
 const membershipFolder = require("../models/membershipFolder");
 
 exports.create_folder = (req, res) => {
-  var folderObj = new membershipFolder(req.body);
+  let userId = req.params.userId;
+
+  let folderObj = new membershipFolder({
+    folderName: req.body.folderName,
+    userId: userId,
+  });
   folderObj.save((err, folder) => {
     if (err) {
-      res.send({ error: "membership folder is not create" ,success: false});
+      res.send({ error: "membership folder is not create", success: false });
     } else {
       res.send({
         msg: "membership folder create successfully",
@@ -15,27 +20,34 @@ exports.create_folder = (req, res) => {
   });
 };
 exports.getFolders = (req, res) => {
-  const userId = req.body.userId;
-  folderObj.find({ userId }, (err, folder) => {
-    if (err) {
-      res.send({ error: "membership folder is not create", success: false});
-    } else {
-      res.send({
-        msg: "membership folder create successfully",
-        data: folder,
-        success: true,
-      });
-    }
-  });
+  const userId = req.params.userId;
+  membershipFolder
+    .find({ userId: userId })
+    .populate("membership")
+
+    .exec((err, folder) => {
+      if (err) {
+        res.send({ error: "membership folder is not create", success: false });
+      } else {
+        res.send({
+          msg: "membership folder create successfully",
+          data: folder,
+          success: true,
+        });
+      }
+    });
 };
 exports.update_folder = (req, res) => {
   membershipFolder
     .findByIdAndUpdate(req.params.folderId, req.body)
     .exec((err, updateFolder) => {
       if (err) {
-        res.send({ error: "membership folder is not update",success: false });
+        res.send({ error: "membership folder is not update", success: false });
       } else {
-        res.send({ msg: "membership folder is update successfully" ,success: true});
+        res.send({
+          msg: "membership folder is update successfully",
+          success: true,
+        });
       }
     });
 };
@@ -47,7 +59,10 @@ exports.delete_folder = (req, res) => {
       if (err) {
         res.send({ error: "membership folder is not remove", success: false });
       } else {
-        res.send({ msg: "membership folder remove successfully", success: true });
+        res.send({
+          msg: "membership folder remove successfully",
+          success: true,
+        });
       }
     }
   );

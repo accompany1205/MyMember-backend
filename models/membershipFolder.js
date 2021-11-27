@@ -13,6 +13,10 @@ const membershipFolderSchema = schema(
         ref: "membership",
       },
     ],
+    userId: {
+      type: String,
+      require: true,
+    },
   },
   { timestamps: true }
 );

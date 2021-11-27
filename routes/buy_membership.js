@@ -9,9 +9,6 @@ const { requireSignin,isAuth,verifySchool } = require("../controllers/auth");
 // router.get('/member/latest_membership/:userId/:page_no/:per_page', verifySchool, lastestMembership);
 router.get('/member/expired_thisMonth_Membership/:userId/:page_no/:per_page', verifySchool,thismonthMembership);
 router.get('/member/expired_Membership/:userId/:page_no/:per_page', verifySchool, expiredMembership);
-
-
-
 router.get("/membership/buy_membership_info_BymemberShipId/:userId/:membershipID",requireSignin ,membership_InfoById)
 router.get("/membership/buy_membership_info/:userId/:studentId",requireSignin,members_info)
 router.post("/membership/buy_membership/:userId/:studentId",requireSignin,buyMembership);
