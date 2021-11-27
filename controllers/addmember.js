@@ -1769,3 +1769,47 @@ exports.ActiveMemberslistByProgramName = async (req, res) => {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
 };
+
+exports.searchStudentbyType = async (req, res) => {
+  const search = req.query.search;
+  const userId = req.params.userId;
+  const studentType = req.params.studentType;
+  try {
+    const data = await addmemberModal.find(
+      {
+        userId: userId,
+        studentType: studentType,
+        $or: [
+          { firstName: { $regex: search, $options: "i" } },
+          { lastName: { $regex: search, $options: "i" } },
+          { email: { $regex: search, $options: "i" } },
+        ],
+      },
+    );
+    res.send(data);
+  } catch (er) {
+    console.log(er);
+  }
+};
+
+exports.searchStudentbyInterest = async (req, res) => {
+  const search = req.query.search;
+  const userId = req.params.userId;
+  const interest = req.params.intrested;
+  try {
+    const data = await addmemberModal.find(
+      {
+        userId: userId,
+        intrested: interest,
+        $or: [
+          { firstName: { $regex: search, $options: "i" } },
+          { lastName: { $regex: search, $options: "i" } },
+          { email: { $regex: search, $options: "i" } },
+        ],
+      },
+    );
+    res.send(data);
+  } catch (er) {
+    console.log(er);
+  }
+};
