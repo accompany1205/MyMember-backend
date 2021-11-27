@@ -42,6 +42,8 @@ const { addmember,
     invoice_details,
     ActiveMemberslist,
     ActiveMemberslistByProgramName,
+    searchStudentbyType,
+    searchStudentbyInterest,
     collectionModify,
 
 } = require("../controllers/addmember")
@@ -55,6 +57,9 @@ router.post('/bluck_student_add/:userId', bluckStd)
 router.get('/memeber/std_count/:userId', verifySchool, std_count)
 
 //dashboard routes
+router.get("/member/searchstudent_by_type/:userId/:studentType",searchStudentbyType)
+router.get("/member/searchstudent_by_interest/:userId/:intrested",searchStudentbyInterest)
+
 router.get('/member/student_type_count/:userId', studentCount)
 router.get('/member/latest_member/:userId/:page_no/:per_page', verifySchool, lastestMember);
 router.get('/member/expire_member/:userId', verifySchool, expire_member);
