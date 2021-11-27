@@ -7,8 +7,7 @@ const EmailSchema = schema({
         require: true
     },
     to: {
-        type: Array,
-        require: true
+        type: Array
     },
     title: {
         type: String,

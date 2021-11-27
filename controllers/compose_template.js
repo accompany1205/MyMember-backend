@@ -191,6 +191,16 @@ exports.status_update_template = (req, res) => {
   }
 };
 
+exports.allSent = async (req, res) => {
+  all_temp.find({userId: req.params.userId, is_Sent:true}).exec((err, data) =>{
+    if(err){
+      res.send({success:false, mag:"data not fetched"})
+    }else {
+      res.send({ success:true, msg:"fetched!", data })
+    }
+  })
+}
+
 exports.all_email_list = async (req, res) => {
   all_temp.find({ userId: req.params.userId }).exec((err, allTemp) => {
     if (err) {

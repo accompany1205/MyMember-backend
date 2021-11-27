@@ -353,7 +353,9 @@ exports.swapAndUpdate_template = async (req, res) => {
 };
 
 exports.update_template = (req, res) => {
-  all_temp.update(
+  let updtTemp = req.body;
+  
+  all_temp.updateOne(
     { _id: req.params.templateId },
     req.body,
     (err, updateTemp) => {

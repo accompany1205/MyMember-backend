@@ -51,8 +51,6 @@ exports.add_template = async (req, res) => {
     let adminId = req.params.adminId;
     let userData = await user.findById(adminId);
     if (userData.role === 1) {
-      let smartLists = req.body.smartLists;
-
       var obj = {
         title: req.body.title,
         subject: req.body.subject,
@@ -149,9 +147,9 @@ exports.update_template = async (req, res) => {
     var nD = moment(date_iso_follow).format("MM/DD/YYYY");
     addTemp.findByIdAndUpdate(templateId, obj, (err, updateTemp) => {
       if (err) {
-        res.send({ code: 400, msg: "template is not update" });
+        res.send({ success:false,code: 400, msg: "template is not update" });
       } else {
-       res.send({code: 200, msg:"schedulded succesfully"})
+       res.send({success:true, code: 200, msg:"schedulded succesfully"})
       }
     });
   }
