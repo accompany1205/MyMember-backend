@@ -26,7 +26,7 @@ exports.create = async (req, res) => {
                 success: false,
               });
             } else {
-              res.send({ msg: "membership created", success: true });
+              res.send({ msg: "membership created successfully", success: true });
             }
           }
         );
@@ -66,26 +66,70 @@ exports.membershipInfo = (req, res) => {
 };
 
 exports.remove = (req, res) => {
-  var membershipId = req.params.membershipId;
-  membershipModal.findByIdAndDelete(membershipId, (err, data) => {
-    if (err) {
-      res.send({ error: "membership is not delete" });
-    } else {
-      res.send({ error: "membership is delete successfully" });
-    }
-  });
+  const membershipId = req.params.membershipId;
+  try {
+    membershipModal.findByIdAndDelete(membershipId, (err, data) => {
+      if (err) {
+        res.send({ error: "membership is not delete" });
+      } else {
+        membershipFolder.updateOne(
+          { membership: data._id },
+          { $pull: { membership: data._id } },
+          function (err, temp) {
+            if (err) {
+              res.send({
+                error: "membership is not remove from folder",
+                success: false,
+              });
+            } else {
+              res.send({
+                msg: "membership is remove successfully",
+                success: true,
+              });
+            }
+          }
+        );
+        //   res.send({ error: data });
+      }
+    });
+  } catch (er) {
+    throw new Error(er);
+  }
 };
 
 exports.membershipUpdate = (req, res) => {
-  var membershipId = req.params.membershipId;
+  const membershipId = req.params.membershipId;
+  const new_folderId = req.body.folderId;
+  const old_folderId = req.body.old_folderId;
 
   membershipModal
     .updateOne({ _id: membershipId }, req.body)
-    .exec((err, data) => {
+
+    .exec(async (err, data) => {
       if (err) {
         res.send(err);
       } else {
-        res.send({ message: "membership updated successfully", success: true });
+        await membershipFolder.findByIdAndUpdate(new_folderId, {
+          $addToSet: { membership: membershipId },
+        });
+        await membershipFolder
+          .findByIdAndUpdate(old_folderId, {
+            $pull: { membership: membershipId },
+          })
+          .exec((err, temp) => {
+            if (err) {
+              res.send({
+                error: "membership is not update from folder",
+                success: false,
+              });
+            } else {
+              res.send({
+                msg: "membership is updated successfully",
+                success: true,
+              });
+            }
+          });
+        // res.send({ message: "membership updated successfully", success: dat });
       }
     });
 };

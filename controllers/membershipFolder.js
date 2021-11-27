@@ -9,7 +9,7 @@ exports.create_folder = (req, res) => {
   });
   folderObj.save((err, folder) => {
     if (err) {
-      res.send({ error: "membership folder is not create", success: false });
+      res.send({ error: "Folder name already exist!", success: false });
     } else {
       res.send({
         msg: "membership folder create successfully",
@@ -45,7 +45,7 @@ exports.update_folder = (req, res) => {
         res.send({ error: "membership folder is not update", success: false });
       } else {
         res.send({
-          msg: "membership folder is update successfully",
+          msg: "Folder is update successfully",
           success: true,
         });
       }
@@ -57,10 +57,10 @@ exports.delete_folder = (req, res) => {
     { _id: req.params.folderId },
     (err, delFolder) => {
       if (err) {
-        res.send({ error: "membership folder is not remove", success: false });
+        res.send({ error: " folder is not remove", success: false });
       } else {
         res.send({
-          msg: "membership folder remove successfully",
+          msg: "Folder removed successfully",
           success: true,
         });
       }
