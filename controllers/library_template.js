@@ -4,6 +4,7 @@ const auth_Key = require("../models/email_key");
 const async = require("async");
 const sgMail = require("sendgrid-v3-node");
 const moment = require("moment");
+const cloudUrl = require("../gcloud/imageUrl");
 const cron = require("node-cron");
 const ObjectId = require("mongodb").ObjectId;
 
@@ -83,9 +84,17 @@ exports.add_template = async (req, res) => {
     repeat_mail,
     sent_date,
     follow_up,
+    smartLists
   } = req.body || {};
   let { userId, folderId } = req.params || {};
-
+  if(to && smartLists){
+    throw new Error("Either select send-To or smart-list")
+  }
+  if(!to){
+    smartLists.map(lists => {
+      to = [...to, ...lists.smrtList]
+    });
+  }
   const obj = {
     to,
     from,
@@ -102,8 +111,18 @@ exports.add_template = async (req, res) => {
     category: "library",
     userId,
     folderId,
+    attachments,
     templete_Id,
+    smartLists
   };
+  const promises = []
+  if (req.files) {
+    (req.files).map(file => {
+      promises.push(cloudUrl.imageUrl(file))
+    });
+    var attachments = await Promise.all(promises);
+  }
+  obj.attachments = attachments
 
   sent_date = moment(sent_date).format("YYYY-MM-DD");
   let scheduleDateOfMonth = moment(sent_date).format("DD");

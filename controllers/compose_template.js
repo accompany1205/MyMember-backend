@@ -270,9 +270,17 @@ exports.add_template = async (req, res) => {
     repeat_mail,
     sent_date,
     follow_up,
+    smartLists
   } = req.body || {};
   let { userId, folderId } = req.params || {};
-
+  if(to && smartLists){
+    throw new Error("Either select send-To or smart-list")
+  }
+  if(!to){
+    smartLists.map(lists => {
+      to = [...to, ...lists.smrtList]
+    });
+  }
   const obj = {
     to,
     from,
@@ -290,7 +298,8 @@ exports.add_template = async (req, res) => {
     userId,
     folderId,
     templete_Id,
-    attachments
+    attachments,
+    smartLists
   };
   const promises = []
   if (req.files) {
@@ -364,9 +373,9 @@ var emailCronFucntionality = async () => {
   scheduledListing.forEach(async (ele) => {
     let sentDate = ele.sent_date;
     let mailId = ele._id;
-    ele.attachments.map(() => {
+    // ele.attachments.map(() => {
 
-    })
+    // })
     let currentDate = moment().format("YYYY-MM-DD");
     if (sentDate === currentDate && !ele.is_Sent) {
       const emailData = {
