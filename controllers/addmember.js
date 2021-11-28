@@ -1113,24 +1113,47 @@ exports.collectionModify = async (req, res) => {
   let LittleTiger = [];
 
   // membership Scrip
-  // try {
-  //   let users = await User.find();
-  //   users.forEach(async element => {
-  //     if(element._id !== "619155201e2a465ca222dfe0"){
-  //       var membershipObj = new membershipModal(
-  //         {"isfavorite":0,"membership_name":"BBC 33 Monthly E","color":"#969696","membership_type":"Taekwondo","duration_time":"33","duration_type":"month","total_price":6897,"down_payment":418,"payment_type":"monthly","balance":6479,"due_every":"1","userId":element._id});
-  //       var member = await membershipObj.save();
-  //       console.log("member",member)
-  //     }
-  //   });
+  try {
+    let users = await addmemberModal.aggregate([
+      {
+        $match: { userId: "606aea95a145ea2d26e0f1ab" }
+      },
 
-  //   res.json({
-  //     msg: 'success',
-  //     users
-  //   })
-  // } catch (err) {
-  //   console.log(err)
-  // }
+      {
+        $group: {
+          _id: "$_id"
+          , totalclass: { $sum: 1 }
+        }
+      },
+      // {
+      //   $facet: {
+      //     totalCount: [
+      //       {
+      //         $count: 'count'
+      //       }
+      //     ]
+      //   }
+      // }
+
+
+    ])
+    //   let users = await User.find();
+    //   users.forEach(async element => {
+    //     if(element._id !== "619155201e2a465ca222dfe0"){
+    //       var membershipObj = new membershipModal(
+    //         {"isfavorite":0,"membership_name":"BBC 33 Monthly E","color":"#969696","membership_type":"Taekwondo","duration_time":"33","duration_type":"month","total_price":6897,"down_payment":418,"payment_type":"monthly","balance":6479,"due_every":"1","userId":element._id});
+    //       var member = await membershipObj.save();
+    //       console.log("member",member)
+    //     }
+    //   });
+
+    res.send({
+      msg: 'success',
+      users
+    })
+  } catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+  }
 };
 
 exports.birth_next_month = (req, res) => {
@@ -1838,7 +1861,7 @@ exports.active_trial_this_month = async (req, res) => {
           }
         },
         {
-          $project: { createdAt: 1, firstName: 1, lastName: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1 }
+          $project: { createdAt: 1,status:1, firstName: 1, lastName: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1, primaryPhone: 1 }
         },
         {
           $sort: {
@@ -1866,7 +1889,7 @@ exports.active_trial_this_month = async (req, res) => {
             error: err,
           });
         } else {
-          res.send({ memberdata, success: true });
+          res.send({ data: memberdata[0].paginatedResults, totalCount: memberdata[0].totalCount[0].count, success: true });
         }
       });
   }
@@ -1898,7 +1921,7 @@ exports.active_trial_past3_month = async (req, res) => {
 
         {
           $project: {
-            firstName: 1, lastName: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1,
+            firstName: 1, lastName: 1,status:1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1, primaryPhone: 1,
             dayssince: {
               $floor: {
                 $divide: [{ $subtract: [new Date(), '$createdAt'] }, 1000 * 60 * 60 * 24]
@@ -1936,7 +1959,7 @@ exports.active_trial_past3_month = async (req, res) => {
             error: err,
           });
         } else {
-          res.send({ memberdata, success: true });
+          res.send({ data: memberdata[0].paginatedResults, totalCount: memberdata[0].totalCount[0].count, success: true });
         }
       });
   }
@@ -1969,7 +1992,7 @@ exports.leads_this_month = async (req, res) => {
           }
         },
         {
-          $project: { createdAt: 1, firstName: 1, lastName: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1 }
+          $project: { createdAt: 1, status:1,firstName: 1, lastName: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1, primaryPhone: 1 }
         },
         {
           $sort: {
@@ -1986,7 +2009,8 @@ exports.leads_this_month = async (req, res) => {
               }
             ]
           }
-        }
+        },
+
       ])
       .exec((err, memberdata) => {
         if (err) {
@@ -1994,7 +2018,7 @@ exports.leads_this_month = async (req, res) => {
             error: err,
           });
         } else {
-          res.send({ memberdata, success: true });
+          res.send({ data: memberdata[0].paginatedResults, totalCount: memberdata[0].totalCount[0].count, success: true });
         }
       });
   }
@@ -2025,7 +2049,7 @@ exports.leads_past3_month = async (req, res) => {
 
         {
           $project: {
-            firstName: 1, lastName: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1,
+            firstName: 1, lastName: 1, status:1,program: 1, primaryPhone: 1, studentType: 1, createdAt: 1, primaryPhone: 1,
             dayssince: {
               $floor: {
                 $divide: [{ $subtract: [new Date(), '$createdAt'] }, 1000 * 60 * 60 * 24]
@@ -2061,7 +2085,7 @@ exports.leads_past3_month = async (req, res) => {
             error: err,
           });
         } else {
-          res.send({ memberdata, success: true });
+          res.send({ data: memberdata[0].paginatedResults, totalCount: memberdata[0].totalCount[0].count, success: true });
         }
       });
   }
