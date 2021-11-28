@@ -113,7 +113,7 @@ exports.sendEmail = async (req, res) => {
                             res.send({ error: 'email details is not save' })
                         }
                         else {
-                            emailSent.findByIdAndUpdate(emailSave._id, { userId: req.params.userId, email_type: 'sent', category: 'compose' })
+                            emailSent.findByIdAndUpdate(emailSave._id, { userId: req.params.userId, is_Sent: true, category: 'compose' })
                                 .exec((err, emailUpdate) => {
                                     if (err) {
                                         res.send({ error: 'user id is not update in sent email' })

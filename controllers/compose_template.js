@@ -192,7 +192,7 @@ exports.status_update_template = (req, res) => {
 };
 
 exports.all_email_list = async (req, res) => {
-  all_temp.find({ userId: req.params.userId }).exec((err, allTemp) => {
+  all_temp.find({ userId: req.params.userId ,is_Sent:true}).exec((err, allTemp) => {
     if (err) {
       res.send({ code: 400, msg: "email list not found" });
     } else {

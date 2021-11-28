@@ -624,6 +624,7 @@ exports.thismonthMembership = async (req, res) => {
 };
 
 exports.expiredMembership = async (req, res) => {
+  const userId = req.params.userId;
   var totalCount = await addmemberModal
     .find({
       userId: req.params.userId,
@@ -636,45 +637,45 @@ exports.expiredMembership = async (req, res) => {
     limit: per_page,
     skip: per_page * page_no,
   };
-  addmemberModal
+  buyMembership
     .aggregate([
       { $match: { userId: req.params.userId } },
       {
         $project: {
-          firstName: 1,
-          lastName: 1,
+          payment_type: 1,
+          membership_name: 1,
           expiry_date: { $toDate: "$expiry_date" },
           studentInfo: 1,
           createdAt: 1,
         },
       },
-      // {
-      //   $lookup: {
-      //     from: "members",
-      //     localField: "studentInfo",
-      //     foreignField: "_id",
-      //     as: "data",
-      //   },
-      // },
-      {
-        $group: {
-          _id: "$studentInfo",
-          createdAt: { $last: "$createdAt" },
-          membership_name: { $first: "$membership_name" },
-          expiry_date: { $first: "$expiry_date" },
-          membership_name: { $first: "$membership_name" },
-
-          // studentInfo: { $last: "$studentInfo" },
-        },
-      },
       {
         $lookup: {
           from: "members",
-          localField: "_id",
+          localField: "studentInfo",
           foreignField: "_id",
           as: "data",
         },
       },
+      // {
+      //   $group: {
+      //     _id: "$studentInfo",
+      //     createdAt: { $last: "$createdAt" },
+      //     membership_name: { $first: "$membership_name" },
+      //     expiry_date: { $first: "$expiry_date" },
+      //     membership_name: { $first: "$membership_name" },
+
+      //     // studentInfo: { $last: "$studentInfo" },
+      //   },
+      // },
+      // {
+      //   $lookup: {
+      //     from: "members",
+      //     localField: "_id",
+      //     foreignField: "_id",
+      //     as: "data",
+      //   },
+      // },
       // {
       //   $replaceRoot: {
       //     newRoot: {
@@ -682,43 +683,22 @@ exports.expiredMembership = async (req, res) => {
       //     },
       //   },
       // },
-      {
-        $project: {
-          data: 1,
-          expiry_date: 1,
-          membership_name: 1,
-          createdAt: 1,
-          studentInfo: 1,
-        },
-      },
-      {
-        $match: { expiry_date: { $gte: new Date() } },
-      },
-      {
-        $sort: { expiry_date: 1 },
-      },
+      // {
+      //   $project: {
+      //     data: 1,
+      //     expiry_date: 1,
+      //     membership_name: 1,
+      //     createdAt: 1,
+      //     studentInfo: 1,
+      //   },
+      // },
+      // {
+      //   $match: { expiry_date: { $gte: new Date() } },
+      // },
+      // {
+      //   $sort: { expiry_date: 1 },
+      // },
     ])
-    // .find(
-    //   {
-    //     userId: req.params.userId,
-    //   },
-    //   {
-    //     membership_name: 1,
-    //     membership_status: 1,
-    //     expiry_date: 1,
-    //     createdAt:1
-    //   }
-    // )
-    // .populate({
-    //   path: "studentInfo",
-    //   select: "firstName lastName school program studentType primaryPhone",
-    //   // options: { sort: [['created', 'dsc']]
-    // })
-    // .sort({
-    //   createdAt: -1,
-    // })
-    // .limit(pagination.limit)
-    // .skip(pagination.skip)
     .exec((err, memberdata) => {
       if (err) {
         res.send({
