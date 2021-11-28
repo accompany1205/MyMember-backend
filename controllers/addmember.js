@@ -820,7 +820,7 @@ exports.studentinfo = (req, res) => {
     });
 };
 
-exports.lastestMember = async (req, res) => {
+exports.latestMember = async (req, res) => {
   var totalCount = await addmemberModal
     .find({
       userId: req.params.userId,
@@ -1787,8 +1787,8 @@ exports.searchStudentbyType = async (req, res) => {
       },
     );
     res.send(data);
-  } catch (er) {
-    console.log(er);
+  } catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
 };
 
@@ -1813,3 +1813,260 @@ exports.searchStudentbyInterest = async (req, res) => {
     console.log(er);
   }
 };
+
+
+exports.active_trial_this_month = async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+
+    var per_page = parseInt(req.params.per_page) || 5;
+    var page_no = parseInt(req.params.page_no) || 0;
+    var pagination = {
+      limit: per_page,
+      skip: per_page * page_no,
+    };
+    await addmemberModal
+      .aggregate([
+        {
+          $match: {
+            userId: userId,
+            studentType: 'Active Trial',
+            $expr: {
+              $eq: [{ $month: '$createdAt' }, { $month: new Date() }],
+            },
+          }
+        },
+        {
+          $project: { createdAt: 1, firstName: 1, lastName: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1 }
+        },
+        {
+          $sort: {
+            createdAt: -1,
+          }
+        },
+
+        {
+          $facet: {
+            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+            totalCount: [
+              {
+                $count: 'count'
+              }
+            ]
+          }
+        }
+
+      ])
+
+
+      .exec((err, memberdata) => {
+        if (err) {
+          res.send({
+            error: err,
+          });
+        } else {
+          res.send({ memberdata, success: true });
+        }
+      });
+  }
+  catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+
+  }
+}
+
+exports.active_trial_past3_month = async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+
+    var per_page = parseInt(req.params.per_page) || 5;
+    var page_no = parseInt(req.params.page_no) || 0;
+    var pagination = {
+      limit: per_page,
+      skip: per_page * page_no,
+    };
+    await addmemberModal
+      .aggregate([
+        {
+          $match: {
+            userId: userId,
+            studentType: 'Active Trial',
+          }
+        },
+
+        {
+          $project: {
+            firstName: 1, lastName: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1,
+            dayssince: {
+              $floor: {
+                $divide: [{ $subtract: [new Date(), '$createdAt'] }, 1000 * 60 * 60 * 24]
+              }
+            }
+          }
+        },
+
+        { $match: { dayssince: { $lte: 90 } } }
+
+        ,
+        {
+          $sort: {
+            dayssince: -1,
+          }
+        },
+
+        {
+          $facet: {
+            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+            totalCount: [
+              {
+                $count: 'count'
+              }
+            ]
+          }
+        }
+
+      ])
+
+
+      .exec((err, memberdata) => {
+        if (err) {
+          res.send({
+            error: err,
+          });
+        } else {
+          res.send({ memberdata, success: true });
+        }
+      });
+  }
+  catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+
+  }
+}
+
+exports.leads_this_month = async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+
+    var per_page = parseInt(req.params.per_page) || 5;
+    var page_no = parseInt(req.params.page_no) || 0;
+    var pagination = {
+      limit: per_page,
+      skip: per_page * page_no,
+    };
+    await addmemberModal
+      .aggregate([
+        {
+          $match: {
+            userId: userId,
+            studentType: 'Leads',
+            $expr: {
+              $eq: [{ $month: '$createdAt' }, { $month: new Date() }],
+            },
+          }
+        },
+        {
+          $project: { createdAt: 1, firstName: 1, lastName: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1 }
+        },
+        {
+          $sort: {
+            createdAt: -1,
+          }
+        },
+
+        {
+          $facet: {
+            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+            totalCount: [
+              {
+                $count: 'count'
+              }
+            ]
+          }
+        }
+      ])
+      .exec((err, memberdata) => {
+        if (err) {
+          res.send({
+            error: err,
+          });
+        } else {
+          res.send({ memberdata, success: true });
+        }
+      });
+  }
+  catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+
+  }
+}
+exports.leads_past3_month = async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+
+    var per_page = parseInt(req.params.per_page) || 5;
+    var page_no = parseInt(req.params.page_no) || 0;
+    var pagination = {
+      limit: per_page,
+      skip: per_page * page_no,
+    };
+    await addmemberModal
+      .aggregate([
+        {
+          $match: {
+            userId: userId,
+            studentType: 'Leads',
+          }
+        },
+
+        {
+          $project: {
+            firstName: 1, lastName: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1,
+            dayssince: {
+              $floor: {
+                $divide: [{ $subtract: [new Date(), '$createdAt'] }, 1000 * 60 * 60 * 24]
+              }
+            }
+          }
+        },
+
+        { $match: { dayssince: { $lte: 90 } } }
+
+        ,
+        {
+          $sort: {
+            dayssince: -1,
+          }
+        },
+
+        {
+          $facet: {
+            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+            totalCount: [
+              {
+                $count: 'count'
+              }
+            ]
+          }
+        }
+
+      ])
+      .exec((err, memberdata) => {
+        if (err) {
+          res.send({
+            error: err,
+          });
+        } else {
+          res.send({ memberdata, success: true });
+        }
+      });
+  }
+  catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+
+  }
+}
