@@ -7,10 +7,21 @@ const { errorHandler } = require("../helpers/dbErrorHandler");
 const _ = require("lodash");
 const Joi = require("@hapi/joi");
 var mongo = require("mongoose");
+const { valorTechPaymentGateWay } = require("./valorTechPaymentGateWay");
 
 const createEMIRecord = require("../Services/createEMi");
 // const ScheduleDateArray = require("../Services/scheduleDateArray");
 
+const randomNumber = (length, addNumber) => {
+  return parseInt(
+    (Math.floor(Math.random() * length) + addNumber).toString().substring(1)
+  );
+};
+exports.addSubscription = async (req, res) => {
+  const payload = req.body;
+  const resp = await valorTechPaymentGateWay.addSubscription()
+  res.send(resp)
+}
 exports.membership_Info = (req, res) => {
   const id = req.params.membershipId;
   buy_membership
