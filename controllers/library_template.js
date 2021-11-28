@@ -87,10 +87,10 @@ exports.add_template = async (req, res) => {
     smartLists
   } = req.body || {};
   let { userId, folderId } = req.params || {};
-  if(to && smartLists){
+  if (to && smartLists) {
     throw new Error("Either select send-To or smart-list")
   }
-  if(!to){
+  if (!to) {
     smartLists.map(lists => {
       to = [...to, ...lists.smrtList]
     });
@@ -210,16 +210,33 @@ exports.single_tem_updte_status = (req, res) => {
   }
 };
 
-exports.update_template = (req, res) => {
-  All_Temp.update({ _id: req.params.templateId }, req.body).exec(
+exports.update_template = async (req, res) => {
+  let updateTemplate = req.body;
+  if (!updateTemplate.to) {
+    updateTemplate.smartLists.map(lists => {
+      updateTemplate.to = [...updateTemplate.to, ...lists.smrtList]
+    });
+  } else {
+    updateTemplate.smartLists = []
+  }
+  const promises = []
+  if (req.files) {
+    (req.files).map(file => {
+      promises.push(cloudUrl.imageUrl(file))
+    });
+    var allAttachments = await Promise.all(promises);
+  }
+  updateTemplate.attachments = allAttachments;
+
+  All_Temp.updateOne({ _id: req.params.templateId }, req.body).exec(
     (err, updateTemp) => {
       if (err) {
-        res.send({ code: 400, msg: "template is not update" });
+        res.send({ success:false,code: 400, msg: "template is not update" });
       } else {
         res.send({
+          success:true,
           code: 200,
-          msg: "template update success",
-          result: updateTemp,
+          msg: "template update success"
         });
       }
     }
@@ -311,16 +328,16 @@ exports.multipal_temp_remove = (req, res) => {
     if (err) {
       res.json({ code: 400, msg: "templates not remove" });
     } else {
-        for(let id of templateIds){
-            library_folder.updateOne(
-                { _id: folderId },
-                { $pull: { template: ObjectId(id) } }
-              ).then( (err, res) => {
-                if(err){
-                  throw new Error(err);
-                }
-              })
-        }
+      for (let id of templateIds) {
+        library_folder.updateOne(
+          { _id: folderId },
+          { $pull: { template: ObjectId(id) } }
+        ).then((err, res) => {
+          if (err) {
+            throw new Error(err);
+          }
+        })
+      }
       res.json({ success: true, msg: "template is remove successfully" });
     }
   });
