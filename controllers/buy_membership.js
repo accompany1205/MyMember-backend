@@ -2,7 +2,6 @@ const membershipModal = require("../models/membership");
 const moment = require("moment");
 const buyMembership = require("../models/buy_membership");
 const AddMember = require("../models/addmember");
-var addmemberModal = require("../models/addmember");
 const { errorHandler } = require("../helpers/dbErrorHandler");
 const _ = require("lodash");
 const Joi = require("@hapi/joi");
@@ -10,18 +9,14 @@ var mongo = require("mongoose");
 const { valorTechPaymentGateWay } = require("./valorTechPaymentGateWay");
 
 const createEMIRecord = require("../Services/createEMi");
-// const ScheduleDateArray = require("../Services/scheduleDateArray");
 
 const randomNumber = (length, addNumber) => {
   return parseInt(
     (Math.floor(Math.random() * length) + addNumber).toString().substring(1)
   );
 };
-exports.addSubscription = async (req, res) => {
-  const payload = req.body;
-  const resp = await valorTechPaymentGateWay.addSubscription()
-  res.send(resp)
-}
+
+
 exports.membership_Info = (req, res) => {
   const id = req.params.membershipId;
   buy_membership
@@ -197,7 +192,7 @@ exports.remove = (req, res) => {
   buyMembership
     .deleteOne({ _id: id })
     .then((resp) => {
-      addmemberModal.update(
+      AddMember.update(
         { membership_details: id },
         { $pull: { membership_details: id } },
         function (err, data) {
@@ -267,7 +262,7 @@ exports.remove = (req, res) => {
 //               $push: { membership_details: data._id },
 //             };
 
-//             addmemberModal.findOneAndUpdate(query, update, (err, stdData) => {
+//             AddMember.findOneAndUpdate(query, update, (err, stdData) => {
 //               if (err) {
 //                 res.send({ error: "membership id is not add in student" });
 //               } else {
@@ -318,7 +313,7 @@ exports.remove = (req, res) => {
 //               $set: { status: "active" },
 //               $push: { membership_details: data._id },
 //             };
-//             addmemberModal.findOneAndUpdate(query, update, (err, stdData) => {
+//             AddMember.findOneAndUpdate(query, update, (err, stdData) => {
 //               if (err) {
 //                 res.send({ error: "membership id is not add in student" });
 //               } else {
@@ -360,72 +355,73 @@ exports.remove = (req, res) => {
 exports.buyMembership = async (req, res) => {
   const userId = req.params.userId;
   const studentId = req.params.studentId;
-  const membershipData = req.body;
+  const valor_payload = req.body.valor_payload
+  const membershipData = req.body.membership_details
+
   membershipData.userId = userId;
   try {
-    // const memberships = await buyMembership.find({
-    //   studentInfo: { $in: [studentId] },
-    //   membershipIds: { $in: [membershipData.membershipId] },
-    //   membership_status:"Active"
-    // });
-    // if (memberships.length) {
-    //   console.log(memberships)
 
-    //   res.send({message:"this membership already bought!",success:false});
-    // } else {
     if (membershipData.isEMI) {
-      if (membershipData.payment_time > 0 && membershipData.balance > 0) {
-        membershipData.schedulePayments = createEMIRecord(
-          membershipData.payment_time,
-          membershipData.payment_money,
-          membershipData.mactive_date,
-          membershipData.createdBy,
-          membershipData.payment_type
-        );
-        membershipData.membership_status = "Active";
-        let membership = new buyMembership(membershipData);
-        membership.save((err, data) => {
-          if (err) {
-            res.send({ error: "membership not buy" });
-          } else {
-            update = {
-              $set: { status: "active" },
-              $push: { membership_details: data._id },
-            };
-            addmemberModal.findOneAndUpdate(
-              { _id: studentId },
-              update,
-              (err, stdData) => {
-                if (err) {
-                  res.send({ error: "membership id is not add in student" });
-                } else {
-                  buyMembership
-                    .findOneAndUpdate(
-                      { _id: data._id },
-                      {
-                        $push: {
-                          studentInfo: stdData._id,
-                          membershipIds: membershipData.membershipId,
-                        },
-                      }
-                    )
-                    .exec(async (err, result) => {
-                      if (err) {
-                        res.send({
-                          error: "student id is not add in buy membership",
-                        });
-                      } else {
-                        res.send({
-                          msg: "membership purchase successfully",
-                          data: result,
-                        });
-                      }
-                    });
-                }
-              }
-            );
-          }
-        });
+      if (membershipData.ptype == "card" && membershipData.balance > 0) {
+
+
+        const resp = await valorTechPaymentGateWay.addSubscription(valor_payload)
+        if (resp.data.error_code == 00) {
+          let subscription_id = resp.data.subscription_id
+          res.send(resp.data)
+        }
+
+        // membershipData.schedulePayments = createEMIRecord(
+        //   membershipData.payment_time,
+        //   membershipData.payment_money,
+        //   membershipData.mactive_date,
+        //   membershipData.createdBy,
+        //   membershipData.payment_type
+        // );
+        // membershipData.membership_status = "Active";
+        // let membership = new buyMembership(membershipData);
+        // membership.save((err, data) => {
+        //   if (err) {
+        //     res.send({ error: "membership not buy" });
+        //   } else {
+        //     update = {
+        //       $set: { status: "active" },
+        //       $push: { membership_details: data._id },
+        //     };
+        //     AddMember.findOneAndUpdate(
+        //       { _id: studentId },
+        //       update,
+        //       (err, stdData) => {
+        //         if (err) {
+        //           res.send({ error: "membership id is not add in student" });
+        //         } else {
+        //           buyMembership
+        //             .findOneAndUpdate(
+        //               { _id: data._id },
+        //               {
+        //                 $push: {
+        //                   studentInfo: stdData._id,
+        //                   membershipIds: membershipData.membershipId,
+        //                 },
+        //               }
+        //             )
+        //             .exec(async (err, result) => {
+        //               if (err) {
+        //                 res.send({
+        //                   error: "student id is not add in buy membership",
+        //                 });
+        //               } else {
+        //                 res.send({
+        //                   msg: "membership purchase successfully",
+        //                   data: result,
+        //                 });
+        //               }
+        //             });
+        //         }
+        //       }
+        //     );
+        //   }
+        // });
       } else {
         res.send({ message: "payment_time must required", success: false });
       }
@@ -442,7 +438,7 @@ exports.buyMembership = async (req, res) => {
               $set: { status: "active" },
               $push: { membership_details: data._id },
             };
-            addmemberModal.findOneAndUpdate(
+            AddMember.findOneAndUpdate(
               { _id: studentId },
               update,
               (err, stdData) => {
@@ -543,7 +539,7 @@ exports.members_info = async (req, res) => {
 };
 
 exports.lastestMembership = async (req, res) => {
-  var totalCount = await addmemberModal
+  var totalCount = await AddMember
     .find({
       userId: req.params.userId,
     })
@@ -589,7 +585,7 @@ exports.lastestMembership = async (req, res) => {
 };
 
 exports.thismonthMembership = async (req, res) => {
-  var totalCount = await addmemberModal
+  var totalCount = await AddMember
     .find({
       userId: req.params.userId,
     })
@@ -636,7 +632,7 @@ exports.thismonthMembership = async (req, res) => {
 
 exports.expiredMembership = async (req, res) => {
   const userId = req.params.userId;
-  var totalCount = await addmemberModal
+  var totalCount = await AddMember
     .find({
       userId: req.params.userId,
     })
