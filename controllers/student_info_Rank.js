@@ -5,7 +5,6 @@ const student_info_Rank = require('../models/student_info_Rank')
 const RecommendedForTest = require('../models/recommendedForTest');
 const RegisterdForTest = require('../models/registerdForTest');
 const Member = require('../models/addmember');
-
 const Joi = require('@hapi/joi')
 
 
@@ -73,11 +72,12 @@ exports.updateRank = async (req, res) => {
     try {
         const rankId = req.params.rankId;
         const studentId = req.params.studentId;
-        const cRank = req.body.current_rank;
-        const nRank = req.body.next_rank;
+        const cRank = req.body.current_rank_name;
+        const nRank = req.body.next_rank_name;
         const program = req.body.programName;
         const data1 = await program_rank.findOne({ rank_name: cRank }, { _id: 0, rank_image: 1, rank_name: 1, day_to_ready: 1 })
         const data2 = await program_rank.findOne({ rank_name: nRank }, { _id: 0, rank_image: 1, rank_name: 1, day_to_ready: 1 })
+        cosnole.log("---->",data2.rank_image, data1.rank_image)
         if(!data1.rank_image || !data2.rank_image){
             throw new Error("Either Current-Rank or Next-Rank don't have rank Image")
         }

@@ -5,6 +5,8 @@ const async = require("async");
 moment = require("moment");
 const cron = require("node-cron");
 const sgMail = require("sendgrid-v3-node");
+const cloudUrl = require("../../gcloud/imageUrl");
+const ObjectId = require("mongodb").ObjectId;
 
 function timefun(sd, st) {
   var date = sd;
@@ -95,99 +97,68 @@ exports.add_template = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error);
+    throw new Error(error)
   }
 };
 
 exports.update_template = async (req, res) => {
-  let { to, from, sent_time, repeat_mail, sent_date, follow_up } =
+  let { to, from, sent_time, repeat_mail, sent_date, follow_up, smartLists } =
     req.body || {};
   let { adminId, templateId } = req.params || {};
-
+  to = JSON.parse(to);
+  smartLists = JSON.parse(smartLists);
+  if(!to && !smartLists){
+    throw new Error("Select atleat send-to or smart-List")
+  }
+  if (to && smartLists) {
+    throw new Error("Either select send-To or smart-list")
+  }
+  if (!to) {
+    smartLists.map(lists => {
+      to = [...to, ...lists.smrtList]
+    });
+  }
   let obj = {
     to,
     from,
     sent_time,
     DateT: date_iso_follow,
-    sent_date: nD,
+    sent_date,
     repeat_mail,
     follow_up,
     email_type: "schedule",
     email_status: true,
     category: "system",
+    attachments,
+    smartLists
   };
-
-  let userData = await user.findById(adminId);
-  if (userData.role === 1) {
-    let scheduleDateOfMonth = moment(sent_date).format("DD");
-    let scheduleMonth = moment(sent_date).format("MM");
-    let scheduleDay = moment(sent_date).format("dddd");
-
-    if (req.body.follow_up === 0) {
-      var date_iso = timefun(req.body.sent_date, req.body.sent_time);
-      obj.DateT = date_iso;
-    } else if (req.body.follow_up < 0) {
-      res.send({ code: 400, msg: "follow up not set less then 0" });
-    } else {
-      var date_iso_follow = timefun(req.body.sent_date, req.body.sent_time);
-      date_iso_follow.setDate(date_iso_follow.getDate() + req.body.follow_up);
-      var nD = moment(date_iso_follow).format("MM/DD/YYYY");
-      addTemp.findByIdAndUpdate(templateId, obj, (err, updateTemp) => {
-        if (err) {
-          res.send({ code: 400, msg: "template is not update" });
-        } else {
-          try {
-            cron.schedule(
-              `59 23 ${scheduleDateOfMonth} ${scheduleMonth} ${scheduleDay}`,
-              async function () {
-                const emailData = {
-                  sendgrid_key: process.env.SENDGRID_API_KEY,
-                  to: req.body.to,
-                  from_email: req.body.from,
-                  from_name: "noreply@gmail.com",
-                };
-
-                emailData.subject = updateTemp.subject;
-                emailData.content = updateTemp.template;
-                sgMail
-                  .send_via_sendgrid(emailData)
-                  .then((data) => {
-                    addTemp.findByIdAndUpdate(
-                      templateId,
-                      { is_Sent: true },
-                      async (er, data) => {
-                        if (er) {
-                          res.send({ error: "Email not sent", success: false });
-                        } else {
-                          res.send({
-                            msg: "Email sent Successfully",
-                            success: true,
-                          });
-                        }
-                      }
-                    );
-                  })
-                  .catch((err) => {
-                    res.send({
-                      error: err.message.replace(/\"/g, ""),
-                      success: false,
-                    });
-                  });
-              }
-            );
-          } catch (err) {
-            res.send({ error: "email details is not save", success: false });
-          }
-        }
-      });
-    }
+  const promises = []
+  if (req.files) {
+    (req.files).map(file => {
+      promises.push(cloudUrl.imageUrl(file))
+    });
+    var attachments = await Promise.all(promises);
+  }
+  obj.attachments = attachments
+  //let userData = await user.findById(adminId);
+  if (req.body.follow_up === 0) {
+    var date_iso = timefun(req.body.sent_date, req.body.sent_time);
+    obj.DateT = date_iso;
+  } else if (req.body.follow_up < 0) {
+    res.send({ code: 400, msg: "follow up not set less then 0" });
   } else {
-    res.json({
-      msg: "not an Admin, not authorized to create sys template.",
-      success: false,
-      code: 403,
+    var date_iso_follow = timefun(req.body.sent_date, req.body.sent_time);
+    date_iso_follow.setDate(date_iso_follow.getDate() + req.body.follow_up);
+    var nD = moment(date_iso_follow).format("MM/DD/YYYY");
+    addTemp.findByIdAndUpdate(templateId, obj, (err, updateTemp) => {
+      if (err) {
+        res.send({ success:false,code: 400, msg: "template is not update" });
+      } else {
+       res.send({success:true, code: 200, msg:"schedulded succesfully"})
+      }
     });
   }
+
 };
 
 exports.remove_template = (req, res) => {
@@ -333,3 +304,25 @@ exports.swapAndUpdate_template = async (req, res) => {
       });
   }
 };
+
+exports.multipal_temp_remove = (req, res) => {
+  let folderId = req.params.folderId;
+  let templateIds = req.body.templateId;
+  addTemp.remove({ _id: { $in: templateIds } }).exec((err, resp) => {
+    if (err) {
+      res.json({ code: 400, msg: "templates not remove" });
+    } else {
+      for (let id of templateIds) {
+        systemFolder.updateOne(
+          { _id: folderId },
+          { $pull: { template: ObjectId(id) } }
+        ).then((err, res) => {
+          if (err) {
+            throw new Error(err);
+          }
+        })
+      }
+      res.json({ success: true, msg: "template is remove successfully" });
+    }
+  });
+}

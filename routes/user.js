@@ -3,7 +3,7 @@ const router = express.Router();
 const upload = require('../handler/multer');
 const { requireSignin, isAuth, isAdmin } = require('../controllers/auth');
 
-const { userById, read, update, purchaseHistory, deleteUser } = require('../controllers/user');
+const { userById, read, update, purchaseHistory, deleteUser,deleteMultiple_User } = require('../controllers/user');
 
 router.get('/secret', requireSignin, (req, res) => {
     res.json({
@@ -13,6 +13,8 @@ router.get('/secret', requireSignin, (req, res) => {
 
 router.get('/user/:userId', requireSignin, read);
 router.delete('/deleteUser/:userId', requireSignin, isAuth, deleteUser);
+router.delete('/delete_MultipleUser/:userId', requireSignin, isAuth, deleteMultiple_User);
+
 router.put('/user/:userId', upload.single('profile_image'), requireSignin, isAuth, update);
 router.get('/orders/by/user/:userId', requireSignin, isAuth, purchaseHistory);
 

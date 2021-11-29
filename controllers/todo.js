@@ -8,6 +8,7 @@ const url = require('url')
 exports.todoCreate = (req, res) => {
     const Id = req.params.userId
     const task = new tasks(req.body);
+    console.log("-->", task);
     task.save((err, data) => {
         if (err) {
             res.send("todo not add")
@@ -64,9 +65,30 @@ exports.remove = (req, res) => {
         })
 }
 
+exports.weekTaskRead = (req, res) => {
+    let currentDate = new Date();
+    let cDate = ("0" + currentDate.getDate()).slice(-2);
+    let cMonth = ("0" + (currentDate.getMonth() + 1)).slice(-2);
+    let cYear = currentDate.getFullYear();
+    let currentDateTodo = `${cYear}-${cMonth}-${cDate}`;
+
+    let previosWeekStartingDate = new Date();
+    previosWeekStartingDate.setDate(currentDate.getDate() - 7);
+    let lDate = ("0" + previosWeekStartingDate.getDate()).slice(-2);
+    let lMonth = ("0" + (previosWeekStartingDate.getMonth() + 1)).slice(-2);
+    let lYear = previosWeekStartingDate.getFullYear();
+    let previousWeekdayTodo =  `${lYear}-${lMonth}-${lDate}`;
+    tasks.find({ userId: req.params.userId, todoDate: {$gte:(previousWeekdayTodo),$lt:(currentDateTodo)}})
+        .then((result) => {
+            res.json(result)
+        }).catch((err) => {
+            res.send(err)
+        })
+
+}
 
 exports.today_taskread = (req, res) => {
-    var todayDate = new Date()
+    let todayDate = new Date()
     // current date
     // adjust 0 before single digit date
     let date = ("0" + todayDate.getDate()).slice(-2);
@@ -80,7 +102,6 @@ exports.today_taskread = (req, res) => {
     let year = todayDate.getFullYear();
 
     var newtodoDate = `${year}-${month}-${date}`;
-
     tasks.find({ userId: req.params.userId, todoDate: newtodoDate })
         .then((result) => {
             res.json(result)
@@ -90,7 +111,7 @@ exports.today_taskread = (req, res) => {
 }
 
 exports.tomorrow_taskread = (req, res) => {
-    var todayDate = new Date()
+    let todayDate = new Date()
     // current date
     // adjust 0 before single digit
     let date = todayDate.getDate() + 1;

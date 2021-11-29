@@ -6,6 +6,8 @@ var addmemberModal = require("../models/addmember");
 const { errorHandler } = require("../helpers/dbErrorHandler");
 const _ = require("lodash");
 const Joi = require("@hapi/joi");
+var mongo = require("mongoose");
+
 const createEMIRecord = require("../Services/createEMi");
 // const ScheduleDateArray = require("../Services/scheduleDateArray");
 
@@ -25,97 +27,116 @@ exports.update = async (req, res) => {
   const membershipId = req.params.membershipId;
   const type = req.params.type;
   try {
-    if (type == "others") {
-      await buyMembership.updateOne({ _id: membershipId }, req.body);
-      res
-        .status(200)
-        .send({ message: "buyMembership updated successfully", success: true });
-    } else if (type == "freeze") {
-      if (req.body.isFreeze) {
+    if (req.body.isTerminate) {
+      res.status(200).send({
+        message: "Membership is terminated!",
+        success: true,
+      });
+    } else {
+      if (type == "others") {
+        await buyMembership.updateOne({ _id: membershipId }, req.body);
+        res.status(200).send({
+          message: "Membership updated successfully!",
+          success: true,
+        });
+      } else if (type == "freeze") {
         await buyMembership.findByIdAndUpdate(membershipId, {
           $set: { isFreeze: true, membership_status: "freeze" },
           $push: {
-            whenFreeze: { date: req.body.Freezedate, updatedAT: new Date() },
+            whenFreeze: { date: new Date(), reason: req.body.reason },
           },
         });
         res.status(200).send({
-          message: "Membership Freezed successfully",
+          message: "Membership freezed successfully",
           success: true,
         });
-      } else {
-        if (!req.body.isFreeze) {
-          await buyMembership.findByIdAndUpdate(membershipId, {
-            $set: { isFreeze: false, membership_status: "Active" },
+      } else if (type == "unfreeze") {
+        await buyMembership.findByIdAndUpdate(membershipId, {
+          $set: { isFreeze: false, membership_status: "Active" },
+          $push: {
+            whenFreeze: { date: new Date(), reason: req.body.reason },
+          },
+        });
+        res.status(200).send({
+          message: "Membership unfreezed successfully",
+          success: true,
+        });
+      } else if (type == "forfeit") {
+        await buyMembership.findByIdAndUpdate(
+          membershipId,
+          {
+            $set: { isForfeit: true },
             $push: {
-              whenFreeze: { unFreezedate: req.body.Freezedate, updatedAT: new Date() },
-            },
-          });
-        }
-        res.send({
-          message: "Membership unFreezed suuccessfully!",
-          success: true,
-        });
-      }
-    } else if (type == "forfeit") {
-      if (req.body.isForfeit) {
-        await buyMembership.findByIdAndUpdate(membershipId, {
-          $set: { isForfeit: true },
-          $push: {
-            whenForFeit: { date: req.body.forefeitdate, updatedAT: new Date() },
-          },
-        });
-        res.status(200).send({
-          message: "Membership Forfeit successfully",
-          success: true,
-        });
-      } else {
-        res.send({
-          message: "Membership Forfeit failed!",
-          success: false,
-        });
-      }
-    } else if (type == "terminate") {
-      if (req.body.isTerminate) {
-        await buyMembership.findByIdAndUpdate(membershipId, {
-          $set: { isTerminate: true, membership_status: "Terminated" },
-          $push: {
-            whenTerminate: {
-              date: req.body.terminateDate,
-              updatedAT: new Date(),
+              whenForFeit: { date: new Date(), reason: req.body.reason },
             },
           },
-        });
-        res.status(200).send({
-          message: "Membership terminated successfully",
-          success: true,
-        });
-      } else {
-        res.send({
-          message: "Membership terminated failed!",
-          success: false,
-        });
-      }
-    } else if (type == "refund") {
-      if (req.body.isRefund) {
-        await buyMembership.findByIdAndUpdate(membershipId, {
-          $set: { isRefund: true },
-          $push: {
-            refund: {
-              Amount: req.body.Amount,
-              date: req.body.date,
-              updatedAT: new Date(),
+          (er, data) => {
+            if (er) {
+              res.send({
+                message: "Membership forfeit failed!",
+                success: false,
+              });
+            } else {
+              res.status(200).send({
+                message: "Membership forfeit successfully!",
+                success: true,
+              });
+            }
+          }
+        );
+      } else if (type == "terminate") {
+        await buyMembership.findByIdAndUpdate(
+          membershipId,
+          {
+            $set: { isTerminate: true, membership_status: "Terminated" },
+            $push: {
+              whenTerminate: {
+                date: new Date(),
+                reason: req.body.reason,
+              },
             },
           },
-        });
-        res.status(200).send({
-          message: "Membership refunded successfully",
-          success: true,
-        });
-      } else {
-        res.send({
-          message: "Membership refunded failed!",
-          success: false,
-        });
+          (err, data) => {
+            if (err) {
+              res.send({
+                message: "Membership terminate failed!",
+                success: false,
+              });
+            } else {
+              res.status(200).send({
+                message: "Membership terminated successfully",
+                success: true,
+              });
+            }
+          }
+        );
+      } else if (type == "refund") {
+        await buyMembership.findByIdAndUpdate(
+          membershipId,
+          {
+            $set: { isRefund: true, membership_status: "Deactivated" },
+            $push: {
+              refund: {
+                Amount: req.body.total_amount,
+                date: new Date(),
+                reason: req.body.reason,
+              },
+            },
+          },
+          (err, data) => {
+            if (err) {
+              res.send({
+                message: "Membership refund failed!",
+                success: false,
+              });
+            } else {
+              res.status(200).send({
+                message: "Membership refunded successfully!",
+                success: true,
+              });
+            }
+          }
+        );
       }
     }
   } catch (err) {
@@ -125,26 +146,36 @@ exports.update = async (req, res) => {
 
 exports.updatePayments = async (req, res) => {
   try {
-    const membershipId = req.params.membershipId;
-    update_resp = await buyMembership.find({ _id: membershipId });
-    arr = [];
-    update_resp[0].schedulePayments.map(function (element) {
-      if (element.date == req.body.date) {
-        element.status = "Paid";
-        arr.push(element);
-      } else {
-        arr.push(element);
-      }
-    });
+    const buy_membershipId = req.params.membershipId;
+    const emiId = req.params.emiID;
+    const createdBy = req.body.createdBy;
+    const balance = req.body.balance - req.body.Amount;
 
-    updatePay = await buyMembership.findByIdAndUpdate(membershipId, {
-      schedulePayments: arr,
-    });
-    res.send({
-      message: "paymentStatus updated successfully",
-      succes: true,
-      error: false,
-    });
+    await buyMembership.updateOne(
+      {
+        _id: buy_membershipId,
+        "schedulePayments.Id": emiId,
+      },
+      {
+        $set: {
+          balance: balance,
+          "schedulePayments.$.status": "paid",
+          "schedulePayments.$.createdBy": createdBy,
+          "schedulePayments.$.paidDate": new Date(),
+        },
+      },
+      (err, data) => {
+        if (err) {
+          res.send({ error: err.message.replace(/\"/g, ""), success: false });
+        } else {
+          res.send({
+            message: "Payment Successfully Updated!",
+            success: true,
+            error: false,
+          });
+        }
+      }
+    );
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
@@ -315,59 +346,33 @@ exports.remove = (req, res) => {
 //   }
 // };
 
-exports.buyMembership = (req, res) => {
+exports.buyMembership = async (req, res) => {
   const userId = req.params.userId;
   const studentId = req.params.studentId;
-  const membershipDetails = req.body;
-  membershipDetails.userId = userId;
+  const membershipData = req.body;
+  membershipData.userId = userId;
   try {
-    if (membershipDetails.isEMI && membershipDetails.balance > 0) {
-      membershipDetails.schedulePayments = createEMIRecord(
-        membershipDetails.payment_time,
-        membershipDetails.balance,
-        membershipDetails.mactive_date,
-        membershipDetails.createdBy,
-        membershipDetails.emi_type
-      );
+    // const memberships = await buyMembership.find({
+    //   studentInfo: { $in: [studentId] },
+    //   membershipIds: { $in: [membershipData.membershipId] },
+    //   membership_status:"Active"
+    // });
+    // if (memberships.length) {
+    //   console.log(memberships)
 
-      let membership = new buyMembership(membershipDetails);
-      membership.save((err, data) => {
-        if (err) {
-          res.send({ error: "membership not buy" });
-        } else {
-          update = {
-            $set: { status: "active" },
-            $push: { membership_details: data._id },
-          };
-          addmemberModal.findOneAndUpdate(studentId, update, (err, stdData) => {
-            if (err) {
-              res.send({ error: "membership id is not add in student" });
-            } else {
-              buyMembership
-                .findOneAndUpdate(
-                  { _id: data._id },
-                  { $push: { studentInfo: stdData._id } }
-                )
-                .exec(async (err, result) => {
-                  if (err) {
-                    res.send({
-                      error: "student id is not add in buy membership",
-                    });
-                  } else {
-                    res.send({
-                      msg: "membership purchase successfully",
-                      data: result,
-                    });
-                  }
-                });
-            }
-          });
-        }
-      });
-    } else {
-      if (!membershipDetails.isEMI && membershipDetails.balance == 0) {
-        membershipDetails.due_status = "paid";
-        let membership = new buyMembership(membershipDetails);
+    //   res.send({message:"this membership already bought!",success:false});
+    // } else {
+    if (membershipData.isEMI) {
+      if (membershipData.payment_time > 0 && membershipData.balance > 0) {
+        membershipData.schedulePayments = createEMIRecord(
+          membershipData.payment_time,
+          membershipData.payment_money,
+          membershipData.mactive_date,
+          membershipData.createdBy,
+          membershipData.payment_type
+        );
+        membershipData.membership_status = "Active";
+        let membership = new buyMembership(membershipData);
         membership.save((err, data) => {
           if (err) {
             res.send({ error: "membership not buy" });
@@ -377,7 +382,7 @@ exports.buyMembership = (req, res) => {
               $push: { membership_details: data._id },
             };
             addmemberModal.findOneAndUpdate(
-              studentId,
+              { _id: studentId },
               update,
               (err, stdData) => {
                 if (err) {
@@ -386,7 +391,12 @@ exports.buyMembership = (req, res) => {
                   buyMembership
                     .findOneAndUpdate(
                       { _id: data._id },
-                      { $push: { studentInfo: stdData._id } }
+                      {
+                        $push: {
+                          studentInfo: stdData._id,
+                          membershipIds: membershipData.membershipId,
+                        },
+                      }
                     )
                     .exec(async (err, result) => {
                       if (err) {
@@ -405,6 +415,58 @@ exports.buyMembership = (req, res) => {
             );
           }
         });
+      } else {
+        res.send({ message: "payment_time must required", success: false });
+      }
+    } else {
+      if (!membershipData.isEMI && membershipData.balance == 0) {
+        membershipData.due_status = "paid";
+        membershipData.membership_status = "Active";
+        let membership = new buyMembership(membershipData);
+        membership.save((err, data) => {
+          if (err) {
+            res.send({ error: "membership not buy" });
+          } else {
+            update = {
+              $set: { status: "active" },
+              $push: { membership_details: data._id },
+            };
+            addmemberModal.findOneAndUpdate(
+              { _id: studentId },
+              update,
+              (err, stdData) => {
+                if (err) {
+                  res.send({ error: "membership id is not add in student" });
+                } else {
+                  buyMembership
+                    .findOneAndUpdate(
+                      { _id: data._id },
+                      {
+                        $push: {
+                          studentInfo: stdData._id,
+                          membershipIds: membershipData.membershipId,
+                        },
+                      }
+                    )
+                    .exec(async (err, result) => {
+                      if (err) {
+                        res.send({
+                          error: "student id is not add in buy membership",
+                        });
+                      } else {
+                        res.send({
+                          msg: "membership purchase successfully",
+                          data: result,
+                        });
+                      }
+                    });
+                }
+              }
+            );
+          }
+        });
+      } else {
+        res.send({ message: "balance should be zero", success: false });
       }
     }
   } catch (error) {
@@ -452,7 +514,7 @@ exports.members_info = async (req, res) => {
   try {
     let { membership_details } = studentInfo;
     let membershipDa = await buyMembership.find({
-      _id: { $in: membership_details },
+      _id: { $in: membership_details, membershipIds },
     });
     // membershipDa.filter(i => {
     //     if (moment(currentDate).isSameOrAfter(i.expiry_date)) {
@@ -467,4 +529,158 @@ exports.members_info = async (req, res) => {
   } catch (error) {
     res.send({ error: error.message.replace(/\"/g, ""), success: false });
   }
+};
+
+
+exports.thismonthMembership = async (req, res) => {
+  var totalCount = await addmemberModal
+    .find({
+      userId: req.params.userId,
+    })
+    .countDocuments();
+
+  var per_page = parseInt(req.params.per_page) || 5;
+  var page_no = parseInt(req.params.page_no) || 0;
+  var pagination = {
+    limit: per_page,
+    skip: per_page * page_no,
+  };
+  buyMembership
+    .find(
+      {
+        userId: req.params.userId,
+      },
+      {
+        membership_name: 1,
+        totalp: 1,
+        mactive_date: 1,
+        payment_type: 1,
+        membership_status: 1,
+      }
+    )
+    .populate({
+      path: "studentInfo",
+      select: "firstName lastName school program studentType",
+    })
+    .sort({
+      createdAt: -1,
+    })
+    .limit(pagination.limit)
+    .skip(pagination.skip)
+    .exec((err, memberdata) => {
+      if (err) {
+        res.send({
+          error: "member data is not find",
+        });
+      } else {
+        res.send({ memberdata, totalCount: totalCount, success: true });
+      }
+    });
+};
+
+exports.expiredMembership = async (req, res) => {
+  var totalCount = await addmemberModal
+    .find({
+      userId: req.params.userId,
+    })
+    .countDocuments();
+
+  var per_page = parseInt(req.params.per_page) || 5;
+  var page_no = parseInt(req.params.page_no) || 0;
+  var pagination = {
+    limit: per_page,
+    skip: per_page * page_no,
+  };
+  addmemberModal
+    .aggregate([
+      { $match: { userId: req.params.userId } },
+      {
+        $project: {
+          firstName: 1,
+          lastName: 1,
+          expiry_date: { $toDate: "$expiry_date" },
+          studentInfo: 1,
+          createdAt: 1,
+        },
+      },
+      // {
+      //   $lookup: {
+      //     from: "members",
+      //     localField: "studentInfo",
+      //     foreignField: "_id",
+      //     as: "data",
+      //   },
+      // },
+      {
+        $group: {
+          _id: "$studentInfo",
+          createdAt: { $last: "$createdAt" },
+          membership_name: { $first: "$membership_name" },
+          expiry_date: { $first: "$expiry_date" },
+          membership_name: { $first: "$membership_name" },
+
+          // studentInfo: { $last: "$studentInfo" },
+        },
+      },
+      {
+        $lookup: {
+          from: "members",
+          localField: "_id",
+          foreignField: "_id",
+          as: "data",
+        },
+      },
+      // {
+      //   $replaceRoot: {
+      //     newRoot: {
+      //       $mergeObjects: [{ $arrayElemAt: ["$data", 0] }, "$$ROOT"],
+      //     },
+      //   },
+      // },
+      {
+        $project: {
+          data: 1,
+          expiry_date: 1,
+          membership_name: 1,
+          createdAt: 1,
+          studentInfo: 1,
+        },
+      },
+      {
+        $match: { expiry_date: { $gte: new Date() } },
+      },
+      {
+        $sort: { expiry_date: 1 },
+      },
+    ])
+    // .find(
+    //   {
+    //     userId: req.params.userId,
+    //   },
+    //   {
+    //     membership_name: 1,
+    //     membership_status: 1,
+    //     expiry_date: 1,
+    //     createdAt:1
+    //   }
+    // )
+    // .populate({
+    //   path: "studentInfo",
+    //   select: "firstName lastName school program studentType primaryPhone",
+    //   // options: { sort: [['created', 'dsc']]
+    // })
+    // .sort({
+    //   createdAt: -1,
+    // })
+    // .limit(pagination.limit)
+    // .skip(pagination.skip)
+    .exec((err, memberdata) => {
+      if (err) {
+        res.send({
+          error: err,
+        });
+      } else {
+        res.send({ memberdata, totalCount: totalCount, success: true });
+      }
+    });
 };

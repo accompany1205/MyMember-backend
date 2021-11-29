@@ -2,7 +2,8 @@ const emailLibrary = require("../models/email_library_Category")
 const Member = require('../models/addmember')
 const user = require('../models/user')
 const emailSent = require('../models/emailSentSave')
-const sgMail = require('sendgrid-v3-node');
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 function TimeZone(){
     const str = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
@@ -97,15 +98,26 @@ exports.sendEmail =  (req,res)=>{
     if (!req.body.subject || !req.body.template || !req.body.to) {
         res.send({ error: "invalid input", success: false })
     } else{
+        let attachment = req.files;
+        const attachments = attachment.map((file) => {
+            let content = Buffer.from(file.buffer).toString("base64")
+            return {
+                content: content,
+                filename: file.originalname,
+                type: `application/${file.mimetype.split("/")[1]}`,
+                disposition: "attachment"
+            }
+        });
     const emailData = {
             sendgrid_key: process.env.SENDGRID_API_KEY,
             to: req.body.to,
-            from_email:process.env.from_email,
-            from_name: 'noreply@gmail.com',
+            from: process.env.from_email,
+            //from_name: 'noreply@gmail.com',
             subject: req.body.subject,
-            content: req.body.template
+            html: req.body.template,
+            attachments: attachments
         };
-        sgMail.send_via_sendgrid(emailData).then(resp=>{
+        sgMail.send(emailData).then(resp=>{
            var DT = TimeZone() 
            var emailDetail =  new emailSent(req.body)
            emailDetail.sent_date = DT.Date
@@ -121,7 +133,7 @@ exports.sendEmail =  (req,res)=>{
                            res.send({error:'user id is not update in sent email'})
                        }
                        else{
-                            res.send(emailUpdate)
+                            res.send({ message: "Email Sent Successfully", success: true ,emailUpdate})
                        }
                    })
                }

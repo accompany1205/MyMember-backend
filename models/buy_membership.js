@@ -35,7 +35,6 @@ const Membershipschema = new schema(
     },
     refund: {
       type: Array,
-      default: "",
     },
     isRefund: {
       type: Boolean,
@@ -118,7 +117,6 @@ const Membershipschema = new schema(
     },
     emi_type: {
       type: String,
-      required: true,
     },
 
     // check_number: {
@@ -148,6 +146,13 @@ const Membershipschema = new schema(
       type: String,
       required: true,
     },
+    membershipIds: [
+      {
+        type: schema.Types.ObjectId,
+        ref: "membership",
+        required: true,
+      },
+    ],
     studentInfo: [
       {
         type: schema.Types.ObjectId,

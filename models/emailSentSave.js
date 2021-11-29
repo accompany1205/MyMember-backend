@@ -7,8 +7,7 @@ const EmailSchema = schema({
         require: true
     },
     to: {
-        type: Array,
-        require: true
+        type: Array
     },
     title: {
         type: String,
@@ -70,14 +69,21 @@ const EmailSchema = schema({
     },
     is_Favorite: {
         type: Boolean,
-        default:false
+        default: false
     },
     is_Sent: {
         type: Boolean,
-        default:false
-    }
+        default: false
+    },
+    attachments: {
+        type: Array
+    },
+    smartLists: [{
+        stdtype: String,
+        smrtList: Array
+    }]
 },
     { timestamps: true }
 )
 
-module.exports = mongoose.model('sentOrscheduleEmail', EmailSchema)         
+module.exports = mongoose.model('sentOrscheduleEmail', EmailSchema)
