@@ -138,6 +138,7 @@ exports.std_program = async (req, res) => {
               ary.push(obj);
             })
           )
+
             .then((resp) => {
               res.send({
                 data: ary,
@@ -1861,7 +1862,7 @@ exports.active_trial_this_month = async (req, res) => {
           }
         },
         {
-          $project: { createdAt: 1,status:1, firstName: 1, lastName: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1, primaryPhone: 1 }
+          $project: { createdAt: 1, status: 1, firstName: 1, lastName: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1, primaryPhone: 1 }
         },
         {
           $sort: {
@@ -1881,15 +1882,25 @@ exports.active_trial_this_month = async (req, res) => {
         }
 
       ])
-
-
       .exec((err, memberdata) => {
         if (err) {
           res.send({
-            error: err,
+            error: err, success: false
           });
         } else {
-          res.send({ data: memberdata[0].paginatedResults, totalCount: memberdata[0].totalCount[0].count, success: true });
+          let data = memberdata[0].paginatedResults
+          if (data.length > 0) {
+            let data = memberdata[0].paginatedResults
+            if (data.length > 0) {
+              res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
+            } else {
+              res.send({ msg: 'data not found', success: false });
+
+            }
+          } else {
+            res.send({ msg: 'data not found', success: false });
+
+          }
         }
       });
   }
@@ -1921,7 +1932,7 @@ exports.active_trial_past3_month = async (req, res) => {
 
         {
           $project: {
-            firstName: 1, lastName: 1,status:1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1, primaryPhone: 1,
+            firstName: 1, lastName: 1, status: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1, primaryPhone: 1,
             dayssince: {
               $floor: {
                 $divide: [{ $subtract: [new Date(), '$createdAt'] }, 1000 * 60 * 60 * 24]
@@ -1957,9 +1968,17 @@ exports.active_trial_past3_month = async (req, res) => {
         if (err) {
           res.send({
             error: err,
+            suceess: false
           });
         } else {
-          res.send({ data: memberdata[0].paginatedResults, totalCount: memberdata[0].totalCount[0].count, success: true });
+          let data = memberdata[0].paginatedResults
+          if (data.length > 0) {
+            res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
+
+          } else {
+            res.send({ msg: 'data not found', success: false });
+
+          }
         }
       });
   }
@@ -1992,7 +2011,7 @@ exports.leads_this_month = async (req, res) => {
           }
         },
         {
-          $project: { createdAt: 1, status:1,firstName: 1, lastName: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1, primaryPhone: 1 }
+          $project: { createdAt: 1, status: 1, firstName: 1, lastName: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1, primaryPhone: 1 }
         },
         {
           $sort: {
@@ -2016,9 +2035,17 @@ exports.leads_this_month = async (req, res) => {
         if (err) {
           res.send({
             error: err,
+            success: false
           });
         } else {
-          res.send({ data: memberdata[0].paginatedResults, totalCount: memberdata[0].totalCount[0].count, success: true });
+          let data = memberdata[0].paginatedResults
+          if (data.length > 0) {
+            res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
+
+          } else {
+            res.send({ msg: 'data not found', success: false });
+
+          }
         }
       });
   }
@@ -2049,7 +2076,7 @@ exports.leads_past3_month = async (req, res) => {
 
         {
           $project: {
-            firstName: 1, lastName: 1, status:1,program: 1, primaryPhone: 1, studentType: 1, createdAt: 1, primaryPhone: 1,
+            firstName: 1, lastName: 1, status: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1, primaryPhone: 1,
             dayssince: {
               $floor: {
                 $divide: [{ $subtract: [new Date(), '$createdAt'] }, 1000 * 60 * 60 * 24]
@@ -2083,9 +2110,16 @@ exports.leads_past3_month = async (req, res) => {
         if (err) {
           res.send({
             error: err,
+            success: false
           });
         } else {
-          res.send({ data: memberdata[0].paginatedResults, totalCount: memberdata[0].totalCount[0].count, success: true });
+          let data = memberdata[0].paginatedResults
+          if (data.length > 0) {
+            res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
+
+          } else {
+            res.send({ msg: 'data not found', success: false });
+          }
         }
       });
   }
