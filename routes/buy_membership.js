@@ -6,7 +6,7 @@ const { requireSignin,isAuth,verifySchool } = require("../controllers/auth");
 // router.post("/membership/buy_membership/:user_id",requireSignin,buy_membership.Create);
 // router.get("/membership/list_of_:user_id",requireSignin,buy_membership.read);
 //for dashboard
-// router.get('/member/latest_membership/:userId/:page_no/:per_page', verifySchool, lastestMembership);
+
 router.get('/member/expired_thisMonth_Membership/:userId/:page_no/:per_page', verifySchool,thismonthMembership);
 router.get('/member/expired_Membership/:userId/:page_no/:per_page', verifySchool, expiredMembership);
 router.get("/membership/buy_membership_info_BymemberShipId/:userId/:membershipID",requireSignin ,membership_InfoById)
