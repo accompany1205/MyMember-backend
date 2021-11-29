@@ -129,11 +129,16 @@ exports.add_template = async (req, res) => {
     follow_up,
     smartLists,
   } = req.body || {};
+  to = JSON.parse(to);
+  smartLists = JSON.parse(smartLists);
   let { userId, folderId } = req.params || {};
-  if (to && smartLists) {
-    throw new Error("Either select send-To or smart-list")
+  if(!to && !smartLists){
+    throw new Error("Select atleat send-to or smart-List")
   }
-  console.log("Hello , ", smartLists)
+  if (to && smartLists) {
+    throw new Error("select either send-To or smart-list ")
+  }
+
   if (!to) {
     smartLists.map(lists => {
       to = [...to, ...lists.smrtList]
@@ -159,7 +164,6 @@ exports.add_template = async (req, res) => {
     attachments,
     smartLists
   };
-
   const promises = []
   if (req.files) {
     (req.files).map(file => {
@@ -354,12 +358,14 @@ exports.swapAndUpdate_template = async (req, res) => {
 
 exports.update_template = async (req, res) => {
   let updateTemplate = req.body;
-  if (!updateTemplate.to) {
-    updateTemplate.smartLists.map(lists => {
-      updateTemplate.to = [...updateTemplate.to, ...lists.smrtList]
+  let smartList = JSON.parse(updateTemplate.smartLists);
+  let to = JSON.parse(updateTemplate.to)
+  if (!to) {
+    smartList.map(lists => {
+      to = [...to, ...lists.smrtList]
     });
   } else {
-    updateTemplate.smartLists = []
+    smartList = []
   }
   const promises = []
   if (req.files) {

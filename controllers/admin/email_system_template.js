@@ -105,6 +105,11 @@ exports.update_template = async (req, res) => {
   let { to, from, sent_time, repeat_mail, sent_date, follow_up, smartLists } =
     req.body || {};
   let { adminId, templateId } = req.params || {};
+  to = JSON.parse(to);
+  smartLists = JSON.parse(smartLists);
+  if(!to && !smartLists){
+    throw new Error("Select atleat send-to or smart-List")
+  }
   if (to && smartLists) {
     throw new Error("Either select send-To or smart-list")
   }
