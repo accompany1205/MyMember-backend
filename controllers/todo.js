@@ -65,7 +65,14 @@ exports.remove = (req, res) => {
         })
 }
 
-exports.weekTaskRead = (req, res) => {
+exports.weekTaskRead = async (req, res) => {
+
+    var per_page = parseInt(req.params.per_page) || 5;
+    var page_no = parseInt(req.params.page_no) || 0;
+    var pagination = {
+        limit: per_page,
+        skip: per_page * page_no,
+    };
     let currentDate = new Date();
     let cDate = ("0" + currentDate.getDate()).slice(-2);
     let cMonth = ("0" + (currentDate.getMonth() + 1)).slice(-2);
@@ -77,17 +84,32 @@ exports.weekTaskRead = (req, res) => {
     let lDate = ("0" + previosWeekStartingDate.getDate()).slice(-2);
     let lMonth = ("0" + (previosWeekStartingDate.getMonth() + 1)).slice(-2);
     let lYear = previosWeekStartingDate.getFullYear();
-    let previousWeekdayTodo =  `${lYear}-${lMonth}-${lDate}`;
-    tasks.find({ userId: req.params.userId, todoDate: {$gte:(previousWeekdayTodo),$lt:(currentDateTodo)}})
+    let previousWeekdayTodo = `${lYear}-${lMonth}-${lDate}`;
+    var totalCount = await tasks
+        .find({
+            userId: req.params.userId,
+            todoDate: { $gte: (previousWeekdayTodo), $lt: (currentDateTodo) }
+        })
+        .countDocuments();
+
+    tasks.find({ userId: req.params.userId, todoDate: { $gte: (previousWeekdayTodo), $lt: (currentDateTodo) } })
+        .limit(pagination.limit)
+        .skip(pagination.skip)
         .then((result) => {
-            res.json(result)
+            res.send({ result, totalCount: totalCount })
         }).catch((err) => {
             res.send(err)
         })
 
 }
 
-exports.today_taskread = (req, res) => {
+exports.today_taskread = async (req, res) => {
+    var per_page = parseInt(req.params.per_page) || 5;
+    var page_no = parseInt(req.params.page_no) || 0;
+    var pagination = {
+        limit: per_page,
+        skip: per_page * page_no,
+    };
     let todayDate = new Date()
     // current date
     // adjust 0 before single digit date
@@ -102,9 +124,18 @@ exports.today_taskread = (req, res) => {
     let year = todayDate.getFullYear();
 
     var newtodoDate = `${year}-${month}-${date}`;
+    var totalCount = await tasks
+        .find({
+            userId: req.params.userId,
+            todoDate: newtodoDate
+        })
+        .countDocuments();
+
     tasks.find({ userId: req.params.userId, todoDate: newtodoDate })
+        .limit(pagination.limit)
+        .skip(pagination.skip)
         .then((result) => {
-            res.json(result)
+            res.send({ result, totalCount: totalCount })
         }).catch((err) => {
             res.send(err)
         })
@@ -202,7 +233,7 @@ exports.appointment_taskread = (req, res) => {
 exports.searching_task = (req, res) => {
 
     const all = url.parse(req.url, true).query
-   
+
 
     let searchKeyWord = new RegExp(".*" + all.q + ".*", 'i');
 
