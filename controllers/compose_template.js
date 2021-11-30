@@ -519,7 +519,7 @@ exports.multipal_temp_remove = async (req, res) => {
     }
     Promise.all(promises);
     res.send({
-      msg: "successFully removed all templates",
+      msg: "Successfuly Removed Templates",
       success: true
     });
   } catch (err) {
