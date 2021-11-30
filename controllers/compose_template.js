@@ -191,6 +191,16 @@ exports.status_update_template = (req, res) => {
   }
 };
 
+exports.allSent = async (req, res) => {
+  all_temp.find({ userId: req.params.userId, is_Sent: true }).exec((err, data) => {
+    if (err) {
+      res.send({ success: false, mag: "data not fetched" })
+    } else {
+      res.send({ success: true, msg: "fetched!", data })
+    }
+  })
+}
+
 exports.all_email_list = async (req, res) => {
   all_temp.find({ userId: req.params.userId ,is_Sent:true}).exec((err, allTemp) => {
     if (err) {
@@ -201,7 +211,7 @@ exports.all_email_list = async (req, res) => {
   });
 };
 exports.isFavorite = async (req, res) => {
-  all_temp.find({ userId: req.params.userId ,is_Favorite:true}).exec((err, allTemp) => {
+  all_temp.find({ userId: req.params.userId, is_Favorite: true }).exec((err, allTemp) => {
     if (err) {
       res.send({ code: 400, msg: "not found" });
     } else {
@@ -254,6 +264,38 @@ exports.list_template = async (req, res) => {
     });
 };
 
+exports.update_template = async (req, res) => {
+  let updateTemplate = req.body;
+  let smartList = JSON.parse(updateTemplate.smartLists);
+  let to = JSON.parse(updateTemplate.to)
+  if (!to) {
+    smartList.map(lists => {
+      to = [...to, ...lists.smrtList]
+    });
+  } else {
+    smartList = []
+  }
+  const promises = []
+  if (req.files) {
+    (req.files).map(file => {
+      promises.push(cloudUrl.imageUrl(file))
+    });
+    var allAttachments = await Promise.all(promises);
+  }
+  updateTemplate.attachments = allAttachments;
+  all_temp.updateOne(
+    { _id: req.params.templateId },
+    req.body,
+    (err, updateTemp) => {
+      if (err) {
+        res.send({ code: 400, msg: "template is not update" });
+      } else {
+        res.send({ code: 200, msg: "template update success" });
+      }
+    }
+  );
+};
+
 exports.add_template = async (req, res) => {
   const counts = await all_temp
     .find({ folderId: req.params.folderId })
@@ -270,9 +312,22 @@ exports.add_template = async (req, res) => {
     repeat_mail,
     sent_date,
     follow_up,
+    smartLists
   } = req.body || {};
+  to = JSON.parse(to);
+  smartLists = JSON.parse(smartLists);
   let { userId, folderId } = req.params || {};
-
+  if(!to && !smartLists){
+    throw new Error("Select atleat send-to or smart-List")
+  }
+  if (to && smartLists) {
+    throw new Error("Either select send-To or smart-list")
+  }
+  if (!to) {
+    smartLists.map(lists => {
+      to = [...to, ...lists.smrtList]
+    });
+  }
   const obj = {
     to,
     from,
@@ -290,7 +345,8 @@ exports.add_template = async (req, res) => {
     userId,
     folderId,
     templete_Id,
-    attachments
+    attachments,
+    smartLists
   };
   const promises = []
   if (req.files) {
@@ -364,9 +420,9 @@ var emailCronFucntionality = async () => {
   scheduledListing.forEach(async (ele) => {
     let sentDate = ele.sent_date;
     let mailId = ele._id;
-    ele.attachments.map(() => {
+    // ele.attachments.map(() => {
 
-    })
+    // })
     let currentDate = moment().format("YYYY-MM-DD");
     if (sentDate === currentDate && !ele.is_Sent) {
       const emailData = {
@@ -403,19 +459,6 @@ cron.schedule(`*/5 * * * *`, () => {
   emailCronFucntionality();
 });
 
-exports.update_template = (req, res) => {
-  all_temp.updateOne(
-    { _id: req.params.templateId },
-    req.body,
-    (err, updateTemp) => {
-      if (err) {
-        res.send({ code: 400, msg: "template is not update" });
-      } else {
-        res.send({ code: 200, msg: "template update success" });
-      }
-    }
-  );
-};
 
 exports.remove_template = (req, res) => {
   // all_temp.remove({}).then().catch();

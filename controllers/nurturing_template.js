@@ -6,6 +6,7 @@ const async = require("async");
 const sgMail = require("sendgrid-v3-node");
 const cron = require("node-cron");
 const folderNur = require("../models/email_nurturing_folder");
+const cloudUrl = require("../gcloud/imageUrl");
 const ObjectId = require("mongodb").ObjectId;
 
 function timefun(sd, st) {
@@ -26,14 +27,14 @@ function timefun(sd, st) {
 
 exports.getData = (req, res) => {
   let options = {
-      timeZone: "Asia/Kolkata",
-      hour: "numeric",
-      year: "numeric",
-      month: "numeric",
-      day: "numeric",
-      minute: "numeric",
-      second: "numeric",
-    },
+    timeZone: "Asia/Kolkata",
+    hour: "numeric",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    minute: "numeric",
+    second: "numeric",
+  },
     formatter = new Intl.DateTimeFormat([], options);
   var a = formatter.format(new Date());
   // var str = a
@@ -126,9 +127,23 @@ exports.add_template = async (req, res) => {
     repeat_mail,
     sent_date,
     follow_up,
+    smartLists,
   } = req.body || {};
+  to = JSON.parse(to);
+  smartLists = JSON.parse(smartLists);
   let { userId, folderId } = req.params || {};
+  if(!to && !smartLists){
+    throw new Error("Select atleat send-to or smart-List")
+  }
+  if (to && smartLists) {
+    throw new Error("select either send-To or smart-list ")
+  }
 
+  if (!to) {
+    smartLists.map(lists => {
+      to = [...to, ...lists.smrtList]
+    });
+  }
   const obj = {
     to,
     from,
@@ -146,8 +161,17 @@ exports.add_template = async (req, res) => {
     userId,
     folderId,
     templete_Id,
+    attachments,
+    smartLists
   };
-
+  const promises = []
+  if (req.files) {
+    (req.files).map(file => {
+      promises.push(cloudUrl.imageUrl(file))
+    });
+    var attachments = await Promise.all(promises);
+  }
+  obj.attachments = attachments
   sent_date = moment(sent_date).format("YYYY-MM-DD");
   // let scheduleDateOfMonth = moment(sent_date).format('DD')
   // let scheduleMonth = moment(sent_date).format('MM')
@@ -332,15 +356,33 @@ exports.swapAndUpdate_template = async (req, res) => {
   }
 };
 
-exports.update_template = (req, res) => {
-  all_temp.update(
+exports.update_template = async (req, res) => {
+  let updateTemplate = req.body;
+  let smartList = JSON.parse(updateTemplate.smartLists);
+  let to = JSON.parse(updateTemplate.to)
+  if (!to) {
+    smartList.map(lists => {
+      to = [...to, ...lists.smrtList]
+    });
+  } else {
+    smartList = []
+  }
+  const promises = []
+  if (req.files) {
+    (req.files).map(file => {
+      promises.push(cloudUrl.imageUrl(file))
+    });
+    var allAttachments = await Promise.all(promises);
+  }
+  updateTemplate.attachments = allAttachments;
+  all_temp.updateOne(
     { _id: req.params.templateId },
     req.body,
     (err, updateTemp) => {
       if (err) {
-        res.send({ error: "template is not update" });
+        res.send({ msg: "template is not update", success: false });
       } else {
-        res.send({ message: "updated successfully", success: true });
+        res.send({ msg: "updated successfully", success: true });
       }
     }
   );
@@ -459,13 +501,13 @@ exports.multipal_temp_remove = (req, res) => {
         folderNur.updateOne(
           { _id: folderId },
           { $pull: { template: ObjectId(id) } }
-        ).then( (err, res) => {
-          if(err){
+        ).then((err, res) => {
+          if (err) {
             throw new Error(err);
           }
         })
       }
-      res.json({ success:true, msg: "template is remove successfully" });
+      res.json({ success: true, msg: "template is remove successfully" });
     }
   });
 };
