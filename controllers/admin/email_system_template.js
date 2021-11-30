@@ -59,7 +59,6 @@ exports.add_template = async (req, res) => {
         category: "system",
         createdBy: "admin",
         email_status: true,
-        // email_auth_key:Key.auth_key,
         adminId: adminId,
         folderId: req.params.folderId,
         templete_Id,
@@ -138,8 +137,8 @@ exports.update_template = async (req, res) => {
       promises.push(cloudUrl.imageUrl(file))
     });
     var attachments = await Promise.all(promises);
+    obj.attachments = attachments;
   }
-  obj.attachments = attachments
   //let userData = await user.findById(adminId);
   if (req.body.follow_up === 0) {
     var date_iso = timefun(req.body.sent_date, req.body.sent_time);

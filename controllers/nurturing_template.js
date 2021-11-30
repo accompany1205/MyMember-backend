@@ -360,12 +360,14 @@ exports.update_template = async (req, res) => {
   let updateTemplate = req.body;
   let smartList = JSON.parse(updateTemplate.smartLists);
   let to = JSON.parse(updateTemplate.to)
-  if (!to) {
-    smartList.map(lists => {
-      to = [...to, ...lists.smrtList]
-    });
-  } else {
-    smartList = []
+  if (to || smartList) {
+    if (!to) {
+      smartList.map(lists => {
+        to = [...to, ...lists.smrtList]
+      });
+    } else {
+      smartList = []
+    }
   }
   const promises = []
   if (req.files) {
@@ -373,8 +375,8 @@ exports.update_template = async (req, res) => {
       promises.push(cloudUrl.imageUrl(file))
     });
     var allAttachments = await Promise.all(promises);
+    updateTemplate.attachments = allAttachments;
   }
-  updateTemplate.attachments = allAttachments;
   all_temp.updateOne(
     { _id: req.params.templateId },
     req.body,
