@@ -91,11 +91,11 @@ exports.sendEmail = async (req, res) => {
             // if (to && smartLists) {
             //     throw new Error("Either select send-To or smart-list")
             // }
-            if (!to) {
-                smartLists.map(lists => {
-                    to = [...to, ...lists.smrtList]
-                });
-            }
+            // if (!to) {
+            //     smartLists.map(lists => {
+            //         to = [...to, ...lists.smrtList]
+            //     });
+            // }
 
             let attachment = req.files;
             const attachments = attachment.map((file) => {
