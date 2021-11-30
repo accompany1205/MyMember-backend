@@ -14,7 +14,7 @@ router.put("/email_system/update_template_status/:adminId/:folderId", isAdmin, s
 router.put("/email_system/single_template_status_change/:adminId/:tempId", isAdmin, single_temp_update_status)//single template status change
 
 router.delete("/email_system/remove_template/:userId/:templateId", verifySchool, remove_template)
-router.delete("/email_system/multipal_remove_template/:adminId/:folderId",verifySchool,multipal_temp_remove)
+router.delete("/email_system/multipal_remove_template/:userId/:folderId",verifySchool,multipal_temp_remove)
 
 
 module.exports = router;
