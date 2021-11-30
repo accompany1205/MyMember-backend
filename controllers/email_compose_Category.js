@@ -88,9 +88,9 @@ exports.sendEmail = async (req, res) => {
             if (!to && !smartLists) {
                 throw new Error("Select atleat send-to or smart-List")
             }
-            if (to && smartLists) {
-                throw new Error("Either select send-To or smart-list")
-            }
+            // if (to && smartLists) {
+            //     throw new Error("Either select send-To or smart-list")
+            // }
             if (!to) {
                 smartLists.map(lists => {
                     to = [...to, ...lists.smrtList]
