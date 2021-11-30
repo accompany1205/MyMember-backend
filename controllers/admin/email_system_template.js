@@ -205,6 +205,19 @@ exports.add_template = async (req, res) => {
 
 };
 
+function saveEmailTemplate(obj) {
+  return new Promise((resolve, reject) => {
+    let emailDetail = new addTemp(obj);
+    emailDetail.save((err, data) => {
+      if (err) {
+        reject({ data: "Data not save in Database!", success: false });
+      } else {
+        resolve(data);
+      }
+    });
+  });
+}
+
 exports.update_template = async (req, res) => {
   let updateTemplate = req.body;
   let smartList = updateTemplate.smartLists;
