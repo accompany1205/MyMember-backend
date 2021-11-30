@@ -329,6 +329,7 @@ exports.more_than_forteen = async (req, res) => {
           $project: {
             firstName: 1,
             lastName: 1,
+            notes: 1,
             memberprofileImage: 1,
             last_contact_missCall: 1,
             rating: 1,
@@ -357,6 +358,7 @@ exports.more_than_forteen = async (req, res) => {
                 _id: i._id,
                 firstName: i.firstName,
                 lastName: i.lastName,
+                notes: i.notes,
                 memberprofileImage: i.memberprofileImage,
                 rating: i.rating,
                 last_contact_missCall: i.last_contact_missCall,
