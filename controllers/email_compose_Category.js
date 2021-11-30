@@ -78,7 +78,6 @@ exports.category_list = (req, res) => {
 
 exports.sendEmail = async (req, res) => {
     let to = req.body.to;
-    console.log(to);
     let smartLists = req.body.smartLists;
     try {
         if (!req.body.subject || !req.body.template) {
@@ -107,8 +106,6 @@ exports.sendEmail = async (req, res) => {
                     disposition: "attachment"
                 }
             });
-            console.log("smart ->",smartLists)
-            console.log("hello - >", to)
 
             const emailData = {
                 sendgrid_key: process.env.SENDGRID_API_KEY,
@@ -131,7 +128,7 @@ exports.sendEmail = async (req, res) => {
                             res.send({ error: 'email details is not save' })
                         }
                         else {
-                            emailSent.findByIdAndUpdate(emailSave._id, { userId: req.params.userId, email_type: 'sent', category: 'compose' })
+                            emailSent.findByIdAndUpdate(emailSave._id, { userId: req.params.userId, email_type: 'sent',is_Sent: true, category: 'compose' })
                                 .exec((err, emailUpdate) => {
                                     if (err) {
                                         res.send({ error: 'user id is not update in sent email' })
