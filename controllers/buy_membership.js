@@ -544,49 +544,6 @@ exports.members_info = async (req, res) => {
   }
 };
 
-exports.lastestMembership = async (req, res) => {
-  var totalCount = await AddMember.find({
-    userId: req.params.userId,
-  }).countDocuments();
-
-  var per_page = parseInt(req.params.per_page) || 5;
-  var page_no = parseInt(req.params.page_no) || 0;
-  var pagination = {
-    limit: per_page,
-    skip: per_page * page_no,
-  };
-  buyMembership
-    .find(
-      {
-        userId: req.params.userId,
-      },
-      {
-        membership_name: 1,
-        totalp: 1,
-        mactive_date: 1,
-        payment_type: 1,
-        membership_status: 1,
-      }
-    )
-    .populate({
-      path: "studentInfo",
-      select: "firstName lastName school program studentType",
-    })
-    .sort({
-      createdAt: -1,
-    })
-    .limit(pagination.limit)
-    .skip(pagination.skip)
-    .exec((err, memberdata) => {
-      if (err) {
-        res.send({
-          error: "member data is not find",
-        });
-      } else {
-        res.send({ memberdata, totalCount: totalCount, success: true });
-      }
-    });
-};
 
 exports.thismonthMembership = async (req, res) => {
   var totalCount = await AddMember.find({

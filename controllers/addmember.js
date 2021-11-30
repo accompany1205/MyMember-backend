@@ -138,6 +138,7 @@ exports.std_program = async (req, res) => {
               ary.push(obj);
             })
           )
+
             .then((resp) => {
               res.send({
                 data: ary,
@@ -820,7 +821,7 @@ exports.studentinfo = (req, res) => {
     });
 };
 
-exports.lastestMember = async (req, res) => {
+exports.latestMember = async (req, res) => {
   var totalCount = await addmemberModal
     .find({
       userId: req.params.userId,
@@ -1113,24 +1114,47 @@ exports.collectionModify = async (req, res) => {
   let LittleTiger = [];
 
   // membership Scrip
-  // try {
-  //   let users = await User.find();
-  //   users.forEach(async element => {
-  //     if(element._id !== "619155201e2a465ca222dfe0"){
-  //       var membershipObj = new membershipModal(
-  //         {"isfavorite":0,"membership_name":"BBC 33 Monthly E","color":"#969696","membership_type":"Taekwondo","duration_time":"33","duration_type":"month","total_price":6897,"down_payment":418,"payment_type":"monthly","balance":6479,"due_every":"1","userId":element._id});
-  //       var member = await membershipObj.save();
-  //       console.log("member",member)
-  //     }
-  //   });
+  try {
+    let users = await addmemberModal.aggregate([
+      {
+        $match: { userId: "606aea95a145ea2d26e0f1ab" }
+      },
 
-  //   res.json({
-  //     msg: 'success',
-  //     users
-  //   })
-  // } catch (err) {
-  //   console.log(err)
-  // }
+      {
+        $group: {
+          _id: "$_id"
+          , totalclass: { $sum: 1 }
+        }
+      },
+      // {
+      //   $facet: {
+      //     totalCount: [
+      //       {
+      //         $count: 'count'
+      //       }
+      //     ]
+      //   }
+      // }
+
+
+    ])
+    //   let users = await User.find();
+    //   users.forEach(async element => {
+    //     if(element._id !== "619155201e2a465ca222dfe0"){
+    //       var membershipObj = new membershipModal(
+    //         {"isfavorite":0,"membership_name":"BBC 33 Monthly E","color":"#969696","membership_type":"Taekwondo","duration_time":"33","duration_type":"month","total_price":6897,"down_payment":418,"payment_type":"monthly","balance":6479,"due_every":"1","userId":element._id});
+    //       var member = await membershipObj.save();
+    //       console.log("member",member)
+    //     }
+    //   });
+
+    res.send({
+      msg: 'success',
+      users
+    })
+  } catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+  }
 };
 
 exports.birth_next_month = (req, res) => {
@@ -1787,8 +1811,8 @@ exports.searchStudentbyType = async (req, res) => {
       },
     );
     res.send(data);
-  } catch (er) {
-    console.log(er);
+  } catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
 };
 
@@ -1813,3 +1837,294 @@ exports.searchStudentbyInterest = async (req, res) => {
     console.log(er);
   }
 };
+
+
+exports.active_trial_this_month = async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+
+    var per_page = parseInt(req.params.per_page) || 5;
+    var page_no = parseInt(req.params.page_no) || 0;
+    var pagination = {
+      limit: per_page,
+      skip: per_page * page_no,
+    };
+    await addmemberModal
+      .aggregate([
+        {
+          $match: {
+            userId: userId,
+            studentType: 'Active Trial',
+            $expr: {
+              $eq: [{ $month: '$createdAt' }, { $month: new Date() }],
+            },
+          }
+        },
+        {
+          $project: { createdAt: 1, status: 1, firstName: 1, lastName: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1, primaryPhone: 1 }
+        },
+        {
+          $sort: {
+            createdAt: -1,
+          }
+        },
+
+        {
+          $facet: {
+            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+            totalCount: [
+              {
+                $count: 'count'
+              }
+            ]
+          }
+        }
+
+      ])
+      .exec((err, memberdata) => {
+        if (err) {
+          res.send({
+            error: err, success: false
+          });
+        } else {
+          let data = memberdata[0].paginatedResults
+          if (data.length > 0) {
+            let data = memberdata[0].paginatedResults
+            if (data.length > 0) {
+              res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
+            } else {
+              res.send({ msg: 'data not found', success: false });
+
+            }
+          } else {
+            res.send({ msg: 'data not found', success: false });
+
+          }
+        }
+      });
+  }
+  catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+
+  }
+}
+
+exports.active_trial_past3_month = async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+
+    var per_page = parseInt(req.params.per_page) || 5;
+    var page_no = parseInt(req.params.page_no) || 0;
+    var pagination = {
+      limit: per_page,
+      skip: per_page * page_no,
+    };
+    await addmemberModal
+      .aggregate([
+        {
+          $match: {
+            userId: userId,
+            studentType: 'Active Trial',
+          }
+        },
+
+        {
+          $project: {
+            firstName: 1, lastName: 1, status: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1, primaryPhone: 1,
+            dayssince: {
+              $floor: {
+                $divide: [{ $subtract: [new Date(), '$createdAt'] }, 1000 * 60 * 60 * 24]
+              }
+            }
+          }
+        },
+
+        { $match: { dayssince: { $lte: 90 } } }
+
+        ,
+        {
+          $sort: {
+            dayssince: -1,
+          }
+        },
+
+        {
+          $facet: {
+            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+            totalCount: [
+              {
+                $count: 'count'
+              }
+            ]
+          }
+        }
+
+      ])
+
+
+      .exec((err, memberdata) => {
+        if (err) {
+          res.send({
+            error: err,
+            suceess: false
+          });
+        } else {
+          let data = memberdata[0].paginatedResults
+          if (data.length > 0) {
+            res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
+
+          } else {
+            res.send({ msg: 'data not found', success: false });
+
+          }
+        }
+      });
+  }
+  catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+
+  }
+}
+
+exports.leads_this_month = async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+
+    var per_page = parseInt(req.params.per_page) || 5;
+    var page_no = parseInt(req.params.page_no) || 0;
+    var pagination = {
+      limit: per_page,
+      skip: per_page * page_no,
+    };
+    await addmemberModal
+      .aggregate([
+        {
+          $match: {
+            userId: userId,
+            studentType: 'Leads',
+            $expr: {
+              $eq: [{ $month: '$createdAt' }, { $month: new Date() }],
+            },
+          }
+        },
+        {
+          $project: { createdAt: 1, status: 1, firstName: 1, lastName: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1, primaryPhone: 1 }
+        },
+        {
+          $sort: {
+            createdAt: -1,
+          }
+        },
+
+        {
+          $facet: {
+            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+            totalCount: [
+              {
+                $count: 'count'
+              }
+            ]
+          }
+        },
+
+      ])
+      .exec((err, memberdata) => {
+        if (err) {
+          res.send({
+            error: err,
+            success: false
+          });
+        } else {
+          let data = memberdata[0].paginatedResults
+          if (data.length > 0) {
+            res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
+
+          } else {
+            res.send({ msg: 'data not found', success: false });
+
+          }
+        }
+      });
+  }
+  catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+
+  }
+}
+exports.leads_past3_month = async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+
+    var per_page = parseInt(req.params.per_page) || 5;
+    var page_no = parseInt(req.params.page_no) || 0;
+    var pagination = {
+      limit: per_page,
+      skip: per_page * page_no,
+    };
+    await addmemberModal
+      .aggregate([
+        {
+          $match: {
+            userId: userId,
+            studentType: 'Leads',
+          }
+        },
+
+        {
+          $project: {
+            firstName: 1, lastName: 1, status: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1, primaryPhone: 1,
+            dayssince: {
+              $floor: {
+                $divide: [{ $subtract: [new Date(), '$createdAt'] }, 1000 * 60 * 60 * 24]
+              }
+            }
+          }
+        },
+
+        { $match: { dayssince: { $lte: 90 } } }
+
+        ,
+        {
+          $sort: {
+            dayssince: -1,
+          }
+        },
+
+        {
+          $facet: {
+            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+            totalCount: [
+              {
+                $count: 'count'
+              }
+            ]
+          }
+        }
+
+      ])
+      .exec((err, memberdata) => {
+        if (err) {
+          res.send({
+            error: err,
+            success: false
+          });
+        } else {
+          let data = memberdata[0].paginatedResults
+          if (data.length > 0) {
+            res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
+
+          } else {
+            res.send({ msg: 'data not found', success: false });
+          }
+        }
+      });
+  }
+  catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+
+  }
+}

@@ -12,7 +12,7 @@ const { addmember,
     active_Std,
     Former_trial_Std,
     camp_Std,
-    lastestMember,
+    latestMember,
     expire_member,
     expire_this_month,
     missuCall_list,
@@ -44,7 +44,11 @@ const { addmember,
     ActiveMemberslistByProgramName,
     searchStudentbyType,
     searchStudentbyInterest,
-    collectionModify,
+    active_trial_this_month,
+    active_trial_past3_month,
+    leads_this_month,
+    leads_past3_month,
+    collectionModify
 
 } = require("../controllers/addmember")
 const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
@@ -57,11 +61,16 @@ router.post('/bluck_student_add/:userId', bluckStd)
 router.get('/memeber/std_count/:userId', verifySchool, std_count)
 
 //dashboard routes
-router.get("/member/searchstudent_by_type/:userId/:studentType",searchStudentbyType)
-router.get("/member/searchstudent_by_interest/:userId/:intrested",searchStudentbyInterest)
+router.get("/member/searchstudent_by_type/:userId/:studentType", searchStudentbyType)
+router.get("/member/searchstudent_by_interest/:userId/:intrested", searchStudentbyInterest)
+router.get('/member/active_trial_created_this_month/:userId/:page_no/:per_page', verifySchool, active_trial_this_month);
+router.get('/member/active_trial_past_3months/:userId/:page_no/:per_page', verifySchool, active_trial_past3_month);
+router.get('/member/leads_created_this_month/:userId/:page_no/:per_page', verifySchool, leads_this_month);
+router.get('/member/leads_past_3months/:userId/:page_no/:per_page', verifySchool, leads_past3_month);
+
 
 router.get('/member/student_type_count/:userId', studentCount)
-router.get('/member/latest_member/:userId/:page_no/:per_page', verifySchool, lastestMember);
+router.get('/member/latest_member/:userId/:page_no/:per_page', verifySchool, latestMember);
 router.get('/member/expire_member/:userId', verifySchool, expire_member);
 router.get('/member/expire_this_month_member/:userId', verifySchool, expire_this_month);
 router.get('/member/miss_you_call/:userId', verifySchool, missuCall_list);
@@ -93,7 +102,7 @@ router.get('/member/active_trial/:userId/:page_no/:per_page', verifySchool, acti
 router.get('/member/active_student/:userId/:page_no/:per_page', verifySchool, active_Std);
 router.get('/member/Former_trial/:userId/:page_no/:per_page', verifySchool, Former_trial_Std);
 router.get('/member/Former_student/:userId/:page_no/:per_page', verifySchool, Former_Std);
-router.get('/member/Leads/:userId/:page_no/:per_page',verifySchool, leads_Std);
+router.get('/member/Leads/:userId/:page_no/:per_page', verifySchool, leads_Std);
 router.get('/member/camp_student/:userId/:page_no/:per_page', verifySchool, camp_Std);
 router.get('/member/after_school_student/:userId/:page_no/:per_page', verifySchool, after_school_Std);
 
