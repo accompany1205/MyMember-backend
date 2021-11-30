@@ -77,25 +77,41 @@ exports.category_list = (req, res) => {
 }
 
 exports.sendEmail = async (req, res) => {
+    let to = req.body.to;
+    let smartLists = req.body.smartLists;
     try {
-        if (!req.body.subject || !req.body.template || !req.body.to) {
+        if (!req.body.subject || !req.body.template) {
             res.send({ error: "invalid input", success: false })
         } else {
-
-            let attachment = req.files;
-            const attachments = attachment.map((file) => {
-                let content = Buffer.from(file.buffer).toString("base64")
-                return {
-                    content: content,
-                    filename: file.originalname,
-                    type: `application/${file.mimetype.split("/")[1]}`,
-                    disposition: "attachment"
-                }
-            });
+            to = JSON.parse(to);
+            smartLists = JSON.parse(smartLists);
+            if (!to && !smartLists) {
+                throw new Error("Select atleat send-to or smart-List")
+            }
+            if (to && smartLists) {
+                throw new Error("Either select send-To or smart-list")
+            }
+            if (!to) {
+                smartLists.map(lists => {
+                    to = [...to, ...lists.smrtList]
+                });
+            }
+            if (req.files) {
+                let attachment = req.files;
+                const attachments = attachment.map((file) => {
+                    let content = Buffer.from(file.buffer).toString("base64")
+                    return {
+                        content: content,
+                        filename: file.originalname,
+                        type: `application/${file.mimetype.split("/")[1]}`,
+                        disposition: "attachment"
+                    }
+                });
+            }
 
             const emailData = {
                 sendgrid_key: process.env.SENDGRID_API_KEY,
-                to: req.body.to,
+                to:to,
                 from: process.env.from_email,
                 // from_name: 'noreply@gmail.com',
                 subject: req.body.subject,
@@ -119,7 +135,7 @@ exports.sendEmail = async (req, res) => {
                                         res.send({ error: 'user id is not update in sent email' })
                                     }
                                     else {
-                                        res.send({ message: "Email Sent Successfully", success: true ,emailUpdate})
+                                        res.send({ message: "Email Sent Successfully", success: true, emailUpdate })
                                     }
                                 })
                         }
