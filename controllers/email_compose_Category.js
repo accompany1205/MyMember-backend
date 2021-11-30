@@ -96,22 +96,22 @@ exports.sendEmail = async (req, res) => {
                     to = [...to, ...lists.smrtList]
                 });
             }
-            
-                let attachment = req.files;
-                const attachments = attachment.map((file) => {
-                    let content = Buffer.from(file.buffer).toString("base64")
-                    return {
-                        content: content,
-                        filename: file.originalname,
-                        type: `application/${file.mimetype.split("/")[1]}`,
-                        disposition: "attachment"
-                    }
-                });
-            
+
+            let attachment = req.files;
+            const attachments = attachment.map((file) => {
+                let content = Buffer.from(file.buffer).toString("base64")
+                return {
+                    content: content,
+                    filename: file.originalname,
+                    type: `application/${file.mimetype.split("/")[1]}`,
+                    disposition: "attachment"
+                }
+            });
+
 
             const emailData = {
                 sendgrid_key: process.env.SENDGRID_API_KEY,
-                to:to,
+                to: to,
                 from: process.env.from_email,
                 // from_name: 'noreply@gmail.com',
                 subject: req.body.subject,
@@ -124,6 +124,7 @@ exports.sendEmail = async (req, res) => {
                     var emailDetail = new emailSent(req.body)
                     emailDetail.sent_date = DT.Date
                     emailDetail.sent_time = DT.Time
+                    emailDetail.smartLists = smartLists;
                     emailDetail.save((err, emailSave) => {
                         if (err) {
                             res.send({ error: 'email details is not save' })
