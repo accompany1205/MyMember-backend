@@ -369,7 +369,6 @@ exports.buyMembership = async (req, res) => {
     if (membershipData.isEMI) {
       if (membershipData.ptype == "card" && membershipData.balance > 0) {
         valor_payload = { ...valor_payload, ...getUidAndInvoiceNumber() };
-          console.log(valor_payload)
         const resp = await valorTechPaymentGateWay.addSubscription(
           valor_payload
         );
