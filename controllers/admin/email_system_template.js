@@ -177,7 +177,7 @@ exports.add_template = async (req, res) => {
 
       saveEmailTemplate(obj)
         .then((data) => {
-          nurturingFolderModal
+          systemFolder
             .findByIdAndUpdate(folderId, { $push: { template: data._id } })
             .then((data) => {
               res.send({
