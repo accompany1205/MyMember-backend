@@ -85,17 +85,17 @@ exports.sendEmail = async (req, res) => {
         } else {
             to = JSON.parse(to);
             smartLists = JSON.parse(smartLists);
-            if (!to && !smartLists) {
-                throw new Error("Select atleat send-to or smart-List")
-            }
+            // if (!to && !smartLists) {
+            //     throw new Error("Select atleat send-to or smart-List")
+            // }
             // if (to && smartLists) {
             //     throw new Error("Either select send-To or smart-list")
             // }
-            // if (!to) {
-            //     smartLists.map(lists => {
-            //         to = [...to, ...lists.smrtList]
-            //     });
-            // }
+            if (!to) {
+                smartLists.map(lists => {
+                    to = [...to, ...lists.smrtList]
+                });
+            }
 
             let attachment = req.files;
             const attachments = attachment.map((file) => {
