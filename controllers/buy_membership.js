@@ -16,6 +16,12 @@ const randomNumber = (length, addNumber) => {
   );
 };
 
+const getUidAndInvoiceNumber = () => {
+  return {
+    uid: randomNumber(10000000000, 10000),
+    invoice_no: randomNumber(1000000, 1000),
+  };
+};
 
 exports.membership_Info = (req, res) => {
   const id = req.params.membershipId;
@@ -355,20 +361,21 @@ exports.remove = (req, res) => {
 exports.buyMembership = async (req, res) => {
   const userId = req.params.userId;
   const studentId = req.params.studentId;
-  const valor_payload = req.body.valor_payload
-  const membershipData = req.body.membership_details
+  let valor_payload = req.body.valor_payload;
+  let membershipData = req.body.membership_details;
 
   membershipData.userId = userId;
   try {
-
     if (membershipData.isEMI) {
       if (membershipData.ptype == "card" && membershipData.balance > 0) {
-
-
-        const resp = await valorTechPaymentGateWay.addSubscription(valor_payload)
+        valor_payload = { ...valor_payload, ...getUidAndInvoiceNumber() };
+          console.log(valor_payload)
+        const resp = await valorTechPaymentGateWay.addSubscription(
+          valor_payload
+        );
         if (resp.data.error_code == 00) {
-          let subscription_id = resp.data.subscription_id
-          res.send(resp.data)
+          let subscription_id = resp.data.subscription_id;
+          res.send(resp.data);
         }
 
         // membershipData.schedulePayments = createEMIRecord(
@@ -539,11 +546,9 @@ exports.members_info = async (req, res) => {
 };
 
 exports.lastestMembership = async (req, res) => {
-  var totalCount = await AddMember
-    .find({
-      userId: req.params.userId,
-    })
-    .countDocuments();
+  var totalCount = await AddMember.find({
+    userId: req.params.userId,
+  }).countDocuments();
 
   var per_page = parseInt(req.params.per_page) || 5;
   var page_no = parseInt(req.params.page_no) || 0;
@@ -585,11 +590,9 @@ exports.lastestMembership = async (req, res) => {
 };
 
 exports.thismonthMembership = async (req, res) => {
-  var totalCount = await AddMember
-    .find({
-      userId: req.params.userId,
-    })
-    .countDocuments();
+  var totalCount = await AddMember.find({
+    userId: req.params.userId,
+  }).countDocuments();
 
   var per_page = parseInt(req.params.per_page) || 5;
   var page_no = parseInt(req.params.page_no) || 0;
@@ -632,11 +635,9 @@ exports.thismonthMembership = async (req, res) => {
 
 exports.expiredMembership = async (req, res) => {
   const userId = req.params.userId;
-  var totalCount = await AddMember
-    .find({
-      userId: req.params.userId,
-    })
-    .countDocuments();
+  var totalCount = await AddMember.find({
+    userId: req.params.userId,
+  }).countDocuments();
 
   var per_page = parseInt(req.params.per_page) || 5;
   var page_no = parseInt(req.params.page_no) || 0;
