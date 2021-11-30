@@ -102,7 +102,7 @@ exports.list_template = (req, res) => {
 
 exports.add_template = async (req, res) => {
   try {
-    const counts = await all_temp
+    const counts = await addTemp
       .find({ folderId: req.params.folderId })
       .countDocuments();
     let templete_Id = counts + 1;
@@ -228,7 +228,7 @@ exports.update_template = async (req, res) => {
     var allAttachments = await Promise.all(promises);
     updateTemplate.attachments = allAttachments;
   }
-  all_temp.updateOne(
+  addTemp.updateOne(
     { _id: req.params.templateId },
     req.body,
     (err, updateTemp) => {
