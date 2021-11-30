@@ -91,16 +91,16 @@ exports.adminApproval = async (req, res) => {
           });
           res.send({
             data: {
-            "token":token,
-            "data":userData
+              "token": token,
+              "data": userData
             },
-            success:true
+            success: true
           }
           )
         } else {
           res.josn({
             msg: "User Status is not Active",
-            success:false
+            success: false
           })
         }
       } else {
@@ -494,7 +494,7 @@ exports.isAuth = (req, res, next) => {
   let user = req.profile && req.auth && req.profile._id == req.auth._id;
   if (!user) {
     return res.status(403).json({
-      error: "Access denied",
+      mag: "Access denied",
     });
   }
   next();
@@ -507,26 +507,34 @@ if (!process.env.JWT_SECRET) {
 }
 
 exports.verifySchool = (req, res, next) => {
-  var Token = req.headers["authorization"];
-  const bearer = Token.split(" ");
-  const bearerToken = bearer[1];
-
-  if (typeof bearerToken !== "undefined") {
-    jwt.verify(bearerToken, process.env.JWT_SECRET, (err, authData) => {
-      if (err) {
-        res.sendStatus(403);
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader === undefined) {
+      return res.status(401).send({ success: false, msg: "Unauthorized" });
+    } else {
+      const bearerToken = authHeader.split(" ")[1];
+      if (typeof bearerToken !== "undefined") {
+        jwt.verify(bearerToken, process.env.JWT_SECRET, (err, authData) => {
+          if (err) {
+            return res.status(403).send({ success: false, msg: "Access denied" });
+          } else {
+            if (authData.id == req.params.userId) {
+              next();
+            } else {
+              return res.status(403).send({ success: false, msg: "Access denied" });
+            }
+          }
+        });
       } else {
-        if (authData.id == req.params.userId) {
-          next();
-        } else {
-          res.sendStatus(403);
-        }
+        return res.status(403).send({ success: false, msg: "Access denied" });
       }
-    });
-  } else {
-    res.sendStatus(403);
-  }
+    }
 
+
+  }
+  catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+  }
 };
 
 exports.isSchoolActiveted = (req, res, next) => {
@@ -537,23 +545,26 @@ exports.isSchoolActiveted = (req, res, next) => {
 
 
 exports.isAdmin = (req, res, next) => {
-  var Token = req.headers["authorization"];
-  const bearer = Token.split(" ");
-  const bearerToken = bearer[1];
-  if (typeof bearerToken !== "undefined") {
-    jwt.verify(bearerToken, process.env.JWT_SECRET, (err, adminData) => {
-      if (err) {
-        res.sendStatus(403);
-      } else {
-        if (adminData.id == req.params.adminId && adminData.role == 1) {
-          next();
-        } else {
-          res.sendStatus(403);
-        }
-      }
-    });
+  const authHeader = req.headers.authorization;
+  if (authHeader === undefined) {
+    return res.status(401).send({ success: false, msg: "Unauthorized" });
   } else {
-    res.sendStatus(403);
+    const bearerToken = authHeader.split(" ")[1];
+    if (typeof bearerToken !== "undefined") {
+      jwt.verify(bearerToken, process.env.JWT_SECRET, (err, adminData) => {
+        if (err) {
+          return res.status(403).send({ success: false, msg: "Access denied" });
+        } else {
+          if (adminData.id == req.params.adminId && adminData.role == 1) {
+            next();
+          } else {
+            return res.status(403).send({ success: false, msg: "Access denied" });
+          }
+        }
+      });
+    } else {
+      return res.status(403).send({ success: false, msg: "Access denied" });
+    }
   }
 };
 
