@@ -96,7 +96,7 @@ exports.sendEmail = async (req, res) => {
                     to = [...to, ...lists.smrtList]
                 });
             }
-            if (req.files) {
+            
                 let attachment = req.files;
                 const attachments = attachment.map((file) => {
                     let content = Buffer.from(file.buffer).toString("base64")
@@ -107,7 +107,7 @@ exports.sendEmail = async (req, res) => {
                         disposition: "attachment"
                     }
                 });
-            }
+            
 
             const emailData = {
                 sendgrid_key: process.env.SENDGRID_API_KEY,
