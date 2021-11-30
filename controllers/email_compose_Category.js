@@ -78,6 +78,7 @@ exports.category_list = (req, res) => {
 
 exports.sendEmail = async (req, res) => {
     let to = req.body.to;
+    console.log(to);
     let smartLists = req.body.smartLists;
     try {
         if (!req.body.subject || !req.body.template) {
@@ -96,7 +97,6 @@ exports.sendEmail = async (req, res) => {
                     to = [...to, ...lists.smrtList]
                 });
             }
-
             let attachment = req.files;
             const attachments = attachment.map((file) => {
                 let content = Buffer.from(file.buffer).toString("base64")
@@ -107,7 +107,8 @@ exports.sendEmail = async (req, res) => {
                     disposition: "attachment"
                 }
             });
-
+            console.log("smart ->",smartLists)
+            console.log("hello - >", to)
 
             const emailData = {
                 sendgrid_key: process.env.SENDGRID_API_KEY,

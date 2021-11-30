@@ -297,6 +297,7 @@ exports.update_template = async (req, res) => {
 };
 
 exports.add_template = async (req, res) => {
+  console.log("to", req.body.to)
   const counts = await all_temp
     .find({ folderId: req.params.folderId })
     .countDocuments();
@@ -315,14 +316,15 @@ exports.add_template = async (req, res) => {
     smartLists
   } = req.body || {};
   to = JSON.parse(to);
+  console.log("to->", to)
   smartLists = JSON.parse(smartLists);
   let { userId, folderId } = req.params || {};
-  if(!to && !smartLists){
-    throw new Error("Select atleat send-to or smart-List")
-  }
-  if (to && smartLists) {
-    throw new Error("Either select send-To or smart-list")
-  }
+  // if(!to && !smartLists){
+  //   throw new Error("Select atleat send-to or smart-List")
+  // }
+  // if (to && smartLists) {
+  //   throw new Error("Either select send-To or smart-list")
+  // }
   if (!to) {
     smartLists.map(lists => {
       to = [...to, ...lists.smrtList]
