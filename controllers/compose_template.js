@@ -264,6 +264,15 @@ exports.list_template = async (req, res) => {
     });
 };
 
+exports.allScheduledListing = async (req, res) => {
+  await  all_temp.find({ userId: req.params.userId, is_Sent: false })
+    .then((data) => {
+      res.send({ success: true, msg: "all Schedulded Emails", data })
+    }).catch(err => {
+      throw new Error("Not able to fetch Data",err);
+    })
+}
+
 exports.update_template = async (req, res) => {
   let updateTemplate = req.body;
   let smartList = updateTemplate.smartLists;
@@ -287,15 +296,15 @@ exports.update_template = async (req, res) => {
     var allAttachments = await Promise.all(promises);
     updateTemplate.attachments = allAttachments;
   }
-  
+
   all_temp.updateOne(
     { _id: req.params.templateId },
     req.body,
     (err, updateTemp) => {
       if (err) {
-        res.send({ success: false,  msg: "template is not update" });
+        res.send({ success: false, msg: "template is not update" });
       } else {
-        res.send({ success:true, msg: "template update success" });
+        res.send({ success: true, msg: "template update success" });
       }
     }
   );
