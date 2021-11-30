@@ -84,15 +84,15 @@ exports.sendEmail = async (req, res) => {
         if (!req.body.subject || !req.body.template) {
             res.send({ error: "invalid input", success: false })
         } else {
-            to = JSON.parse(to);
-            smartLists = JSON.parse(smartLists);
+            to = to ? JSON.parse(to): [];
+            smartLists = smartLists ? JSON.parse(smartLists): [];
             // if (!to && !smartLists) {
             //     throw new Error("Select atleat send-to or smart-List")
             // }
             // if (to && smartLists) {
             //     throw new Error("Either select send-To or smart-list")
             // }
-            if (!to) {
+            if (!to.lenght) {
                 smartLists.map(lists => {
                     to = [...to, ...lists.smrtList]
                 });

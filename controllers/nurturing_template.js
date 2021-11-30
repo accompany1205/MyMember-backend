@@ -113,103 +113,108 @@ exports.list_template = (req, res) => {
 };
 
 exports.add_template = async (req, res) => {
-  const counts = await all_temp
-    .find({ folderId: req.params.folderId })
-    .countDocuments();
-  let templete_Id = counts + 1;
-  let {
-    to,
-    from,
-    title,
-    subject,
-    template,
-    sent_time,
-    repeat_mail,
-    sent_date,
-    follow_up,
-    smartLists,
-  } = req.body || {};
-  to = JSON.parse(to);
-  smartLists = JSON.parse(smartLists);
-  let { userId, folderId } = req.params || {};
-  if(!to && !smartLists){
-    throw new Error("Select atleat send-to or smart-List")
-  }
-  if (to && smartLists) {
-    throw new Error("select either send-To or smart-list ")
-  }
+  try {
+    const counts = await all_temp
+      .find({ folderId: req.params.folderId })
+      .countDocuments();
+    let templete_Id = counts + 1;
+    let {
+      to,
+      from,
+      title,
+      subject,
+      template,
+      sent_time,
+      repeat_mail,
+      sent_date,
+      follow_up,
+      smartLists,
+    } = req.body || {};
+    to = to ? JSON.parse(to) : [];
+    smartLists = smartLists ? JSON.parse(smartLists): [];
+    let { userId, folderId } = req.params || {};
+    // if (!to && !smartLists) {
+    //   throw new Error("Select atleat send-to or smart-List")
+    // }
+    // if (to && smartLists) {
+    //   throw new Error("select either send-To or smart-list ")
+    // }
 
-  if (!to) {
-    smartLists.map(lists => {
-      to = [...to, ...lists.smrtList]
-    });
-  }
-  const obj = {
-    to,
-    from,
-    title,
-    subject,
-    template,
-    sent_date,
-    sent_time,
-    DateT: date_iso_follow,
-    repeat_mail,
-    follow_up,
-    email_type: "schedule",
-    email_status: true,
-    category: "nurturing",
-    userId,
-    folderId,
-    templete_Id,
-    attachments,
-    smartLists
-  };
-  const promises = []
-  if (req.files) {
-    (req.files).map(file => {
-      promises.push(cloudUrl.imageUrl(file))
-    });
-    var attachments = await Promise.all(promises);
-  }
-  obj.attachments = attachments
-  sent_date = moment(sent_date).format("YYYY-MM-DD");
-  // let scheduleDateOfMonth = moment(sent_date).format('DD')
-  // let scheduleMonth = moment(sent_date).format('MM')
-  // let scheduleDay = moment(sent_date).format('dddd')
-  if (req.body.follow_up === 0) {
-    var date_iso = timefun(req.body.sent_date, req.body.sent_time);
-    obj.DateT = date_iso;
-  } else if (req.body.follow_up < 0) {
-    res.send({ code: 400, msg: "follow up not set less then 0" });
-  } else {
-    var date_iso_follow = timefun(req.body.sent_date, req.body.sent_time);
-    date_iso_follow.setDate(date_iso_follow.getDate() + req.body.follow_up);
-    var nD = moment(date_iso_follow).format("MM/DD/YYYY");
-
-    saveEmailTemplate(obj)
-      .then((data) => {
-        nurturingFolderModal
-          .findByIdAndUpdate(folderId, { $push: { template: data._id } })
-          .then((data) => {
-            res.send({
-              msg: `Email scheduled  Successfully on ${sent_date}`,
-              success: true,
-            });
-          })
-          .catch((er) => {
-            res.send({
-              error: "compose template details is not add in folder",
-              success: false,
-            });
-          });
-      })
-      .catch((ex) => {
-        res.send({
-          success: false,
-          msg: ex.message,
-        });
+    if (!to.lenght) {
+      smartLists.map(lists => {
+        to = [...to, ...lists.smrtList]
       });
+    }
+    const obj = {
+      to,
+      from,
+      title,
+      subject,
+      template,
+      sent_date,
+      sent_time,
+      DateT: date_iso_follow,
+      repeat_mail,
+      follow_up,
+      email_type: "schedule",
+      email_status: true,
+      category: "nurturing",
+      userId,
+      folderId,
+      templete_Id,
+      attachments,
+      smartLists
+    };
+    const promises = []
+    if (req.files) {
+      (req.files).map(file => {
+        promises.push(cloudUrl.imageUrl(file))
+      });
+      var attachments = await Promise.all(promises);
+    }
+    obj.attachments = attachments
+    sent_date = moment(sent_date).format("YYYY-MM-DD");
+    // let scheduleDateOfMonth = moment(sent_date).format('DD')
+    // let scheduleMonth = moment(sent_date).format('MM')
+    // let scheduleDay = moment(sent_date).format('dddd')
+    if (req.body.follow_up === 0) {
+      var date_iso = timefun(req.body.sent_date, req.body.sent_time);
+      obj.DateT = date_iso;
+    } else if (req.body.follow_up < 0) {
+      res.send({ code: 400, msg: "follow up not set less then 0" });
+    } else {
+      var date_iso_follow = timefun(req.body.sent_date, req.body.sent_time);
+      date_iso_follow.setDate(date_iso_follow.getDate() + req.body.follow_up);
+      var nD = moment(date_iso_follow).format("MM/DD/YYYY");
+
+      saveEmailTemplate(obj)
+        .then((data) => {
+          nurturingFolderModal
+            .findByIdAndUpdate(folderId, { $push: { template: data._id } })
+            .then((data) => {
+              res.send({
+                msg: `Email scheduled  Successfully on ${sent_date}`,
+                success: true,
+              });
+            })
+            .catch((er) => {
+              res.send({
+                error: "compose template details is not add in folder",
+                success: false,
+              });
+            });
+        })
+        .catch((ex) => {
+          res.send({
+            success: false,
+            msg: ex.message,
+          });
+        });
+    }
+  } catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false })
   }
+
 };
 
 function saveEmailTemplate(obj) {
@@ -358,10 +363,12 @@ exports.swapAndUpdate_template = async (req, res) => {
 
 exports.update_template = async (req, res) => {
   let updateTemplate = req.body;
-  let smartList = JSON.parse(updateTemplate.smartLists);
-  let to = JSON.parse(updateTemplate.to)
+  let smartList = updateTemplate.smartLists;
+  let to = updateTemplate.to
+  to = to ? JSON.parse(to) : [];
+  smartList = smartList ? JSON.parse(smartList) : [];
   if (to || smartList) {
-    if (!to) {
+    if (!to.lenght) {
       smartList.map(lists => {
         to = [...to, ...lists.smrtList]
       });
