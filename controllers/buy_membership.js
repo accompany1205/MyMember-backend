@@ -533,12 +533,6 @@ exports.members_info = async (req, res) => {
 
 
 exports.thismonthMembership = async (req, res) => {
-  var totalCount = await addmemberModal
-    .find({
-      userId: req.params.userId,
-    })
-    .countDocuments();
-
   var per_page = parseInt(req.params.per_page) || 5;
   var page_no = parseInt(req.params.page_no) || 0;
   var pagination = {
@@ -546,144 +540,203 @@ exports.thismonthMembership = async (req, res) => {
     skip: per_page * page_no,
   };
   buyMembership
-    .find(
+    .aggregate([
+      { $match: { userId: req.params.userId } },
       {
-        userId: req.params.userId,
+        $project: {
+          membership_name: 1,
+          membership_status: 1,
+          expiry_date: { $toDate: "$expiry_date" },
+          studentInfo: 1,
+        }
       },
       {
-        membership_name: 1,
-        totalp: 1,
-        mactive_date: 1,
-        payment_type: 1,
-        membership_status: 1,
-      }
-    )
-    .populate({
-      path: "studentInfo",
-      select: "firstName lastName school program studentType",
-    })
-    .sort({
-      createdAt: -1,
-    })
-    .limit(pagination.limit)
-    .skip(pagination.skip)
-    .exec((err, memberdata) => {
-      if (err) {
-        res.send({
-          error: "member data is not find",
-        });
-      } else {
-        res.send({ memberdata, totalCount: totalCount, success: true });
-      }
-    });
-};
-
-exports.expiredMembership = async (req, res) => {
-  var totalCount = await addmemberModal
-    .find({
-      userId: req.params.userId,
-    })
-    .countDocuments();
-
-  var per_page = parseInt(req.params.per_page) || 5;
-  var page_no = parseInt(req.params.page_no) || 0;
-  var pagination = {
-    limit: per_page,
-    skip: per_page * page_no,
-  };
-  addmemberModal
-    .find(
-      { userId: req.params.userId },
-      {
-        firstName: 1,
-        lastName: 1,
-        studentType: 1,
-        program: 1,
-        membership_details: 1,
-        createdAt: 1,
-        primaryPhone: 1,
-        notes: 1,
-        status: 1
-
-      })
-    .populate({
-      path: 'membership_details',
-      select: {
-        membership_name: 1, membership_status: 1, expiry_date: 1
+        $lookup: {
+          from: "members",
+          localField: "studentInfo",
+          foreignField: "_id",
+          as: 'data'
+        }
       },
-      match: { membership_status: { $eq: "Expired" } },
-      options: { sort: { dateExpire: 1 } }
-    })
-    // {
-    //   $group: {
-    //     _id: "$studentInfo",
-    //     createdAt: { $last: "$createdAt" },
-    //     membership_name: { $first: "$membership_name" },
-    //     expiry_date: { $first: "$expiry_date" },
-    //     membership_name: { $first: "$membership_name" },
+      {
+        $match: {
+          $expr: { $eq: [{ $month: "$expiry_date" }, { $month: new Date() }] },
+        }
+      },
+      {
+        "$group": {
+          _id: "$data._id",
 
-    //     // studentInfo: { $last: "$studentInfo" },
-    //   },
-    // },
-    // {
-    //   $lookup: {
-    //     from: "members",
-    //     localField: "_id",
-    //     foreignField: "_id",
-    //     as: "data",
-    //   },
-    // },
-    // {
-    //   $replaceRoot: {
-    //     newRoot: {
-    //       $mergeObjects: [{ $arrayElemAt: ["$data", 0] }, "$$ROOT"],
-    //     },
-    //   },
-    // },
-    // {
-    //   $project: {
-    //     data: 1,
-    //     expiry_date: 1,
-    //     membership_name: 1,
-    //     createdAt: 1,
-    //     studentInfo: 1,
-    //   },
-    // },
-    // {
-    //   $match: { expiry_date: { $gte: new Date() } },
-    // },
-    // {
-    //   $sort: { expiry_date: 1 },
-    // },
-    // ])
-    // .find(
-    //   {
-    //     userId: req.params.userId,
-    //   },
-    //   {
-    //     membership_name: 1,
-    //     membership_status: 1,
-    //     expiry_date: 1,
-    //     createdAt:1
-    //   }
-    // )
-    // .populate({
-    //   path: "studentInfo",
-    //   select: "firstName lastName school program studentType primaryPhone",
-    //   // options: { sort: [['created', 'dsc']]
-    // })
-    // .sort({
-    //   createdAt: -1,
-    // })
-    // .limit(pagination.limit)
-    // .skip(pagination.skip)
+          no_of_Memberships: { $sum: 1 },
+          firstName: { "$first": '$data.firstName' },
+          lastName: { "$first": '$data.lastName' },
+          program: { "$first": '$data.program' },
+          notes: { "$first": '$data.notes' },
+          primaryPhone: { "$first": '$data.primaryPhone' },
+          studentType: { "$first": '$data.studentType' },
+          status: { "$first": '$data.status' },
+          memberships: {
+            "$push":
+            {
+              $cond: [{
+                $eq: [{ $month: "$expiry_date" }, { $month: new Date() }]
+              },
+              {
+                membership_name: "$membership_name", membership_status: "$membership_status", expiry_date: "$expiry_date", days_till_Expire: {
+                  $multiply: [{
+                    $floor: {
+                      $divide: [{ $subtract: [new Date(), '$expiry_date'] }, 1000 * 60 * 60 * 24]
+                    }
+                  }, -1]
+
+                }
+              },
+                "$$REMOVE"
+              ]
+            }
+          }
+        }
+      },
+      { $unwind: "$_id" },
+      { $unwind: "$firstName" },
+      { $unwind: "$lastName" },
+      { $unwind: "$program" },
+      { $unwind: "$notes" },
+      { $unwind: "$primaryPhone" },
+      { $unwind: "$studentType" },
+      { $unwind: "$status" },
+      {
+        $sort: {
+          firstName: 1
+        }
+      },
+      {
+        $facet: {
+          paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+          totalCount: [
+            {
+              $count: 'count'
+            }
+          ]
+        }
+      }
+    ])
     .exec((err, memberdata) => {
       if (err) {
         res.send({
           error: err,
         });
       } else {
-        res.send({ memberdata, totalCount: totalCount, success: true });
+        let data = memberdata[0].paginatedResults
+        if (data.length > 0) {
+          res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
+
+        } else {
+          res.send({ msg: 'data not found', success: false });
+        }
+      }
+    });
+
+};
+
+exports.expiredMembership = async (req, res) => {
+  var per_page = parseInt(req.params.per_page) || 5;
+  var page_no = parseInt(req.params.page_no) || 0;
+  var pagination = {
+    limit: per_page,
+    skip: per_page * page_no,
+  };
+  buyMembership
+    .aggregate([
+      { $match: { userId: req.params.userId } },
+      {
+        $project: {
+          membership_name: 1,
+          membership_status: 1,
+          expiry_date: { $toDate: "$expiry_date" },
+          studentInfo: 1,
+        }
+      },
+      {
+        $lookup: {
+          from: "members",
+          localField: "studentInfo",
+          foreignField: "_id",
+          as: 'data'
+        }
+      },
+      {
+        $match: {
+          expiry_date: { $lte: new Date() }
+        }
+      },
+      {
+        "$group": {
+          _id: "$data._id",
+
+          no_of_Memberships: { $sum: 1 },
+          firstName: { "$first": '$data.firstName' },
+          lastName: { "$first": '$data.lastName' },
+          program: { "$first": '$data.program' },
+          notes: { "$first": '$data.notes' },
+          primaryPhone: { "$first": '$data.primaryPhone' },
+          studentType: { "$first": '$data.studentType' },
+          status: { "$first": '$data.status' },
+          memberships: {
+            "$push":
+            {
+              $cond: [
+                { $lte: ["$expiry_date", new Date] },
+                {
+                  membership_name: "$membership_name", membership_status: "Expired", expiry_date: "$expiry_date", dayssince: {
+                    $floor: {
+                      $divide: [{ $subtract: [new Date(), '$expiry_date'] }, 1000 * 60 * 60 * 24]
+                    }
+                  }
+                },
+                "$$REMOVE"
+              ]
+            }
+          }
+        }
+      },
+      { $unwind: "$_id" },
+      { $unwind: "$firstName" },
+      { $unwind: "$lastName" },
+      { $unwind: "$program" },
+      { $unwind: "$notes" },
+      { $unwind: "$primaryPhone" },
+      { $unwind: "$studentType" },
+      { $unwind: "$status" },
+      {
+        $sort: {
+          firstName: 1
+        }
+      },
+      {
+        $facet: {
+          paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+          totalCount: [
+            {
+              $count: 'count'
+            }
+          ]
+        }
+      }
+    ])
+    .exec((err, memberdata) => {
+      if (err) {
+        res.send({
+          error: err,
+        });
+      } else {
+        let data = memberdata[0].paginatedResults
+        if (data.length > 0) {
+          res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
+
+        } else {
+          res.send({ msg: 'data not found', success: false });
+        }
       }
     });
 };

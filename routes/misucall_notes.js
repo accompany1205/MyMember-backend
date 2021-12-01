@@ -7,7 +7,7 @@ router.get("/missyouCall/seven_to_fourteen_miss/:userId", verifySchool, seven_to
 router.get("/missyouCall/fifteen_to_thirty_miss/:userId", verifySchool, fifteen_to_thirty)
 router.get("/missyouCall/miss_more_then_thirty/:userId", verifySchool, moreThirty)
 // for dashboard
-router.get("/missyouCall/more_than_forteen/:userId", verifySchool, more_than_forteen)
+router.get("/missyouCall/more_than_forteen/:userId/:page_no/:per_page", verifySchool, more_than_forteen)
 
 router.get("/missyouCall/list_appoinment_and_call_history/:userId", verifySchool, listApp_and_callHistory)
 router.post("/missYouCall/add_note/:userId/:studentId", verifySchool, create);

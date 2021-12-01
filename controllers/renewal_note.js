@@ -95,12 +95,13 @@ exports.updateNote = (req, res) => {
 exports.expireStd = async (req, res) => {
     try {
         let userId = req.params.userId;
-        let allMembers = await student.find({ userId: userId, membership_details: { $exists: true, $not: { $size: 0 } } },
+        let allMembers = await student.find({ userId: userId, },
             { firstName: 1, lastName: 1, age: 1, memberprofileImage: 1, last_contact_renewal: 1 })
             .populate({
                 path: 'membership_details',
-                match: { membership_status: "Active" },
-                select: 'membership_name membership_status expiry_date'
+                select: 'membership_name membership_status expiry_date',
+                match: { membership_status: { $eq: "Expired" } },
+
             })
 
         res.send(allMembers)
@@ -128,17 +129,17 @@ exports.expire_thirty_std = async (req, res) => {
                     (element.membership_details).forEach((e, i) => {
                         if (30 > dayRemaining(e.expiry_date)) {
                             e.daysLeft = dayRemaining(e.expiry_date)
-                            if(!x.includes(element)){
+                            if (!x.includes(element)) {
                                 x.push(element)
-                    
+
                             }
-                    
+
 
                         } else {
                             element.membership_details.pop(i)
                         }
                     })
-      
+
 
                 });
                 res.send({ data: x, success: true })
@@ -170,11 +171,11 @@ exports.expire_sixty_std = async (req, res) => {
                     (element.membership_details).forEach((e, i) => {
                         if (60 > dayRemaining(e.expiry_date)) {
                             e.daysLeft = dayRemaining(e.expiry_date)
-                            if(!x.includes(element)){
+                            if (!x.includes(element)) {
                                 x.push(element)
-                    
+
                             }
-                            
+
 
                         } else {
                             element.membership_details.pop(i)

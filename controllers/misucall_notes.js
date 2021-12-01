@@ -318,6 +318,12 @@ exports.updateNote = (req, res) => {
 };
 exports.more_than_forteen = async (req, res) => {
   try {
+    var per_page = parseInt(req.params.per_page) || 5;
+    var page_no = parseInt(req.params.page_no) || 0;
+    var pagination = {
+      limit: per_page,
+      skip: per_page * page_no,
+    };
     const membership_details = await memberShip.find(
       {},
       { expiry_date: 1, mactive_date: 1, membership_name: 1 }
@@ -333,45 +339,71 @@ exports.more_than_forteen = async (req, res) => {
             memberprofileImage: 1,
             last_contact_missCall: 1,
             rating: 1,
+            // missClasses: {
+            //   $filter: {
+            //     input: "$data",
+            //     as: 'data1',
+            //     cond: {
+            //       $eq: ["$$data1.date", "11/3/2021"]
+            //     }
+            //   }
+            // }
           },
         },
+
+
         {
           $lookup: {
             from: "attendences",
-            localField: "_id",
-            foreignField: "studentId",
+            let: { studentId: "$studentId" },
+            pipeline: [
+              { $match: { $expr: { $eq: ['$$studentId', "$_id",] } } },
+              {
+                $project: { class: 1, date: 1, firstName: 1 }
+              }],
             as: "data",
           },
         },
+
+
+
+
       ])
       .then(async (result) => {
-        const newArr = [];
-        const current_Date = new Date();
-        newObj = new Object();
-        await result.forEach((i) => {
-          a = i.data;
-          if (a.length >= 1) {
-            last_Date = new Date(a[a.length - 1].date);
-            dayDifference = -1 * (daysRemaining(last_Date) - 1);
-            if (dayDifference > 14) {
-              newObj = {
-                _id: i._id,
-                firstName: i.firstName,
-                lastName: i.lastName,
-                notes: i.notes,
-                memberprofileImage: i.memberprofileImage,
-                rating: i.rating,
-                last_contact_missCall: i.last_contact_missCall,
-                missYouCall_notes: missYouCall_notes,
-                membership_details: membership_details,
-                last_Class_Attended_date: last_Date,
-                dayDifference,
-              };
-              newArr.push(newObj);
-            }
-          }
-        });
-        res.status(200).send(newArr);
+        // const newArr = [];
+        // const current_Date = new Date();
+        // newObj = new Object();
+        // await result.forEach((i) => {
+        //   a = i.data;
+        //   if (a.length >= 1) {
+        //     last_Date = new Date(a[a.length - 1].date);
+        //     dayDifference = -1 * (daysRemaining(last_Date) - 1);
+        //     if (dayDifference > 14) {
+        //       newObj = {
+        //         _id: i._id,
+        //         firstName: i.firstName,
+        //         lastName: i.lastName,
+        //         notes: i.notes,
+        //         memberprofileImage: i.memberprofileImage,
+        //         rating: i.rating,
+        //         last_contact_missCall: i.last_contact_missCall,
+        //         missYouCall_notes: missYouCall_notes,
+        //         membership_details: membership_details,
+        //         last_Class_Attended_date: last_Date,
+        //         dayDifference,
+        //       };
+        //       newArr.push(newObj);
+        //     }
+        //   }
+        // });
+        // let data = newArr[0].paginatedResults
+        res.send(result)
+        // if (data.length > 0) {
+        //   res.send({ data: newArr, totalCount: result[0].totalCount[0].count, success: true });
+
+        // } else {
+        //   res.send({ msg: 'data not found', success: false });
+        // }
       })
       .catch((err) => {
         res.status(404).send({ message: err.message });

@@ -183,6 +183,10 @@ exports.seven_to_forteen = async (req, res) => {
       {
         $project: {
           firstName: 1,
+          lastName: 1,
+          notes: 1,
+          program: 1,
+          current_rank_img: 1,
           dob: 1,
           daysTillBirthday: {
             $subtract: [
@@ -253,6 +257,10 @@ exports.fifteen_to_thirty = async (req, res) => {
       {
         $project: {
           firstName: 1,
+          lastName: 1,
+          notes: 1,
+          program: 1,
+          current_rank_img: 1,
           dob: 1,
           daysTillBirthday: {
             $subtract: [
@@ -322,6 +330,10 @@ exports.moreThirty = async (req, res) => {
       {
         $project: {
           firstName: 1,
+          lastName: 1,
+          notes: 1,
+          program: 1,
+          current_rank_img: 1,
           dob: 1,
           daysTillBirthday: {
             $subtract: [
@@ -367,8 +379,8 @@ exports.this_month = async (req, res) => {
           dob: 1,
           studentType: 1,
           lastName: 1,
-          primaryPhone:1,
-          current_rank_img:1,
+          primaryPhone: 1,
+          current_rank_img: 1,
           program: 1,
           notes: 1,
           daysTillBirthday: {
@@ -423,26 +435,65 @@ exports.next_month = async (req, res) => {
     skip: per_page * page_no,
   };
   let todays = new Date();
-  let nextMonth = todays.getMonth() + 2;
+  let nextMonth = new Date(todays.setMonth(todays.getMonth() + 1))
   let userId = req.params.userId;
   try {
     const nextMonthBirthday = await student.aggregate([
       { $match: { userId: userId } },
-
       {
         $project: {
           firstName: 1,
           dob: 1,
-          studentType: 1,
+          todayDayOfYear: { $dayOfYear: new Date() },
+          leap: {
+            $or: [
+              { $eq: [0, { $mod: [{ $year: "$dob" }, 400] }] },
+              {
+                $and: [
+                  { $eq: [0, { $mod: [{ $year: "$dob" }, 4] }] },
+                  { $ne: [0, { $mod: [{ $year: "$dob" }, 100] }] },
+                ],
+              },
+            ],
+          },
+          dayOfYear: { $dayOfYear: "$dob" },
+        },
+      },
+      {
+        $project: {
+          firstName: 1,
+          dob: 1,
+          leap: 1,
+          todayDayOfYear: 1,
+          dayOfYear: {
+            $subtract: [
+              "$dayOfYear",
+              {
+                $cond: [{ $and: ["$leap", { $gt: ["$dayOfYear", 59] }] }, 1, 0],
+              },
+            ],
+          },
+        },
+      },
+      {
+        $project: {
+          firstName: 1,
           lastName: 1,
-          primaryPhone:1,
-          program: 1,
-          current_rank_img:1,
           notes: 1,
+          program: 1,
+          current_rank_img: 1,
+          dob: 1,
           daysTillBirthday: {
-            $add: [
-              { $dayOfMonth: "$dob" },
-              { $subtract: [30, { $dayOfMonth: todays }] },
+            $subtract: [
+              {
+                $add: [
+                  "$dayOfYear",
+                  {
+                    $cond: [{ $lt: ["$dayOfYear", "$todayDayOfYear"] }, 365, 0],
+                  },
+                ],
+              },
+              "$todayDayOfYear",
             ],
           },
         },
@@ -450,12 +501,13 @@ exports.next_month = async (req, res) => {
       {
         $match: {
           $expr: {
-            $eq: [{ $month: "$dob" }, { $add: [1, { $month: todays }] }],
+            $eq: [{ $month: '$dob' }, { $month: nextMonth }],
           },
-          daysTillBirthday: { $gt: 0 },
+          //         // daysTillBirthday: { $lt: 11 },
+          //     //   },
         },
       },
-      { $sort: { daysTillBirthday: 1 } },
+      // { $sort: { daysTillBirthday: 1 } },
       {
         $facet: {
           paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
