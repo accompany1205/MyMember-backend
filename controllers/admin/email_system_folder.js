@@ -4,7 +4,6 @@ const systemCat = require('../../models/email_system_Category')
 exports.create_folder = (req,res)=>{
     var folder={
         folderName:req.body.folderName,
-        createdBy:'admin'
     }
     var folderObj = new folderSystem(folder)
     folderObj.save((err,folder)=>{
