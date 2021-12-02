@@ -595,6 +595,7 @@ exports.active_trial_Std = async (req, res) => {
     .populate("membership_details")
     .limit(pagination.limit)
     .skip(pagination.skip)
+    .sort({firstName:1})
     .exec((err, active_trial) => {
       if (err) {
         res.send({
@@ -628,7 +629,7 @@ exports.leads_Std = async (req, res) => {
     .populate("membership_details")
     .limit(pagination.limit)
     .skip(pagination.skip)
-
+    .sort({firstName:1})
     .exec((err, lead) => {
       if (err) {
         res.send({
@@ -662,6 +663,7 @@ exports.Former_Std = async (req, res) => {
     .populate("membership_details")
     .limit(pagination.limit)
     .skip(pagination.skip)
+    .sort({firstName:1})
     .exec((err, former) => {
       if (err) {
         res.send({
@@ -695,6 +697,7 @@ exports.active_Std = async (req, res) => {
     .populate("membership_details")
     .limit(pagination.limit)
     .skip(pagination.skip)
+    .sort({firstName:1})
     .exec((err, active_std) => {
       if (err) {
         res.send({
@@ -728,6 +731,8 @@ exports.Former_trial_Std = async (req, res) => {
     .populate("membership_details")
     .limit(pagination.limit)
     .skip(pagination.skip)
+    .sort({firstName:1})
+
     .exec((err, former_trial) => {
       if (err) {
         res.send({
@@ -760,6 +765,8 @@ exports.camp_Std = async (req, res) => {
     .populate("membership_details", "mactive_date expiry_date")
     .limit(pagination.limit)
     .skip(pagination.skip)
+    .sort({firstName:1})
+
     .exec((err, camp) => {
       if (err) {
         res.send({
@@ -792,6 +799,8 @@ exports.after_school_Std = async (req, res) => {
     .populate("membership_details")
     .limit(pagination.limit)
     .skip(pagination.skip)
+    .sort({firstName:1})
+
     .exec((err, after_school) => {
       if (err) {
         res.send({

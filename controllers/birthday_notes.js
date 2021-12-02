@@ -507,7 +507,7 @@ exports.next_month = async (req, res) => {
           //     //   },
         },
       },
-      // { $sort: { daysTillBirthday: 1 } },
+      { $sort: { daysTillBirthday: 1 } },
       {
         $facet: {
           paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
