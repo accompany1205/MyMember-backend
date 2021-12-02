@@ -352,18 +352,8 @@ exports.buyMembership = async (req, res) => {
   const membershipData = req.body;
   membershipData.userId = userId;
   try {
-    // const memberships = await buyMembership.find({
-    //   studentInfo: { $in: [studentId] },
-    //   membershipIds: { $in: [membershipData.membershipId] },
-    //   membership_status:"Active"
-    // });
-    // if (memberships.length) {
-    //   console.log(memberships)
-
-    //   res.send({message:"this membership already bought!",success:false});
-    // } else {
     if (membershipData.isEMI) {
-      if (membershipData.payment_time > 0 && membershipData.balance > 0) {
+      if (membershipData.payment_time > 0 && membershipData.balance > 0 && membershipData.payment_type != "pif") {
         membershipData.schedulePayments = createEMIRecord(
           membershipData.payment_time,
           membershipData.payment_money,
@@ -416,10 +406,10 @@ exports.buyMembership = async (req, res) => {
           }
         });
       } else {
-        res.send({ message: "payment_time must required", success: false });
+        res.send({ message: "payment type should be weekly/monthly", success: false });
       }
     } else {
-      if (!membershipData.isEMI && membershipData.balance == 0) {
+      if (!membershipData.isEMI && membershipData.balance == 0 && membershipData.payment_type === "pif") {
         membershipData.due_status = "paid";
         membershipData.membership_status = "Active";
         let membership = new buyMembership(membershipData);
@@ -466,7 +456,7 @@ exports.buyMembership = async (req, res) => {
           }
         });
       } else {
-        res.send({ message: "balance should be zero", success: false });
+        res.send({ message: "payment type should be  pif ", success: false });
       }
     }
   } catch (error) {
