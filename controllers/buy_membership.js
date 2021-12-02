@@ -1,6 +1,7 @@
 const membershipModal = require("../models/membership");
 const moment = require("moment");
 const buyMembership = require("../models/buy_membership");
+const Finance_infoSchema = require("../models/finance_info");
 const AddMember = require("../models/addmember");
 const { errorHandler } = require("../helpers/dbErrorHandler");
 const _ = require("lodash");
@@ -18,8 +19,8 @@ const randomNumber = (length, addNumber) => {
 
 const getUidAndInvoiceNumber = () => {
   return {
-    uid: randomNumber(10000000000, 10000),
-    invoice_no: randomNumber(1000000, 1000),
+    uid: randomNumber(100000000000, 100),
+    invoice_no: randomNumber(10000000, 100),
   };
 };
 
@@ -38,6 +39,7 @@ exports.membership_Info = (req, res) => {
 exports.update = async (req, res) => {
   const membershipId = req.params.membershipId;
   const type = req.params.type;
+  const paymentType = req.params.paymentType;
   try {
     if (req.body.isTerminate) {
       res.status(200).send({
@@ -363,121 +365,68 @@ exports.buyMembership = async (req, res) => {
   const studentId = req.params.studentId;
   let valor_payload = req.body.valor_payload;
   let membershipData = req.body.membership_details;
-
+  let memberShipDoc;
   membershipData.userId = userId;
   try {
     if (membershipData.isEMI) {
-      if (membershipData.ptype == "card" && membershipData.balance > 0) {
-        valor_payload = { ...valor_payload, ...getUidAndInvoiceNumber() };
-        const resp = await valorTechPaymentGateWay.addSubscription(
-          valor_payload
+      if (membershipData.balance > 0) {
+        const schedulePayments = createEMIRecord(
+          membershipData.payment_time,
+          membershipData.payment_money,
+          membershipData.mactive_date,
+          membershipData.createdBy,
+          membershipData.payment_type
         );
-        if (resp.data.error_code == 00) {
-          let subscription_id = resp.data.subscription_id;
-          res.send(resp.data);
+        membershipData.membership_status = "Active";
+        if (valor_payload) {
+          valor_payload = { ...valor_payload, ...getUidAndInvoiceNumber() };
+          const resp = await valorTechPaymentGateWay.addSubscription(
+            valor_payload
+          );
+          if (resp.data.error_code == 00) {
+            valor_payload.subscription_id = resp.data.subscription_id;
+            const financeDoc = await createFinanceDoc(valor_payload);
+            if (financeDoc.success) {
+              membershipData.schedulePayments = schedulePayments;
+              memberShipDoc = await createMemberShipDocument(
+                membershipData,
+                studentId
+              );
+              res.send(memberShipDoc);
+            } else {
+              res.send({
+                msg: "Finace and membership doc not created!",
+                success: false,
+              });
+            }
+          } else {
+            res.send({ msg: resp.data.msg, success: false });
+          }
+        } else {
+          membershipData.schedulePayments = schedulePayments;
+          memberShipDoc = await createMemberShipDocument(
+            membershipData,
+            studentId
+          );
+          res.send(memberShipDoc);
         }
-
-        // membershipData.schedulePayments = createEMIRecord(
-        //   membershipData.payment_time,
-        //   membershipData.payment_money,
-        //   membershipData.mactive_date,
-        //   membershipData.createdBy,
-        //   membershipData.payment_type
-        // );
-        // membershipData.membership_status = "Active";
-        // let membership = new buyMembership(membershipData);
-        // membership.save((err, data) => {
-        //   if (err) {
-        //     res.send({ error: "membership not buy" });
-        //   } else {
-        //     update = {
-        //       $set: { status: "active" },
-        //       $push: { membership_details: data._id },
-        //     };
-        //     AddMember.findOneAndUpdate(
-        //       { _id: studentId },
-        //       update,
-        //       (err, stdData) => {
-        //         if (err) {
-        //           res.send({ error: "membership id is not add in student" });
-        //         } else {
-        //           buyMembership
-        //             .findOneAndUpdate(
-        //               { _id: data._id },
-        //               {
-        //                 $push: {
-        //                   studentInfo: stdData._id,
-        //                   membershipIds: membershipData.membershipId,
-        //                 },
-        //               }
-        //             )
-        //             .exec(async (err, result) => {
-        //               if (err) {
-        //                 res.send({
-        //                   error: "student id is not add in buy membership",
-        //                 });
-        //               } else {
-        //                 res.send({
-        //                   msg: "membership purchase successfully",
-        //                   data: result,
-        //                 });
-        //               }
-        //             });
-        //         }
-        //       }
-        //     );
-        //   }
-        // });
       } else {
-        res.send({ message: "payment_time must required", success: false });
+        res.send({ message: "paymen time must required", success: false });
       }
     } else {
       if (!membershipData.isEMI && membershipData.balance == 0) {
         membershipData.due_status = "paid";
-        membershipData.membership_status = "Active";
-        let membership = new buyMembership(membershipData);
-        membership.save((err, data) => {
-          if (err) {
-            res.send({ error: "membership not buy" });
-          } else {
-            update = {
-              $set: { status: "active" },
-              $push: { membership_details: data._id },
-            };
-            AddMember.findOneAndUpdate(
-              { _id: studentId },
-              update,
-              (err, stdData) => {
-                if (err) {
-                  res.send({ error: "membership id is not add in student" });
-                } else {
-                  buyMembership
-                    .findOneAndUpdate(
-                      { _id: data._id },
-                      {
-                        $push: {
-                          studentInfo: stdData._id,
-                          membershipIds: membershipData.membershipId,
-                        },
-                      }
-                    )
-                    .exec(async (err, result) => {
-                      if (err) {
-                        res.send({
-                          error: "student id is not add in buy membership",
-                        });
-                      } else {
-                        res.send({
-                          msg: "membership purchase successfully",
-                          data: result,
-                        });
-                      }
-                    });
-                }
-              }
-            );
-          }
-        });
+        if (valor_payload) {
+          // Need to get API from ValorTech team
+          // valor_payload = { ...valor_payload, ...getUidAndInvoiceNumber() };
+          // const resp = await valorTechPaymentGateWay.saleSubscription(valor_payload);
+        } else {
+          memberShipDoc = await createMemberShipDocument(
+            membershipData,
+            studentId
+          );
+          res.send(memberShipDoc);
+        }
       } else {
         res.send({ message: "balance should be zero", success: false });
       }
@@ -486,6 +435,67 @@ exports.buyMembership = async (req, res) => {
     res.send({ error: error.message.replace(/\"/g, ""), success: false });
   }
 };
+
+function createMemberShipDocument(membershipData, studentId) {
+  return new Promise((resolve, reject) => {
+    let membership = new buyMembership(membershipData);
+    membership.save((err, data) => {
+      if (err) {
+        resolve({ error: "membership not buy" });
+      } else {
+        update = {
+          $set: { status: "active" },
+          $push: { membership_details: data._id },
+        };
+        AddMember.findOneAndUpdate(
+          { _id: studentId },
+          update,
+          (err, stdData) => {
+            if (err) {
+              resolve({ error: "membership id is not add in student" });
+            } else {
+              buyMembership
+                .findOneAndUpdate(
+                  { _id: data._id },
+                  {
+                    $push: {
+                      studentInfo: stdData._id,
+                      membershipIds: membershipData.membershipId,
+                    },
+                  }
+                )
+                .exec(async (err, result) => {
+                  if (err) {
+                    resolve({
+                      error: "student id is not add in buy membership",
+                    });
+                  } else {
+                    resolve({
+                      msg: "membership purchase successfully",
+                      data: result,
+                    });
+                  }
+                });
+            }
+          }
+        );
+      }
+    });
+  });
+}
+
+function createFinanceDoc(data) {
+  return new Promise((resolve, reject) => {
+    const financeData = new Finance_infoSchema(data);
+    financeData.save((err, data) => {
+      if (err) {
+        resolve({ success: false, msg: "Finance data is not stored!" });
+      } else {
+        resolve({ success: true });
+      }
+    });
+  });
+}
 // async function cronForEmiStatus() {
 //   current_Date = moment().format("YYYY-MM-DD");
 //   const EmiData = await buyMembership.find({ isEMI: true });
@@ -543,7 +553,6 @@ exports.members_info = async (req, res) => {
     res.send({ error: error.message.replace(/\"/g, ""), success: false });
   }
 };
-
 
 exports.thismonthMembership = async (req, res) => {
   var totalCount = await AddMember.find({

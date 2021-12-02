@@ -37,6 +37,21 @@ class PaymentGateWay {
     }
   };
 
+  saleSubscription = async (payload) => {
+    try {
+      let formData = await this.formData(payload);
+      formData.append("epi", "2129909286");
+      formData.append("mtype", "addsubscription");
+
+      return await axios.post(
+        process.env.VALOR_PAYTECH_URL,
+        formData,
+        this.getHeader(formData)
+      );
+    } catch (ex) {
+      throw new Error(ex);
+    }
+  };
   editSubscription = async (payload) => {
     try {
       let formData = await this.formData(payload);
