@@ -319,12 +319,72 @@ exports.updateNote = (req, res) => {
 
 exports.more_than_forteen = async (req, res) => {
   try {
-    var per_page = parseInt(req.params.per_page) || 5;
-    var page_no = parseInt(req.params.page_no) || 0;
-    var pagination = {
-      limit: per_page,
-      skip: per_page * page_no,
-    };
+    const membership_details = await memberShip.find(
+      { userId: req.params.userId },
+      { expiry_date: 1, mactive_date: 1, membership_name: 1 }
+    );
+    const missYouCall_notes = await missYouCallNotes.find({
+      userId: req.params.userId,
+    });
+
+    await student
+      .aggregate([
+        {
+          $project: {
+            firstName: 1,
+            lastName: 1,
+            memberprofileImage: 1,
+            last_contact_missCall: 1,
+            rating: 1,
+          },
+        },
+        {
+          $lookup: {
+            from: "attendences",
+            localField: "_id",
+            foreignField: "studentId",
+            as: "data",
+          },
+        },
+      ])
+      .then(async (result) => {
+        const newArr = [];
+        const current_Date = new Date();
+        newObj = new Object();
+        await result.forEach((i) => {
+          a = i.data;
+          if (a.length >= 1) {
+            last_Date = new Date(a[a.length - 1].date);
+            dayDifference = -1 * (daysRemaining(last_Date) - 1);
+            if (dayDifference > 14 && dayDifference <= 30) {
+              newObj = {
+                _id: i._id,
+                firstName: i.firstName,
+                lastName: i.lastName,
+                memberprofileImage: i.memberprofileImage,
+                rating: i.rating,
+                last_contact_missCall: i.last_contact_missCall,
+                missYouCall_notes: missYouCall_notes,
+                membership_details: membership_details,
+                last_Class_Attended_date: last_Date,
+                dayDifference,
+              };
+              newArr.push(newObj);
+            }
+          }
+        });
+        res.status(200).send(newArr);
+      })
+      .catch((err) => {
+        res.status(404).send({ message: err.message });
+      });
+  } catch (err) {
+    throw new Error(err);
+  }
+};
+
+exports.moreThirty = async (req, res) => {
+  try {
     const membership_details = await memberShip.find(
       {},
       { expiry_date: 1, mactive_date: 1, membership_name: 1 }
@@ -336,7 +396,6 @@ exports.more_than_forteen = async (req, res) => {
           $project: {
             firstName: 1,
             lastName: 1,
-            notes: 1,
             memberprofileImage: 1,
             last_contact_missCall: 1,
             rating: 1,
@@ -345,40 +404,42 @@ exports.more_than_forteen = async (req, res) => {
         {
           $lookup: {
             from: "attendences",
-            let: { studentId: "$studentId" },
-            pipeline: [
-              { $match: { $expr: { $eq: ['$$studentId', "$_id",] } } },
-              {
-                $project: { class: 1, date: 1, firstName: 1 }
-              }],
+            localField: "_id",
+            foreignField: "studentId",
             as: "data",
           },
         },
-        {
-          $facet: {
-            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
-            totalCount: [
-              {
-                $count: 'count'
-              }
-            ]
-          }
-        }
       ])
-      .exec((err, memberdata) => {
-        if (err) {
-          res.send({
-            error: err,
-          });
-        } else {
-          let data = memberdata[0].paginatedResults
-          if (data.length > 0) {
-            res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
-
-          } else {
-            res.send({ msg: 'data not found', success: false });
+      .then(async (result) => {
+        const newArr = [];
+        const current_Date = new Date();
+        newObj = new Object();
+        await result.forEach((i) => {
+          a = i.data;
+          if (a.length >= 1) {
+            last_Date = new Date(a[a.length - 1].date);
+            dayDifference = -1 * (daysRemaining(last_Date) - 1);
+            if (dayDifference > 14) {
+              newObj = {
+                _id: i._id,
+                firstName: i.firstName,
+                lastName: i.lastName,
+                memberprofileImage: i.memberprofileImage,
+                rating: i.rating,
+                last_contact_missCall: i.last_contact_missCall,
+                missYouCall_notes: missYouCall_notes,
+                membership_details: membership_details,
+                last_Class_Attended_date: last_Date,
+                dayDifference,
+              };
+              newArr.push(newObj);
+            }
           }
-        }
+        });
+        res.status(200).send(newArr);
+      })
+      .catch((err) => {
+        res.status(404).send({ message: err.message });
       });
 
   } catch (err) {
