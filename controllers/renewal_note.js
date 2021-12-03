@@ -300,7 +300,6 @@ exports.expire_sixty_std = async (req, res) => {
                         ]
                     }
                 }
-
             ])
             .exec((err, memberdata) => {
                 if (err) {
@@ -550,7 +549,7 @@ exports.frozenmembership = async (req, res) => {
             });
 
     } catch (e) {
-        res.send({ error: 'expire student data not fount' })
+        res.send({ error: 'frozen student data not fount' })
 
     }
 }
