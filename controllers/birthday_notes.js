@@ -183,6 +183,10 @@ exports.seven_to_forteen = async (req, res) => {
       {
         $project: {
           firstName: 1,
+          lastName: 1,
+          notes: 1,
+          program: 1,
+          current_rank_img: 1,
           dob: 1,
           daysTillBirthday: {
             $subtract: [
@@ -253,6 +257,10 @@ exports.fifteen_to_thirty = async (req, res) => {
       {
         $project: {
           firstName: 1,
+          lastName: 1,
+          notes: 1,
+          program: 1,
+          current_rank_img: 1,
           dob: 1,
           daysTillBirthday: {
             $subtract: [
@@ -322,6 +330,10 @@ exports.moreThirty = async (req, res) => {
       {
         $project: {
           firstName: 1,
+          lastName: 1,
+          notes: 1,
+          program: 1,
+          current_rank_img: 1,
           dob: 1,
           daysTillBirthday: {
             $subtract: [
@@ -348,16 +360,29 @@ exports.moreThirty = async (req, res) => {
 };
 
 exports.this_month = async (req, res) => {
+  var per_page = parseInt(req.params.per_page) || 5;
+  var page_no = parseInt(req.params.page_no) || 0;
+  var pagination = {
+    limit: per_page,
+    skip: per_page * page_no,
+  };
+
   let todays = new Date();
   let userId = req.params.userId;
   try {
-    const thisMonthBirthday = await student.aggregate([
+    await student.aggregate([
       { $match: { userId: userId } },
 
       {
         $project: {
           firstName: 1,
           dob: 1,
+          studentType: 1,
+          lastName: 1,
+          primaryPhone: 1,
+          current_rank_img: 1,
+          program: 1,
+          notes: 1,
           daysTillBirthday: {
             $subtract: [{ $dayOfMonth: "$dob" }, { $dayOfMonth: todays }],
           },
@@ -366,35 +391,109 @@ exports.this_month = async (req, res) => {
       {
         $match: {
           $expr: { $eq: [{ $month: "$dob" }, { $month: todays }] },
-          daysTillBirthday: { $gt: 0 },
+          daysTillBirthday: { $gte: 0 },
         },
       },
       { $sort: { daysTillBirthday: 1 } },
-    ]);
+      {
+        $facet: {
+          paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+          totalCount: [
+            {
+              $count: 'count'
+            }
+          ]
+        }
+      }
+    ])
+      .exec((err, memberdata) => {
+        if (err) {
+          res.send({
+            error: err,
+            success: false
+          });
+        } else {
+          let data = memberdata[0].paginatedResults
+          if (data.length > 0) {
+            res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
 
-    res.send({ data: thisMonthBirthday });
+          } else {
+            res.send({ msg: 'data not found', success: false });
+          }
+        }
+      });
   } catch (er) {
     throw new Error(er);
   }
 };
 
 exports.next_month = async (req, res) => {
+  var per_page = parseInt(req.params.per_page) || 5;
+  var page_no = parseInt(req.params.page_no) || 0;
+  var pagination = {
+    limit: per_page,
+    skip: per_page * page_no,
+  };
   let todays = new Date();
-  let nextMonth = todays.getMonth() + 2;
-  console.log(nextMonth);
+  let nextMonth = new Date(todays.setMonth(todays.getMonth() + 1))
   let userId = req.params.userId;
   try {
     const nextMonthBirthday = await student.aggregate([
       { $match: { userId: userId } },
-
       {
         $project: {
           firstName: 1,
           dob: 1,
+          todayDayOfYear: { $dayOfYear: new Date() },
+          leap: {
+            $or: [
+              { $eq: [0, { $mod: [{ $year: "$dob" }, 400] }] },
+              {
+                $and: [
+                  { $eq: [0, { $mod: [{ $year: "$dob" }, 4] }] },
+                  { $ne: [0, { $mod: [{ $year: "$dob" }, 100] }] },
+                ],
+              },
+            ],
+          },
+          dayOfYear: { $dayOfYear: "$dob" },
+        },
+      },
+      {
+        $project: {
+          firstName: 1,
+          dob: 1,
+          leap: 1,
+          todayDayOfYear: 1,
+          dayOfYear: {
+            $subtract: [
+              "$dayOfYear",
+              {
+                $cond: [{ $and: ["$leap", { $gt: ["$dayOfYear", 59] }] }, 1, 0],
+              },
+            ],
+          },
+        },
+      },
+      {
+        $project: {
+          firstName: 1,
+          lastName: 1,
+          notes: 1,
+          program: 1,
+          current_rank_img: 1,
+          dob: 1,
           daysTillBirthday: {
-            $add: [
-              { $dayOfMonth: "$dob" },
-              { $subtract: [30, { $dayOfMonth: todays }] },
+            $subtract: [
+              {
+                $add: [
+                  "$dayOfYear",
+                  {
+                    $cond: [{ $lt: ["$dayOfYear", "$todayDayOfYear"] }, 365, 0],
+                  },
+                ],
+              },
+              "$todayDayOfYear",
             ],
           },
         },
@@ -402,15 +501,41 @@ exports.next_month = async (req, res) => {
       {
         $match: {
           $expr: {
-            $eq: [{ $month: "$dob" }, { $add: [1, { $month: todays }] }],
+            $eq: [{ $month: '$dob' }, { $month: nextMonth }],
           },
-          daysTillBirthday: { $gt: 0 },
+          //         // daysTillBirthday: { $lt: 11 },
+          //     //   },
         },
       },
       { $sort: { daysTillBirthday: 1 } },
-    ]);
+      {
+        $facet: {
+          paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+          totalCount: [
+            {
+              $count: 'count'
+            }
+          ]
+        }
+      }
+    ])
 
-    res.send({ data: nextMonthBirthday });
+      .exec((err, memberdata) => {
+        if (err) {
+          res.send({
+            error: err,
+            success: false
+          });
+        } else {
+          let data = memberdata[0].paginatedResults
+          if (data.length > 0) {
+            res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
+
+          } else {
+            res.send({ msg: 'data not found', success: false });
+          }
+        }
+      });
   } catch (er) {
     throw new Error(er);
   }

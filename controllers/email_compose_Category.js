@@ -77,11 +77,25 @@ exports.category_list = (req, res) => {
 }
 
 exports.sendEmail = async (req, res) => {
+    let to = req.body.to;
+    let smartLists = req.body.smartLists;
     try {
-        if (!req.body.subject || !req.body.template || !req.body.to) {
+        if (!req.body.subject || !req.body.template) {
             res.send({ error: "invalid input", success: false })
         } else {
-
+            to = to ? JSON.parse(to): [];
+            smartLists = smartLists ? JSON.parse(smartLists): [];
+            // if (!to && !smartLists) {
+            //     throw new Error("Select atleat send-to or smart-List")
+            // }
+            // if (to && smartLists) {
+            //     throw new Error("Either select send-To or smart-list")
+            // }
+            if (!to.lenght) {
+                smartLists.map(lists => {
+                    to = [...to, ...lists.smrtList]
+                });
+            }
             let attachment = req.files;
             const attachments = attachment.map((file) => {
                 let content = Buffer.from(file.buffer).toString("base64")
@@ -95,7 +109,7 @@ exports.sendEmail = async (req, res) => {
 
             const emailData = {
                 sendgrid_key: process.env.SENDGRID_API_KEY,
-                to: req.body.to,
+                to: to,
                 from: process.env.from_email,
                 // from_name: 'noreply@gmail.com',
                 subject: req.body.subject,
@@ -108,18 +122,19 @@ exports.sendEmail = async (req, res) => {
                     var emailDetail = new emailSent(req.body)
                     emailDetail.sent_date = DT.Date
                     emailDetail.sent_time = DT.Time
+                    emailDetail.smartLists = smartLists;
                     emailDetail.save((err, emailSave) => {
                         if (err) {
                             res.send({ error: 'email details is not save' })
                         }
                         else {
-                            emailSent.findByIdAndUpdate(emailSave._id, { userId: req.params.userId, email_type: 'sent', category: 'compose' })
+                            emailSent.findByIdAndUpdate(emailSave._id, { userId: req.params.userId, email_type: 'sent',is_Sent: true, category: 'compose' })
                                 .exec((err, emailUpdate) => {
                                     if (err) {
                                         res.send({ error: 'user id is not update in sent email' })
                                     }
                                     else {
-                                        res.send({ message: "Email Sent Successfully", success: true ,emailUpdate})
+                                        res.send({ message: "Email Sent Successfully", success: true, emailUpdate })
                                     }
                                 })
                         }

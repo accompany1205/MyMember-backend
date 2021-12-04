@@ -11,7 +11,7 @@ function TimeZone() {
     return { Date: date, Time: time }
 }
 exports.category_list = (req, res) => {
-    emailSystem.find({ adminId: req.params.adminId })
+    emailSystem.find({ adminId: req.params.userId })
         .populate('folder')
         .exec((err, categoryList) => {
             if (err) {
@@ -26,8 +26,8 @@ exports.category_list = (req, res) => {
 exports.addCategory = (req, res) => {
     var cat = {
         categoryName: req.body.categoryName,
-        adminId: req.params.adminId,
-        createdBy: 'admin'
+        adminId: req.params.userId,
+        // createdBy: 'admin'
     }
     var category = new emailSystem(cat);
     category.save((err, data) => {
