@@ -41,7 +41,7 @@ class PaymentGateWay {
     try {
       let formData = await this.formData(payload);
       formData.append("epi", "2129909286");
-      formData.append("mtype", "addsubscription");
+      formData.append("mtype", "0200");
 
       return await axios.post(
         process.env.VALOR_PAYTECH_URL,
@@ -81,7 +81,7 @@ class PaymentGateWay {
     }
   };
 
-  freezeSubscription = async () => {
+  freezeSubscription = async (payload) => {
     try {
       let formData = await this.formData(payload);
       formData.append("epi", "2129909286");
@@ -96,7 +96,7 @@ class PaymentGateWay {
     }
   };
 
-  unfreezeSubscription = async () => {
+  unfreezeSubscription = async (payload) => {
     try {
       let formData = await this.formData(payload);
       formData.append("epi", "2129909286");
@@ -111,7 +111,7 @@ class PaymentGateWay {
     }
   };
 
-  refund = async () => {
+  refundSubscription = async (payload) => {
     try {
       let formData = await this.formData(payload);
       formData.append("epi", "2129909286");

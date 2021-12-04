@@ -42,14 +42,11 @@ const Finance_infoSchema = new schema(
     },
     invoice_no: {
       type: Number,
-      required: true,
     },
     product_description: {
       type: String,
     },
-    address: {
-      type: Object,
-    },
+    address: {},
     subscription_day_of_the_month: {
       type: Number,
     },
@@ -71,6 +68,7 @@ const Finance_infoSchema = new schema(
     subscription_id: {
       type: Number,
     },
+    transactionId: {},
     studentId: {
       type: String
     },
