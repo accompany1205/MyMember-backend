@@ -27,7 +27,7 @@ exports.search_std = (req, res) => {
         }
       });
   }
-  catch (er) {
+  catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
 };
@@ -36,6 +36,7 @@ exports.create = async (req, res) => {
   try {
     const studentId = req.params.studentId
     var objId = mongo.Types.ObjectId(studentId)
+    let time = req.body.time
 
     var schdule_data = await schedule.findOne({ _id: req.params.scheduleId });
     if (schdule_data) {
@@ -44,13 +45,20 @@ exports.create = async (req, res) => {
           res.send({ error: "student data not find" });
         } else {
           var DT = TimeZone();
+          let h = parseInt(time.split(':')[0])
+          let m = parseInt(time.split(':')[1])
+          var DT = TimeZone();
+          let epochTime = new Date(DT.Date)
+          epochTime.setHours(h, m)
+
           var class_attendanceArray = {
             studentInfo: objId,
-            time: req.body.time,
+            time: time,
+            date: DT.Date,
+            epochTime: epochTime.toISOString()
           };
-          class_attendanceArray.date = DT.Date;
-
-          schedule.findByIdAndUpdate({ _id: req.params.scheduleId, "class_attendanceArray.studentInfo": { $nin: [studentId] } }, { $addToSet: { class_attendanceArray: class_attendanceArray } })
+          schedule.updateOne({ _id: req.params.scheduleId, "class_attendanceArray.studentInfo": { $nin: [objId] } },
+            { $addToSet: { class_attendanceArray: class_attendanceArray } })
             .exec((err, attendanceUpdte) => {
               if (err) {
                 res.send({ error: "student addendance is not add in class", Error: err });
@@ -71,8 +79,8 @@ exports.create = async (req, res) => {
 
                     } else {
                       res.send({
-                        msg: "student rating is update",
-                        attendanceData: attendanceUpdte,
+                        msg: "student attendence marked successfully",
+                        success: true
                       });
                     }
                   });
@@ -83,8 +91,8 @@ exports.create = async (req, res) => {
       })
     }
   }
-  catch (er) {
-    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+  catch (err) {
+    throw new Error(err)
   }
 };
 
@@ -92,15 +100,19 @@ exports.update = async (req, res) => {
   try {
     const studentId = req.params.studentId
     var objId = mongo.Types.ObjectId(studentId)
-
-
+    let time = req.body.time
+    let h = parseInt(time.split(':')[0])
+    let m = parseInt(time.split(':')[1])
     var DT = TimeZone();
+    let epochTime = new Date(DT.Date)
+    epochTime.setHours(h, m)
+
     var class_attendanceArray = {
       studentInfo: objId,
-      time: req.body.time,
+      time: time,
+      date: DT.Date,
+      epochTime: epochTime.toISOString()
     };
-    class_attendanceArray.date = DT.Date;
-
     schedule.updateOne({
       _id: req.params.scheduleId,
       "class_attendanceArray.studentInfo": objId
@@ -118,7 +130,7 @@ exports.update = async (req, res) => {
         }
       });
   }
-  catch (er) {
+  catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
 };
@@ -146,7 +158,7 @@ exports.remove = (req, res) => {
       }
     );
   }
-  catch (er) {
+  catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
 
