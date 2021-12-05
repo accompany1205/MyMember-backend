@@ -1,3 +1,4 @@
+
 const express = require("express");
 const router = express.Router();
 const { create, remove, updateNote, seven_to_forteen, fifteen_to_thirty, Thirty_to_sixty, more_than_sixty, listApp_and_callHistory, more_than_forteen } = require("../controllers/misucall_notes");

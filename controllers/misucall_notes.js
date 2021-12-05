@@ -90,6 +90,7 @@ exports.seven_to_forteen = async (req, res) => {
           $addFields: {
             "attendence._id": "$_id",
             "attendence.class_name": "$class_name",
+            "attendence.program_name": "$program_name",
             "attendence.program_color": "$program_color",
             "attendence.repeat_weekly_on": "$repeat_weekly_on",
           }
@@ -150,7 +151,9 @@ exports.seven_to_forteen = async (req, res) => {
             "firstName": 1,
             "lastName": 1,
             "class_name": 1,
+            "memberprofileImage": 1,
             "program_color": 1,
+            "program_name": 1,
             "repeat_weekly_on": 1,
             "dayssince": {
               $floor: {
@@ -164,8 +167,8 @@ exports.seven_to_forteen = async (req, res) => {
               }
             }
           }
-        }
-        , {
+        },
+        {
           $match: {
             dayssince: {
               $gte: 7, $lte: 14
@@ -284,6 +287,7 @@ exports.fifteen_to_thirty = async (req, res) => {
           $addFields: {
             "attendence._id": "$_id",
             "attendence.class_name": "$class_name",
+            "attendence.program_name": "$program_name",
             "attendence.program_color": "$program_color",
             "attendence.repeat_weekly_on": "$repeat_weekly_on",
           }
@@ -343,8 +347,10 @@ exports.fifteen_to_thirty = async (req, res) => {
             "_id": 1,
             "firstName": 1,
             "lastName": 1,
+            "memberprofileImage": 1,
             "class_name": 1,
             "program_color": 1,
+            "program_name": 1,
             "repeat_weekly_on": 1,
             "dayssince": {
               $floor: {
@@ -477,6 +483,7 @@ exports.Thirty_to_sixty = async (req, res) => {
         {
           $addFields: {
             "attendence._id": "$_id",
+            "attendence.program_name": "$program_name",
             "attendence.class_name": "$class_name",
             "attendence.program_color": "$program_color",
             "attendence.repeat_weekly_on": "$repeat_weekly_on",
@@ -537,8 +544,10 @@ exports.Thirty_to_sixty = async (req, res) => {
             "_id": 1,
             "firstName": 1,
             "lastName": 1,
+            "memberprofileImage": 1,
             "class_name": 1,
             "program_color": 1,
+            "program_name": 1,
             "repeat_weekly_on": 1,
             "dayssince": {
               $floor: {
@@ -671,6 +680,7 @@ exports.more_than_sixty = async (req, res) => {
         {
           $addFields: {
             "attendence._id": "$_id",
+            "attendence.program_name": "$program_name",
             "attendence.class_name": "$class_name",
             "attendence.program_color": "$program_color",
             "attendence.repeat_weekly_on": "$repeat_weekly_on",
@@ -731,8 +741,10 @@ exports.more_than_sixty = async (req, res) => {
             "_id": 1,
             "firstName": 1,
             "lastName": 1,
+            "memberprofileImage": 1,
             "class_name": 1,
             "program_color": 1,
+            "program_name": 1,
             "repeat_weekly_on": 1,
             "dayssince": {
               $floor: {
@@ -978,6 +990,7 @@ exports.more_than_forteen = async (req, res) => {
           $addFields: {
             "attendence._id": "$_id",
             "attendence.class_name": "$class_name",
+            "attendence.program_name": "$program_name",
             "attendence.program_color": "$program_color",
             "attendence.repeat_weekly_on": "$repeat_weekly_on",
           }
