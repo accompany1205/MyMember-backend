@@ -2,6 +2,7 @@ const followUpNotes = require("../models/followup_notes");
 const student = require("../models/addmember");
 const user = require("../models/user");
 const _ = require("lodash");
+const moment = require('moment')
 const memberModel = require("../models/addmember")
 
 exports.createNote = async (req, res) => {
@@ -122,8 +123,8 @@ exports.filterByNotes = async (req, res) => {
                         $match: {
                             $expr: {
                                 $and: [
-                                    { $eq: [{ $dayOfMonth: '$date' }, { $dayOfMonth: new Date() }] },
-                                    { $eq: [{ $month: '$date' }, { $month: new Date() }] },
+                                    { $eq: [{ $dayOfMonth: '$date' }, { $dayOfMonth: "$$NOW" }] },
+                                    { $eq: [{ $month: '$date' }, { $month: "$$NOW"}] },
                                 ],
                             },
                         }
@@ -155,7 +156,7 @@ exports.filterByNotes = async (req, res) => {
                         }
                     }
                 })
-        } else if (filterBy == "tomorrow") {
+        } else if (filterBy == "yesterday") {
             await followUpNotes.
                 aggregate([
                     { $match: filter },
@@ -174,7 +175,18 @@ exports.filterByNotes = async (req, res) => {
                         $match: {
                             $expr: {
                                 $and: [
-                                    { $eq: [{ $dayOfMonth: '$date' }, { $dayOfMonth: new Date() }] },
+                                    {
+                                        $eq: [
+                                            { $dayOfMonth: '$date' },
+                                            {
+                                                $dayOfMonth: {
+                                                    $subtract: [
+                                                        "$$NOW",
+                                                        86400000
+                                                    ]
+                                                }
+                                            }]
+                                    },
                                     { $eq: [{ $month: '$date' }, { $month: new Date() }] },
                                 ],
                             },
@@ -258,7 +270,7 @@ exports.filterByNotes = async (req, res) => {
                         }
                     }
                 })
-        } else if (filterBy == "month") {
+        } else if (filterBy == "this_month") {
             await followUpNotes.
                 aggregate([
                     { $match: filter },
@@ -307,7 +319,65 @@ exports.filterByNotes = async (req, res) => {
                         }
                     }
                 })
-        } else {
+        } else if (filterBy == "last_month") {
+            let last_month = new Date(moment().subtract(1, "M"))
+            console.log(last_month)
+            console.log(new Date())
+            await followUpNotes.
+                aggregate([
+                    { $match: filter },
+                    {
+                        $project: {
+                            noteType: 1,
+                            followupType: 1,
+                            note: 1,
+                            date: 1,
+                            time: 1,
+                            createdAt: 1,
+                            date: { $dateFromString: { dateString: "$date" } },
+
+                        },
+                    },
+                    {
+                        $match: {
+                            $expr: {
+                                $eq: [
+                                    { $month: last_month },
+                                    { $month: "$date" },
+
+                                ],
+                            },
+                        }
+                    },
+                    { $sort: { createdAt: -1 } },
+                    {
+                        $facet: {
+                            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+                            totalCount: [
+                                {
+                                    $count: 'count'
+                                }
+                            ]
+                        }
+                    }
+                ])
+                .exec((err, memberdata) => {
+                    if (err) {
+                        res.send({
+                            error: err,
+                        });
+                    } else {
+                        let data = memberdata[0].paginatedResults
+                        if (data.length > 0) {
+                            res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
+
+                        } else {
+                            res.send({ msg: 'data not found', success: false });
+                        }
+                    }
+                })
+        }
+        else {
             res.send({ msg: 'data not found', success: false });
         }
     } catch (err) {
