@@ -140,7 +140,6 @@ exports.expire_thirty_std = async (req, res) => {
                 },
 
                 { $match: { days_till_Expire: { $lte: 30, $gt: 0 } } },
-
                 {
                     "$group": {
                         _id: "$data._id",
@@ -148,34 +147,33 @@ exports.expire_thirty_std = async (req, res) => {
                         no_of_Memberships: { $sum: 1 },
                         firstName: { "$first": '$data.firstName' },
                         lastName: { "$first": '$data.lastName' },
+                
                         program: { "$first": '$data.program' },
                         notes: { "$first": '$data.notes' },
                         primaryPhone: { "$first": '$data.primaryPhone' },
                         studentType: { "$first": '$data.studentType' },
+                        last_contact_renewal: { "$first": '$data.last_contact_renewal' },
+                        memberprofileImage: { "$first": '$data.memberprofileImage' },
                         status: { "$first": '$data.status' },
-
                         memberships: {
                             "$push":
                             {
-                                membership_name: "$membership_name", membership_status: "$membership_status", expiry_date: "$expiry_date", days_till_Expire: "$days_till_Expire"
+                                membership_name: "$membership_name", membership_status: "$membership_status", expiry_date: "$expiry_date", days_till_Expire: "$days_till_Expire", whenFreeze: "$whenFreeze"
                             }
-                        },
+                        }
                     }
                 },
-                {
-                    $sort: {
-                        "memberships": 1
-                    }
-                },
+
                 { $unwind: "$_id" },
                 { $unwind: "$firstName" },
                 { $unwind: "$lastName" },
+                { $unwind: "$last_contact_renewal" },
+                { $unwind: "$memberprofileImage" },
                 { $unwind: "$program" },
                 { $unwind: "$notes" },
                 { $unwind: "$primaryPhone" },
                 { $unwind: "$studentType" },
                 { $unwind: "$status" },
-
                 {
                     $facet: {
                         paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
@@ -263,33 +261,33 @@ exports.expire_sixty_std = async (req, res) => {
                         no_of_Memberships: { $sum: 1 },
                         firstName: { "$first": '$data.firstName' },
                         lastName: { "$first": '$data.lastName' },
+                
                         program: { "$first": '$data.program' },
                         notes: { "$first": '$data.notes' },
                         primaryPhone: { "$first": '$data.primaryPhone' },
                         studentType: { "$first": '$data.studentType' },
+                        last_contact_renewal: { "$first": '$data.last_contact_renewal' },
+                        memberprofileImage: { "$first": '$data.memberprofileImage' },
                         status: { "$first": '$data.status' },
                         memberships: {
                             "$push":
                             {
-                                membership_name: "$membership_name", membership_status: "$membership_status", expiry_date: "$expiry_date", days_till_Expire: "$days_till_Expire"
+                                membership_name: "$membership_name", membership_status: "$membership_status", expiry_date: "$expiry_date", days_till_Expire: "$days_till_Expire", whenFreeze: "$whenFreeze"
                             }
                         }
                     }
                 },
-                {
-                    $sort: {
-                        "memberships": 1
-                    }
-                },
+
                 { $unwind: "$_id" },
                 { $unwind: "$firstName" },
                 { $unwind: "$lastName" },
+                { $unwind: "$last_contact_renewal" },
+                { $unwind: "$memberprofileImage" },
                 { $unwind: "$program" },
                 { $unwind: "$notes" },
                 { $unwind: "$primaryPhone" },
                 { $unwind: "$studentType" },
                 { $unwind: "$status" },
-
                 {
                     $facet: {
                         paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
@@ -379,27 +377,28 @@ exports.expire_ninty_std = async (req, res) => {
                         no_of_Memberships: { $sum: 1 },
                         firstName: { "$first": '$data.firstName' },
                         lastName: { "$first": '$data.lastName' },
+                
                         program: { "$first": '$data.program' },
                         notes: { "$first": '$data.notes' },
                         primaryPhone: { "$first": '$data.primaryPhone' },
                         studentType: { "$first": '$data.studentType' },
+                        last_contact_renewal: { "$first": '$data.last_contact_renewal' },
+                        memberprofileImage: { "$first": '$data.memberprofileImage' },
                         status: { "$first": '$data.status' },
                         memberships: {
                             "$push":
                             {
-                                membership_name: "$membership_name", membership_status: "$membership_status", expiry_date: "$expiry_date", days_till_Expire: "$days_till_Expire"
+                                membership_name: "$membership_name", membership_status: "$membership_status", expiry_date: "$expiry_date", days_till_Expire: "$days_till_Expire", whenFreeze: "$whenFreeze"
                             }
                         }
                     }
                 },
-                {
-                    $sort: {
-                        "memberships": 1
-                    }
-                },
+
                 { $unwind: "$_id" },
                 { $unwind: "$firstName" },
                 { $unwind: "$lastName" },
+                { $unwind: "$last_contact_renewal" },
+                { $unwind: "$memberprofileImage" },
                 { $unwind: "$program" },
                 { $unwind: "$notes" },
                 { $unwind: "$primaryPhone" },
@@ -458,7 +457,7 @@ exports.frozenmembership = async (req, res) => {
                         membership_status: 1,
                         expiry_date: { $toDate: "$expiry_date" },
                         studentInfo: 1,
-                        whenFreeze:1
+                        whenFreeze: 1
                     }
                 },
                 {
@@ -474,7 +473,7 @@ exports.frozenmembership = async (req, res) => {
                         membership_name: 1,
                         membership_status: 1,
                         data: 1,
-                        whenFreeze:1,
+                        whenFreeze: 1,
                         expiry_date: 1,
                         days_till_Expire: {
                             $multiply: [{
@@ -499,15 +498,18 @@ exports.frozenmembership = async (req, res) => {
                         no_of_Memberships: { $sum: 1 },
                         firstName: { "$first": '$data.firstName' },
                         lastName: { "$first": '$data.lastName' },
+                
                         program: { "$first": '$data.program' },
                         notes: { "$first": '$data.notes' },
                         primaryPhone: { "$first": '$data.primaryPhone' },
                         studentType: { "$first": '$data.studentType' },
+                        last_contact_renewal: { "$first": '$data.last_contact_renewal' },
+                        memberprofileImage: { "$first": '$data.memberprofileImage' },
                         status: { "$first": '$data.status' },
                         memberships: {
                             "$push":
                             {
-                                membership_name: "$membership_name", membership_status: "$membership_status", expiry_date: "$expiry_date", days_till_Expire: "$days_till_Expire",whenFreeze:"$whenFreeze"
+                                membership_name: "$membership_name", membership_status: "$membership_status", expiry_date: "$expiry_date", days_till_Expire: "$days_till_Expire", whenFreeze: "$whenFreeze"
                             }
                         }
                     }
@@ -516,6 +518,8 @@ exports.frozenmembership = async (req, res) => {
                 { $unwind: "$_id" },
                 { $unwind: "$firstName" },
                 { $unwind: "$lastName" },
+                { $unwind: "$last_contact_renewal" },
+                { $unwind: "$memberprofileImage" },
                 { $unwind: "$program" },
                 { $unwind: "$notes" },
                 { $unwind: "$primaryPhone" },
