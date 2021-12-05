@@ -1733,8 +1733,7 @@ exports.invoice_details = (req, res) => {
     .populate("membership_details", {
       payment_type: 1,
       totalp: 1,
-      due_every_month: 1,
-      pay_latter: 1,
+      due_every_month: 1
     })
     .exec((err, data) => {
       if (err) {
