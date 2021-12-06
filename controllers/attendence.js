@@ -152,7 +152,7 @@ exports.remove = (req, res) => {
         } else {
           res.send({
             msg: "student attendance is remove successfully",
-            result: attendeRemove,
+            success: true,
           });
         }
       }
