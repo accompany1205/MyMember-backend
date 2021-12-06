@@ -167,7 +167,12 @@ exports.remove = (req, res) => {
 exports.list_attendence = (req, res) => {
   try {
     const userId = req.params.userId
-
+    var per_page = parseInt(req.params.per_page) || 10;
+    var page_no = parseInt(req.params.page_no) || 0;
+    var pagination = {
+      limit: per_page,
+      skip: per_page * page_no,
+    };
     schedule.
       aggregate([
         { $match: { userId: userId } },
@@ -227,7 +232,7 @@ exports.list_attendence = (req, res) => {
             }
           }
         },
-        { $project: { data: 0, class_attendanceArray: 0 } }
+        { $project: { data: 0, class_attendanceArray: 0 } },
         // {
         //   $group: {
         //     _id: "$studentId",
@@ -239,13 +244,28 @@ exports.list_attendence = (req, res) => {
         //     // notes: { "$first": '$data.notes' },
         //   }
         // }
-
+        {
+          $facet: {
+            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+            totalCount: [
+              {
+                $count: 'count'
+              }
+            ]
+          }
+        }
       ])
       .exec((err, list) => {
         if (err) {
           res.send({ error: "attendence list not found" });
         } else {
-          res.send(list);
+          let data = list[0].paginatedResults
+          if (data.length > 0) {
+            res.send({ data: data, totalCount: list[0].totalCount[0].count, success: true });
+
+          } else {
+            res.send({ msg: 'data not found', success: false });
+          }
         }
       });
   }
@@ -263,7 +283,12 @@ exports.getStudentAttendence = (req, res) => {
 
     let studentId = req.params.studentId
     var objId = mongo.Types.ObjectId(studentId)
-
+    var per_page = parseInt(req.params.per_page) || 5;
+    var page_no = parseInt(req.params.page_no) || 0;
+    var pagination = {
+      limit: per_page,
+      skip: per_page * page_no,
+    };
     schedule.aggregate([
       { $match: { userId: userId, "class_attendanceArray.studentInfo": objId } },
 
@@ -321,7 +346,7 @@ exports.getStudentAttendence = (req, res) => {
           }
         }
       },
-      { $project: { data: 0, class_attendanceArray: 0 } }
+      { $project: { data: 0, class_attendanceArray: 0 } },
 
       // {
       //   "$addFields": {
@@ -421,13 +446,29 @@ exports.getStudentAttendence = (req, res) => {
       //     // notes: { "$first": '$data.notes' },
       //   }
       // }
+      {
+        $facet: {
+          paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+          totalCount: [
+            {
+              $count: 'count'
+            }
+          ]
+        }
+      }
 
     ])
       .exec((err, list) => {
         if (err) {
           res.send({ error: "attendence list not found" });
         } else {
-          res.send(list);
+          let data = list[0].paginatedResults
+          if (data.length > 0) {
+            res.send({ data: data, totalCount: list[0].totalCount[0].count, success: true });
+
+          } else {
+            res.send({ msg: 'data not found', success: false });
+          }
         }
       })
   }
