@@ -595,6 +595,7 @@ exports.active_trial_Std = async (req, res) => {
     .populate("membership_details")
     .limit(pagination.limit)
     .skip(pagination.skip)
+    .sort({firstName:1})
     .exec((err, active_trial) => {
       if (err) {
         res.send({
@@ -628,7 +629,7 @@ exports.leads_Std = async (req, res) => {
     .populate("membership_details")
     .limit(pagination.limit)
     .skip(pagination.skip)
-
+    .sort({firstName:1})
     .exec((err, lead) => {
       if (err) {
         res.send({
@@ -662,6 +663,7 @@ exports.Former_Std = async (req, res) => {
     .populate("membership_details")
     .limit(pagination.limit)
     .skip(pagination.skip)
+    .sort({firstName:1})
     .exec((err, former) => {
       if (err) {
         res.send({
@@ -695,6 +697,7 @@ exports.active_Std = async (req, res) => {
     .populate("membership_details")
     .limit(pagination.limit)
     .skip(pagination.skip)
+    .sort({firstName:1})
     .exec((err, active_std) => {
       if (err) {
         res.send({
@@ -728,6 +731,8 @@ exports.Former_trial_Std = async (req, res) => {
     .populate("membership_details")
     .limit(pagination.limit)
     .skip(pagination.skip)
+    .sort({firstName:1})
+
     .exec((err, former_trial) => {
       if (err) {
         res.send({
@@ -760,6 +765,8 @@ exports.camp_Std = async (req, res) => {
     .populate("membership_details", "mactive_date expiry_date")
     .limit(pagination.limit)
     .skip(pagination.skip)
+    .sort({firstName:1})
+
     .exec((err, camp) => {
       if (err) {
         res.send({
@@ -792,6 +799,8 @@ exports.after_school_Std = async (req, res) => {
     .populate("membership_details")
     .limit(pagination.limit)
     .skip(pagination.skip)
+    .sort({firstName:1})
+
     .exec((err, after_school) => {
       if (err) {
         res.send({
@@ -843,6 +852,7 @@ exports.latestMember = async (req, res) => {
     .select("program")
     .select("primaryPhone")
     .select("createdAt")
+    .select('notes')
     .sort({
       createdAt: -1,
     })
@@ -872,6 +882,7 @@ exports.expire_member = (req, res) => {
     .select("primaryPhone")
     .select("status")
     .select("userId")
+    .select('notes:1')
     .populate("membership_details", "expiry_date")
     .exec((err, expMember) => {
       if (err) {
@@ -895,6 +906,7 @@ exports.missuCall_list = (req, res) => {
     .select("primaryPhone")
     .select("rating")
     .select("memberprofileImage")
+    .select('notes')
     .populate({
       path: "missYouCall_notes", //array name in addmember modal
       model: "missYouCallNote", //collection name
@@ -923,6 +935,7 @@ exports.missuCall_list_urjent = (req, res) => {
     .select("primaryPhone")
     .select("rating")
     .select("memberprofileImage")
+    .select("notes")
     .populate({
       path: "missYouCall_notes", //array name in addmember modal
       model: "missYouCallNote", //collection name
@@ -1016,6 +1029,7 @@ exports.birth_this_month = (req, res) => {
           rank: 1,
           birthday_checklist: 1,
           memberprofileImage: 1,
+          notes: 1,
         },
       },
     ],
@@ -1081,6 +1095,7 @@ exports.trial_this_month = (req, res) => {
           primaryPhone: 1,
           membership_details: 1,
           memberprofileImage: 1,
+          notes:1,
         },
       },
     ],
@@ -1198,6 +1213,7 @@ exports.birth_next_month = (req, res) => {
           rank: 1,
           birthday_checklist: 1,
           memberprofileImage: 1,
+          notes:1,
         },
       },
     ],
@@ -1264,6 +1280,7 @@ exports.this_month_lead = (req, res) => {
           studentType: 1,
           createdAt: 1,
           memberprofileImage: 1,
+          notes:1,
         },
       },
     ])
@@ -1316,6 +1333,7 @@ exports.last_three_month = (req, res) => {
           studentType: 1,
           createdAt: 1,
           memberprofileImage: 1,
+          notes:1,
         },
       },
     ])
@@ -1861,7 +1879,7 @@ exports.active_trial_this_month = async (req, res) => {
           }
         },
         {
-          $project: { createdAt: 1, status: 1, firstName: 1, lastName: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1, primaryPhone: 1 }
+          $project: { createdAt: 1, status: 1, firstName: 1, lastName: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1, primaryPhone: 1, notes: 1, }
         },
         {
           $sort: {
@@ -1910,10 +1928,8 @@ exports.active_trial_this_month = async (req, res) => {
 }
 
 exports.active_trial_past3_month = async (req, res) => {
-  const userId = req.params.userId;
-
   try {
-
+    const userId = req.params.userId;
     var per_page = parseInt(req.params.per_page) || 5;
     var page_no = parseInt(req.params.page_no) || 0;
     var pagination = {
@@ -1931,7 +1947,7 @@ exports.active_trial_past3_month = async (req, res) => {
 
         {
           $project: {
-            firstName: 1, lastName: 1, status: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1, primaryPhone: 1,
+            firstName: 1, lastName: 1, status: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1, primaryPhone: 1, notes: 1,
             dayssince: {
               $floor: {
                 $divide: [{ $subtract: [new Date(), '$createdAt'] }, 1000 * 60 * 60 * 24]
@@ -2010,7 +2026,7 @@ exports.leads_this_month = async (req, res) => {
           }
         },
         {
-          $project: { createdAt: 1, status: 1, firstName: 1, lastName: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1, primaryPhone: 1 }
+          $project: { createdAt: 1, status: 1, firstName: 1, lastName: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1, primaryPhone: 1, notes: 1, }
         },
         {
           $sort: {
@@ -2075,7 +2091,7 @@ exports.leads_past3_month = async (req, res) => {
 
         {
           $project: {
-            firstName: 1, lastName: 1, status: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1, primaryPhone: 1,
+            firstName: 1, lastName: 1, status: 1, program: 1, primaryPhone: 1, studentType: 1, createdAt: 1, primaryPhone: 1, notes: 1,
             dayssince: {
               $floor: {
                 $divide: [{ $subtract: [new Date(), '$createdAt'] }, 1000 * 60 * 60 * 24]
