@@ -2,6 +2,7 @@ const followUpNotes = require("../models/followup_notes");
 const student = require("../models/addmember");
 const user = require("../models/user");
 const _ = require("lodash");
+const moment = require('moment')
 const memberModel = require("../models/addmember")
 
 exports.createNote = async (req, res) => {
@@ -58,7 +59,7 @@ exports.createNote = async (req, res) => {
 }
 
 exports.getNotesByUserId = async (req, res) => {
-    var userId = req.params.userId;    
+    var userId = req.params.userId;
     if (!userId) {
         res.send({
             status: true,
@@ -66,10 +67,10 @@ exports.getNotesByUserId = async (req, res) => {
         })
     }
     let filter = {
-        "userId":userId
+        "userId": userId
     }
     let notes = await followUpNotes.find(filter);
-    if(!notes){
+    if (!notes) {
         res.send({
             status: true,
             msg: "Data not exists for this query!!"
@@ -78,13 +79,329 @@ exports.getNotesByUserId = async (req, res) => {
     res.send({
         status: true,
         msg: "Please find the notes with userId",
-        data : notes
+        data: notes
     })
 
 }
+exports.filterByNotes = async (req, res) => {
+    try {
+        let userId = req.params.userId;
+        let noteType = req.params.NoteType;
+        let filterBy = req.params.filterBy;
+        var per_page = parseInt(req.params.per_page) || 10;
+        var page_no = parseInt(req.params.page_no) || 0;
+        var pagination = {
+            limit: per_page,
+            skip: per_page * page_no,
+        };
+        let filter = {
+            userId: userId,
+            noteType: noteType
+        }
+        if (!userId) {
+            res.send({
+                status: true,
+                msg: "Member Id not found in the params!!"
+            })
+        }
+        if (filterBy == "today") {
+            await followUpNotes.
+                aggregate([
+                    { $match: filter },
+                    {
+                        $project: {
+                            firstName:1,
+                            lastName:1,
+                            status:1,
+                            noteType: 1,
+                            followupType: 1,
+                            note: 1,
+                            time: 1,
+                            createdAt: 1,
+                            date: { $dateFromString: { dateString: "$date" } },
 
+                        },
+                    },
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: [{ $dayOfMonth: '$date' }, { $dayOfMonth: "$$NOW" }] },
+                                    { $eq: [{ $month: '$date' }, { $month: "$$NOW"}] },
+                                ],
+                            },
+                        }
+                    },
+                    { $sort: { createdAt: -1 } },
+                    {
+                        $facet: {
+                            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+                            totalCount: [
+                                {
+                                    $count: 'count'
+                                }
+                            ]
+                        }
+                    }
+                ])
+                .exec((err, memberdata) => {
+                    if (err) {
+                        res.send({
+                            error: err,
+                        });
+                    } else {
+                        let data = memberdata[0].paginatedResults
+                        if (data.length > 0) {
+                            res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
+
+                        } else {
+                            res.send({ msg: 'data not found', success: false });
+                        }
+                    }
+                })
+        } else if (filterBy == "yesterday") {
+            await followUpNotes.
+                aggregate([
+                    { $match: filter },
+                    {
+                        $project: {
+                            firstName:1,
+                            lastName:1,
+                            status:1,
+                            noteType: 1,
+                            followupType: 1,
+                            note: 1,
+                            time: 1,
+                            createdAt: 1,
+                            date: { $dateFromString: { dateString: "$date" } },
+
+                        },
+                    },
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    {
+                                        $eq: [
+                                            { $dayOfMonth: '$date' },
+                                            {
+                                                $dayOfMonth: {
+                                                    $subtract: [
+                                                        "$$NOW",
+                                                        86400000
+                                                    ]
+                                                }
+                                            }]
+                                    },
+                                    { $eq: [{ $month: '$date' }, { $month: new Date() }] },
+                                ],
+                            },
+                        }
+                    },
+                    { $sort: { createdAt: -1 } },
+                    {
+                        $facet: {
+                            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+                            totalCount: [
+                                {
+                                    $count: 'count'
+                                }
+                            ]
+                        }
+                    }
+                ])
+                .exec((err, memberdata) => {
+                    if (err) {
+                        res.send({
+                            error: err,
+                        });
+                    } else {
+                        let data = memberdata[0].paginatedResults
+                        if (data.length > 0) {
+                            res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
+
+                        } else {
+                            res.send({ msg: 'data not found', success: false });
+                        }
+                    }
+                })
+        }
+        else if (filterBy == "week") {
+            await followUpNotes.
+                aggregate([
+                    { $match: filter },
+                    {
+                        $project: {
+                            firstName:1,
+                            lastName:1,
+                            status:1,
+                            noteType: 1,
+                            followupType: 1,
+                            note: 1,
+                            time: 1,
+                            createdAt: 1,
+                            date: { $dateFromString: { dateString: "$date" } },
+
+                        },
+                    },
+                    {
+                        $match: {
+                            $expr: {
+                                $or:
+                                    { $eq: [{ $week: '$date' }, { $week: new Date() }] }
+                            },
+                        }
+                    },
+                    { $sort: { createdAt: -1 } },
+                    {
+                        $facet: {
+                            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+                            totalCount: [
+                                {
+                                    $count: 'count'
+                                }
+                            ]
+                        }
+                    }
+                ])
+                .exec((err, memberdata) => {
+                    if (err) {
+                        res.send({
+                            error: err,
+                        });
+                    } else {
+                        let data = memberdata[0].paginatedResults
+                        if (data.length > 0) {
+                            res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
+
+                        } else {
+                            res.send({ msg: 'data not found', success: false });
+                        }
+                    }
+                })
+        } else if (filterBy == "this_month") {
+            await followUpNotes.
+                aggregate([
+                    { $match: filter },
+                    {
+                        $project: {
+                            firstName:1,
+                            lastName:1,
+                            status:1,
+                            noteType: 1,
+                            followupType: 1,
+                            note: 1,
+                            time: 1,
+                            createdAt: 1,
+                            date: { $dateFromString: { dateString: "$date" } },
+
+                        },
+                    },
+                    {
+                        $match: {
+                            $expr: {
+                                $eq: [{ $month: '$date' }, { $month: new Date() }],
+                            },
+                        }
+                    },
+                    { $sort: { createdAt: -1 } },
+                    {
+                        $facet: {
+                            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+                            totalCount: [
+                                {
+                                    $count: 'count'
+                                }
+                            ]
+                        }
+                    }
+                ])
+                .exec((err, memberdata) => {
+                    if (err) {
+                        res.send({
+                            error: err,
+                        });
+                    } else {
+                        let data = memberdata[0].paginatedResults
+                        if (data.length > 0) {
+                            res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
+
+                        } else {
+                            res.send({ msg: 'data not found', success: false });
+                        }
+                    }
+                })
+        } else if (filterBy == "last_month") {
+            let last_month = new Date(moment().subtract(1, "M"))
+            console.log(last_month)
+            console.log(new Date())
+            await followUpNotes.
+                aggregate([
+                    { $match: filter },
+                    {
+                        $project: {
+                            firstName:1,
+                            lastName:1,
+                            status:1,
+                            noteType: 1,
+                            followupType: 1,
+                            note: 1,
+                            date: 1,
+                            time: 1,
+                            createdAt: 1,
+                            date: { $dateFromString: { dateString: "$date" } },
+
+                        },
+                    },
+                    {
+                        $match: {
+                            $expr: {
+                                $eq: [
+                                    { $month: last_month },
+                                    { $month: "$date" },
+
+                                ],
+                            },
+                        }
+                    },
+                    { $sort: { createdAt: -1 } },
+                    {
+                        $facet: {
+                            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+                            totalCount: [
+                                {
+                                    $count: 'count'
+                                }
+                            ]
+                        }
+                    }
+                ])
+                .exec((err, memberdata) => {
+                    if (err) {
+                        res.send({
+                            error: err,
+                        });
+                    } else {
+                        let data = memberdata[0].paginatedResults
+                        if (data.length > 0) {
+                            res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
+
+                        } else {
+                            res.send({ msg: 'data not found', success: false });
+                        }
+                    }
+                })
+        }
+        else {
+            res.send({ msg: 'data not found', success: false });
+        }
+    } catch (err) {
+        throw new Error(err);
+    }
+
+}
 exports.getNotesByMemberId = async (req, res) => {
-    var memberId = req.params.memberId;    
+    var memberId = req.params.memberId;
     if (!memberId) {
         res.send({
             status: true,
@@ -92,10 +409,10 @@ exports.getNotesByMemberId = async (req, res) => {
         })
     }
     let filter = {
-        "memberId":memberId
+        "memberId": memberId
     }
     let notes = await followUpNotes.find(filter);
-    if(!notes){
+    if (!notes) {
         res.send({
             status: true,
             msg: "Data not exists for this query!!"
@@ -104,13 +421,13 @@ exports.getNotesByMemberId = async (req, res) => {
     res.send({
         status: true,
         msg: "Please find the notes with userId",
-        data : notes
+        data: notes
     })
 
 }
 
 exports.getNotesByNoteType = async (req, res) => {
-    var memberId = req.params.memberId;    
+    var memberId = req.params.memberId;
     if (!memberId) {
         res.send({
             status: true,
@@ -118,10 +435,10 @@ exports.getNotesByNoteType = async (req, res) => {
         })
     }
     let filter = {
-        "memberId":memberId
+        "memberId": memberId
     }
     let notes = await followUpNotes.find(filter);
-    if(!notes){
+    if (!notes) {
         res.send({
             status: true,
             msg: "Data not exists for this query!!"
@@ -130,19 +447,19 @@ exports.getNotesByNoteType = async (req, res) => {
     res.send({
         status: true,
         msg: "Please find the notes with userId",
-        data : notes
+        data: notes
     })
 
 }
 
 
 exports.updateNote = async (req, res) => {
-    let noteId = req.params.noteId;    
-    let {body:payload} = req;
-    if(!payload){
+    let noteId = req.params.noteId;
+    let { body: payload } = req;
+    if (!payload) {
         res.json({
             status: false,
-            msg:"Please check your input details!!"
+            msg: "Please check your input details!!"
         })
     }
     if (!noteId) {
@@ -151,8 +468,8 @@ exports.updateNote = async (req, res) => {
             msg: "Note id not found in the params!!"
         })
     }
-    let updatedNote = await followUpNotes.findByIdAndUpdate(noteId,payload,{new:true});
-    if(!updatedNote){
+    let updatedNote = await followUpNotes.findByIdAndUpdate(noteId, payload, { new: true });
+    if (!updatedNote) {
         res.send({
             status: true,
             msg: "Data not exists for this query!!"
@@ -161,13 +478,13 @@ exports.updateNote = async (req, res) => {
     res.send({
         status: true,
         msg: "The note has been updated!!",
-        data : updatedNote
+        data: updatedNote
     })
 
 }
 
-exports.removeNote = async(req,res)=>{
-    let noteId = req.params.noteId;    
+exports.removeNote = async (req, res) => {
+    let noteId = req.params.noteId;
     if (!noteId) {
         res.send({
             status: true,
@@ -175,7 +492,7 @@ exports.removeNote = async(req,res)=>{
         })
     }
     let deletedNote = await followUpNotes.findByIdAndDelete(noteId);
-    if(!deletedNote){
+    if (!deletedNote) {
         res.send({
             status: true,
             msg: "Data not exists for this query!!"
@@ -184,6 +501,6 @@ exports.removeNote = async(req,res)=>{
     res.send({
         status: true,
         msg: "The note has been removed!!",
-        data : {}
+        data: {}
     })
 }
