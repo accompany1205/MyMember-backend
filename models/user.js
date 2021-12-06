@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const crypto = require('crypto');
-const {v4:uuidv4} = require('uuid');
+const { v4: uuidv4 } = require('uuid');
 
 const schema = mongoose.Schema
 const userSchema = new schema(
@@ -8,7 +8,7 @@ const userSchema = new schema(
         firstname: {
             type: String,
             trim: true,
-           
+
             maxlength: 100
         },
         lastname: {
@@ -16,20 +16,35 @@ const userSchema = new schema(
             trim: true,
             maxlength: 100
         },
-        isverify:{
-            type:Boolean,
-            default:false //for email verify status
+        isverify: {
+            type: Boolean,
+            default: false //for email verify status
         },
-        emailToken:{
-            type:String 
+        emailToken: {
+            type: String
+        },
+        app_id: {
+            type: String
+        },
+        auth_key: {
+            type: String
+        },
+        epi: {
+            type: String
+        },
+        descriptor: {
+            type: String
+        },
+        product_description: {
+            type: String
         },
         role: {
-            type: Number, 
+            type: Number,
             default: 0 // diffrentiate between school and admin
         },
-        status:{
-            type:String,
-            default:'Inactive' // school status active and diactive by admin
+        status: {
+            type: String,
+            default: 'Inactive' // school status active and diactive by admin
         },
         bussinessname: {
             type: String,
@@ -49,18 +64,18 @@ const userSchema = new schema(
         accountNumber: {
             type: Number
         },
-        secondary_phone:{
-            type:String
+        secondary_phone: {
+            type: String
         },
-        industry:{
+        industry: {
             type: String,
             trim: true,
             maxlength: 100
         },
-        username:{
+        username: {
             type: String,
             trim: true,
-            unique:true,
+            unique: true,
             maxlength: 100
         },
         email: {
@@ -82,82 +97,82 @@ const userSchema = new schema(
             type: Array,
             default: []
         },
-        website:{
-            type:String
+        website: {
+            type: String
         },
-        bussinessEmail:{
-            type:Array
+        bussinessEmail: {
+            type: Array
         },
-        country:{
-            type:String
+        country: {
+            type: String
         },
-        state:{
-            type:String
+        state: {
+            type: String
         },
-        city:{
-            type:String
+        city: {
+            type: String
         },
-        street:{
-            type:String
+        street: {
+            type: String
         },
-        location_name:{
-            type:String
+        location_name: {
+            type: String
         },
-        location_address:{
-            type:String
+        location_address: {
+            type: String
         },
-        zipPostal_code:{
-            type:String,
-            default:''
+        zipPostal_code: {
+            type: String,
+            default: ''
         },
-        tax_id:{
-            type:String
+        tax_id: {
+            type: String
         },
-        landing_page:{
-            type:String
+        landing_page: {
+            type: String
         },
-        logo:{
-            type:String,
-            default:' '
+        logo: {
+            type: String,
+            default: ' '
         },
-        start_date:{
-            type:String
+        start_date: {
+            type: String
         },
-        reset_token:{
-            type:String,
-            default:''
+        reset_token: {
+            type: String,
+            default: ''
         },
-        user_membership_details:[{
-            type:schema.Types.ObjectId,
-            ref:"buy_membership_user"
-        }],
-        renewal_appoinment_history:[{
-            type:schema.Types.ObjectId,
-            ref:'studentAppoinment'
-        }],
-        renewal_history:[{
-            type: schema.Types.ObjectId, 
-            ref:'renewalNote' 
-        }],
-        birthday_appoinment_history:[{
+        user_membership_details: [{
             type: schema.Types.ObjectId,
-            ref:'birthdayAppoinment'
+            ref: "buy_membership_user"
         }],
-        birthday_note_history:[{
+        renewal_appoinment_history: [{
             type: schema.Types.ObjectId,
-            ref:'birthdayNote'
+            ref: 'studentAppoinment'
         }],
-        birthday_checkList_history:[{
+        renewal_history: [{
             type: schema.Types.ObjectId,
-            ref:'birthdayChecklist'
+            ref: 'renewalNote'
         }],
-        missYouCall_note_history:[{
-            type:schema.Types.ObjectId,
-            ref:'missYouCallNote'
+        birthday_appoinment_history: [{
+            type: schema.Types.ObjectId,
+            ref: 'birthdayAppoinment'
         }],
-        missYouCall_appoinment_history:[{
-            type:schema.Types.ObjectId,
-            ref:'missYouCallAppoinment'
+        birthday_note_history: [{
+            type: schema.Types.ObjectId,
+            ref: 'birthdayNote'
+        }],
+        birthday_checkList_history: [{
+            type: schema.Types.ObjectId,
+            ref: 'birthdayChecklist'
+        }],
+        missYouCall_note_history: [{
+            type: schema.Types.ObjectId,
+            ref: 'missYouCallNote'
+        }],
+        missYouCall_appoinment_history: [{
+            type: schema.Types.ObjectId,
+            ref: 'missYouCallAppoinment'
         }],
         fullName: {
             type: String,
@@ -165,8 +180,8 @@ const userSchema = new schema(
         // userName: {
         //     type: String,
         // },
-        user_type:{
-            type:String
+        user_type: {
+            type: String
         },
         // phone: {
         //     type: String,
@@ -190,20 +205,20 @@ const userSchema = new schema(
             type: String,
             default: ''
         },
-        schoolId:{
-            type:String
+        schoolId: {
+            type: String
         },
-         reset_code: {
+        reset_code: {
             type: String,
             default: ''
         },
-        resetPasswordToken:{
-            type:String,
-            default:''
+        resetPasswordToken: {
+            type: String,
+            default: ''
         },
-        resetPasswordExpires:{
-            type:String,
-            default:''
+        resetPasswordExpires: {
+            type: String,
+            default: ''
         }
     },
     { timestamps: true }
