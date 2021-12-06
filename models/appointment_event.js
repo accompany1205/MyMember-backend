@@ -12,9 +12,6 @@ const appointEventSchema = new schema(
             type:String,
             required: true
         },
-        notes: {
-            type: String
-        },
         createdBy: {
             type: String
         },
