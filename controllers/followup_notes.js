@@ -110,6 +110,9 @@ exports.filterByNotes = async (req, res) => {
                     { $match: filter },
                     {
                         $project: {
+                            firstName:1,
+                            lastName:1,
+                            status:1,
                             noteType: 1,
                             followupType: 1,
                             note: 1,
@@ -162,6 +165,9 @@ exports.filterByNotes = async (req, res) => {
                     { $match: filter },
                     {
                         $project: {
+                            firstName:1,
+                            lastName:1,
+                            status:1,
                             noteType: 1,
                             followupType: 1,
                             note: 1,
@@ -226,6 +232,9 @@ exports.filterByNotes = async (req, res) => {
                     { $match: filter },
                     {
                         $project: {
+                            firstName:1,
+                            lastName:1,
+                            status:1,
                             noteType: 1,
                             followupType: 1,
                             note: 1,
@@ -276,6 +285,9 @@ exports.filterByNotes = async (req, res) => {
                     { $match: filter },
                     {
                         $project: {
+                            firstName:1,
+                            lastName:1,
+                            status:1,
                             noteType: 1,
                             followupType: 1,
                             note: 1,
@@ -328,6 +340,9 @@ exports.filterByNotes = async (req, res) => {
                     { $match: filter },
                     {
                         $project: {
+                            firstName:1,
+                            lastName:1,
+                            status:1,
                             noteType: 1,
                             followupType: 1,
                             note: 1,
