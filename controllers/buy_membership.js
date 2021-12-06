@@ -518,12 +518,16 @@ exports.buyMembership = async (req, res) => {
           membershipData.payment_type
         );
         membershipData.membership_status = "Active";
+        valorPayload.descriptor = "BETA TESTING";
+        valorPayload.product_description = "Mymember brand Product";
+        valorPayload.surchargeIndicator =  1;
         if (valorPayload) {
           valorPayload = { ...valorPayload, ...getUidAndInvoiceNumber() };
           const FormatedPayload = getFormatedPayload(valorPayload);
           const resp = await valorTechPaymentGateWay.addSubscription(
             FormatedPayload
           );
+          console.log("PRALHJAD " ,resp)
           if (resp.data.error_code == 00) {
             valorPayload.subscription_id = resp.data.subscription_id;
             valorPayload.address = Address;
@@ -531,7 +535,6 @@ exports.buyMembership = async (req, res) => {
             valorPayload.studentId = studentId;
             const financeDoc = await createFinanceDoc(valorPayload);
             if (financeDoc.success) {
-              membershipData.schedulePayments = schedulePayments;
               memberShipDoc = await createMemberShipDocument(
                 membershipData,
                 studentId
@@ -544,10 +547,9 @@ exports.buyMembership = async (req, res) => {
               });
             }
           } else {
-            res.send({ msg: resp.data.msg, success: false });
+            res.send({ msg: resp.data.desc, success: false });
           }
         } else {
-          membershipData.schedulePayments = schedulePayments;
           memberShipDoc = await createMemberShipDocument(
             membershipData,
             studentId
@@ -555,7 +557,7 @@ exports.buyMembership = async (req, res) => {
           res.send(memberShipDoc);
         }
       } else {
-        res.send({ message: "payment type should be weekly/monthly", success: false });
+        res.send({ msg: "payment type should be weekly/monthly", success: false });
       }
     } else {
       if (!membershipData.isEMI && membershipData.balance == 0 && membershipData.payment_type === "pif") {
@@ -591,7 +593,7 @@ exports.buyMembership = async (req, res) => {
               });
             }
           } else {
-            res.send({ msg: resp.data.msg, success: false });
+            res.send({ msg: resp.data.desc, success: false });
           }
         } else {
           memberShipDoc = await createMemberShipDocument(
@@ -601,11 +603,11 @@ exports.buyMembership = async (req, res) => {
           res.send(memberShipDoc);
         }
       } else {
-        res.send({ message: "payment type should be  pif ", success: false });
+        res.send({ msg: "payment type should be  pif ", success: false });
       }
     }
   } catch (error) {
-    res.send({ error: error.message.replace(/\"/g, ""), success: false });
+    res.send({ msg: error.message.replace(/\"/g, ""), success: false });
   }
 };
 
@@ -624,8 +626,7 @@ function createMemberShipDocument(membershipData, studentId) {
     let membership = new buyMembership(membershipData);
     membership.save((err, data) => {
       if (err) {
-        console.log(err, "ERROR")
-        resolve({ error: "membership not buy" });
+        resolve({ msg: "membership not buy", success: false });
       } else {
         update = {
           $set: { status: "active" },
@@ -636,7 +637,7 @@ function createMemberShipDocument(membershipData, studentId) {
           update,
           (err, stdData) => {
             if (err) {
-              resolve({ error: "membership id is not add in student" });
+              resolve({ msg: "membership id is not add in student", success: false });
             } else {
               buyMembership
                 .findOneAndUpdate(
@@ -651,12 +652,14 @@ function createMemberShipDocument(membershipData, studentId) {
                 .exec(async (err, result) => {
                   if (err) {
                     resolve({
-                      error: "student id is not add in buy membership",
+                      msg: "student id is not add in buy membership",
+                      success: false
                     });
                   } else {
                     resolve({
                       msg: "membership purchase successfully",
                       data: result,
+                      success: true
                     });
                   }
                 });
