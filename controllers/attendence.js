@@ -283,7 +283,7 @@ exports.getStudentAttendence = (req, res) => {
 
     let studentId = req.params.studentId
     var objId = mongo.Types.ObjectId(studentId)
-    var per_page = parseInt(req.params.per_page) || 5;
+    var per_page = parseInt(req.params.per_page) || 10;
     var page_no = parseInt(req.params.page_no) || 0;
     var pagination = {
       limit: per_page,
