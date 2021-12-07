@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const schema = mongoose.Schema
 const stripeSchema = new schema(
     {
-        stripeName: {
+        candidateName: {
             type: String,
             trim: true,
             required: true,
@@ -32,10 +32,6 @@ const stripeSchema = new schema(
         stripe_image: {
             type: String
         },
-        age_requirement: {
-            required: true,
-            type: String
-        },
         manage_stripe: [
             {
                 type: schema.Types.ObjectId,
@@ -52,4 +48,4 @@ const stripeSchema = new schema(
     { timestamps: true }
 );
 
-module.exports = mongoose.model("Stripe", stripeSchema);
+module.exports = mongoose.model("candidateStripe", stripeSchema);
