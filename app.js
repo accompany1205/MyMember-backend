@@ -124,6 +124,7 @@ const recommendedCandidatesRoutes = require("./routes/recommededCandidate");
 
 const textTemplateRoutes = require('./routes/text_templates_routes');
 
+const appointmentEvent = require("./routes/appointment_event")
 const app = express();
 // app.use(fileUpload({ safeFileNames: true, preserveExtension: true }))
 const { v4: uuidv4 } = require('uuid');
@@ -217,6 +218,10 @@ app.use("/api", compose_template);
 app.use("/api", nurturing_template);
 app.use("/api", library_template);
 app.use("/api", email_library_folder);
+
+// Appointment Event
+app.use("/api", appointmentEvent)
+
 // app.use('/api',emailSystem)
 app.use("/api", text_sms);
 app.use("/api", text_genral);

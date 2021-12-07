@@ -26,15 +26,15 @@ router.post("/signin", signin);
 router.post("/signout", signout);
 router.put("/forgetPassword", forgetpasaword);
 router.put("/resetPassword", resetPassword);
-router.put("/get_user_approved_by_admin/:adminId/:userId",isAdmin, approveUserRequestByAdmin);
+router.put("/get_user_approved_by_admin/:adminId/:userId", isAdmin, approveUserRequestByAdmin);
 
 //
-router.put("/updateUser/:userId",updateUser)
-router.get("/searchUser/:userId",searchUser)
+router.put("/updateUser/:userId", updateUser)
+router.get("/searchUser/:userId", searchUser)
 router.post("/adminApproval", adminApproval)
 
 router.get("/get_navbar", get_navbar);
 router.post("/edit_navbar_li", edit_navbar_li);
 router.post("/edit_navbar_ui", edit_navbar_ui)
-router.get("/school_listing/:page_no",school_listing)
+router.get("/school_listing/:adminId/:page_no", isAdmin, school_listing)
 module.exports = router;

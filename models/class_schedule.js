@@ -1,5 +1,9 @@
 const mongoose = require("mongoose");
+
+
 const schema = mongoose.Schema
+let ObjectId = schema.ObjectId;
+
 const scheduleSchema = new schema(
     {
         program_name: {
@@ -8,42 +12,41 @@ const scheduleSchema = new schema(
             required: true,
             maxlength: 32
         },
-        program_color:{
-            type:String,
+        program_color: {
+            type: String,
         },
         class_name: { type: String, required: true },
         start_date: {
             type: String,
             required: true
         },
-         end_date: {
+        end_date: {
             type: String,
             required: true
         },
-         start_time: {
+        start_time: {
             type: String,
             required: true
         },
-         end_time: {
+        end_time: {
             type: String,
             required: true
         },
         wholeSeriesEndDate: {
-            type:String,
-            required:true
+            type: String,
+            required: true
         },
         wholeSeriesStartDate: {
-            type:String,
-            required:true
+            type: String,
+            required: true
         },
         repeat_weekly_on: { type: Array },
-        userId:{
-            type:String
+        userId: {
+            type: String
         },
-        class_attendance:[{
-            type:schema.Types.ObjectId,
-            ref:"attendence"
-        }]
+        class_attendanceArray: {
+            type: Array
+        }
     },
     { timestamps: true }
 );

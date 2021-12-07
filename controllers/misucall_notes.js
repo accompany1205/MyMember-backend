@@ -1,7 +1,7 @@
 const misucallNote = require("../models/misucall_notes");
 const student = require("../models/addmember");
 const user = require("../models/user");
-const attendence = require("../models/attendence");
+const classes = require("../models/class_schedule");
 const memberShip = require("../models/membership");
 const missYouCallNotes = require("../models/misucall_notes");
 const _ = require("lodash");
@@ -12,64 +12,195 @@ const misucall_notes = require("../models/misucall_notes");
 
 exports.seven_to_forteen = async (req, res) => {
   try {
-    const membership_details = await memberShip.find(
-      { userId: req.params.userId },
-      { expiry_date: 1, mactive_date: 1, membership_name: 1 }
-    );
-    const missYouCall_notes = await missYouCallNotes.find({
-      userId: req.params.userId,
-    });
-
-    await student
+    let userId = req.params.userId
+    var per_page = parseInt(req.params.per_page) || 10;
+    var page_no = parseInt(req.params.page_no) || 0;
+    var pagination = {
+      limit: per_page,
+      skip: per_page * page_no,
+    };
+    await classes
       .aggregate([
+        { $match: { userId: userId } },
         {
           $project: {
-            firstName: 1,
-            lastName: 1,
-            memberprofileImage: 1,
-            last_contact_missCall: 1,
-            rating: 1,
-          },
+            program_name: 1,
+            class_name: 1,
+            start_date: 1,
+            end_date: 1,
+            program_color: 1,
+            class_attendanceArray: 1,
+            repeat_weekly_on: 1
+
+          }
         },
         {
           $lookup: {
-            from: "attendences",
-            localField: "_id",
-            foreignField: "studentId",
-            as: "data",
-          },
+            from: "members",
+            localField: "class_attendanceArray.studentInfo",
+            foreignField: "_id",
+            as: "data"
+          }
         },
-      ])
-      .then(async (result) => {
-        const newArr = [];
-        newObj = new Object();
-        await result.forEach((i) => {
-          a = i.data;
-          if (a.length >= 1) {
-            last_Date = new Date(a[a.length - 1].date);
-            dayDifference = -1 * (daysRemaining(last_Date) - 1);
-            if (dayDifference >= 7 && dayDifference <= 14) {
-              newObj = {
-                _id: i._id,
-                firstName: i.firstName,
-                lastName: i.lastName,
-                memberprofileImage: i.memberprofileImage,
-                rating: i.rating,
-                last_contact_missCall: i.last_contact_missCall,
-                missYouCall_notes: missYouCall_notes,
-                membership_details: membership_details,
-                last_Class_Attended_date: last_Date,
-                date: a[a.length - 1].date,
-                dayDifference,
-              };
-              newArr.push(newObj);
+        {
+          $project: {
+            program_name: 1,
+            class_name: 1,
+            start_date: 1,
+            end_date: 1,
+            program_color: 1,
+            class_attendanceArray: 1,
+            repeat_weekly_on: 1,
+            "data.firstName": 1,
+            "data.lastName": 1,
+            "data.memberprofileImage": 1,
+            "data.missYouCall_notes": 1,
+            "data.last_contact_missCall": 1,
+            "data.class_count": 1,
+            "data._id": 1,
+          }
+        },
+        {
+          "$addFields": {
+            "attendence": {
+              "$map": {
+                "input": "$class_attendanceArray",
+                "in": {
+                  "$mergeObjects": [
+                    "$$this",
+                    {
+                      "$arrayElemAt": [
+                        "$data",
+                        { "$indexOfArray": ["$data._id", "$$this.studentInfo"] }
+                      ]
+                    }
+                  ]
+                }
+              }
             }
           }
-        });
-        res.status(200).send(newArr);
-      })
-      .catch((err) => {
-        res.status(404).send({ message: err.message });
+        },
+        {
+          $project: {
+            data: 0,
+            class_attendanceArray: 0,
+          }
+        },
+        {
+          $addFields: {
+            "attendence._id": "$_id",
+            "attendence.class_name": "$class_name",
+            "attendence.program_name": "$program_name",
+            "attendence.program_color": "$program_color",
+            "attendence.repeat_weekly_on": "$repeat_weekly_on",
+          }
+        },
+        /** Unwind items array, will exclude docs where items is not an array/doesn't exists */
+        {
+          $unwind: "$attendence"
+        },
+        /** Replace 'response.items' object as new root(document) */
+        {
+          $replaceRoot: {
+            newRoot: "$attendence"
+          }
+        },
+        {
+          "$group": {
+            "_id": "$studentInfo",
+            "latestDate": {
+              "$max": {
+                "$mergeObjects": [
+                  {
+                    "epochTime": "$epochTime",
+
+                  },
+                  "$$ROOT"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "$addFields": {
+            "name": "$_id"
+          }
+        },
+        {
+          "$project": {
+            "_id": 0
+          }
+        },
+        {
+          "$unwind": {
+            "path": "$latestDate"
+          }
+        },
+        {
+          "$replaceRoot": {
+            "newRoot": "$latestDate"
+          }
+        },
+        {
+          $project: {
+            "epochTime": 1,
+            "studentInfo": 1,
+            "time": 1,
+            "date": 1,
+            "_id": 1,
+            "firstName": 1,
+            "lastName": 1,
+            "class_name": 1,
+            "memberprofileImage": 1,
+            "program_color": 1,
+            "program_name": 1,
+            "repeat_weekly_on": 1,
+            "dayssince": {
+              $floor: {
+                $divide: [{
+                  $subtract: [new Date(), {
+                    $dateFromString: {
+                      dateString: "$epochTime"
+                    }
+                  }]
+                }, 1000 * 60 * 60 * 24]
+              }
+            }
+          }
+        },
+        {
+          $match: {
+            dayssince: {
+              $gte: 7, $lte: 14
+            }
+          }
+        },
+        { $sort: { dayssince: 1 } },
+        {
+          $facet: {
+            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+            totalCount: [
+              {
+                $count: 'count'
+              }
+            ]
+          }
+        }
+      ])
+      .exec((err, memberdata) => {
+        if (err) {
+          res.send({
+            error: err,
+          });
+        } else {
+          let data = memberdata[0].paginatedResults
+          if (data.length > 0) {
+            res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
+
+          } else {
+            res.send({ msg: 'data not found', success: false });
+          }
+        }
       });
   } catch (err) {
     throw new Error(err);
@@ -78,127 +209,589 @@ exports.seven_to_forteen = async (req, res) => {
 
 exports.fifteen_to_thirty = async (req, res) => {
   try {
-    const membership_details = await memberShip.find(
-      { userId: req.params.userId },
-      { expiry_date: 1, mactive_date: 1, membership_name: 1 }
-    );
-    const missYouCall_notes = await missYouCallNotes.find({
-      userId: req.params.userId,
-    });
-
-    await student
+    let userId = req.params.userId
+    var per_page = parseInt(req.params.per_page) || 10;
+    var page_no = parseInt(req.params.page_no) || 0;
+    var pagination = {
+      limit: per_page,
+      skip: per_page * page_no,
+    };
+    await classes
       .aggregate([
+        { $match: { userId: userId } },
         {
           $project: {
-            firstName: 1,
-            lastName: 1,
-            memberprofileImage: 1,
-            last_contact_missCall: 1,
-            rating: 1,
-          },
+            program_name: 1,
+            class_name: 1,
+            start_date: 1,
+            end_date: 1,
+            program_color: 1,
+            class_attendanceArray: 1,
+            repeat_weekly_on: 1
+
+          }
         },
         {
           $lookup: {
-            from: "attendences",
-            localField: "_id",
-            foreignField: "studentId",
-            as: "data",
-          },
+            from: "members",
+            localField: "class_attendanceArray.studentInfo",
+            foreignField: "_id",
+            as: "data"
+          }
         },
-      ])
-      .then(async (result) => {
-        const newArr = [];
-        const current_Date = new Date();
-        newObj = new Object();
-        await result.forEach((i) => {
-          a = i.data;
-          if (a.length >= 1) {
-            last_Date = new Date(a[a.length - 1].date);
-            dayDifference = -1 * (daysRemaining(last_Date) - 1);
-            if (dayDifference > 14 && dayDifference <= 30) {
-              newObj = {
-                _id: i._id,
-                firstName: i.firstName,
-                lastName: i.lastName,
-                memberprofileImage: i.memberprofileImage,
-                rating: i.rating,
-                last_contact_missCall: i.last_contact_missCall,
-                missYouCall_notes: missYouCall_notes,
-                membership_details: membership_details,
-                last_Class_Attended_date: last_Date,
-                dayDifference,
-              };
-              newArr.push(newObj);
+        {
+          $project: {
+            program_name: 1,
+            class_name: 1,
+            start_date: 1,
+            end_date: 1,
+            program_color: 1,
+            class_attendanceArray: 1,
+            repeat_weekly_on: 1,
+            "data.firstName": 1,
+            "data.lastName": 1,
+            "data.memberprofileImage": 1,
+            "data.missYouCall_notes": 1,
+            "data.last_contact_missCall": 1,
+            "data.class_count": 1,
+            "data._id": 1,
+          }
+        },
+        {
+          "$addFields": {
+            "attendence": {
+              "$map": {
+                "input": "$class_attendanceArray",
+                "in": {
+                  "$mergeObjects": [
+                    "$$this",
+                    {
+                      "$arrayElemAt": [
+                        "$data",
+                        { "$indexOfArray": ["$data._id", "$$this.studentInfo"] }
+                      ]
+                    }
+                  ]
+                }
+              }
             }
           }
-        });
-        res.status(200).send(newArr);
-      })
-      .catch((err) => {
-        res.status(404).send({ message: err.message });
+        },
+        {
+          $project: {
+            data: 0,
+            class_attendanceArray: 0,
+          }
+        },
+        {
+          $addFields: {
+            "attendence._id": "$_id",
+            "attendence.class_name": "$class_name",
+            "attendence.program_name": "$program_name",
+            "attendence.program_color": "$program_color",
+            "attendence.repeat_weekly_on": "$repeat_weekly_on",
+          }
+        },
+        /** Unwind items array, will exclude docs where items is not an array/doesn't exists */
+        {
+          $unwind: "$attendence"
+        },
+        /** Replace 'response.items' object as new root(document) */
+        {
+          $replaceRoot: {
+            newRoot: "$attendence"
+          }
+        },
+        {
+          "$group": {
+            "_id": "$studentInfo",
+            "latestDate": {
+              "$max": {
+                "$mergeObjects": [
+                  {
+                    "epochTime": "$epochTime",
+
+                  },
+                  "$$ROOT"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "$addFields": {
+            "name": "$_id"
+          }
+        },
+        {
+          "$project": {
+            "_id": 0
+          }
+        },
+        {
+          "$unwind": {
+            "path": "$latestDate"
+          }
+        },
+        {
+          "$replaceRoot": {
+            "newRoot": "$latestDate"
+          }
+        },
+        {
+          $project: {
+            "epochTime": 1,
+            "studentInfo": 1,
+            "time": 1,
+            "date": 1,
+            "_id": 1,
+            "firstName": 1,
+            "lastName": 1,
+            "memberprofileImage": 1,
+            "class_name": 1,
+            "program_color": 1,
+            "program_name": 1,
+            "repeat_weekly_on": 1,
+            "dayssince": {
+              $floor: {
+                $divide: [{
+                  $subtract: [new Date(), {
+                    $dateFromString: {
+                      dateString: "$epochTime"
+                    }
+                  }]
+                }, 1000 * 60 * 60 * 24]
+              }
+            }
+          }
+        }
+        , {
+          $match: {
+            dayssince: {
+              $gte: 15, $lte: 30
+            }
+          }
+        },
+        { $sort: { dayssince: 1 } },
+        {
+          $facet: {
+            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+            totalCount: [
+              {
+                $count: 'count'
+              }
+            ]
+          }
+        }
+      ])
+      .exec((err, memberdata) => {
+        if (err) {
+          res.send({
+            error: err,
+          });
+        } else {
+          let data = memberdata[0].paginatedResults
+          if (data.length > 0) {
+            res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
+
+          } else {
+            res.send({ msg: 'data not found', success: false });
+          }
+        }
       });
   } catch (err) {
     throw new Error(err);
   }
 };
 
-exports.moreThirty = async (req, res) => {
+exports.Thirty_to_sixty = async (req, res) => {
   try {
-    const membership_details = await memberShip.find(
-      {},
-      { expiry_date: 1, mactive_date: 1, membership_name: 1 }
-    );
-    const missYouCall_notes = await missYouCallNotes.find({});
-    await student
+    let userId = req.params.userId
+    var per_page = parseInt(req.params.per_page) || 10;
+    var page_no = parseInt(req.params.page_no) || 0;
+    var pagination = {
+      limit: per_page,
+      skip: per_page * page_no,
+    };
+    await classes
       .aggregate([
+        { $match: { userId: userId } },
         {
           $project: {
-            firstName: 1,
-            lastName: 1,
-            memberprofileImage: 1,
-            last_contact_missCall: 1,
-            rating: 1,
-          },
+            program_name: 1,
+            class_name: 1,
+            start_date: 1,
+            end_date: 1,
+            program_color: 1,
+            class_attendanceArray: 1,
+            repeat_weekly_on: 1
+
+          }
         },
         {
           $lookup: {
-            from: "attendences",
-            localField: "_id",
-            foreignField: "studentId",
-            as: "data",
-          },
+            from: "members",
+            localField: "class_attendanceArray.studentInfo",
+            foreignField: "_id",
+            as: "data"
+          }
         },
-      ])
-      .then(async (result) => {
-        const newArr = [];
-        const current_Date = new Date();
-        newObj = new Object();
-        await result.forEach((i) => {
-          a = i.data;
-          if (a.length >= 1) {
-            last_Date = new Date(a[a.length - 1].date);
-            dayDifference = -1 * (daysRemaining(last_Date) - 1);
-            if (dayDifference > 30) {
-              newObj = {
-                _id: i._id,
-                firstName: i.firstName,
-                lastName: i.lastName,
-                memberprofileImage: i.memberprofileImage,
-                rating: i.rating,
-                last_contact_missCall: i.last_contact_missCall,
-                missYouCall_notes: missYouCall_notes,
-                membership_details: membership_details,
-                last_Class_Attended_date: last_Date,
-                dayDifference,
-              };
-              newArr.push(newObj);
+        {
+          $project: {
+            program_name: 1,
+            class_name: 1,
+            start_date: 1,
+            end_date: 1,
+            program_color: 1,
+            class_attendanceArray: 1,
+            repeat_weekly_on: 1,
+            "data.firstName": 1,
+            "data.lastName": 1,
+            "data.memberprofileImage": 1,
+            "data.missYouCall_notes": 1,
+            "data.last_contact_missCall": 1,
+            "data.class_count": 1,
+            "data._id": 1,
+          }
+        },
+        {
+          "$addFields": {
+            "attendence": {
+              "$map": {
+                "input": "$class_attendanceArray",
+                "in": {
+                  "$mergeObjects": [
+                    "$$this",
+                    {
+                      "$arrayElemAt": [
+                        "$data",
+                        { "$indexOfArray": ["$data._id", "$$this.studentInfo"] }
+                      ]
+                    }
+                  ]
+                }
+              }
             }
           }
-        });
-        res.status(200).send(newArr);
-      })
-      .catch((err) => {
-        res.status(404).send({ message: err.message });
+        },
+        {
+          $project: {
+            data: 0,
+            class_attendanceArray: 0,
+          }
+        },
+        {
+          $addFields: {
+            "attendence._id": "$_id",
+            "attendence.program_name": "$program_name",
+            "attendence.class_name": "$class_name",
+            "attendence.program_color": "$program_color",
+            "attendence.repeat_weekly_on": "$repeat_weekly_on",
+          }
+        },
+        /** Unwind items array, will exclude docs where items is not an array/doesn't exists */
+        {
+          $unwind: "$attendence"
+        },
+        /** Replace 'response.items' object as new root(document) */
+        {
+          $replaceRoot: {
+            newRoot: "$attendence"
+          }
+        },
+        {
+          "$group": {
+            "_id": "$studentInfo",
+            "latestDate": {
+              "$max": {
+                "$mergeObjects": [
+                  {
+                    "epochTime": "$epochTime",
+
+                  },
+                  "$$ROOT"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "$addFields": {
+            "name": "$_id"
+          }
+        },
+        {
+          "$project": {
+            "_id": 0
+          }
+        },
+        {
+          "$unwind": {
+            "path": "$latestDate"
+          }
+        },
+        {
+          "$replaceRoot": {
+            "newRoot": "$latestDate"
+          }
+        },
+        {
+          $project: {
+            "epochTime": 1,
+            "studentInfo": 1,
+            "time": 1,
+            "date": 1,
+            "_id": 1,
+            "firstName": 1,
+            "lastName": 1,
+            "memberprofileImage": 1,
+            "class_name": 1,
+            "program_color": 1,
+            "program_name": 1,
+            "repeat_weekly_on": 1,
+            "dayssince": {
+              $floor: {
+                $divide: [{
+                  $subtract: [new Date(), {
+                    $dateFromString: {
+                      dateString: "$epochTime"
+                    }
+                  }]
+                }, 1000 * 60 * 60 * 24]
+              }
+            }
+          }
+        }
+        , {
+          $match: {
+            dayssince: {
+              $gte: 31, $lte: 60
+            }
+          }
+        },
+        { $sort: { dayssince: 1 } },
+        {
+          $facet: {
+            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+            totalCount: [
+              {
+                $count: 'count'
+              }
+            ]
+          }
+        }
+      ])
+      .exec((err, memberdata) => {
+        if (err) {
+          res.send({
+            error: err,
+          });
+        } else {
+          let data = memberdata[0].paginatedResults
+          if (data.length > 0) {
+            res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
+
+          } else {
+            res.send({ msg: 'data not found', success: false });
+          }
+        }
+      });
+  } catch (err) {
+    throw new Error(err);
+  }
+};
+
+exports.more_than_sixty = async (req, res) => {
+  try {
+    let userId = req.params.userId
+    var per_page = parseInt(req.params.per_page) || 10;
+    var page_no = parseInt(req.params.page_no) || 0;
+    var pagination = {
+      limit: per_page,
+      skip: per_page * page_no,
+    };
+    await classes
+      .aggregate([
+        { $match: { userId: userId } },
+        {
+          $project: {
+            program_name: 1,
+            class_name: 1,
+            start_date: 1,
+            end_date: 1,
+            program_color: 1,
+            class_attendanceArray: 1,
+            repeat_weekly_on: 1
+
+          }
+        },
+        {
+          $lookup: {
+            from: "members",
+            localField: "class_attendanceArray.studentInfo",
+            foreignField: "_id",
+            as: "data"
+          }
+        },
+        {
+          $project: {
+            program_name: 1,
+            class_name: 1,
+            start_date: 1,
+            end_date: 1,
+            program_color: 1,
+            class_attendanceArray: 1,
+            repeat_weekly_on: 1,
+            "data.firstName": 1,
+            "data.lastName": 1,
+            "data.memberprofileImage": 1,
+            "data.missYouCall_notes": 1,
+            "data.last_contact_missCall": 1,
+            "data.class_count": 1,
+            "data._id": 1,
+          }
+        },
+        {
+          "$addFields": {
+            "attendence": {
+              "$map": {
+                "input": "$class_attendanceArray",
+                "in": {
+                  "$mergeObjects": [
+                    "$$this",
+                    {
+                      "$arrayElemAt": [
+                        "$data",
+                        { "$indexOfArray": ["$data._id", "$$this.studentInfo"] }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          $project: {
+            data: 0,
+            class_attendanceArray: 0,
+          }
+        },
+        {
+          $addFields: {
+            "attendence._id": "$_id",
+            "attendence.program_name": "$program_name",
+            "attendence.class_name": "$class_name",
+            "attendence.program_color": "$program_color",
+            "attendence.repeat_weekly_on": "$repeat_weekly_on",
+          }
+        },
+        /** Unwind items array, will exclude docs where items is not an array/doesn't exists */
+        {
+          $unwind: "$attendence"
+        },
+        /** Replace 'response.items' object as new root(document) */
+        {
+          $replaceRoot: {
+            newRoot: "$attendence"
+          }
+        },
+        {
+          "$group": {
+            "_id": "$studentInfo",
+            "latestDate": {
+              "$max": {
+                "$mergeObjects": [
+                  {
+                    "epochTime": "$epochTime",
+
+                  },
+                  "$$ROOT"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "$addFields": {
+            "name": "$_id"
+          }
+        },
+        {
+          "$project": {
+            "_id": 0
+          }
+        },
+        {
+          "$unwind": {
+            "path": "$latestDate"
+          }
+        },
+        {
+          "$replaceRoot": {
+            "newRoot": "$latestDate"
+          }
+        },
+        {
+          $project: {
+            "epochTime": 1,
+            "studentInfo": 1,
+            "time": 1,
+            "date": 1,
+            "_id": 1,
+            "firstName": 1,
+            "lastName": 1,
+            "memberprofileImage": 1,
+            "class_name": 1,
+            "program_color": 1,
+            "program_name": 1,
+            "repeat_weekly_on": 1,
+            "dayssince": {
+              $floor: {
+                $divide: [{
+                  $subtract: [new Date(), {
+                    $dateFromString: {
+                      dateString: "$epochTime"
+                    }
+                  }]
+                }, 1000 * 60 * 60 * 24]
+              }
+            }
+          }
+        }
+        , {
+          $match: {
+            dayssince: {
+              $gte: 61
+            }
+          }
+        },
+        { $sort: { dayssince: 1 } },
+        {
+          $facet: {
+            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+            totalCount: [
+              {
+                $count: 'count'
+              }
+            ]
+          }
+        }
+      ])
+      .exec((err, memberdata) => {
+        if (err) {
+          res.send({
+            error: err,
+          });
+        } else {
+          let data = memberdata[0].paginatedResults
+          if (data.length > 0) {
+            res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
+
+          } else {
+            res.send({ msg: 'data not found', success: false });
+          }
+        }
       });
   } catch (err) {
     throw new Error(err);
@@ -316,170 +909,203 @@ exports.updateNote = (req, res) => {
     }
   });
 };
+
 exports.more_than_forteen = async (req, res) => {
   try {
-    const membership_details = await memberShip.find(
-      { userId: req.params.userId },
-      { expiry_date: 1, mactive_date: 1, membership_name: 1 }
-    );
-    const missYouCall_notes = await missYouCallNotes.find({
-      userId: req.params.userId,
-    });
-
-    await student
+    let userId = req.params.userId
+    var per_page = parseInt(req.params.per_page) || 10;
+    var page_no = parseInt(req.params.page_no) || 0;
+    var pagination = {
+      limit: per_page,
+      skip: per_page * page_no,
+    };
+    await classes
       .aggregate([
+        { $match: { userId: userId } },
         {
           $project: {
-            firstName: 1,
-            lastName: 1,
-            memberprofileImage: 1,
-            last_contact_missCall: 1,
-            rating: 1,
-          },
+            program_name: 1,
+            class_name: 1,
+            start_date: 1,
+            end_date: 1,
+            program_color: 1,
+            class_attendanceArray: 1,
+            repeat_weekly_on: 1
+
+          }
         },
         {
           $lookup: {
-            from: "attendences",
-            localField: "_id",
-            foreignField: "studentId",
-            as: "data",
-          },
+            from: "members",
+            localField: "class_attendanceArray.studentInfo",
+            foreignField: "_id",
+            as: "data"
+          }
         },
-      ])
-      .then(async (result) => {
-        const newArr = [];
-        const current_Date = new Date();
-        newObj = new Object();
-        await result.forEach((i) => {
-          a = i.data;
-          if (a.length >= 1) {
-            last_Date = new Date(a[a.length - 1].date);
-            dayDifference = -1 * (daysRemaining(last_Date) - 1);
-            if (dayDifference > 14 && dayDifference <= 30) {
-              newObj = {
-                _id: i._id,
-                firstName: i.firstName,
-                lastName: i.lastName,
-                memberprofileImage: i.memberprofileImage,
-                rating: i.rating,
-                last_contact_missCall: i.last_contact_missCall,
-                missYouCall_notes: missYouCall_notes,
-                membership_details: membership_details,
-                last_Class_Attended_date: last_Date,
-                dayDifference,
-              };
-              newArr.push(newObj);
+        {
+          $project: {
+            program_name: 1,
+            class_name: 1,
+            start_date: 1,
+            end_date: 1,
+            program_color: 1,
+            class_attendanceArray: 1,
+            repeat_weekly_on: 1,
+            "data.firstName": 1,
+            "data.lastName": 1,
+            "data.studentType": 1,
+            "data.primaryPhone": 1,
+            "data.memberprofileImage": 1,
+            "data.missYouCall_notes": 1,
+            "data.last_contact_missCall": 1,
+            "data.class_count": 1,
+            "data._id": 1,
+          }
+        },
+        {
+          "$addFields": {
+            "attendence": {
+              "$map": {
+                "input": "$class_attendanceArray",
+                "in": {
+                  "$mergeObjects": [
+                    "$$this",
+                    {
+                      "$arrayElemAt": [
+                        "$data",
+                        { "$indexOfArray": ["$data._id", "$$this.studentInfo"] }
+                      ]
+                    }
+                  ]
+                }
+              }
             }
           }
-        });
-        res.status(200).send(newArr);
-      })
-      .catch((err) => {
-        res.status(404).send({ message: err.message });
+        },
+        {
+          $project: {
+            data: 0,
+            class_attendanceArray: 0,
+          }
+        },
+        {
+          $addFields: {
+            "attendence._id": "$_id",
+            "attendence.class_name": "$class_name",
+            "attendence.program_name": "$program_name",
+            "attendence.program_color": "$program_color",
+            "attendence.repeat_weekly_on": "$repeat_weekly_on",
+          }
+        },
+        /** Unwind items array, will exclude docs where items is not an array/doesn't exists */
+        {
+          $unwind: "$attendence"
+        },
+        /** Replace 'response.items' object as new root(document) */
+        {
+          $replaceRoot: {
+            newRoot: "$attendence"
+          }
+        },
+        {
+          "$group": {
+            "_id": "$studentInfo",
+            "latestDate": {
+              "$max": {
+                "$mergeObjects": [
+                  {
+                    "epochTime": "$epochTime",
+
+                  },
+                  "$$ROOT"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "$addFields": {
+            "name": "$_id"
+          }
+        },
+        {
+          "$project": {
+            "_id": 0
+          }
+        },
+        {
+          "$unwind": {
+            "path": "$latestDate"
+          }
+        },
+        {
+          "$replaceRoot": {
+            "newRoot": "$latestDate"
+          }
+        },
+        {
+          $project: {
+            "epochTime": 1,
+            "studentInfo": 1,
+            "time": 1,
+            "date": 1,
+            "_id": 1,
+            "firstName": 1,
+            "lastName": 1,
+            "studentType": 1,
+            "primaryPhone": 1,
+            "class_name": 1,
+            "program_color": 1,
+            "repeat_weekly_on": 1,
+            "dayssince": {
+              $floor: {
+                $divide: [{
+                  $subtract: [new Date(), {
+                    $dateFromString: {
+                      dateString: "$epochTime"
+                    }
+                  }]
+                }, 1000 * 60 * 60 * 24]
+              }
+            }
+          }
+        }
+        , {
+          $match: {
+            dayssince: {
+              $gte: 14
+            }
+          }
+        },
+        { $sort: { dayssince: 1 } },
+
+        {
+          $facet: {
+            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+            totalCount: [
+              {
+                $count: 'count'
+              }
+            ]
+          }
+        }
+      ])
+      .exec((err, memberdata) => {
+        if (err) {
+          res.send({
+            error: err,
+          });
+        } else {
+          let data = memberdata[0].paginatedResults
+          if (data.length > 0) {
+            res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
+
+          } else {
+            res.send({ msg: 'data not found', success: false });
+          }
+        }
       });
   } catch (err) {
     throw new Error(err);
   }
 };
-
-exports.moreThirty = async (req, res) => {
-  try {
-    const membership_details = await memberShip.find(
-      {},
-      { expiry_date: 1, mactive_date: 1, membership_name: 1 }
-    );
-    const missYouCall_notes = await missYouCallNotes.find({});
-    await student
-      .aggregate([
-        {
-          $project: {
-            firstName: 1,
-            lastName: 1,
-            memberprofileImage: 1,
-            last_contact_missCall: 1,
-            rating: 1,
-          },
-        },
-        {
-          $lookup: {
-            from: "attendences",
-            localField: "_id",
-            foreignField: "studentId",
-            as: "data",
-          },
-        },
-      ])
-      .then(async (result) => {
-        const newArr = [];
-        const current_Date = new Date();
-        newObj = new Object();
-        await result.forEach((i) => {
-          a = i.data;
-          if (a.length >= 1) {
-            last_Date = new Date(a[a.length - 1].date);
-            dayDifference = -1 * (daysRemaining(last_Date) - 1);
-            if (dayDifference > 14) {
-              newObj = {
-                _id: i._id,
-                firstName: i.firstName,
-                lastName: i.lastName,
-                memberprofileImage: i.memberprofileImage,
-                rating: i.rating,
-                last_contact_missCall: i.last_contact_missCall,
-                missYouCall_notes: missYouCall_notes,
-                membership_details: membership_details,
-                last_Class_Attended_date: last_Date,
-                dayDifference,
-              };
-              newArr.push(newObj);
-            }
-          }
-        });
-        res.status(200).send(newArr);
-      })
-      .catch((err) => {
-        res.status(404).send({ message: err.message });
-      });
-  } catch (err) {
-    throw new Error(err);
-  }
-};
-// exports.more_than_forteen = async (req, res) => {
-//   try {
-//     const userId = req.params.userId;
-//     var objId = mongo.Types.ObjectId(userId);
-
-//     let data = await attendence.aggregate([
-//       { $match: { userId: objId } },
-//       // {
-//       //   $group: {
-//       //     _id: "$firstName",
-//       //     date: { $last: "$date" },
-//       //     id: { $first: "$_id" },
-//       //     lastName: { $first: "$lastName" },
-//       //     image: { $first: "$image" },
-//       //     class: { $first: "$class" },
-//       //   },
-//       // },
-//       {
-//         $match: {
-//           $expr: {
-//             $floor: {
-//               $divide: [
-//                 {
-//                   $subtract: [new Date(), { $toDate: "$date" }],
-//                 },
-//                 1000 * 60 * 60,
-//               ],
-//             }
-//           },
-//         },
-//       },
-
-//       { $sort: { firstName: 1 } },
-//     ]);
-//     res.send(data);
-//   } catch (err) {
-//     throw new Error(err);
-//   }
-// };

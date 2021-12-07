@@ -111,10 +111,6 @@ const Membershipschema = new schema(
       type: String,
       required: true,
     },
-    pay_latter: {
-      type: String,
-      required: true,
-    },
     emi_type: {
       type: String,
     },

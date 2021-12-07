@@ -1,88 +1,82 @@
 const mongoose = require("mongoose");
 const schema = mongoose.Schema;
-
 const Finance_infoSchema = new schema(
-	{
-		card_type: {
-			type: String,
-			required: true,
-			enum: ['credit', 'debit'],
-			default: 'credit'
-		},
-		holder_name: {
-			type: String,
-			required: true,
-		},
-		notes: {
-			type: String,
-		},
-		// default: {
-		// 	type: Number,
-		// 	default: 0,
-		// },
-		status: {
-			type: String,
-			required: true,
-			enum: ['active', 'inactive'],
-			default: 'inactive'
-		},
-		Credit_card_type: {
-			type: String,
-			required: true,
-			enum: ['Visa', 'Mastercard', 'Amex', 'Discover'],
-			default: 'Visa'
-
-		},
-		Card_Number: {
-			type: String,
-			required: true,
-			minlength: 12
-
-		},
-		card_cvv: {
-			type: String,
-			required: true,
-			minlength: 3
-		},
-		// Expiration_Date: {
-		// 	type: Date,
-		// 	require: true,
-		// },
-		expiry_month: {
-			type: Number,
-			required: true,
-		},
-		expiry_year: {
-			type: Number,
-			required: true,
-		},
-		billing_address: {
-			type: String,
-		},
-		// country: {
-		// 	type: String,
-		// },
-		// state: {
-		// 	type: String,
-		// },
-		// city: {
-		// 	type: String,
-		// },
-		zip_postal: {
-			type: String,
-			required:true,
-			minlength:6
-		},
-		studentId: {
-			type: schema.Types.ObjectId,
-			ref: "member",
-		},
-		userId: {
-			type: schema.Types.ObjectId,
-			ref: "user",
-		},
-	},
-	{ timestamps: true }
+  {
+    card_type: {
+      type: String,
+      required: true,
+      enum: ["credit", "debit"],
+      default: "credit",
+    },
+    uid: {
+      type: Number,
+      require: true,
+    },
+    amount: {
+      type: Number,
+      required: true,
+    },
+    custom_fee: {
+      type: Number,
+    },
+    tax: {
+      type: Number,
+    },
+    cvv: {
+      type: Number,
+      require: true,
+    },
+    pan: {
+      type: String,
+      default: "",
+    },
+    expiry_date: {
+      type: String,
+      required: true,
+    },
+    card_holder_name: {
+      type: String,
+    },
+    descriptor: {
+      type: String,
+    },
+    invoice_no: {
+      type: Number,
+    },
+    product_description: {
+      type: String,
+    },
+    address: {},
+    subscription_day_of_the_month: {
+      type: Number,
+    },
+    subscription_starts_from: {
+      type: String,
+    },
+    Subscription_valid_for: {
+      type: Number,
+    },
+    phone: {
+      type: String,
+    },
+    email: {
+      type: String,
+    },
+    surchargeIndicator: {
+      type: Number,
+    },
+    subscription_id: {
+      type: Number,
+    },
+    transactionId: {},
+    studentId: {
+      type: String
+    },
+    userId: {
+      type: String
+    },
+  },
+  { timestamps: true }
 );
 
 module.exports = mongoose.model("FinanceInfo", Finance_infoSchema);

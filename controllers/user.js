@@ -77,7 +77,6 @@ exports.update = (req, res) => {
           })
         }
         else {
-          console.log(req.file)
           res.send({
             succe: true,
             msg: "profile is update successfully"
@@ -145,7 +144,7 @@ exports.deleteUser = async (req, res) => {
     userId = req.params.userId
     resp = await User.findByIdAndDelete(userId)
     res.send({ message: "User Deleted Successfullly", success: true })
-    
+
   }
   catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false })
@@ -154,13 +153,13 @@ exports.deleteUser = async (req, res) => {
 
 };
 
-exports.deleteMultiple_User= async (req, res) => {
+exports.deleteMultiple_User = async (req, res) => {
   try {
 
     userIds = req.body.userId
     resp = await User.findByIdAndDelete(userId)
     res.send({ message: "User Deleted Successfullly", success: true })
-    
+
   }
   catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false })

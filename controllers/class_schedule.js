@@ -3,6 +3,7 @@ const Prog = require("../models/program")
 const dateRange = require('../Services/dateRange')
 var moment = require("moment");
 const { errorHandler } = require('../helpers/dbErrorHandler');
+var mongo = require("mongoose")
 
 exports.Create = async (req, res) => {
     var proDetail = await Prog.find({ programName: req.body.program_name })
@@ -21,7 +22,7 @@ exports.Create = async (req, res) => {
                 let date = moment(dates[index], 'MM/DD/YYYY').format('MM/DD/YYYY')
                 let dayName = moment(new Date(date)).format('dddd').toLowerCase()
                 if (repeat_weekly_on.includes(dayName)) {
-                    let NewEvent = { ...reqBody, start_date: date, end_date: date, wholeSeriesEndDate: endDate,wholeSeriesStartDate:startDate}
+                    let NewEvent = { ...reqBody, start_date: date, end_date: date, wholeSeriesEndDate: endDate, wholeSeriesStartDate: startDate }
                     // delete NewEvent['repeat_weekly_on']
                     allAttendance.push(NewEvent)
                 }
@@ -73,16 +74,86 @@ exports.read = async (req, res) => {
 };
 
 exports.class_schedule_Info = (req, res) => {
-    const id = req.params.scheduleId
-    class_schedule.findById(id, { upsert: true })
-        .populate('class_attendance')
-        .then((result) => {
-            var r = result.class_attendance
-            var total = r.length
-            res.json({ data: result, total: total })
-        }).catch((err) => {
-            res.send(err)
-        })
+    try {
+        const id = req.params.scheduleId
+        const userId = req.params.userId
+        var objId = mongo.Types.ObjectId(id)
+        class_schedule.
+            aggregate([
+                { $match: { _id: objId } },
+                {
+                    $project: {
+                        program_name: 1,
+                        class_name: 1,
+                        start_date: 1,
+                        end_date: 1,
+                        program_color: 1,
+                        class_attendanceArray: 1,
+
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "members",
+                        localField: "class_attendanceArray.studentInfo",
+                        foreignField: "_id",
+                        as: "data"
+                    }
+                },
+                {
+                    $project: {
+                        program_name: 1,
+                        class_name: 1,
+                        start_date: 1,
+                        end_date: 1,
+                        program_color: 1,
+                        class_attendanceArray: 1,
+                        "data.firstName": 1,
+                        "data.lastName": 1,
+                        "data.memberprofileImage": 1,
+                        "data._id": 1
+                    }
+                },
+                {
+                    "$addFields": {
+                        "attendence": {
+                            "$map": {
+                                "input": "$class_attendanceArray",
+                                "in": {
+                                    "$mergeObjects": [
+                                        "$$this",
+                                        {
+                                            "$arrayElemAt": [
+                                                "$data",
+                                                { "$indexOfArray": ["$data._id", "$$this.studentInfo"] }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    $project: { data: 0, class_attendanceArray: 0 }
+                }
+            ])
+            .exec((err, list) => {
+                if (err) {
+                    res.send({ error: "attendence list not found" });
+                } else {
+
+                    res.send({ data: list, success: true });
+
+                }
+            })
+    }
+
+    catch (err) {
+        res.send({ error: err.message.replace(/\"/g, ""), success: false });
+
+    }
+
 };
 
 exports.update = (req, res) => {
@@ -114,7 +185,7 @@ exports.updateAll = async (req, res) => {
         let date = moment(dates[index], 'MM/DD/YYYY').format('MM/DD/YYYY')
         let dayName = moment(new Date(date)).format('dddd').toLowerCase()
         if (repeat_weekly_on.includes(dayName)) {
-            let NewEvent = { ...reqBody, start_date: date, end_date: date, wholeSeriesEndDate: endDate,wholeSeriesStartDate:startDate}
+            let NewEvent = { ...reqBody, start_date: date, end_date: date, wholeSeriesEndDate: endDate, wholeSeriesStartDate: startDate }
             // delete NewEvent['repeat_weekly_on']
             allAttendance.push(NewEvent)
         }
@@ -178,7 +249,7 @@ exports.remove = (req, res) => {
     const id = req.params.scheduleId
     class_schedule.deleteOne({ _id: id })
         .then((resp) => {
-            res.json("class schedule has been deleted successfully")
+            res.json({ msg: "class schedule has been deleted successfully", success: true })
         }).catch((error) => {
             res.send({ error: error.message.replace(/\"/g, ""), success: false })
 
@@ -189,9 +260,11 @@ exports.remove = (req, res) => {
 exports.removeAll = (req, res) => {
     // const id = req.params.scheduleId
     class_schedule.deleteMany(
-        { $and: [{ userId: req.params.userId },
-             { program_name: req.body.program_name }, 
-             { class_name: req.body.class_name }] }
+        {
+            $and: [{ userId: req.params.userId },
+            { program_name: req.body.program_name },
+            { class_name: req.body.class_name }]
+        }
     )
         .then((resp) => {
             if (resp.deletedCount < 1) {
