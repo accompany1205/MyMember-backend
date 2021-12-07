@@ -3,6 +3,7 @@ const Prog = require("../models/program")
 const dateRange = require('../Services/dateRange')
 var moment = require("moment");
 const { errorHandler } = require('../helpers/dbErrorHandler');
+var mongo = require("mongoose")
 
 exports.Create = async (req, res) => {
     var proDetail = await Prog.find({ programName: req.body.program_name })
@@ -73,13 +74,86 @@ exports.read = async (req, res) => {
 };
 
 exports.class_schedule_Info = (req, res) => {
-    const id = req.params.scheduleId
-    class_schedule.findById(id)
-        .then((result) => {
-            res.json({ data: result, success: true })
-        }).catch((err) => {
-            res.send(err)
-        })
+    try {
+        const id = req.params.scheduleId
+        const userId = req.params.userId
+        var objId = mongo.Types.ObjectId(id)
+        class_schedule.
+            aggregate([
+                { $match: { _id: objId } },
+                {
+                    $project: {
+                        program_name: 1,
+                        class_name: 1,
+                        start_date: 1,
+                        end_date: 1,
+                        program_color: 1,
+                        class_attendanceArray: 1,
+
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "members",
+                        localField: "class_attendanceArray.studentInfo",
+                        foreignField: "_id",
+                        as: "data"
+                    }
+                },
+                {
+                    $project: {
+                        program_name: 1,
+                        class_name: 1,
+                        start_date: 1,
+                        end_date: 1,
+                        program_color: 1,
+                        class_attendanceArray: 1,
+                        "data.firstName": 1,
+                        "data.lastName": 1,
+                        "data.memberprofileImage": 1,
+                        "data._id": 1
+                    }
+                },
+                {
+                    "$addFields": {
+                        "attendence": {
+                            "$map": {
+                                "input": "$class_attendanceArray",
+                                "in": {
+                                    "$mergeObjects": [
+                                        "$$this",
+                                        {
+                                            "$arrayElemAt": [
+                                                "$data",
+                                                { "$indexOfArray": ["$data._id", "$$this.studentInfo"] }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    $project: { data: 0, class_attendanceArray: 0 }
+                }
+            ])
+            .exec((err, list) => {
+                if (err) {
+                    res.send({ error: "attendence list not found" });
+                } else {
+
+                    res.send({ data: list, success: true });
+
+                }
+            })
+    }
+
+    catch (err) {
+        res.send({ error: err.message.replace(/\"/g, ""), success: false });
+
+    }
+
 };
 
 exports.update = (req, res) => {
