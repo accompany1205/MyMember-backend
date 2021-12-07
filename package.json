@@ -48,6 +48,7 @@
     "node-schedule": "^2.0.0",
     "node-ses": "^3.0.3",
     "nodemailer": "^6.4.16",
+    "opencollective-postinstall": "^2.0.3",
     "sendgrid-v3-node": "^1.0.4",
     "twilio": "^3.61.0",
     "uuid": "^7.0.3"
