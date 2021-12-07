@@ -21,7 +21,7 @@ exports.Create = async (req, res) => {
                 let date = moment(dates[index], 'MM/DD/YYYY').format('MM/DD/YYYY')
                 let dayName = moment(new Date(date)).format('dddd').toLowerCase()
                 if (repeat_weekly_on.includes(dayName)) {
-                    let NewEvent = { ...reqBody, start_date: date, end_date: date, wholeSeriesEndDate: endDate,wholeSeriesStartDate:startDate}
+                    let NewEvent = { ...reqBody, start_date: date, end_date: date, wholeSeriesEndDate: endDate, wholeSeriesStartDate: startDate }
                     // delete NewEvent['repeat_weekly_on']
                     allAttendance.push(NewEvent)
                 }
@@ -74,12 +74,9 @@ exports.read = async (req, res) => {
 
 exports.class_schedule_Info = (req, res) => {
     const id = req.params.scheduleId
-    class_schedule.findById(id, { upsert: true })
-        .populate('class_attendance')
+    class_schedule.findById(id)
         .then((result) => {
-            var r = result.class_attendance
-            var total = r.length
-            res.json({ data: result, total: total })
+            res.json({ data: result, success: true })
         }).catch((err) => {
             res.send(err)
         })
@@ -114,7 +111,7 @@ exports.updateAll = async (req, res) => {
         let date = moment(dates[index], 'MM/DD/YYYY').format('MM/DD/YYYY')
         let dayName = moment(new Date(date)).format('dddd').toLowerCase()
         if (repeat_weekly_on.includes(dayName)) {
-            let NewEvent = { ...reqBody, start_date: date, end_date: date, wholeSeriesEndDate: endDate,wholeSeriesStartDate:startDate}
+            let NewEvent = { ...reqBody, start_date: date, end_date: date, wholeSeriesEndDate: endDate, wholeSeriesStartDate: startDate }
             // delete NewEvent['repeat_weekly_on']
             allAttendance.push(NewEvent)
         }
@@ -189,9 +186,11 @@ exports.remove = (req, res) => {
 exports.removeAll = (req, res) => {
     // const id = req.params.scheduleId
     class_schedule.deleteMany(
-        { $and: [{ userId: req.params.userId },
-             { program_name: req.body.program_name }, 
-             { class_name: req.body.class_name }] }
+        {
+            $and: [{ userId: req.params.userId },
+            { program_name: req.body.program_name },
+            { class_name: req.body.class_name }]
+        }
     )
         .then((resp) => {
             if (resp.deletedCount < 1) {
