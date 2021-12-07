@@ -175,7 +175,7 @@ exports.remove = (req, res) => {
     const id = req.params.scheduleId
     class_schedule.deleteOne({ _id: id })
         .then((resp) => {
-            res.json("class schedule has been deleted successfully")
+            res.json({ msg: "class schedule has been deleted successfully", success: true })
         }).catch((error) => {
             res.send({ error: error.message.replace(/\"/g, ""), success: false })
 
