@@ -1,11 +1,11 @@
 const { env } = require("process");
-const stripe = require("../models/candidates_stripe");
+const candidate_stripe = require("../models/candidate_stripe");
 const cloudUrl = require("../gcloud/imageUrl")
 // var s = require("../uploads")
 
 exports.candidate_create = (req, res) => {
     const Id = req.params.userId
-    const stripeObj = new stripe({
+    const stripeObj = new candidate_stripe({
         "candidateName": req.body.candidateName,
         "color": req.body.color,
         "lable": req.body.lable,
@@ -22,22 +22,21 @@ exports.candidate_create = (req, res) => {
         else {
             if (req.file) {
                 cloudUrl.imageUrl(req.file).then((expimgUrl) => {
-                    stripe.findByIdAndUpdate(data._id, { $set: { userId: Id, stripe_image: expimgUrl } })
+                    candidate_stripe.findByIdAndUpdate(data._id, { $set: { userId: Id, stripe_image: expimgUrl } })
                         .exec((err, updateStripe) => {
                             if (err) {
                                 res.send({ error: 'image url is not add in stripe' })
                             }
                             else {
-                                res.send({ msg: 'stripe is add with image successfully' })
+                                res.send({ msg: 'candidate is add with image successfully' })
                             }
                         })
                 }).catch((error) => {
-                    res.send({ error: 'stripe image url is not create' })
+                    res.send({ error: 'candidate image url is not create' })
                 })
             }
             else {
-                console.log(req.file)
-                stripe.findByIdAndUpdate({ _id: data._id }, { $set: { userId: Id } })
+                candidate_stripe.findByIdAndUpdate({ _id: data._id }, { $set: { userId: Id } })
                     .exec((err, stripeData) => {
                         if (err) {
                             res.send({ error: 'user id is not add in stripe' })
@@ -53,13 +52,13 @@ exports.candidate_create = (req, res) => {
 
 
 exports.candidate_read = (req, res) => {
-    stripe.find({ $or: [{ userId: req.params.userId }, { status: 'Admin' }] })
+    candidate_stripe.find({ $or: [{ userId: req.params.userId }, { status: 'Admin' }] })
         .then((stripe) => {
             if (stripe.length > 0) {
                 res.send(stripe)
             }
             else {
-                res.send({ msg: 'stripe is empty' })
+                res.send({ msg: 'candidate is empty' })
             }
         }).catch((err) => {
             res.send(err)
@@ -67,18 +66,18 @@ exports.candidate_read = (req, res) => {
 };
 
 exports.candidate_update = (req, res) => {
-    const uid = req.params.stripeId;
-    stripe.findByIdAndUpdate({ _id: uid }, req.body)
+    const uid = req.params.candidateId;
+    candidate_stripe.findByIdAndUpdate({ _id: uid }, req.body)
         .then((result) => {
             if (req.file) {
                 cloudUrl.imageUrl(req.file).then((expimgUrl) => {
-                    stripe.findByIdAndUpdate(result._id, { $set: { stripe_image: expimgUrl } })
+                    candidate_stripe.findByIdAndUpdate(result._id, { $set: { stripe_image: expimgUrl } })
                         .exec((err, updateStripe) => {
                             if (err) {
                                 res.send({ error: 'image url is not add in stripe' })
                             }
                             else {
-                                res.send({ error: 'stripe is update with image successfully' })
+                                res.send({ error: 'candidate is update with image successfully' })
                             }
                         })
                 }).catch((error) => {
@@ -86,7 +85,7 @@ exports.candidate_update = (req, res) => {
                 })
             } else {
                 res.send({
-                    msg: 'candidate tripe is updated successfully',
+                    msg: 'candidate is updated successfully',
                     status: "success"
                 })
             }
@@ -95,8 +94,8 @@ exports.candidate_update = (req, res) => {
         });
 }
 exports.candidate_detail = (req, res) => {
-    const id = req.params.stripeId
-    stripe.findById(id)
+    const id = req.params.candidateId
+    candidate_stripe.findById(id)
         .select('candidateName')
         .populate('manage_stripe')
         .then((result) => {
@@ -107,13 +106,20 @@ exports.candidate_detail = (req, res) => {
 };
 
 exports.candidate_remove = (req, res) => {
-    var uid = req.params.stripeId;
-    stripe.remove({ _id: uid })
-        .then((resp) => {
-            res.json({ data: resp, message: "candidate stripe deleted succesfuly" });
-        }).catch((err) => {
-            res.send(err)
-        })
+    try {
+        var uid = req.params.candidateId;
+        candidate_stripe.remove({ _id: uid })
+            .then((resp) => {
+                res.json({ success: true, message: "candidate deleted succesfuly" });
+            }).catch((err) => {
+                res.send({ error: err.message.replace(/\"/g, ""), success: false });
+            })
+
+    } catch (err) {
+        res.send({ error: err.message.replace(/\"/g, ""), success: false });
+
+    }
+
 };
 
 
