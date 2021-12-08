@@ -18,4 +18,4 @@ const managestripeSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-module.exports = mongoose.model("manageStripe", managestripeSchema);
+module.exports = mongoose.model("manageCandidatesStripe", managestripeSchema);
