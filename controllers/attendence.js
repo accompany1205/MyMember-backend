@@ -184,6 +184,7 @@ exports.list_attendence = (req, res) => {
             start_time: 1,
             end_time: 1,
             end_date: 1,
+            createdAt: 1,
             program_color: 1,
             class_attendanceArray: 1,
 
@@ -207,6 +208,7 @@ exports.list_attendence = (req, res) => {
             start_date: 1,
             start_time: 1,
             end_time: 1,
+            createdAt: 1,
             end_date: 1,
             program_color: 1,
             class_attendanceArray: 1,
@@ -239,6 +241,11 @@ exports.list_attendence = (req, res) => {
           }
         },
         { $project: { data: 0, class_attendanceArray: 0 } },
+        {
+          $sort: {
+            createdAt: -1,
+          }
+        },
         // {
         //   $group: {
         //     _id: "$studentId",
