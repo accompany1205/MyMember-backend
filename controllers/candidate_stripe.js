@@ -1,11 +1,18 @@
 const { env } = require("process");
-const stripe = require("../models/stripe");
+const stripe = require("../models/candidates_stripe");
 const cloudUrl = require("../gcloud/imageUrl")
 // var s = require("../uploads")
 
-exports.create = (req, res) => {
+exports.candidate_create = (req, res) => {
     const Id = req.params.userId
-    const stripeObj = new stripe(req.body)
+    const stripeObj = new stripe({
+        "candidateName": req.body.candidateName,
+        "color": req.body.color,
+        "lable": req.body.lable,
+        "total_stripe": req.body.total_stripe,
+        "progression": req.body.progression,
+        "candidate": req.body.candidate
+    })
     stripeObj.save((err, data) => {
         if (err) {
             return res.status(400).json({
@@ -29,6 +36,7 @@ exports.create = (req, res) => {
                 })
             }
             else {
+                console.log(req.file)
                 stripe.findByIdAndUpdate({ _id: data._id }, { $set: { userId: Id } })
                     .exec((err, stripeData) => {
                         if (err) {
@@ -44,7 +52,7 @@ exports.create = (req, res) => {
 };
 
 
-exports.read = (req, res) => {
+exports.candidate_read = (req, res) => {
     stripe.find({ $or: [{ userId: req.params.userId }, { status: 'Admin' }] })
         .then((stripe) => {
             if (stripe.length > 0) {
@@ -58,7 +66,7 @@ exports.read = (req, res) => {
         })
 };
 
-exports.update = (req, res) => {
+exports.candidate_update = (req, res) => {
     const uid = req.params.stripeId;
     stripe.findByIdAndUpdate({ _id: uid }, req.body)
         .then((result) => {
@@ -78,7 +86,7 @@ exports.update = (req, res) => {
                 })
             } else {
                 res.send({
-                    msg: 'stripe is updated successfully',
+                    msg: 'candidate tripe is updated successfully',
                     status: "success"
                 })
             }
@@ -86,10 +94,10 @@ exports.update = (req, res) => {
             res.send(err);
         });
 }
-exports.stripe_detail = (req, res) => {
+exports.candidate_detail = (req, res) => {
     const id = req.params.stripeId
     stripe.findById(id)
-        .select('stripeName')
+        .select('candidateName')
         .populate('manage_stripe')
         .then((result) => {
             res.json(result)
@@ -98,11 +106,11 @@ exports.stripe_detail = (req, res) => {
         });
 };
 
-exports.remove = (req, res) => {
+exports.candidate_remove = (req, res) => {
     var uid = req.params.stripeId;
     stripe.remove({ _id: uid })
         .then((resp) => {
-            res.json({ data: resp, message: "stripe deleted succesfuly" });
+            res.json({ data: resp, message: "candidate stripe deleted succesfuly" });
         }).catch((err) => {
             res.send(err)
         })

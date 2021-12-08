@@ -3,7 +3,7 @@ const candidate_stripe = require("../models/candidates_stripe")
 const addmemberModal = require("../models/addmember");
 const User = require("../models/user")
 const member = require("../models/addmember")
-const stripe = require("../models/stripe");
+const stripe = require("../models/candidates_stripe");
 const mongo = require('mongoose')
 
 exports.join_notjoin = async(req,res)=>{

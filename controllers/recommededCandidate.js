@@ -4,7 +4,7 @@ const Member = require('../models/addmember');
 const RecommendedCandidateModel = require('../models/recommendedCandidate');
 const RegisterdForTest = require('../models/registerdForTest');
 const ProgramModel = require('../models/program');
-const Stripe = require('../models/stripe');
+const Stripe = require('../models/candidates_stripe');
 
 
 /**This api belongs to studend_program_rank_history;
