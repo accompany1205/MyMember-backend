@@ -181,7 +181,10 @@ exports.list_attendence = (req, res) => {
             program_name: 1,
             class_name: 1,
             start_date: 1,
+            start_time: 1,
+            end_time: 1,
             end_date: 1,
+            createdAt: 1,
             program_color: 1,
             class_attendanceArray: 1,
 
@@ -203,11 +206,16 @@ exports.list_attendence = (req, res) => {
             program_name: 1,
             class_name: 1,
             start_date: 1,
+            start_time: 1,
+            end_time: 1,
+            createdAt: 1,
             end_date: 1,
             program_color: 1,
             class_attendanceArray: 1,
             "data.firstName": 1,
             "data.lastName": 1,
+            "data.notes": 1,
+            "data.primaryPhone": 1,
             "data.memberprofileImage": 1,
             "data._id": 1
           }
@@ -233,6 +241,11 @@ exports.list_attendence = (req, res) => {
           }
         },
         { $project: { data: 0, class_attendanceArray: 0 } },
+        {
+          $sort: {
+            createdAt: -1,
+          }
+        },
         // {
         //   $group: {
         //     _id: "$studentId",
@@ -478,6 +491,20 @@ exports.getStudentAttendence = (req, res) => {
   }
 
 };
+
+exports.searchAttendance = async (req,res) => {
+  const search = req.query.search;
+  try{
+    const data = await schedule.find({
+      $or: [
+        {program_name : {$regex: search, '$options': 'i'}},
+        {class_name : {$regex: search, '$options': 'i'}}],
+      })
+      res.send({success:true, msg:'filtered attendance', data})
+  }catch(err){  
+    console.log(err)
+  }
+}
 
 // exports.getStudentAttendence = async (req, res) => {
 //   let studentId = req.params.studentId
