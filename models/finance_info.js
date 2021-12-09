@@ -65,10 +65,6 @@ const Finance_infoSchema = new schema(
     surchargeIndicator: {
       type: Number,
     },
-    subscription_id: {
-      type: Number,
-    },
-    transactionId: {},
     studentId: {
       type: String
     },

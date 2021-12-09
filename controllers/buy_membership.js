@@ -382,7 +382,7 @@ exports.remove = (req, res) => {
 //       due_every: Joi.string().required(),
 //       due_every_month: Joi.string().required(),
 //       pay_inout: Joi.string().required(),
-//       userId: Joi.string().required(), 
+//       userId: Joi.string().required(),
 //     });
 
 //     await buyMembershipSchema.validateAsync(req.body);
@@ -504,12 +504,16 @@ exports.buyMembership = async (req, res) => {
   const studentId = req.params.studentId;
   let valorPayload = req.body.valorPayload;
   let membershipData = req.body.membership_details;
-  const Address = valorPayload.address;
+  const Address = valorPayload ? valorPayload.address : "";
   let memberShipDoc;
   membershipData.userId = userId;
   try {
     if (membershipData.isEMI) {
-      if (membershipData.payment_time > 0 && membershipData.balance > 0 && membershipData.payment_type != "pif") {
+      if (
+        membershipData.payment_time > 0 &&
+        membershipData.balance > 0 &&
+        membershipData.payment_type != "pif"
+      ) {
         membershipData.schedulePayments = createEMIRecord(
           membershipData.payment_time,
           membershipData.payment_money,
@@ -518,18 +522,17 @@ exports.buyMembership = async (req, res) => {
           membershipData.payment_type
         );
         membershipData.membership_status = "Active";
-        valorPayload.descriptor = "BETA TESTING";
-        valorPayload.product_description = "Mymember brand Product";
-        valorPayload.surchargeIndicator =  1;
         if (valorPayload) {
+          valorPayload.descriptor = "BETA TESTING";
+          valorPayload.product_description = "Mymember brand Product";
+          valorPayload.surchargeIndicator = 1;
           valorPayload = { ...valorPayload, ...getUidAndInvoiceNumber() };
           const FormatedPayload = getFormatedPayload(valorPayload);
           const resp = await valorTechPaymentGateWay.addSubscription(
             FormatedPayload
           );
-          console.log("PRALHJAD " ,resp)
           if (resp.data.error_code == 00) {
-            valorPayload.subscription_id = resp.data.subscription_id;
+            membershipData.subscription_id = resp.data.subscription_id;
             valorPayload.address = Address;
             valorPayload.userId = userId;
             valorPayload.studentId = studentId;
@@ -557,21 +560,30 @@ exports.buyMembership = async (req, res) => {
           res.send(memberShipDoc);
         }
       } else {
-        res.send({ msg: "payment type should be weekly/monthly", success: false });
+        res.send({
+          msg: "payment type should be weekly/monthly",
+          success: false,
+        });
       }
     } else {
-      if (!membershipData.isEMI && membershipData.balance == 0 && membershipData.payment_type === "pif") {
+      if (
+        !membershipData.isEMI &&
+        membershipData.balance == 0 &&
+        membershipData.payment_type == "pif"
+      ) {
         membershipData.due_status = "paid";
         membershipData.membership_status = "Active";
         if (valorPayload) {
           const { uid } = getUidAndInvoiceNumber();
           valorPayload = { ...valorPayload, uid };
+          valorPayload.surchargeIndicator = 1;
           const FormatedPayload = getFormatedPayload(valorPayload);
           const resp = await valorTechPaymentGateWay.saleSubscription(
             FormatedPayload
           );
+
           if (resp.data.error_no === "S00") {
-            valorPayload.transactionId = {
+            membershipData.transactionId = {
               rrn: resp.data.rrn,
               txnid: resp.data.txnid,
               token: resp.data.token,
@@ -593,7 +605,7 @@ exports.buyMembership = async (req, res) => {
               });
             }
           } else {
-            res.send({ msg: resp.data.desc, success: false });
+            res.send({ msg: resp.data.mesg, success: false });
           }
         } else {
           memberShipDoc = await createMemberShipDocument(
@@ -637,7 +649,10 @@ function createMemberShipDocument(membershipData, studentId) {
           update,
           (err, stdData) => {
             if (err) {
-              resolve({ msg: "membership id is not add in student", success: false });
+              resolve({
+                msg: "membership id is not add in student",
+                success: false,
+              });
             } else {
               buyMembership
                 .findOneAndUpdate(
@@ -653,13 +668,13 @@ function createMemberShipDocument(membershipData, studentId) {
                   if (err) {
                     resolve({
                       msg: "student id is not add in buy membership",
-                      success: false
+                      success: false,
                     });
                   } else {
                     resolve({
                       msg: "membership purchase successfully",
                       data: result,
-                      success: true
+                      success: true,
                     });
                   }
                 });
@@ -672,13 +687,28 @@ function createMemberShipDocument(membershipData, studentId) {
 }
 
 function createFinanceDoc(data) {
+  const { studentId } = data;
   return new Promise((resolve, reject) => {
     const financeData = new Finance_infoSchema(data);
-    financeData.save((err, data) => {
-      if (err) {
-        resolve({ success: false, msg: "Finance data is not stored!" });
-      } else {
+    Finance_infoSchema.find({ studentId: studentId }).exec((err, data) => {
+      if (data.length) {
         resolve({ success: true });
+      } else {
+        financeData.save((err, Fdata) => {
+          if (err) {
+            resolve({ success: false, msg: "Finance data is not stored!" });
+          } else {
+            AddMember.findByIdAndUpdate(studentId, {
+              $push: { finance_details: Fdata._id },
+            }).exec((err, data) => {
+              if (data) {
+                resolve({ success: true });
+              } else {
+                resolve({ success: false });
+              }
+            });
+          }
+        });
       }
     });
   });
@@ -757,54 +787,62 @@ exports.thismonthMembership = async (req, res) => {
           membership_status: 1,
           expiry_date: { $toDate: "$expiry_date" },
           studentInfo: 1,
-        }
+        },
       },
       {
         $lookup: {
           from: "members",
           localField: "studentInfo",
           foreignField: "_id",
-          as: 'data'
-        }
+          as: "data",
+        },
       },
       {
         $match: {
           $expr: { $eq: [{ $month: "$expiry_date" }, { $month: new Date() }] },
-        }
+        },
       },
       {
-        "$group": {
+        $group: {
           _id: "$data._id",
 
           no_of_Memberships: { $sum: 1 },
-          firstName: { "$first": '$data.firstName' },
-          lastName: { "$first": '$data.lastName' },
-          program: { "$first": '$data.program' },
-          notes: { "$first": '$data.notes' },
-          primaryPhone: { "$first": '$data.primaryPhone' },
-          studentType: { "$first": '$data.studentType' },
-          status: { "$first": '$data.status' },
+          firstName: { $first: "$data.firstName" },
+          lastName: { $first: "$data.lastName" },
+          program: { $first: "$data.program" },
+          notes: { $first: "$data.notes" },
+          primaryPhone: { $first: "$data.primaryPhone" },
+          studentType: { $first: "$data.studentType" },
+          status: { $first: "$data.status" },
           memberships: {
-            "$push":
-            {
-              $cond: [{
-                $eq: [{ $month: "$expiry_date" }, { $month: new Date() }]
-              },
-              {
-                membership_name: "$membership_name", membership_status: "$membership_status", expiry_date: "$expiry_date", days_till_Expire: {
-                  $multiply: [{
-                    $floor: {
-                      $divide: [{ $subtract: [new Date(), '$expiry_date'] }, 1000 * 60 * 60 * 24]
-                    }
-                  }, -1]
-
-                }
-              },
-                "$$REMOVE"
-              ]
-            }
-          }
-        }
+            $push: {
+              $cond: [
+                {
+                  $eq: [{ $month: "$expiry_date" }, { $month: new Date() }],
+                },
+                {
+                  membership_name: "$membership_name",
+                  membership_status: "$membership_status",
+                  expiry_date: "$expiry_date",
+                  days_till_Expire: {
+                    $multiply: [
+                      {
+                        $floor: {
+                          $divide: [
+                            { $subtract: [new Date(), "$expiry_date"] },
+                            1000 * 60 * 60 * 24,
+                          ],
+                        },
+                      },
+                      -1,
+                    ],
+                  },
+                },
+                "$$REMOVE",
+              ],
+            },
+          },
+        },
       },
       { $unwind: "$_id" },
       { $unwind: "$firstName" },
@@ -816,19 +854,22 @@ exports.thismonthMembership = async (req, res) => {
       { $unwind: "$status" },
       {
         $sort: {
-          firstName: 1
-        }
+          firstName: 1,
+        },
       },
       {
         $facet: {
-          paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+          paginatedResults: [
+            { $skip: pagination.skip },
+            { $limit: pagination.limit },
+          ],
           totalCount: [
             {
-              $count: 'count'
-            }
-          ]
-        }
-      }
+              $count: "count",
+            },
+          ],
+        },
+      },
     ])
     .exec((err, memberdata) => {
       if (err) {
@@ -836,16 +877,18 @@ exports.thismonthMembership = async (req, res) => {
           error: err,
         });
       } else {
-        let data = memberdata[0].paginatedResults
+        let data = memberdata[0].paginatedResults;
         if (data.length > 0) {
-          res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
-
+          res.send({
+            data: data,
+            totalCount: memberdata[0].totalCount[0].count,
+            success: true,
+          });
         } else {
-          res.send({ msg: 'data not found', success: false });
+          res.send({ msg: "data not found", success: false });
         }
       }
     });
-
 };
 
 exports.expiredMembership = async (req, res) => {
@@ -864,50 +907,55 @@ exports.expiredMembership = async (req, res) => {
           membership_status: 1,
           expiry_date: { $toDate: "$expiry_date" },
           studentInfo: 1,
-        }
+        },
       },
       {
         $lookup: {
           from: "members",
           localField: "studentInfo",
           foreignField: "_id",
-          as: 'data'
-        }
+          as: "data",
+        },
       },
       {
         $match: {
-          expiry_date: { $lte: new Date() }
-        }
+          expiry_date: { $lte: new Date() },
+        },
       },
       {
-        "$group": {
+        $group: {
           _id: "$data._id",
 
           no_of_Memberships: { $sum: 1 },
-          firstName: { "$first": '$data.firstName' },
-          lastName: { "$first": '$data.lastName' },
-          program: { "$first": '$data.program' },
-          notes: { "$first": '$data.notes' },
-          primaryPhone: { "$first": '$data.primaryPhone' },
-          studentType: { "$first": '$data.studentType' },
-          status: { "$first": '$data.status' },
+          firstName: { $first: "$data.firstName" },
+          lastName: { $first: "$data.lastName" },
+          program: { $first: "$data.program" },
+          notes: { $first: "$data.notes" },
+          primaryPhone: { $first: "$data.primaryPhone" },
+          studentType: { $first: "$data.studentType" },
+          status: { $first: "$data.status" },
           memberships: {
-            "$push":
-            {
+            $push: {
               $cond: [
-                { $lte: ["$expiry_date", new Date] },
+                { $lte: ["$expiry_date", new Date()] },
                 {
-                  membership_name: "$membership_name", membership_status: "Expired", expiry_date: "$expiry_date", dayssince: {
+                  membership_name: "$membership_name",
+                  membership_status: "Expired",
+                  expiry_date: "$expiry_date",
+                  dayssince: {
                     $floor: {
-                      $divide: [{ $subtract: [new Date(), '$expiry_date'] }, 1000 * 60 * 60 * 24]
-                    }
-                  }
+                      $divide: [
+                        { $subtract: [new Date(), "$expiry_date"] },
+                        1000 * 60 * 60 * 24,
+                      ],
+                    },
+                  },
                 },
-                "$$REMOVE"
-              ]
-            }
-          }
-        }
+                "$$REMOVE",
+              ],
+            },
+          },
+        },
       },
       { $unwind: "$_id" },
       { $unwind: "$firstName" },
@@ -919,19 +967,22 @@ exports.expiredMembership = async (req, res) => {
       { $unwind: "$status" },
       {
         $sort: {
-          firstName: 1
-        }
+          firstName: 1,
+        },
       },
       {
         $facet: {
-          paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+          paginatedResults: [
+            { $skip: pagination.skip },
+            { $limit: pagination.limit },
+          ],
           totalCount: [
             {
-              $count: 'count'
-            }
-          ]
-        }
-      }
+              $count: "count",
+            },
+          ],
+        },
+      },
     ])
     .exec((err, memberdata) => {
       if (err) {
@@ -939,12 +990,15 @@ exports.expiredMembership = async (req, res) => {
           error: err,
         });
       } else {
-        let data = memberdata[0].paginatedResults
+        let data = memberdata[0].paginatedResults;
         if (data.length > 0) {
-          res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
-
+          res.send({
+            data: data,
+            totalCount: memberdata[0].totalCount[0].count,
+            success: true,
+          });
         } else {
-          res.send({ msg: 'data not found', success: false });
+          res.send({ msg: "data not found", success: false });
         }
       }
     });
