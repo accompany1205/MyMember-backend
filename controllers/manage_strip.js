@@ -1,10 +1,10 @@
 const { env } = require("process");
-const manageStripe = require("../models/manage_strip");
-const stripe = require("../models/candidate_stripe");
+const manageCandidatesStripe = require("../models/manage_strip");
+const candidate_stripe = require("../models/candidate_stripe");
 const cloudenary = require("cloudinary").v2
 
 exports.create = (req, res) => {
-    const managestripe = new manageStripe(req.body)
+    const managestripe = new manageCandidatesStripe(req.body)
     managestripe.save((err, data) => {
         if (err) {
             res.send({ error: 'manage stripe is not add' })
@@ -28,13 +28,13 @@ exports.create = (req, res) => {
                         if (err) return res.send(err)
                         const fs = require('fs')
                         fs.unlinkSync(path)
-                        manageStripe.findByIdAndUpdate(data._id, { $set: { manage_stripe_image: image.url } })
+                        manageCandidatesStripe.findByIdAndUpdate(data._id, { $set: { manage_stripe_image: image.url } })
                             .exec((err, stripedata) => {
                                 if (err) {
                                     res.send({ error: 'image is not add in manage stripe' })
                                 }
                                 else {
-                                    stripe.updateOne({ candidateName: req.body.stripeName }, { $push: { manage_stripe: data._id } })
+                                    candidate_stripe.updateOne({ candidateName: req.body.stripeName }, { $push: { "manageCandidatesStripe": data._id } })
                                         .exec((err, data) => {
                                             if (err) {
                                                 res.send({ error: 'manage stripe is not add in stripe' })
@@ -49,7 +49,7 @@ exports.create = (req, res) => {
                 );
             }
             else {
-                stripe.updateOne({ candidateName: req.body.stripeName }, { $push: { manage_stripe: data._id } })
+                candidate_stripe.updateOne({ candidateName: req.body.stripeName }, { $push: { manageCandidatesStripe: data._id } })
                     .exec((err, stripe_data) => {
                         if (err) {
                             res.send({ error: 'manage stripe is not add in stripe' })
@@ -75,7 +75,7 @@ exports.create = (req, res) => {
 
 exports.update = (req, res) => {
     const manage_stripeId = req.params.manage_stripeId;
-    manageStripe.updateOne({ _id: manage_stripeId }, req.body)
+    manageCandidatesStripe.updateOne({ _id: manage_stripeId }, req.body)
         .then((result) => {
             if (req.file) {
                 const cloudenary = require("cloudinary").v2
@@ -96,7 +96,7 @@ exports.update = (req, res) => {
                         if (err) return res.send(err)
                         const fs = require('fs')
                         fs.unlinkSync(path)
-                        manageStripe.findByIdAndUpdate(manage_stripeId, { $set: { manage_stripe_image: image.url } })
+                        manageCandidatesStripe.findByIdAndUpdate(manage_stripeId, { $set: { manage_stripe_image: image.url } })
                             .then((response) => {
                                 res.send({ msg: 'manage stripe is update with image', success: true })
                             });
@@ -111,7 +111,7 @@ exports.update = (req, res) => {
 }
 exports.manage_stripe_detail = (req, res) => {
     const manage_stripeId = req.params.manage_stripeId
-    manageStripe.findById(manage_stripeId)
+    manageCandidatesStripe.findById(manage_stripeId)
         .then((result) => {
             res.json(result)
         }).catch((err) => {
@@ -121,12 +121,12 @@ exports.manage_stripe_detail = (req, res) => {
 
 exports.remove = (req, res) => {
     var manage_stripeId = req.params.manage_stripeId;
-    manageStripe.remove({ _id: manage_stripeId }, (err, data) => {
+    manageCandidatesStripe.remove({ _id: manage_stripeId }, (err, data) => {
         if (err) {
             res.send({ error: 'manage stripe is not delete', success: false })
         }
         else {
-            stripe.update({ "manage_stripe": manage_stripeId }, { $pull: { "manage_stripe": manage_stripeId } },
+            candidate_stripe.update({ "manage_stripe": manage_stripeId }, { $pull: { "manageCandidatesStripe": manage_stripeId } },
                 function (err, data) {
                     if (err) {
                         res.send({ error: 'manage stripe is not delete from stripe', success: false })

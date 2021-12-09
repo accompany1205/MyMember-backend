@@ -28,10 +28,10 @@ const stripeSchema = new schema(
         stripe_image: {
             type: String
         },
-        manage_stripe: [
+        manageCandidatesStripe: [
             {
                 type: schema.Types.ObjectId,
-                ref: 'manageStripe'
+                ref: 'manageCandidatesStripe'
             },
         ],
         userId: {
