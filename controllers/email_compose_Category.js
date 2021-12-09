@@ -85,12 +85,6 @@ exports.sendEmail = async (req, res) => {
         } else {
             to = to ? JSON.parse(to): [];
             smartLists = smartLists ? JSON.parse(smartLists): [];
-            // if (!to && !smartLists) {
-            //     throw new Error("Select atleat send-to or smart-List")
-            // }
-            // if (to && smartLists) {
-            //     throw new Error("Either select send-To or smart-list")
-            // }
             if (!to.lenght) {
                 smartLists.map(lists => {
                     to = [...to, ...lists.smrtList]
@@ -110,7 +104,7 @@ exports.sendEmail = async (req, res) => {
             const emailData = {
                 sendgrid_key: process.env.SENDGRID_API_KEY,
                 to: to,
-                from: process.env.from_email,
+                from:"diwakar17@nextlevelmedia.com",
                 // from_name: 'noreply@gmail.com',
                 subject: req.body.subject,
                 html: req.body.template,
