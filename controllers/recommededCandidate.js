@@ -88,141 +88,159 @@ const updateStudentsById = async (studentId) => {
 }
 
 exports.promoteTheStudentStripe = async (req, res) => {
-    let stripeInfo = req.body;
-    let recommededCandidateId = req.params.recommededCandidateId;
-    if (!recommededCandidateId.length) {
-        return res.json({
-            status: false,
-            msg: "Please give recommededCandidateId in the params!!"
-        })
-    }
-    let recommendedStudent = await RecommendedCandidateModel.findById(recommededCandidateId);
-    console.log(recommendedStudent)
-    if (!recommendedStudent) {
-        return res.json({
-            status: false,
-            msg: "There is no any studend available with this id!!"
-        })
-    }
-    let {
-        studentId,
-        current_stripe
-    } = recommendedStudent;
-    let stripeDetails = await Stripe.findById(stripeInfo.stripeId)
-    if (!stripeDetails) {
-        return res.json({
-            status: false,
-            msg: "There is some issue while fetching Stripe!!"
-        })
-    }
-
-    let {
-        total_stripe
-    } = stripeDetails;
-
-
-    if (!(current_stripe < total_stripe)) {
-        return res.json({
-            status: true,
-            msg: "The meximum stripe limit has been reached!"
-        })
-    }
-
-    let updateStripeIntoRecommededCandidate = await RecommendedCandidateModel.findOneAndUpdate({
-        "_id": recommededCandidateId
-    }, {
-        "stripeId": stripeInfo.stripeId,
-        "stripeName": stripeInfo.stripeName,
-        "current_stripe": current_stripe + 1,
-        "lastStripeUpdatedDate": new Date()
-    }, {
-        new: true
-    })
-    if (!updateStripeIntoRecommededCandidate) {
-        res.json({
-            status: false,
-            msg: "Having some issue while updating student with new stripe!!"
-        })
-    }
-    let {
-        current_rank_name,
-        recommededDate,
-        lastStripeUpdatedDate
-    } = updateStripeIntoRecommededCandidate
-
-    let history = {
-        "stripeId": stripeInfo.stripeId,
-        "stripeName": stripeInfo.stripeName,
-        "current_rank_name": current_rank_name,
-        "current_stripe": current_stripe + 1,
-        "recommededDate": recommededDate,
-        "lastStripeUpdatedDate": lastStripeUpdatedDate
-    }
-    let updateStripeIntoStudent = await Member.findOneAndUpdate({
-        "_id": studentId
-    }, {
-        "current_stripe": current_stripe + 1,
-        $push: {
-            rank_update_history: history
+    try {
+        let stripeInfo = req.body;
+        let recommededCandidateId = req.params.recommededCandidateId;
+        if (!recommededCandidateId.length) {
+            return res.json({
+                success: false,
+                msg: "Please give recommededCandidateId in the params!!"
+            })
         }
-    }, {
-        new: true
-    })
-    return res.json({
-        status: true,
-        msg: "The stripe got updated successfully!",
-        data: updateStripeIntoStudent
-    })
+        let recommendedStudent = await RecommendedCandidateModel.findById(recommededCandidateId);
+        console.log(recommendedStudent)
+        if (!recommendedStudent) {
+            return res.json({
+                success: false,
+                msg: "There is no any studend available with this id!!"
+            })
+        }
+        let {
+            studentId,
+            current_stripe
+        } = recommendedStudent;
+        let stripeDetails = await Stripe.findById(stripeInfo.stripeId)
+        if (!stripeDetails) {
+            return res.json({
+                success: false,
+                msg: "There is some issue while fetching Stripe!!"
+            })
+        }
 
-    //Todo - Monu - Please write a logic with the stripe and programs.
+        let {
+            total_stripe
+        } = stripeDetails;
+
+
+        if (!(current_stripe < total_stripe)) {
+            return res.json({
+                success: true,
+                msg: "The meximum stripe limit has been reached!"
+            })
+        }
+
+        let updateStripeIntoRecommededCandidate = await RecommendedCandidateModel.findOneAndUpdate({
+            "_id": recommededCandidateId
+        }, {
+            "stripeId": stripeInfo.stripeId,
+            "stripeName": stripeInfo.stripeName,
+            "current_stripe": current_stripe + 1,
+            "lastStripeUpdatedDate": new Date()
+        }, {
+            new: true
+        })
+        if (!updateStripeIntoRecommededCandidate) {
+            res.json({
+                success: false,
+                msg: "Having some issue while updating student with new stripe!!"
+            })
+        }
+        let {
+            current_rank_name,
+            recommededDate,
+            lastStripeUpdatedDate
+        } = updateStripeIntoRecommededCandidate
+
+        let history = {
+            "stripeId": stripeInfo.stripeId,
+            "stripeName": stripeInfo.stripeName,
+            "current_rank_name": current_rank_name,
+            "current_stripe": current_stripe + 1,
+            "recommededDate": recommededDate,
+            "lastStripeUpdatedDate": lastStripeUpdatedDate
+        }
+        let updateStripeIntoStudent = await Member.findOneAndUpdate({
+            "_id": studentId
+        }, {
+            "current_stripe": current_stripe + 1,
+            $push: {
+                rank_update_history: history
+            }
+        }, {
+            new: true
+        })
+        return res.json({
+            success: true,
+            msg: "The stripe got updated successfully!",
+            data: updateStripeIntoStudent
+        })
+
+        //Todo - Monu - Please write a logic with the stripe and programs.
+    } catch (err) {
+        res.send({ error: err.message.replace(/\"/g, ""), success: false });
+
+    }
+
 }
 
 exports.getRecommendedCandidateStudents = async (req, res) => {
-    let userId = req.params.userId;
-    if (!userId) {
+    try {
+        let userId = req.params.userId;
+        if (!userId) {
+            res.json({
+                success: false,
+                msg: "Please give userId into the params!!"
+            })
+        }
+
+        let students = await RecommendedCandidateModel.find({
+            "userId": userId
+        });
+        if (!students.length) {
+            res.json({
+                success: false,
+                msg: "There no data available for this query!!"
+            })
+        }
         res.json({
-            status: false,
-            msg: "Please give userId into the params!!"
+            success: true,
+            msg: "Please find the data!!",
+            data: students
         })
+    } catch (err) {
+        res.send({ error: err.message.replace(/\"/g, ""), success: false });
+
     }
 
-    let students = await RecommendedCandidateModel.find({
-        "userId": userId
-    });
-    if (!students.length) {
-        res.json({
-            status: false,
-            msg: "There no data available for this query!!"
-        })
-    }
-    res.json({
-        status: true,
-        msg: "Please find the data!!",
-        data: students
-    })
 
 
 }
 
 exports.removeFromRecomended = async (req, res) => {
-    let recommededId = req.params.recommededCandidateId;
-    if (!recommededId) {
-        res.json({
-            status: false,
-            msg: "Please give the recomended id in params!"
-        })
-    }
-    let isDeleted = await RecommendedCandidateModel.findByIdAndDelete(recommededId);
-    if (!isDeleted) {
-        res.json({
-            status: false,
-            msg: "Unable to remove the student!!"
-        })
-    } else {
-        res.json({
-            status: true,
-            msg: "The recommeded student successfully removed from the list!!"
-        })
+    try {
+        let recommededId = req.params.recommededCandidateId;
+        if (!recommededId.length) {
+            return res.json({
+                success: false,
+                msg: "Please give the recomended id in params!"
+            })
+        }
+        let isDeleted = await RecommendedCandidateModel.findByIdAndDelete(recommededId);
+        if (!isDeleted) {
+            res.json({
+                success: false,
+                msg: "Unable to remove the student!!"
+            })
+        } else {
+            res.json({
+                success: true,
+                msg: "The recommeded student successfully removed from the list!!"
+            })
+
+        }
+    } catch (err) {
+        res.send({ error: err.message.replace(/\"/g, ""), success: false });
 
     }
+
 }
