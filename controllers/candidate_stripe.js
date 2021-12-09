@@ -5,9 +5,9 @@ const cloudUrl = require("../gcloud/imageUrl")
 
 exports.candidate_create = (req, res) => {
     try {
+        console.log(req.file)
         const Id = req.params.userId
         const stripeObj = new candidate_stripe({
-            "candidateName": req.body.candidateName,
             "color": req.body.color,
             "lable": req.body.lable,
             "total_stripe": req.body.total_stripe,
@@ -58,7 +58,7 @@ exports.candidate_create = (req, res) => {
 exports.candidate_read = (req, res) => {
     try {
         candidate_stripe.find({ $or: [{ userId: req.params.userId }, { status: 'Admin' }] })
-            .populate("manageCandidatesStripe")
+            .populate("stripes")
             .then((stripe) => {
                 if (stripe.length > 0) {
                     res.send(stripe)
@@ -117,8 +117,8 @@ exports.candidate_detail = (req, res) => {
     try {
         const id = req.params.candidateId
         candidate_stripe.findById(id)
-            .select('candidateName')
-            .populate('manage_stripe')
+            .select('candidate')
+            .populate('stripes')
             .then((result) => {
                 res.json(result)
             }).catch((err) => {

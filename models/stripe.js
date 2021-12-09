@@ -3,7 +3,11 @@ const { ObjectId } = mongoose.Schema;
 
 const managestripeSchema = new mongoose.Schema(
     {
-        stripeName: {
+        candidate: {
+            type: String,
+            required: true
+        },
+        stripe_name: {
             type: String,
             required: true
         },
@@ -11,11 +15,11 @@ const managestripeSchema = new mongoose.Schema(
             type: Number,
             required: true
         },
-        manage_stripe_image: {
+        stripe_image: {
             type: String
         }
     },
     { timestamps: true }
 );
 
-module.exports = mongoose.model("manageCandidatesStripe", managestripeSchema);
+module.exports = mongoose.model("Stripe", managestripeSchema);
