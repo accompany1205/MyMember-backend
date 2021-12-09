@@ -492,6 +492,20 @@ exports.getStudentAttendence = (req, res) => {
 
 };
 
+exports.searchAttendance = async (req,res) => {
+  const search = req.query.search;
+  try{
+    const data = await schedule.find({
+      $or: [
+        {program_name : {$regex: search, '$options': 'i'}},
+        {class_name : {$regex: search, '$options': 'i'}}],
+      })
+      res.send({success:true, msg:'filtered attendance', data})
+  }catch(err){  
+    console.log(err)
+  }
+}
+
 // exports.getStudentAttendence = async (req, res) => {
 //   let studentId = req.params.studentId
 //   if (!studentId) {
