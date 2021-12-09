@@ -85,7 +85,7 @@ exports.recomendStudent = async (req, res) => {
     })
 
     try {
-        if (!students) {
+        if (!students.length) {
             res.json({
                 status: false,
                 msg: "You haven't selected any student!"

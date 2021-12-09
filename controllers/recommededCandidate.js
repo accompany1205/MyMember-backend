@@ -5,6 +5,7 @@ const RecommendedCandidateModel = require('../models/recommendedCandidate');
 const RegisterdForTest = require('../models/registerdForTest');
 const ProgramModel = require('../models/program');
 const Stripe = require('../models/candidates_stripe');
+const Joi = require('@hapi/joi');
 
 
 /**This api belongs to studend_program_rank_history;
@@ -16,74 +17,87 @@ const Stripe = require('../models/candidates_stripe');
 exports.recomendStudent = async (req, res) => {
     //only accepte array of objects
     let students = req.body;
-    
-    if (!students) {
-        res.json({
-            status: false,
-            msg: "You haven't selected any student!"
-        })
-    }
-    const recommendedCandidates = [];
-    for (let student of students) {
-        let {
-            _id: studentId,
-            status,
-            firstName,
-            lastName,
-            memberprofileImage,
-            current_rank_id,
-            current_rank_name,
-            current_rank_img,
-            current_stripe,
-            userId,
-        } = student;
-        let isStudentExists = await RecommendedCandidateModel.find({
-            "studentId": studentId
-        });
-
-        if (!isStudentExists.length && status == "Active") {
-            recommendedCandidates.push({
-                "fullName": `${firstName} ${lastName}`,
-                "memberprofileImage": memberprofileImage,
-                "studentId": studentId,
-                "userId": userId,
-                "current_stripe": current_stripe,
-                "current_rank_id": current_rank_id,
-                "current_rank_name": current_rank_name,
-                "current_rank_img": current_rank_img,
-                "stripeName":"",
-                "stripeId":""
+    let userId = req.params.userId;
+    let recommendedForcandidateSchema = Joi.object({
+        studentId: Joi.string().required(),
+        firstName: Joi.string().required(),
+        lastName: Joi.string().required(),
+        status: Joi.string().required(),
+        memberprofileImage: Joi.string(),
+        phone: Joi.string(),
+        program: Joi.string().required(),
+        rating: Joi.number().required(),
+        current_stripe: Joi.string(),
+        current_rank_name: Joi.string(),
+        current_rank_name: Joi.string(),
+        userId: Joi.string().required(),
+        next_rank_name: Joi.string(),
+        current_rank_img: Joi.string(),
+        next_rank_img: Joi.string(),
+        isRecommended: Joi.boolean().required()
+    })
+    try {
+        if (!students.length) {
+            res.json({
+                status: students,
+                msg: "You haven't selected any student!"
             })
         }
-    }
-    let recommended = await RecommendedCandidateModel.insertMany(recommendedCandidates);
-    if (!recommended.length) {
-        res.json({
-            statusCode : 422,
-            status: false,
-            msg: "No student selected"
-        })
-    } else {
+        const recommendedCandidates = [];
+        var alredyRecomend = "";
+        const promises = [];
+
+        for (let student of students) {
+            if (!student.isRecommended && student.program) {
+                student.userId = userId;
+                await recommendedForcandidateSchema.validateAsync(student);
+                recommendedCandidates.push(student)
+                let studentId = student.studentId
+                promises.push(updateStudentsById(studentId))
+            } else {
+                alredyRecomend += `${student.firstName} ${student.lastName}, `
+            }
+        }
+        await Promise.all(promises);
+        await RecommendedCandidateModel.insertMany(recommendedCandidates);
+
+        if (alredyRecomend) {
+            return res.send({
+                recommendedCandidates,
+                success: false,
+                msg: `${alredyRecomend},  either these students are alredy in recommended list or program is not selected`
+            })
+        }
+
+
         res.json({
             status: true,
             msg: "Selected students got recomended successfully.",
-            data: recommended
+            data: recommendedCandidates
         })
+
+
+    } catch (error) {
+        res.send({ error: error.message.replace(/\"/g, ""), success: false })
     }
+}
 
-};
 
+const updateStudentsById = async (studentId) => {
+    return Member.findByIdAndUpdate({ _id: studentId }, { isRecommended: true })
+}
 
 exports.promoteTheStudentStripe = async (req, res) => {
     let stripeInfo = req.body;
     let recommededCandidateId = req.params.recommededCandidateId;
-    if (!recommededCandidateId) {
+    if (!recommededCandidateId.length) {
         return res.json({
             status: false,
             msg: "Please give recommededCandidateId in the params!!"
         })
     }
     let recommendedStudent = await RecommendedCandidateModel.findById(recommededCandidateId);
+    console.log(recommendedStudent)
     if (!recommendedStudent) {
         return res.json({
             status: false,
@@ -94,7 +108,7 @@ exports.promoteTheStudentStripe = async (req, res) => {
         studentId,
         current_stripe
     } = recommendedStudent;
-    let stripeDetails = await Stripe.findById(stripeInfo.stripeId)  
+    let stripeDetails = await Stripe.findById(stripeInfo.stripeId)
     if (!stripeDetails) {
         return res.json({
             status: false,
@@ -104,8 +118,8 @@ exports.promoteTheStudentStripe = async (req, res) => {
 
     let {
         total_stripe
-    } = stripeDetails;       
-    
+    } = stripeDetails;
+
 
     if (!(current_stripe < total_stripe)) {
         return res.json({
@@ -117,7 +131,7 @@ exports.promoteTheStudentStripe = async (req, res) => {
     let updateStripeIntoRecommededCandidate = await RecommendedCandidateModel.findOneAndUpdate({
         "_id": recommededCandidateId
     }, {
-        "stripeId":stripeInfo.stripeId,
+        "stripeId": stripeInfo.stripeId,
         "stripeName": stripeInfo.stripeName,
         "current_stripe": current_stripe + 1,
         "lastStripeUpdatedDate": new Date()
@@ -137,7 +151,7 @@ exports.promoteTheStudentStripe = async (req, res) => {
     } = updateStripeIntoRecommededCandidate
 
     let history = {
-        "stripeId":stripeInfo.stripeId,
+        "stripeId": stripeInfo.stripeId,
         "stripeName": stripeInfo.stripeName,
         "current_rank_name": current_rank_name,
         "current_stripe": current_stripe + 1,
