@@ -20,7 +20,15 @@ exports.create = (req, res) => {
                                     res.send({ error: 'image url is not add in stripe', success: false })
                                 }
                                 else {
-                                    res.send({ msg: 'stripe is add with image successfully', success: true })
+                                    candidate_stripe.updateOne({ candidate: req.body.candidate }, { $push: { stripes: data._id } })
+                                    .exec((err, stripe_data) => {
+                                        if (err) {
+                                            res.send({ error: 'stripe is not add in stripe' })
+                                        }
+                                        else {
+                                            res.send({ msg: 'stripe is add with image successfully', success: true })
+                                        }
+                                    })
                                 }
                             })
                     }).catch((error) => {

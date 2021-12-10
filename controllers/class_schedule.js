@@ -287,3 +287,21 @@ exports.removeAll = (req, res) => {
 
         })
 };
+
+exports.searchClasses = async (req, res) => {
+    const search = req.query.search;
+
+    try {
+        const data = await User.find({
+            $or: [
+                { class_name: { $regex: search, '$options': 'i' } },
+                { program_name: { $regex: search, '$options': 'i' } },
+            ]
+        }, { username: 1, firstname: 1 })
+
+        res.send(data)
+    } catch (er) {
+        console.log(er);
+    }
+}
+
