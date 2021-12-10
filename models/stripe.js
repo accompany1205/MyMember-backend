@@ -12,7 +12,7 @@ const managestripeSchema = new mongoose.Schema(
             required: true
         },
         stripe_order: {
-            type: Number,
+            type: String,
             required: true
         },
         stripe_image: {

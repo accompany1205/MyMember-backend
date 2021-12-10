@@ -5,7 +5,6 @@ const cloudUrl = require("../gcloud/imageUrl")
 
 exports.candidate_create = (req, res) => {
     try {
-        console.log(req.file)
         const Id = req.params.userId
         const stripeObj = new candidate_stripe({
             "color": req.body.color,
@@ -102,7 +101,7 @@ exports.candidate_update = (req, res) => {
                     })
                 }
             }).catch((err) => {
-                res.send(err);
+                res.send({ error: err.message.replace(/\"/g, ""), success: false });
             });
 
 
