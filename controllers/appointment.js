@@ -30,6 +30,7 @@ exports.appointInfo = (req, res) => {
   const id = req.params.appointId;
   appoint
     .findById(id)
+    .populate('studentInfo','firstName lastName primaryPhone studentType memberprofileImage status')
     .then((result) => {
       res.json(result);
     })
