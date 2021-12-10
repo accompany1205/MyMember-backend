@@ -1,38 +1,37 @@
 const finance_info = require("../models/finance_info");
 const bcrypt = require('bcryptjs')
-
 const addmemberModal = require("../models/addmember");
-const { errorHandler } = require("../helpers/dbErrorHandler");
 const _ = require("lodash");
 
 exports.create = async (req, res) => {
-	const { studentId, userId } = req.params;		
-	const bodyInfo = req.body;
-
-	const expiryDate = new Date(bodyInfo.expiry_year, bodyInfo.expiry_month);
-	const hashedCard_Number = bcrypt.hashSync(bodyInfo.Card_Number, 10)
-	const hashedCard_Cvv = bcrypt.hashSync(bodyInfo.card_cvv, 10)
-	const cardExpiry = {
-		expiryDate,
-		userId,
-	};
-
-	const financeDetails = _.extend(bodyInfo, cardExpiry);
-	financeDetails["studentId"] = studentId;
-	financeDetails["Card_Number"] = hashedCard_Number;
-	financeDetails["card_cvv"] = hashedCard_Cvv;
-
-	const finance = await finance_info.create(financeDetails);
-
-	if (!finance) {
-		res.send({ status: false, error: "finance info is not add" });
+	try {
+		const { studentId, userId } = req.params;		
+		const bodyInfo = req.body;
+	
+		const expiry_date = bodyInfo.expiry_month + bodyInfo.expiry_year;
+		delete bodyInfo.expiry_month;
+		delete bodyInfo.expiry_year;
+		const cardExpiry = {
+			expiry_date,
+			userId,
+			studentId
+		};
+	
+		const financeDetails = _.extend(bodyInfo, cardExpiry);
+		const finance = await finance_info.create(financeDetails);
+	
+		if (!finance) {
+			res.send({ status: false, msg: "finance info is not add" });
+		}
+	
+		const member = await addmemberModal.findByIdAndUpdate({ _id: studentId }, { $push: { finance_details: finance._id } });
+		if (!member) {
+			res.send({ status: false, msg: "finance info is not add in student" });
+		}
+		res.send({ status: true, msg: "finance info is add in student", result: finance });
+	} catch (e) {
+		res.send({success: false, msg: e.message})
 	}
-
-	const member = await addmemberModal.findByIdAndUpdate({ _id: studentId }, { $push: { finance_details: finance._id } });
-	if (!member) {
-		res.send({ status: false, error: "finance info is not add in student" });
-	}
-	res.send({ status: true, msg: "finance info is add in student", result: finance });
 };
 
 exports.read = (req, res) => {
@@ -67,21 +66,13 @@ exports.update = (req, res) => {
 		res.send({ status: false, error: "StudentId or UserId not found in params" });
 	}
 	const bodyInfo = req.body;
-	const expiryDate = new Date(bodyInfo.expiry_year, bodyInfo.expiry_month);
+	const expiry_date = bodyInfo.expiry_month + bodyInfo.expiry_year
+	delete bodyInfo.expiry_month;
+	delete bodyInfo.expiry_year;
 	const cardExpiry = {
-		expiryDate
+		expiry_date
 	};
-
 	const financeDetails = _.extend(bodyInfo, cardExpiry);
-	if (bodyInfo.Card_Number) {
-		const hashedCard_Number = bcrypt.hashSync(bodyInfo.Card_Number, 10)
-		financeDetails["Card_Number"] = hashedCard_Number;
-
-	} if (bodyInfo.card_cvv) {
-		const hashedCard_Cvv = bcrypt.hashSync(bodyInfo.card_cvv, 10)
-		financeDetails["card_cvv"] = hashedCard_Cvv;
-	}
-
 	finance_info
 		.findByIdAndUpdate(financeId, {
 			$set: financeDetails
