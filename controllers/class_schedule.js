@@ -289,19 +289,19 @@ exports.removeAll = (req, res) => {
 };
 
 exports.searchClasses = async (req, res) => {
-    const search = req.query.search;
-
     try {
-        const data = await User.find({
+        const search = req.query.search;
+        const data = await class_schedule.find({
             $or: [
                 { class_name: { $regex: search, '$options': 'i' } },
                 { program_name: { $regex: search, '$options': 'i' } },
+                { start_date: { $regex: search, '$options': 'i' } },
             ]
-        }, { username: 1, firstname: 1 })
-
-        res.send(data)
-    } catch (er) {
-        console.log(er);
+        })
+        res.send({ data, success: false })
+    } catch (err) {
+        res.send({ error: err.message.replace(/\"/g, ""), success: false })
     }
+
 }
 

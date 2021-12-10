@@ -21,14 +21,14 @@ exports.create = (req, res) => {
                                 }
                                 else {
                                     candidate_stripe.updateOne({ candidate: req.body.candidate }, { $push: { stripes: data._id } })
-                                    .exec((err, stripe_data) => {
-                                        if (err) {
-                                            res.send({ error: 'stripe is not add in stripe' })
-                                        }
-                                        else {
-                                            res.send({ msg: 'stripe is add with image successfully', success: true })
-                                        }
-                                    })
+                                        .exec((err, stripe_data) => {
+                                            if (err) {
+                                                res.send({ error: 'stripe is not add in stripe' })
+                                            }
+                                            else {
+                                                res.send({ msg: 'stripe is add with image successfully', success: true })
+                                            }
+                                        })
                                 }
                             })
                     }).catch((error) => {
@@ -74,20 +74,20 @@ exports.update = (req, res) => {
             .then((result) => {
                 if (req.file) {
                     cloudUrl.imageUrl(req.file).then((expimgUrl) => {
-                        stripe.findByIdAndUpdate(data._id, { $set: { userId: Id, stripe_image: expimgUrl } })
+                        stripe.findByIdAndUpdate(stripeId, { $set: { stripe_image: expimgUrl } })
                             .exec((err, updateStripe) => {
                                 if (err) {
                                     res.send({ error: 'image url is not add in stripe', success: false })
                                 }
                                 else {
-                                    res.send({ msg: 'stripe is add with image successfully', success: true })
+                                    res.send({ msg: 'stripe updated with image successfully', success: true })
                                 }
                             })
                     }).catch((error) => {
                         res.send({ error: 'stripe image url is not create', success: false })
                     })
                 } else {
-                    res.send({ msg: 'stripe is updated', success: true })
+                    res.send({ msg: 'stripe updated successfully', success: true })
                 }
             }).catch((err) => {
                 res.send(err);
