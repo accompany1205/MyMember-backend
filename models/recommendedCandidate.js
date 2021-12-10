@@ -2,49 +2,77 @@ const mongoose = require("mongoose");
 
 const recommendedCandidate = new mongoose.Schema({
 
-    memberprofileImage:{
-        type: String
-    },
     studentId: {
+        type: String,
+        required: true
+    },
+    userId: {
         type: String
     },
-    stripeId:{
+    firstName: {
         type: String
     },
-    stripeName:{
+    lastName: {
         type: String
     },
-    userId:{
+    memberprofileImage: {
         type: String
     },
-    fullName: {
+    phone: {
         type: String
     },
-    current_rank_id:{
+    program: {
         type: String
     },
-    current_rannk_img:{
-        type: String
-    },
-    current_rank_name:{
-        type: String
-    },
-    current_stripe:{
-        type: Number,
-        default:0
-    },
-    recommededDate: {
+    lastPromotedDate: {
         type: Date,
-        default: new Date()
+        default: new Date(),
     },
-    lastStripeUpdatedDate: {
-        type: Date
+    rating: {
+        type: Number
     },
-    isDeleted:{
+    current_rank_name: {
+        type: String
+    },
+    current_rank_img: {
+        type: String
+    },
+    next_rank_name: {
+        type: String
+    },
+    next_rank_img: {
+        type: String
+    },
+    candidate: {
+        type: String,
+    },
+    candidate_status: {
+        type: String,
+        default: null
+    },
+    last_stripe_given: {
+        type: String,
+        default: null
+    },
+    stripe_name: {
+        type: String,
+        default: null
+    },
+    current_stripe: {
+        type: String,
+        default: null
+    },
+    next_stripe: {
+        type: String,
+        default: null
+    },
+    isDeleted: {
         type: Boolean,
         default: false
-    }
+    },
 
-}); 
+
+});
+
 
 module.exports = mongoose.model("recommendedCandidate", recommendedCandidate)
