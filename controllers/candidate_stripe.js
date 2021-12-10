@@ -22,7 +22,7 @@ exports.candidate_create = (req, res) => {
             else {
                 if (req.file) {
                     cloudUrl.imageUrl(req.file).then((expimgUrl) => {
-                        candidate_stripe.findByIdAndUpdate(data._id, { $set: { userId: Id, stripe_image: expimgUrl } })
+                        candidate_stripe.findByIdAndUpdate(data._id, { $set: { userId: Id, candidate_image: expimgUrl } })
                             .exec((err, updateStripe) => {
                                 if (err) {
                                     res.send({ error: 'image url is not add in stripe', success: false })
@@ -82,7 +82,7 @@ exports.candidate_update = (req, res) => {
             .then((result) => {
                 if (req.file) {
                     cloudUrl.imageUrl(req.file).then((expimgUrl) => {
-                        candidate_stripe.findByIdAndUpdate(result._id, { $set: { stripe_image: expimgUrl } })
+                        candidate_stripe.findByIdAndUpdate(result._id, { $set: { candidate_image: expimgUrl } })
                             .exec((err, updateStripe) => {
                                 if (err) {
                                     res.send({ error: 'image url is not add in stripe' })

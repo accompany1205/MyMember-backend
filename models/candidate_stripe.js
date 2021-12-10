@@ -25,7 +25,7 @@ const stripeSchema = new schema(
             type: String,
             required: true
         },
-        stripe_image: {
+        candidate_image: {
             type: String
         },
         stripes: [
