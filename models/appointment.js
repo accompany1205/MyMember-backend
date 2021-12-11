@@ -12,8 +12,12 @@ const appointSchema = new schema(
             type: String,
             required: true
         },
-        app_color:{
-            type:String
+        appointment_type: {
+            type: String,
+            required: true
+        },
+        app_color: {
+            type: String
         },
         start_date: {
             type: String,
@@ -22,19 +26,32 @@ const appointSchema = new schema(
         end_date: {
             type: String,
             required: true
-        }, start_time: {
+        },
+        start_time: {
             type: String,
             required: true
         },
         end_time: {
             type: String,
             required: true
-        }, notes: {
+        },
+        notes: {
             type: String,
             required: true
         },
-        userId:{
-            type:schema.Types.ObjectId
+        status: {
+            type: String,
+            default: 'not completed'
+        },
+        studentInfo: [
+            {
+                type: schema.Types.ObjectId,
+                ref: "member",
+                required: true,
+            },
+        ],
+        userId: {
+            type: schema.Types.ObjectId
         }
 
     },

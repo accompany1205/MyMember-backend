@@ -8,13 +8,18 @@ const Finance_infoSchema = new schema(
       enum: ["credit", "debit"],
       default: "credit",
     },
+    credit_card_type: {
+      type: String
+    },
+    status: {
+      type: String,
+      default: "active"
+    },
     uid: {
       type: Number,
-      require: true,
     },
     amount: {
       type: Number,
-      required: true,
     },
     custom_fee: {
       type: Number,
@@ -65,10 +70,6 @@ const Finance_infoSchema = new schema(
     surchargeIndicator: {
       type: Number,
     },
-    subscription_id: {
-      type: Number,
-    },
-    transactionId: {},
     studentId: {
       type: String
     },

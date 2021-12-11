@@ -45,17 +45,16 @@ const recommendedCandidate = new mongoose.Schema({
     },
     candidate: {
         type: String,
-        default: null
     },
     candidate_status: {
         type: String,
         default: null
     },
-    stripe: {
+    last_stripe_given: {
         type: String,
         default: null
     },
-    last_stripe: {
+    stripe_name: {
         type: String,
         default: null
     },

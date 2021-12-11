@@ -2,9 +2,8 @@ require('dotenv').config();
 const User = require('../models/user');
 const Member = require('../models/addmember');
 const RecommendedCandidateModel = require('../models/recommendedCandidate');
-const RegisterdForTest = require('../models/registerdForTest');
-const ProgramModel = require('../models/program');
-const Stripe = require('../models/candidates_stripe');
+const Stripe = require('../models/candidate_stripe');
+// const Stripe = require('../models/stripe');
 const Joi = require('@hapi/joi');
 
 
@@ -27,6 +26,7 @@ exports.recomendStudent = async (req, res) => {
         phone: Joi.string(),
         program: Joi.string().required(),
         rating: Joi.number().required(),
+        candidate: Joi.string(),
         current_stripe: Joi.string(),
         current_rank_name: Joi.string(),
         current_rank_name: Joi.string(),
@@ -89,7 +89,7 @@ const updateStudentsById = async (studentId) => {
 
 exports.promoteTheStudentStripe = async (req, res) => {
     try {
-        let stripeInfo = req.body;
+
         let recommededCandidateId = req.params.recommededCandidateId;
         if (!recommededCandidateId.length) {
             return res.json({
@@ -97,19 +97,23 @@ exports.promoteTheStudentStripe = async (req, res) => {
                 msg: "Please give recommededCandidateId in the params!!"
             })
         }
+
         let recommendedStudent = await RecommendedCandidateModel.findById(recommededCandidateId);
-        console.log(recommendedStudent)
         if (!recommendedStudent) {
             return res.json({
                 success: false,
                 msg: "There is no any studend available with this id!!"
             })
         }
-        let {
+        let date = new Date();
+        const {
             studentId,
-            current_stripe
-        } = recommendedStudent;
-        let stripeDetails = await Stripe.findById(stripeInfo.stripeId)
+            candidate,
+            stripe_name,
+            current_stripe,
+            next_stripe
+        } = req.body;
+        let stripeDetails = await Stripe.find({ candidate })
         if (!stripeDetails) {
             return res.json({
                 success: false,
@@ -117,52 +121,46 @@ exports.promoteTheStudentStripe = async (req, res) => {
             })
         }
 
-        let {
+        let { _id,
             total_stripe
         } = stripeDetails;
 
 
-        if (!(current_stripe < total_stripe)) {
-            return res.json({
-                success: true,
-                msg: "The meximum stripe limit has been reached!"
-            })
-        }
+        // if (!(current_stripe < total_stripe)) {
+        //     return res.json({
+        //         success: true,
+        //         msg: "The meximum stripe limit has been reached!"
+        //     })
+        // }
 
         let updateStripeIntoRecommededCandidate = await RecommendedCandidateModel.findOneAndUpdate({
             "_id": recommededCandidateId
         }, {
-            "stripeId": stripeInfo.stripeId,
-            "stripeName": stripeInfo.stripeName,
-            "current_stripe": current_stripe + 1,
-            "lastStripeUpdatedDate": new Date()
+            "current_stripe": current_stripe,
+            "next_stripe": next_stripe,
+            "candidate": candidate,
+            "stripe_name": stripe_name,
+            "last_stripe_given_date": date
         }, {
             new: true
         })
         if (!updateStripeIntoRecommededCandidate) {
             res.json({
-                success: false,
+                success: updateStripeIntoRecommededCandidate,
                 msg: "Having some issue while updating student with new stripe!!"
             })
         }
-        let {
-            current_rank_name,
-            recommededDate,
-            lastStripeUpdatedDate
-        } = updateStripeIntoRecommededCandidate
 
         let history = {
-            "stripeId": stripeInfo.stripeId,
-            "stripeName": stripeInfo.stripeName,
-            "current_rank_name": current_rank_name,
-            "current_stripe": current_stripe + 1,
-            "recommededDate": recommededDate,
-            "lastStripeUpdatedDate": lastStripeUpdatedDate
+            "current_stripe": current_stripe,
+            "candidate": candidate,
+            "last_stripe_given_date": date
         }
         let updateStripeIntoStudent = await Member.findOneAndUpdate({
             "_id": studentId
         }, {
-            "current_stripe": current_stripe + 1,
+            "last_stripe_given_date": date,
+            "current_stripe": current_stripe,
             $push: {
                 rank_update_history: history
             }

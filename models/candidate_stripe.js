@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const schema = mongoose.Schema
 const stripeSchema = new schema(
     {
-        candidateName: {
+        candidate: {
             type: String,
             trim: true,
             required: true,
@@ -25,13 +25,13 @@ const stripeSchema = new schema(
             type: String,
             required: true
         },
-        stripe_image: {
+        candidate_image: {
             type: String
         },
-        manageCandidatesStripe: [
+        stripes: [
             {
                 type: schema.Types.ObjectId,
-                ref: 'manageCandidatesStripe'
+                ref: 'Stripe'
             },
         ],
         userId: {

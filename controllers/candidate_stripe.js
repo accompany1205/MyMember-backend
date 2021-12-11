@@ -7,7 +7,6 @@ exports.candidate_create = (req, res) => {
     try {
         const Id = req.params.userId
         const stripeObj = new candidate_stripe({
-            "candidateName": req.body.candidateName,
             "color": req.body.color,
             "lable": req.body.lable,
             "total_stripe": req.body.total_stripe,
@@ -23,7 +22,7 @@ exports.candidate_create = (req, res) => {
             else {
                 if (req.file) {
                     cloudUrl.imageUrl(req.file).then((expimgUrl) => {
-                        candidate_stripe.findByIdAndUpdate(data._id, { $set: { userId: Id, stripe_image: expimgUrl } })
+                        candidate_stripe.findByIdAndUpdate(data._id, { $set: { userId: Id, candidate_image: expimgUrl } })
                             .exec((err, updateStripe) => {
                                 if (err) {
                                     res.send({ error: 'image url is not add in stripe', success: false })
@@ -58,7 +57,7 @@ exports.candidate_create = (req, res) => {
 exports.candidate_read = (req, res) => {
     try {
         candidate_stripe.find({ $or: [{ userId: req.params.userId }, { status: 'Admin' }] })
-            .populate("manageCandidatesStripe")
+            .populate("stripes")
             .then((stripe) => {
                 if (stripe.length > 0) {
                     res.send(stripe)
@@ -83,7 +82,7 @@ exports.candidate_update = (req, res) => {
             .then((result) => {
                 if (req.file) {
                     cloudUrl.imageUrl(req.file).then((expimgUrl) => {
-                        candidate_stripe.findByIdAndUpdate(result._id, { $set: { stripe_image: expimgUrl } })
+                        candidate_stripe.findByIdAndUpdate(result._id, { $set: { candidate_image: expimgUrl } })
                             .exec((err, updateStripe) => {
                                 if (err) {
                                     res.send({ error: 'image url is not add in stripe' })
@@ -102,7 +101,7 @@ exports.candidate_update = (req, res) => {
                     })
                 }
             }).catch((err) => {
-                res.send(err);
+                res.send({ error: err.message.replace(/\"/g, ""), success: false });
             });
 
 
@@ -117,8 +116,8 @@ exports.candidate_detail = (req, res) => {
     try {
         const id = req.params.candidateId
         candidate_stripe.findById(id)
-            .select('candidateName')
-            .populate('manage_stripe')
+            .select('candidate')
+            .populate('stripes')
             .then((result) => {
                 res.json(result)
             }).catch((err) => {
