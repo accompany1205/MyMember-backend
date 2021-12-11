@@ -27,7 +27,7 @@ router.get("/membership/buy_membership_info_BymemberShipId/:userId/:membershipID
 router.get("/membership/buy_membership_info/:userId/:studentId", requireSignin, members_info)
 router.post("/membership/buy_membership/:userId/:studentId", requireSignin, buyMembership);
 // router.post("/membership/buy_membership/:userId",requireSignin,buyMembership);
-router.put("/membership/update_buy_memberships/:userId/:membershipId/:type/:paymentType", requireSignin, update);
+router.put("/membership/update_buy_memberships/:userId/:membershipId/:type", requireSignin, update);
 router.delete("/membership/delete_buy_membership/:userId/:membershipId", requireSignin, remove);
 router.put("/membership/update_buy_memberships_Payments/:userId/:membershipId/:emiID", requireSignin, updatePayments);
 

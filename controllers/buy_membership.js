@@ -38,19 +38,18 @@ exports.membership_Info = (req, res) => {
 exports.update = async (req, res) => {
   const membershipId = req.params.membershipId;
   const type = req.params.type;
-  const paymentType = req.params.paymentType;
   const valorPayload = req.body.valorPayload;
   try {
     if (req.body.isTerminate) {
       res.status(200).send({
-        message: "Membership already terminated!",
+        msg: "Membership already terminated!",
         success: true,
       });
     } else {
       if (type == "others") {
         await buyMembership.updateOne({ _id: membershipId }, req.body);
         res.status(200).send({
-          message: "Membership updated successfully!",
+          msg: "Membership updated successfully!",
           success: true,
         });
       } else if (type == "freeze") {
@@ -65,7 +64,7 @@ exports.update = async (req, res) => {
             const freezeRes = await freezeMembership(membershipId, req.body);
             if (freezeRes) {
               res.status(200).send({
-                message: "Membership freezed successfully",
+                msg: "Membership freezed successfully",
                 success: true,
               });
             } else {
@@ -76,7 +75,7 @@ exports.update = async (req, res) => {
             }
           } else {
             res.status(400).send({
-              message:
+              msg:
                 "Due to the technical issue subscription not freeze please try again or later!",
               success: false,
             });
@@ -85,7 +84,7 @@ exports.update = async (req, res) => {
           const freezeRes = await freezeMembership(membershipId, req.body);
           if (freezeRes) {
             res.status(200).send({
-              message: "Membership freezed successfully",
+              msg: "Membership freezed successfully",
               success: true,
             });
           } else {
@@ -135,6 +134,12 @@ exports.update = async (req, res) => {
           }
         }
       } else if (type == "forfeit") {
+        const emiId = req.body.emiId;
+        const createdBy = req.body.createdBy;
+        const balance = req.body.balance;
+        if (emiId) {
+          await paymentProcessing(membershipId, emiId, balance, createdBy, type);
+        }
         await buyMembership.findByIdAndUpdate(
           membershipId,
           {
@@ -146,12 +151,12 @@ exports.update = async (req, res) => {
           (er, data) => {
             if (er) {
               res.send({
-                message: "Membership forfeit failed!",
+                msg: "Membership forfeit failed!",
                 success: false,
               });
             } else {
               res.status(200).send({
-                message: "Membership forfeit successfully!",
+                msg: "Membership forfeit successfully!",
                 success: true,
               });
             }
@@ -172,12 +177,12 @@ exports.update = async (req, res) => {
           (err, data) => {
             if (err) {
               res.send({
-                message: "Membership terminate failed!",
+                msg: "Membership terminate failed!",
                 success: false,
               });
             } else {
               res.status(200).send({
-                message: "Membership terminated successfully",
+                msg: "Membership terminated successfully",
                 success: true,
               });
             }
@@ -185,18 +190,24 @@ exports.update = async (req, res) => {
         );
       } else if (type == "refund") {
         let refundRes;
+        const balance = req.body.balance
+        const emiId = req.body.emiId;
+        const createdBy = req.body.createdBy;
+        if (emiId) {
+          await paymentProcessing(membershipId, emiId, balance, createdBy, type);
+        }
         if (valorPayload) {
           const valorRefundRes =
             await valorTechPaymentGateWay.refundSubscription({
               ...valorPayload,
-              amount: req.body.amount,
+              amount: req.body.Amount,
             });
           if (valorRefundRes.data.error_no === "S00") {
             refundRes = await refundMembership(membershipId, req.body);
             if (refundRes) {
               res.status(200).send({
                 msg: "Membership refunded successfully!",
-                success: true,
+                success: true,  
               });
             } else {
               res.status(400).send({
@@ -278,10 +289,10 @@ function refundMembership(membershipId, payload) {
     buyMembership.findByIdAndUpdate(
       membershipId,
       {
-        $set: { isRefund: true, membership_status: "Deactivated" },
+        $set: { isRefund: true, membership_status: "Deactivated"},
         $push: {
           refund: {
-            Amount: payload.amount,
+            Amount: payload.Amount,
             date: new Date(),
             reason: payload.reason,
           },
@@ -304,25 +315,34 @@ exports.updatePayments = async (req, res) => {
     const emiId = req.params.emiID;
     const createdBy = req.body.createdBy;
     const balance = req.body.balance - req.body.Amount;
+    const pay = await paymentProcessing(buy_membershipId, emiId, balance, createdBy, "paid");
+    res.send(pay)
+  } catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+  }
+};
 
-    await buyMembership.updateOne(
+function paymentProcessing(buy_membershipId, emiId, balance, createdBy, type) {
+  return new Promise((resolve, reject) => {
+    buyMembership.updateOne(
       {
         _id: buy_membershipId,
         "schedulePayments.Id": emiId,
       },
       {
         $set: {
-          balance: balance,
-          "schedulePayments.$.status": "paid",
+           balance: balance,
+           membership_status: "Active",
+          "schedulePayments.$.status": type,
           "schedulePayments.$.createdBy": createdBy,
           "schedulePayments.$.paidDate": new Date(),
         },
       },
       (err, data) => {
         if (err) {
-          res.send({ error: err.message.replace(/\"/g, ""), success: false });
+          resolve({ error: err.message.replace(/\"/g, ""), success: false });
         } else {
-          res.send({
+          resolve({
             message: "Payment Successfully Updated!",
             success: true,
             error: false,
@@ -330,10 +350,8 @@ exports.updatePayments = async (req, res) => {
         }
       }
     );
-  } catch (err) {
-    res.send({ error: err.message.replace(/\"/g, ""), success: false });
-  }
-};
+  })
+}
 
 exports.remove = (req, res) => {
   const id = req.params.membershipId;
