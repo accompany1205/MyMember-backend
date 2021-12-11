@@ -89,7 +89,12 @@ const updateStudentsById = async (studentId) => {
 
 exports.promoteTheStudentStripe = async (req, res) => {
     try {
-
+        if (!req.body.length) {
+            return res.json({
+                success: false,
+                msg: "invalid input"
+            })
+        }
         let recommededCandidateId = req.params.recommededCandidateId;
         if (!recommededCandidateId.length) {
             return res.json({
@@ -140,7 +145,7 @@ exports.promoteTheStudentStripe = async (req, res) => {
             "next_stripe": next_stripe,
             "candidate": candidate,
             "stripe_name": stripe_name,
-            "last_stripe_given_date": date
+            "last_stripe_given": date
         }, {
             new: true
         })
@@ -154,12 +159,12 @@ exports.promoteTheStudentStripe = async (req, res) => {
         let history = {
             "current_stripe": current_stripe,
             "candidate": candidate,
-            "last_stripe_given_date": date
+            "last_stripe_given": date
         }
         let updateStripeIntoStudent = await Member.findOneAndUpdate({
             "_id": studentId
         }, {
-            "last_stripe_given_date": date,
+            "last_stripe_given": date,
             "current_stripe": current_stripe,
             $push: {
                 rank_update_history: history
