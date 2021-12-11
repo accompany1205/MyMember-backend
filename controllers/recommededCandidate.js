@@ -5,7 +5,7 @@ const RecommendedCandidateModel = require('../models/recommendedCandidate');
 const Stripe = require('../models/candidate_stripe');
 // const Stripe = require('../models/stripe');
 const Joi = require('@hapi/joi');
-
+const _ = require('lodash')
 
 /**This api belongs to studend_program_rank_history;
  * 
@@ -65,7 +65,7 @@ exports.recomendStudent = async (req, res) => {
             return res.send({
                 recommendedCandidates,
                 success: false,
-                msg: `${alredyRecomend},  either these students are alredy in recommended list or program is not selected`
+                msg: `${alredyRecomend},  either these students are alredy in Candidate list or program is not selected`
             })
         }
 
@@ -89,7 +89,9 @@ const updateStudentsById = async (studentId) => {
 
 exports.promoteTheStudentStripe = async (req, res) => {
     try {
-        if (!req.body.length) {
+        if (_.isEmpty(req.body)) {
+            console.log(req.body)
+
             return res.json({
                 success: false,
                 msg: "invalid input"
