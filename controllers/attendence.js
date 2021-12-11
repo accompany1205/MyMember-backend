@@ -360,105 +360,11 @@ exports.getStudentAttendence = (req, res) => {
         }
       },
       { $project: { data: 0, class_attendanceArray: 0 } },
-
-      // {
-      //   "$addFields": {
-      //     "attendence": {
-      //       "$map": {
-      //         "input": "$class_attendanceArray",
-      //         "in": {
-      //           "$mergeObjects": [
-      //             "$$this",
-      //             {
-      //               "$arrayElemAt": [
-      //                 "$data",
-      //                 { "$indexOfArray": ["$data._id", "$$this.studentInfo"] }
-      //               ]
-      //             }
-      //           ]
-      //         }
-      //       }
-      //     }
-      //   }
-      // },
-
-      // {
-      //   $project: {
-      //     program_name: 1,
-      //     class_name: 1,
-      //     start_date: 1,
-      //     end_date: 1,
-      //     program_color: 1,
-      //     class_attendanceArray: 1,
-
-      //   }
-      // },
-      // {
-      //   $lookup: {
-      //     from: "members",
-      //     localField: "class_attendanceArray.studentInfo",
-      //     foreignField: "_id",
-      //     as: "data"
-      //   }
-      // },
-      // {
-      //   $unwind: "$data"
-      // }
-      // {
-      //   $match: {
-      //     $expr: { $eq: ["data.studentInfo", objId] },
-      //   }
-      // },
-      // {
-      //   $project: {
-      //     program_name: 1,
-      //     class_name: 1,
-      //     start_date: 1,
-      //     end_date: 1,
-      //     program_color: 1,
-      //     class_attendanceArray: 1,
-      //     "data.firstName": 1,
-      //     "data.lastName": 1,
-      //     "data.memberprofileImage": 1,
-      //     "data._id": 1
-      //   }
-      // },
-      // {
-      //   "$addFields": {
-      //     "attendence": {
-      //       "$map": {
-      //         "input": "$class_attendanceArray",
-      //         "in": {
-      //           "$mergeObjects": [
-      //             "$$this",
-      //             {
-      //               "$arrayElemAt": [
-      //                 "$data",
-      //                 { "$indexOfArray": ["$data._id", "$$this.studentInfo"] }
-      //               ]
-      //             }
-      //           ]
-      //         }
-      //       }
-      //     }
-      //   }
-      // },
-      // { $project: { data: 0, class_attendanceArray: 0 } },
-      // {
-      //   $match: {
-      //     $expr: { $eq: ["attendence.studentInfo", objId] },
-      //   }
-      // },      // {
-      //   $group: {
-      //     _id: "$_id",
-      //     class_count: { $sum: 1 },
-      //     class_name: { "$first": "$class_name" },
-      //     // attendence: { "$push": { firstName: '$data.firstName', lastName: '$data.lastName', image: "$data.memberprofileImage" } },
-      //     firstName: { "$first": '$firstName' },
-      //     // program: { "$first": '$data.program' },
-      //     // notes: { "$first": '$data.notes' },
-      //   }
-      // }
+      {
+        $sort: {
+          createdAt: -1,
+        }
+      },
       {
         $facet: {
           paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
@@ -492,17 +398,143 @@ exports.getStudentAttendence = (req, res) => {
 
 };
 
-exports.searchAttendance = async (req,res) => {
+exports.searchAttendance = async (req, res) => {
+  var per_page = parseInt(req.params.per_page) || 5;
+  var page_no = parseInt(req.params.page_no) || 0;
+  var pagination = {
+    limit: per_page,
+    skip: per_page * page_no,
+  };
   const search = req.query.search;
-  try{
-    const data = await schedule.find({
-      $or: [
-        {program_name : {$regex: search, '$options': 'i'}},
-        {class_name : {$regex: search, '$options': 'i'}}],
-      })
-      res.send({success:true, msg:'filtered attendance', data})
-  }catch(err){  
-    console.log(err)
+  const userId = req.params.userId;
+  const filter = req.body.filter;
+  let startDate = req.body.start_date;
+  let endDate = req.body.end_date;
+  let date = new Date();
+  try {
+    if (search) {
+      const totalCount = await schedule.find({
+        $and: [
+          { userId: userId },
+          {
+            $or: [
+              { program_name: { $regex: search, '$options': 'i' } },
+              { class_name: { $regex: search, '$options': 'i' } }]
+          }
+        ]
+      }).countDocuments();
+
+      schedule.find({
+        $and: [
+          { userId: userId },
+          {
+            $or: [
+              { program_name: { $regex: search, '$options': 'i' } },
+              { class_name: { $regex: search, '$options': 'i' } }]
+          }
+        ]
+      }).limit(pagination.limit)
+        .skip(pagination.skip)
+        .then((result) => {
+          res.send({ success: true, msg: 'Searched attendance', result, totalCount: totalCount })
+        }).catch((err) => {
+          res.send(err)
+        })
+    } else if (filter === "Today") {
+      let cDate = ("0" + (date.getDate() - 8)).slice(-2);
+      let cMonth = ("0" + (date.getMonth() + 1)).slice(-2);
+      let cYear = date.getFullYear();
+      let currentDate = `${cMonth}/${cDate}/${cYear}`;
+      const totalCount = await schedule.find({
+        $and: [
+          { userId: userId },
+          { start_date: currentDate }
+        ]
+      }).countDocuments();
+
+      schedule.find({
+        $and: [
+          { userId: userId },
+          { start_date: currentDate }
+        ]
+      }).limit(pagination.limit)
+        .skip(pagination.skip)
+        .then((result) => {
+          res.send({ success: true, msg: 'filtered attendance', result, totalCount: totalCount })
+        }).catch((err) => {
+          res.send(err)
+        })
+    } else if (filter === "Tomorrow") {
+      let cDate = ("0" + (date.getDate() + 1)).slice(-2);
+      let cMonth = ("0" + (date.getMonth() + 1)).slice(-2);
+      let cYear = date.getFullYear();
+      let currentDate = `${cMonth}/${cDate}/${cYear}`;
+      const totalCount = await schedule.find({
+        $and: [
+          { userId: userId },
+          { start_date: currentDate }
+        ]
+      }).countDocuments();
+
+      schedule.find({
+        $and: [
+          { userId: userId },
+          { start_date: currentDate }
+        ]
+      }).limit(pagination.limit)
+        .skip(pagination.skip)
+        .then((result) => {
+          res.send({ success: true, msg: 'filtered attendance', result, totalCount: totalCount })
+        }).catch((err) => {
+          res.send(err)
+        })
+    } else if (filter === "Yesterday") {
+      let cDate = ("0" + (date.getDate() - 1)).slice(-2);
+      let cMonth = ("0" + (date.getMonth() + 1)).slice(-2);
+      let cYear = date.getFullYear();
+      let currentDate = `${cMonth}/${cDate}/${cYear}`;
+      const totalCount = await schedule.find({
+        $and: [
+          { userId: userId },
+          { start_date: currentDate }
+        ]
+      }).countDocuments();
+
+      schedule.find({
+        $and: [
+          { userId: userId },
+          { start_date: currentDate }
+        ]
+      }).limit(pagination.limit)
+        .skip(pagination.skip)
+        .then((result) => {
+          res.send({ success: true, msg: 'filtered attendance', result, totalCount: totalCount })
+        }).catch((err) => {
+          res.send(err)
+        })
+    } else if (startDate && endDate) {
+      const totalCount = await schedule.find({
+        $and: [
+          { userId: userId },
+          { start_date: { $gte: (startDate), $lt: (endDate) } }
+        ]
+      }).countDocuments();
+
+      schedule.find({
+        $and: [
+          { userId: userId },
+          { start_date: { $gte: (startDate), $lt: (endDate) } }
+        ]
+      }).limit(pagination.limit)
+        .skip(pagination.skip)
+        .then((result) => {
+          res.send({ success: true, msg: 'filtered attendance', result, totalCount: totalCount })
+        }).catch((err) => {
+          res.send(err)
+        })
+    }
+  } catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
 }
 

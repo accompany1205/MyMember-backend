@@ -52,19 +52,17 @@ const recommendedCandidate = new mongoose.Schema({
     },
     last_stripe_given: {
         type: String,
-        default: null
-    },
-    stripe_name: {
-        type: String,
-        default: null
+        default: new Date(),
     },
     current_stripe: {
         type: String,
-        default: null
+        default: '0'
     },
     next_stripe: {
         type: String,
-        default: null
+    },
+    stripe_history: {
+        type: Array,
     },
     isDeleted: {
         type: Boolean,
