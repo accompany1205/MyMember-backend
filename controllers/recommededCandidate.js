@@ -2,7 +2,7 @@ require('dotenv').config();
 const User = require('../models/user');
 const Member = require('../models/addmember');
 const RecommendedCandidateModel = require('../models/recommendedCandidate');
-const Stripe = require('../models/candidate_stripe');
+const Stripe = require('../models/stripe');
 // const Stripe = require('../models/stripe');
 const Joi = require('@hapi/joi');
 const _ = require('lodash')
@@ -116,40 +116,35 @@ exports.promoteTheStudentStripe = async (req, res) => {
         const {
             studentId,
             candidate,
-            stripe_name,
             current_stripe,
-            next_stripe
         } = req.body;
-        let stripeDetails = await Stripe.find({ candidate })
-        if (!stripeDetails) {
-            return res.json({
-                success: false,
-                msg: "There is some issue while fetching Stripe!!"
-            })
+        // let stripeDetails = await Stripe.find({ candidate: candidate, stripe_name: current_stripe })
+        // if (!stripeDetails) {
+        //     return res.json({
+        //         success: false,
+        //         msg: "There is some issue while fetching Stripe!!"
+        //     })
+        // }
+        let history = {
+            current_stripe,
+            candidate,
+            "last_stripe_given": date
         }
-
-        let { _id,
-            total_stripe
-        } = stripeDetails;
-
-
         // if (!(current_stripe < total_stripe)) {
         //     return res.json({
         //         success: true,
         //         msg: "The meximum stripe limit has been reached!"
         //     })
         // }
-
-        let updateStripeIntoRecommededCandidate = await RecommendedCandidateModel.findOneAndUpdate({
+        let updateStripeIntoRecommededCandidate = await RecommendedCandidateModel.updateOne({
             "_id": recommededCandidateId
         }, {
-            "current_stripe": current_stripe,
-            "next_stripe": next_stripe,
-            "candidate": candidate,
-            "stripe_name": stripe_name,
-            "last_stripe_given": date
-        }, {
+            $set: history,
+            $push: {
+                stripe_history: history
+            },
             new: true
+
         })
         if (!updateStripeIntoRecommededCandidate) {
             res.json({
@@ -158,16 +153,9 @@ exports.promoteTheStudentStripe = async (req, res) => {
             })
         }
 
-        let history = {
-            "current_stripe": current_stripe,
-            "candidate": candidate,
-            "last_stripe_given": date
-        }
-        let updateStripeIntoStudent = await Member.findOneAndUpdate({
-            "_id": studentId
-        }, {
-            "last_stripe_given": date,
-            "current_stripe": current_stripe,
+
+        let updateStripeIntoStudent = await Member.findByIdAndUpdate(
+            studentId, {
             $push: {
                 rank_update_history: history
             }
@@ -230,6 +218,15 @@ exports.removeFromRecomended = async (req, res) => {
                 msg: "Please give the recomended id in params!"
             })
         }
+        recon = await RecommendedForTest.findById(recommededId);
+        let studentId = recon.studentId;
+        let deleteRecommended = await Member.findOneAndUpdate(studentId, { isRecommended: false })
+        if (!deleteRecommended) {
+            res.json({
+                status: false,
+                msg: "Unable to remove the student!!"
+            })
+        }
         let isDeleted = await RecommendedCandidateModel.findByIdAndDelete(recommededId);
         if (!isDeleted) {
             res.json({
@@ -247,5 +244,4 @@ exports.removeFromRecomended = async (req, res) => {
         res.send({ error: err.message.replace(/\"/g, ""), success: false });
 
     }
-
 }
