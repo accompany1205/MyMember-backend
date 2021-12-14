@@ -520,42 +520,65 @@ exports.remove = (req, res) => {
 exports.buyMembership = async (req, res) => {
   const userId = req.params.userId;
   const studentId = req.params.studentId;
-  let valorPayload = req.body.valorPayload;
+  let valorPayload = req.body.membership_details.valorPayload;
   let membershipData = req.body.membership_details;
   const Address = valorPayload ? valorPayload.address : "";
+  const payLatter = req.body.membership_details.pay_latter;
+  const financeId = req.body.membership_details.financeId;
+  const ptype = req.body.membership_details.ptype;
+  delete req.body.membership_details.valorPayload;
   let memberShipDoc;
   membershipData.userId = userId;
+  // console.log(membershipData, "PAYLOAD")
+  // console.log(valorPayload, "VPP")
+  // console.log(Address, "ADDD")
+  // console.log(payLatter, "PAYLATTER")
+  // console.log(ptype, "PAYMENT TYPE")
   try {
     if (membershipData.isEMI) {
-      if (
-        membershipData.payment_time > 0 &&
-        membershipData.balance > 0 &&
-        membershipData.payment_type != "pif"
-      ) {
+      if (membershipData.payment_time > 0 && membershipData.balance > 0 && membershipData.payment_type != "pif") {
         membershipData.schedulePayments = createEMIRecord(
           membershipData.payment_time,
           membershipData.payment_money,
           membershipData.mactive_date,
           membershipData.createdBy,
-          membershipData.payment_type
+          membershipData.payment_type,
+          payLatter
         );
-        membershipData.membership_status = "Active";
-        if (valorPayload) {
+        if (valorPayload && ptype=="credit card") {
           valorPayload.descriptor = "BETA TESTING";
           valorPayload.product_description = "Mymember brand Product";
-          valorPayload.surchargeIndicator = 1;
-          valorPayload = { ...valorPayload, ...getUidAndInvoiceNumber() };
-          const FormatedPayload = getFormatedPayload(valorPayload);
-          const resp = await valorTechPaymentGateWay.addSubscription(
-            FormatedPayload
-          );
-          if (resp.data.error_code == 00) {
-            membershipData.subscription_id = resp.data.subscription_id;
+          // valorPayload.surchargeIndicator = 1;
+          const { uid } = getUidAndInvoiceNumber();
+          delete valorPayload.subscription_starts_from;
+          delete valorPayload.Subscription_valid_for;
+          let addValorPay = valorPayload;
+          valorPayload = { ...valorPayload, uid };
+          const saleFormatedPayload = getFormatedPayload(valorPayload);
+          saleFormatedPayload.surchargeIndicator = 1;
+          const resp = await valorTechPaymentGateWay.saleSubscription(
+              saleFormatedPayload 
+            );
+          if (resp.data.error_no == 'S00') {
+            if (payLatter === "credit card") {
+              addValorPay = { ...addValorPay, amount: membershipData.payment_money, subscription_starts_from: membershipData.schedulePayments[0].date.split('-').join(''), Subscription_valid_for:membershipData.schedulePayments.length - 1, ...getUidAndInvoiceNumber() };
+              const addFormatedPayload = getFormatedPayload(addValorPay);
+              const addresp = await valorTechPaymentGateWay.addSubscription(
+                addFormatedPayload
+              );
+              console.log(addresp, "UPDATED PAY")
+            }
+            membershipData.transactionId = {
+                  rrn: resp.data.rrn,
+                  txnid: resp.data.txnid,
+                  token: resp.data.token,
+                };
             valorPayload.address = Address;
             valorPayload.userId = userId;
             valorPayload.studentId = studentId;
-            const financeDoc = await createFinanceDoc(valorPayload);
+            const financeDoc = await createFinanceDoc(valorPayload, financeId);
             if (financeDoc.success) {
+              membershipData.membership_status = "Active";
               memberShipDoc = await createMemberShipDocument(
                 membershipData,
                 studentId
@@ -568,9 +591,10 @@ exports.buyMembership = async (req, res) => {
               });
             }
           } else {
-            res.send({ msg: resp.data.desc, success: false });
+            res.send({ msg: resp.data.mesg, success: false });
           }
         } else {
+          membershipData.membership_status = "Active";
           memberShipDoc = await createMemberShipDocument(
             membershipData,
             studentId
@@ -584,14 +608,10 @@ exports.buyMembership = async (req, res) => {
         });
       }
     } else {
-      if (
-        !membershipData.isEMI &&
-        membershipData.balance == 0 &&
-        membershipData.payment_type == "pif"
-      ) {
+      if (!membershipData.isEMI && membershipData.balance == 0 && ptype === 'credit card') {
         membershipData.due_status = "paid";
         membershipData.membership_status = "Active";
-        if (valorPayload) {
+        if (valorPayload.pan) {
           const { uid } = getUidAndInvoiceNumber();
           valorPayload = { ...valorPayload, uid };
           valorPayload.surchargeIndicator = 1;
@@ -609,7 +629,7 @@ exports.buyMembership = async (req, res) => {
             valorPayload.address = Address;
             valorPayload.userId = userId;
             valorPayload.studentId = studentId;
-            const financeDoc = await createFinanceDoc(valorPayload);
+            const financeDoc = await createFinanceDoc(valorPayload, financeId);
             if (financeDoc.success) {
               memberShipDoc = await createMemberShipDocument(
                 membershipData,
@@ -645,6 +665,26 @@ function getFormatedPayload(valorPayload) {
   const payload = valorPayload;
   const address = payload.address;
   delete payload.address;
+  let subscriptionAddress;
+  if (payload.Subscription_valid_for) {
+    subscriptionAddress = {
+      shipping_customer_name: payload.card_holder_name,
+      shipping_street_no: address.street_no,
+      shipping_street_name: address.address,
+      shipping_zip: address.zip,
+      billing_customer_name: payload.card_holder_name ,
+      billing_street_no: address.street_no,
+      billing_street_name: address.address,
+      billing_zip: address.zip,
+    }
+    return {
+      ...payload,
+      ...subscriptionAddress
+    }
+  }
+  delete payload.subscription_day_of_the_month;
+  delete payload.Subscription_valid_for;
+  delete payload.subscription_starts_from;
   return {
     ...payload,
     ...address,
@@ -704,31 +744,36 @@ function createMemberShipDocument(membershipData, studentId) {
   });
 }
 
-function createFinanceDoc(data) {
-  const { studentId } = data;
+function createFinanceDoc(data, financeId) {
+  const {studentId} = data;
   return new Promise((resolve, reject) => {
     const financeData = new Finance_infoSchema(data);
-    Finance_infoSchema.find({ studentId: studentId }).exec((err, data) => {
-      if (data.length) {
+    if (financeId) {
+      Finance_infoSchema.findByIdAndUpdate(financeId, {
+        $set: data
+      }).exec((err, resData) => {
+        if (err) {
+          resolve({ success: false });
+        }
         resolve({ success: true });
-      } else {
-        financeData.save((err, Fdata) => {
-          if (err) {
-            resolve({ success: false, msg: "Finance data is not stored!" });
-          } else {
-            AddMember.findByIdAndUpdate(studentId, {
-              $push: { finance_details: Fdata._id },
-            }).exec((err, data) => {
-              if (data) {
-                resolve({ success: true });
-              } else {
-                resolve({ success: false });
-              }
-            });
-          }
-        });
-      }
-    });
+      })
+    } else {
+      financeData.save((err, Fdata) => {
+        if (err) {
+          resolve({ success: false, msg: "Finance data is not stored!" });
+        } else {
+          AddMember.findByIdAndUpdate(studentId, {
+            $push: { finance_details: Fdata._id },
+          }).exec((err, data) => {
+            if (data) {
+              resolve({ success: true });
+            } else {
+              resolve({ success: false });
+            }
+          });
+        }
+      });
+    }
   });
 }
 // async function cronForEmiStatus() {
