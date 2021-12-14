@@ -30,6 +30,8 @@ const TTL = require("./routes/attl")
 const middleware = require('./middlewear/middlewear')
 
 //shivani's
+const leads_tracking = require("./routes/leads_tracking");
+const smartlists = require("./routes/smartlists");
 const administrate_user = require("./routes/administrater_user");
 const programRoutes = require("./routes/program");
 const manageRankRoutes = require("./routes/program_rank");
@@ -215,6 +217,8 @@ app.use("/api", compose_template);
 app.use("/api", nurturing_template);
 app.use("/api", library_template);
 app.use("/api", email_library_folder);
+app.use("/api", leads_tracking);
+app.use("/api", smartlists);
 
 // Appointment Event
 app.use("/api", appointmentEvent)
