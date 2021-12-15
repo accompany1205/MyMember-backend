@@ -10,6 +10,7 @@ const Joi = require('@hapi/joi');
 
 exports.getRecommededForTest = async (req, res) => {
     let userId = req.params.userId;
+    let sortBy = req.params.sortBy || "firstName"
     if (!userId) {
         res.json({
             status: false,
@@ -20,7 +21,7 @@ exports.getRecommededForTest = async (req, res) => {
     let students = await RecommendedForTest.find({
         "userId": userId,
         "isDeleted": false
-    });
+    }).sort([[sortBy, 1]]);
     if (!students.length) {
         res.json({
             status: false,
@@ -35,6 +36,7 @@ exports.getRecommededForTest = async (req, res) => {
 }
 
 exports.getRegisteredForTest = async (req, res) => {
+    let sortBy = req.params.sortBy || "firstName"
     let userId = req.params.userId;
     if (!userId) {
         res.json({
@@ -45,7 +47,7 @@ exports.getRegisteredForTest = async (req, res) => {
 
     let students = await RegisterdForTest.find({
         "isDeleted": false
-    });
+    }).sort([[sortBy, 1]])
     if (!students.length) {
         res.json({
             status: false,
@@ -265,9 +267,9 @@ exports.removeFromRecomended = async (req, res) => {
         })
     }
     recon = await RecommendedForTest.findById(recommededId);
-    let studentId =recon.studentId;
-    let deleteRecommended = await Member.findOneAndUpdate(studentId, {isRecommended:false})
-    if(!deleteRecommended){
+    let studentId = recon.studentId;
+    let deleteRecommended = await Member.findOneAndUpdate(studentId, { isRecommended: false })
+    if (!deleteRecommended) {
         res.json({
             status: false,
             msg: "Unable to remove the student!!"
