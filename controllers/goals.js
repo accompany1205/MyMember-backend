@@ -369,7 +369,9 @@ exports.this_week_completed_goals = (req, res) => {
         },
         {
             $match: {
-                $eq: [{ $week: "$compeleting_Date" }, { $week: "$$NOW" }]
+                $expr: {
+                    $eq: [{ $week: "$compeleting_Date" }, { $week: "$$NOW" }]
+                }
             },
         }])
         .then((result) => {
@@ -397,12 +399,14 @@ exports.today_completed_goals = (req, res) => {
         },
         {
             $match: {
-                $and: [
-                    { $eq: [{ $dayOfMonth: '$compeleting_Date' }, { $dayOfMonth: new Date() }] },
-                    { $eq: [{ $month: '$compeleting_Date' }, { $month: new Date() }] },
-                    { $eq: [{ $year: '$compeleting_Date' }, { $year: new Date() }] },
+                $expr: {
+                    $and: [
+                        { $eq: [{ $dayOfMonth: '$compeleting_Date' }, { $dayOfMonth: new Date() }] },
+                        { $eq: [{ $month: '$compeleting_Date' }, { $month: new Date() }] },
+                        { $eq: [{ $year: '$compeleting_Date' }, { $year: new Date() }] },
 
-                ]
+                    ]
+                }
             }
         }])
         .then((result) => {
@@ -457,7 +461,9 @@ exports.this_week_not_completed_goals = (req, res) => {
         },
         {
             $match: {
-                $eq: [{ $week: "$compeleting_Date" }, { $week: "$$NOW" }]
+                $expr: {
+                    $eq: [{ $week: "$compeleting_Date" }, { $week: "$$NOW" }]
+                }
             },
         }]).then((result) => {
             res.json(result)
@@ -484,12 +490,14 @@ exports.today_not_completed_goals = (req, res) => {
         },
         {
             $match: {
-                $and: [
-                    { $eq: [{ $dayOfMonth: '$compeleting_Date' }, { $dayOfMonth: new Date() }] },
-                    { $eq: [{ $month: '$compeleting_Date' }, { $month: new Date() }] },
-                    { $eq: [{ $year: '$compeleting_Date' }, { $year: new Date() }] },
+                $expr: {
+                    $and: [
+                        { $eq: [{ $dayOfMonth: '$compeleting_Date' }, { $dayOfMonth: new Date() }] },
+                        { $eq: [{ $month: '$compeleting_Date' }, { $month: new Date() }] },
+                        { $eq: [{ $year: '$compeleting_Date' }, { $year: new Date() }] },
 
-                ]
+                    ]
+                }
             }
         }]).then((result) => {
             res.json(result)

@@ -15,11 +15,11 @@ router.get("/dashboard/this_month_pending_goals/:userId", verifySchool, goals.th
 router.get("/dashboard/this_week_pendig_goals/:userId", verifySchool, goals.this_week_pending_goals);
 router.get("/dashboard/today_pendig_goals/:userId", verifySchool, goals.today_pending_goals);
 router.get("/dashboard/this_month_completed_goals/:userId", verifySchool, goals.this_month_completed_goals);
-router.get("/dashboard/this_month_completed_goals/:userId", verifySchool, goals.this_week_completed_goals);
-router.get("/dashboard/this_month_completed_goals/:userId", verifySchool, goals.today_completed_goals);
+router.get("/dashboard/this_week_completed_goals/:userId", verifySchool, goals.this_week_completed_goals);
+router.get("/dashboard/today_completed_goals/:userId", verifySchool, goals.today_completed_goals);
 router.get("/dashboard/this_month_not_completed_goals/:userId", verifySchool, goals.this_month_not_completed_goals);
-router.get("/dashboard/this_month_not_completed_goals/:userId", verifySchool, goals.this_week_not_completed_goals);
-router.get("/dashboard/this_month_not_completed_goals/:userId", verifySchool, goals.today_not_completed_goals);
+router.get("/dashboard/this_week_not_completed_goals/:userId", verifySchool, goals.this_week_not_completed_goals);
+router.get("/dashboard/today_not_completed_goals/:userId", verifySchool, goals.today_not_completed_goals);
 
 router.get("/weekly_goalread/:userId", verifySchool, goals.weekly_goalread);
 router.get("/monthly_goalread/:userId", verifySchool, goals.monthly_goalread);
