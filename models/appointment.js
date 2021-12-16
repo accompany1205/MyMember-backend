@@ -8,7 +8,7 @@ const appointSchema = new schema(
             type: String,
             required: true
         },
-        app_type: {
+        category: {
             type: String,
             required: true
         },

@@ -83,6 +83,9 @@ const Membershipschema = new schema(
       type: String,
       required: true,
     },
+    pay_latter: {
+      type: String
+    },
     balance: {
       type: Number,
       required: true,
@@ -141,6 +144,13 @@ const Membershipschema = new schema(
     userId: {
       type: String,
       required: true,
+    },
+    transactionId: {},
+    subscription_id: {
+      type: String
+    },
+    cheque_no: {
+      type: String
     },
     membershipIds: [
       {

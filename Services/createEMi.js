@@ -1,7 +1,7 @@
 const moment = require("moment");
 const { v4: uuidv4 } = require("uuid");
 
-function createEMIRecord(noOfEMi, Balance, activationDate, createdBy, payMode) {
+function createEMIRecord(noOfEMi, Balance, activationDate, createdBy, payMode, payLatter) {
   arr = [];
   let i = 0;
   createdBy = "";
@@ -13,6 +13,7 @@ function createEMIRecord(noOfEMi, Balance, activationDate, createdBy, payMode) {
       obj.Id = uuidv4();
       obj.Amount = Balance;
       obj.status = "due";
+      obj.ptype = payLatter;
       obj.createdBy = createdBy;
     } else {
       if (payMode == "weekly") {
@@ -22,6 +23,7 @@ function createEMIRecord(noOfEMi, Balance, activationDate, createdBy, payMode) {
         obj.Id = uuidv4();
         obj.Amount = Balance;
         obj.status = "due";
+        obj.ptype = payLatter;
         obj.createdBy = createdBy;
       }
     }
