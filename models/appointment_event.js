@@ -4,19 +4,22 @@ const schema = mongoose.Schema;
 
 const appointEventSchema = new schema(
     {
-        app_type: {
+        app_event_name: {
             type: String,
             required: true
         },
-        app_color:{
-            type:String,
+        app_color: {
+            type: String,
             required: true
+        },
+        category: {
+            type: String
         },
         createdBy: {
             type: String
         },
-        userId:{
-            type:schema.Types.ObjectId
+        userId: {
+            type: schema.Types.ObjectId
         }
     },
     { timestamps: true }
