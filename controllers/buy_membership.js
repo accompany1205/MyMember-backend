@@ -608,9 +608,9 @@ exports.buyMembership = async (req, res) => {
         });
       }
     } else {
+      membershipData.due_status = "paid";
+      membershipData.membership_status = "Active";
       if (!membershipData.isEMI && membershipData.balance == 0 && ptype === 'credit card') {
-        membershipData.due_status = "paid";
-        membershipData.membership_status = "Active";
         if (valorPayload.pan) {
           const { uid } = getUidAndInvoiceNumber();
           valorPayload = { ...valorPayload, uid };
@@ -653,7 +653,11 @@ exports.buyMembership = async (req, res) => {
           res.send(memberShipDoc);
         }
       } else {
-        res.send({ msg: "payment type should be  pif ", success: false });
+        memberShipDoc = await createMemberShipDocument(
+          membershipData,
+          studentId
+        );
+        res.send(memberShipDoc);
       }
     }
   } catch (error) {
