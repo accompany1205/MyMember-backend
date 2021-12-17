@@ -4,11 +4,20 @@ const schema =  mongoose.Schema;
 const TextContactSchema = schema({
   uid:{
     type:String,
-    require:true
+    require:true,
+    unique:true,
   },
   from: {
     type:String,
     require:true
+  },
+  isSeen: {
+    type: Boolean,
+    default: false,
+  },
+  isPinned: {
+    type: Boolean,
+    default: false,
   }
 });
 

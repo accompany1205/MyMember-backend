@@ -2,16 +2,21 @@ const mongoose = require('mongoose');
 const schema =  mongoose.Schema;
 
 const TextMessageSchema = schema({
-  from:{
+  userId:{
     type:String,
     require:true
   },
-  to:{
+  uid:{
     type:String,
     require:true
   },
   textContent: {
     type:String,
+    require:true
+  },
+  isSent: {
+    type: Boolean,
+    default: true,
     require:true
   },
   time: {
