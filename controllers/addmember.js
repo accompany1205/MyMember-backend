@@ -574,6 +574,7 @@ exports.read = (req, res) => {
 };
 
 exports.active_trial_Std = async (req, res) => {
+  let sortBy = req.params.sortBy || "firstName"
   var totalCount = await addmemberModal
     .find({
       userId: req.params.userId,
@@ -595,7 +596,7 @@ exports.active_trial_Std = async (req, res) => {
     .populate("membership_details")
     .limit(pagination.limit)
     .skip(pagination.skip)
-    .sort({firstName:1})
+    .sort([[sortBy, 1]])
     .exec((err, active_trial) => {
       if (err) {
         res.send({
@@ -608,6 +609,7 @@ exports.active_trial_Std = async (req, res) => {
 };
 
 exports.leads_Std = async (req, res) => {
+  let sortBy = req.params.sortBy || "firstName"
   var totalCount = await addmemberModal
     .find({
       userId: req.params.userId,
@@ -629,7 +631,7 @@ exports.leads_Std = async (req, res) => {
     .populate("membership_details")
     .limit(pagination.limit)
     .skip(pagination.skip)
-    .sort({firstName:1})
+    .sort([[sortBy, 1]])
     .exec((err, lead) => {
       if (err) {
         res.send({
@@ -642,6 +644,7 @@ exports.leads_Std = async (req, res) => {
 };
 
 exports.Former_Std = async (req, res) => {
+  let sortBy = req.params.sortBy || "firstName"
   var totalCount = await addmemberModal
     .find({
       userId: req.params.userId,
@@ -663,7 +666,7 @@ exports.Former_Std = async (req, res) => {
     .populate("membership_details")
     .limit(pagination.limit)
     .skip(pagination.skip)
-    .sort({firstName:1})
+    .sort([[sortBy, 1]])
     .exec((err, former) => {
       if (err) {
         res.send({
@@ -676,6 +679,7 @@ exports.Former_Std = async (req, res) => {
 };
 
 exports.active_Std = async (req, res) => {
+  let sortBy = req.params.sortBy || "firstName"
   var totalCount = await addmemberModal
     .find({
       userId: req.params.userId,
@@ -697,7 +701,7 @@ exports.active_Std = async (req, res) => {
     .populate("membership_details")
     .limit(pagination.limit)
     .skip(pagination.skip)
-    .sort({firstName:1})
+    .sort([[sortBy, 1]])
     .exec((err, active_std) => {
       if (err) {
         res.send({
@@ -710,6 +714,7 @@ exports.active_Std = async (req, res) => {
 };
 
 exports.Former_trial_Std = async (req, res) => {
+  let sortBy = req.params.sortBy || "firstName"
   var totalCount = await addmemberModal
     .find({
       userId: req.params.userId,
@@ -731,8 +736,7 @@ exports.Former_trial_Std = async (req, res) => {
     .populate("membership_details")
     .limit(pagination.limit)
     .skip(pagination.skip)
-    .sort({firstName:1})
-
+    .sort([[sortBy, 1]])
     .exec((err, former_trial) => {
       if (err) {
         res.send({
@@ -745,6 +749,7 @@ exports.Former_trial_Std = async (req, res) => {
 };
 
 exports.camp_Std = async (req, res) => {
+  let sortBy = req.params.sortBy || "firstName"
   var totalCount = await addmemberModal
     .find({
       userId: req.params.userId,
@@ -765,8 +770,7 @@ exports.camp_Std = async (req, res) => {
     .populate("membership_details", "mactive_date expiry_date")
     .limit(pagination.limit)
     .skip(pagination.skip)
-    .sort({firstName:1})
-
+    .sort([[sortBy, 1]])
     .exec((err, camp) => {
       if (err) {
         res.send({
@@ -779,6 +783,7 @@ exports.camp_Std = async (req, res) => {
 };
 
 exports.after_school_Std = async (req, res) => {
+  let sortBy = req.params.sortBy || "firstName"
   var totalCount = await addmemberModal
     .find({
       userId: req.params.userId,
@@ -799,8 +804,7 @@ exports.after_school_Std = async (req, res) => {
     .populate("membership_details")
     .limit(pagination.limit)
     .skip(pagination.skip)
-    .sort({firstName:1})
-
+    .sort([[sortBy, 1]])
     .exec((err, after_school) => {
       if (err) {
         res.send({
@@ -1095,7 +1099,7 @@ exports.trial_this_month = (req, res) => {
           primaryPhone: 1,
           membership_details: 1,
           memberprofileImage: 1,
-          notes:1,
+          notes: 1,
         },
       },
     ],
@@ -1213,7 +1217,7 @@ exports.birth_next_month = (req, res) => {
           rank: 1,
           birthday_checklist: 1,
           memberprofileImage: 1,
-          notes:1,
+          notes: 1,
         },
       },
     ],
@@ -1280,7 +1284,7 @@ exports.this_month_lead = (req, res) => {
           studentType: 1,
           createdAt: 1,
           memberprofileImage: 1,
-          notes:1,
+          notes: 1,
         },
       },
     ])
@@ -1333,7 +1337,7 @@ exports.last_three_month = (req, res) => {
           studentType: 1,
           createdAt: 1,
           memberprofileImage: 1,
-          notes:1,
+          notes: 1,
         },
       },
     ])

@@ -1,11 +1,17 @@
 const mongoose = require("mongoose");
 const schema = mongoose.Schema
 
-const renewalNotesSchema = new schema({
-    notes: {
+const smartlistSchema = new schema({
+    smartlistname: {
         type: String,
-        required: true
+        trim: true,
+        required: true,
+        unique: true,
     },
+    smartlists: {
+        type: Array,
+    },
+
     userId: {
         type: String,
     }
@@ -13,5 +19,5 @@ const renewalNotesSchema = new schema({
     { timestamps: true }
 )
 
-module.exports = mongoose.model("smartList", renewalNotesSchema);
+module.exports = mongoose.model("smartList", smartlistSchema);
 

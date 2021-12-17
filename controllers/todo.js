@@ -252,41 +252,49 @@ exports.searching_task = (req, res) => {
 
 }
 
-exports.upcoming_taskread = (req, res) => {
-
-    var element = {}, cart = [];
-
-    var upcomingTask = '';
-
-    for (i = 0; i < 8; i++) {
-
-        var upcomingDate = new Date()
-
-        var todayDate = new Date(upcomingDate)
-
-        todayDate.setDate(todayDate.getDate() + i)
-
-        let date = todayDate.getDate();
-
-        // current month
-        //let month = todayDate.toLocaleString('default', { month: 'long' })  
-        let month = ("0" + (todayDate.getMonth() + 1)).slice(-2);
-
-        // current year
-        let year = todayDate.getFullYear();
-
-        var newtodoDate = `${year}-${month}-${date}`;
-
-        tasks.find({ userId: req.params.userId, todoDate: newtodoDate })
-            .then((result) => {
-                if (result) {
-                    element.subject = result[0].subject;
-                    element.todoDate = result[0].todoDate;
-                    cart.push({ element: element });
+exports.upcoming_taskread = async (req, res) => {
+    try {
+        tasks.aggregate(
+            [{ $match: { userId: req.params.userId }, },
+            {
+                $project: {
+                    notes: 1,
+                    status: 1,
+                    subject: 1,
+                    tag: 1,
+                    todoTime: 1,
+                    createdAt: 1,
+                    todoDate: 1,
+                    todoDate: { $dateFromString: { dateString: "$todoDate" } },
+                    expectedDeliveryDate:
+                    {
+                        $dateAdd:
+                        {
+                            startDate:  "$todoDate",
+                            unit: "day",
+                            amount: 3
+                        }
+                    }
                 }
-            }).catch((err) => {
-                res.send(err)
-            })
+            },
+            {
+                $match: {
+
+                    todoDate: { $gte: new Date }
+                }
+            }
+            ])
+            .exec((err, memberdata) => {
+                if (err) {
+                    res.send({
+                        error: err,
+                        success: false
+                    });
+                } else {
+                    res.send({ cart: memberdata, success: true });
+                }
+            });
+    } catch (err) {
+        res.send({ error: err.message.replace(/\"/g, ""), success: false });
     }
-    res.json({ cart })
 }
