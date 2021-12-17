@@ -332,12 +332,6 @@ exports.add_template = async (req, res) => {
     to = to ? JSON.parse(to) : [];
     smartLists = smartLists ? JSON.parse(smartLists) : [];
     let { userId, folderId } = req.params || {};
-    // if(!to && !smartLists){
-    //   throw new Error("Select atleat send-to or smart-List")
-    // }
-    // if (to && smartLists) {
-    //   throw new Error("Either select send-To or smart-list")
-    // }
     if (!to.lenght) {
       smartLists.map(lists => {
         to = [...to, ...lists.smrtList]
@@ -439,9 +433,6 @@ var emailCronFucntionality = async () => {
   scheduledListing.forEach(async (ele) => {
     let sentDate = ele.sent_date;
     let mailId = ele._id;
-    // ele.attachments.map(() => {
-
-    // })
     let currentDate = moment().format("YYYY-MM-DD");
     if (sentDate === currentDate && !ele.is_Sent) {
       const emailData = {
@@ -456,15 +447,15 @@ var emailCronFucntionality = async () => {
       if (ele.is_Sent === false) {
         sgMail
           .send_via_sendgrid(emailData)
-          .then(async (data) => {
+          .then( resp => {
             try {
-              await all_temp.findByIdAndUpdate(mailId, { is_Sent: true });
+            all_temp.findByIdAndUpdate(mailId, { is_Sent: true });
             } catch (err) {
               throw new Error("Mail status not updated", err)
             }
           })
           .catch((err) => {
-            throw new Error("Mail not sent", err)
+            throw new Error(err);
           });
       } else {
         throw new Error("No email Scheduled for this Email");
@@ -474,7 +465,7 @@ var emailCronFucntionality = async () => {
   await Promise.all(promises);
 };
 
-cron.schedule(`*/5 * * * *`, () => {
+cron.schedule(`*/1 * * * *`, () => {
   emailCronFucntionality();
 });
 

@@ -38,7 +38,7 @@ exports.membership_Info = (req, res) => {
 exports.update = async (req, res) => {
   const membershipId = req.params.membershipId;
   const type = req.params.type;
-  const valorPayload = req.body.valorPayload;
+  const subscription_id = req.body.subscription_id;
   try {
     if (req.body.isTerminate) {
       res.status(200).send({
@@ -53,13 +53,8 @@ exports.update = async (req, res) => {
           success: true,
         });
       } else if (type == "freeze") {
-        if (valorPayload) {
-          const freezeValorPayload =
-            await valorTechPaymentGateWay.freezeSubscription({
-              ...valorPayload,
-              freeze_start_date: req.body.freeze_start_date,
-              freeze_stop_date: req.body.freeze_stop_date,
-            });
+        if (subscription_id) {
+          const freezeValorPayload = await valorTechPaymentGateWay.freezeSubscription({subscription_id, freeze_start_date: req.body.freeze_start_date.split('-').join(''), freeze_stop_date: req.body.freeze_stop_date.split('-').join('')});
           if (freezeValorPayload?.data?.error_no === "S00") {
             const freezeRes = await freezeMembership(membershipId, req.body);
             if (freezeRes) {
@@ -69,14 +64,13 @@ exports.update = async (req, res) => {
               });
             } else {
               res.status(400).send({
-                msg: "Membership not updated but valor freezed for membership!",
+                msg: "Membership not updated but valor freezed membership!",
                 success: false,
               });
             }
           } else {
             res.status(400).send({
-              msg:
-                "Due to the technical issue subscription not freeze please try again or later!",
+              msg:"Due to the technical issue subscription not freeze please try again or later!",
               success: false,
             });
           }
@@ -96,10 +90,8 @@ exports.update = async (req, res) => {
         }
       } else if (type == "unfreeze") {
         let unfreezeRes;
-        if (valorPayload) {
-          const valorRes = await valorTechPaymentGateWay.unfreezeSubscription(
-            valorPayload
-          );
+        if (subscription_id) {
+          const valorRes = await valorTechPaymentGateWay.unfreezeSubscription({subscription_id});
           if (valorRes.data.error_no === "S00") {
             unfreezeRes = await unFreezeMembership(membershipId, req.body);
             if (unfreezeRes) {
@@ -137,57 +129,58 @@ exports.update = async (req, res) => {
         const emiId = req.body.emiId;
         const createdBy = req.body.createdBy;
         const balance = req.body.balance;
-        if (emiId) {
+        let forfeit;
+        if (subscription_id) {
+          const {uid} = getUidAndInvoiceNumber()
+          let valorRes = await valorTechPaymentGateWay.forfeitSubscription({subscription_id, uid})
+          if (valorRes.data.error_no == "S00") {
+            await paymentProcessing(membershipId, emiId, balance, createdBy, type);
+            forfeit = await forfeitSubscription(membershipId, req.body.reason)
+            if (forfeit.success) {
+              res.status(200).send(forfeit)
+            } else {
+              res.status(400).send(forfeit)
+            }
+          } else {
+            res.status(400).send({
+              success: false,
+              msg: "Membership forfeting failed please try again!"
+            })
+          }
+        } else {
           await paymentProcessing(membershipId, emiId, balance, createdBy, type);
+          forfeit = await forfeitSubscription(membershipId, req.body.reason)
+          if (forfeit.success) {
+            res.status(200).send(forfeit)
+          } else {
+            res.status(400).send(forfeit)
+          }
         }
-        await buyMembership.findByIdAndUpdate(
-          membershipId,
-          {
-            $set: { isForfeit: true },
-            $push: {
-              whenForFeit: { date: new Date(), reason: req.body.reason },
-            },
-          },
-          (er, data) => {
-            if (er) {
-              res.send({
-                msg: "Membership forfeit failed!",
-                success: false,
-              });
-            } else {
-              res.status(200).send({
-                msg: "Membership forfeit successfully!",
-                success: true,
-              });
-            }
-          }
-        );
       } else if (type == "terminate") {
-        await buyMembership.findByIdAndUpdate(
-          membershipId,
-          {
-            $set: { isTerminate: true, membership_status: "Terminated" },
-            $push: {
-              whenTerminate: {
-                date: new Date(),
-                reason: req.body.reason,
-              },
-            },
-          },
-          (err, data) => {
-            if (err) {
-              res.send({
-                msg: "Membership terminate failed!",
-                success: false,
-              });
+        let terminate;
+        if (subscription_id) {
+          const valorDelete = await valorTechPaymentGateWay.deleteSubscription({subscription_id});
+          if (valorDelete.data.error_no === "S00") {
+            terminate = await terminateMembership(membershipId, req.body.reason)
+            if (terminate.success) {
+              res.status(200).send(terminate)
             } else {
-              res.status(200).send({
-                msg: "Membership terminated successfully",
-                success: true,
-              });
+              res.status(400).send(terminate)
             }
+          } else {
+            res.send({
+              msg: "Due to technical reason membership not terminating please try later!",
+              success: false
+            })
           }
-        );
+        } else {
+          terminate = await terminateMembership(membershipId, req.body.reason)
+          if (terminate.success) {
+            res.status(200).send(terminate)
+          } else {
+            res.status(400).send(terminate)
+          }
+        }
       } else if (type == "refund") {
         let refundRes;
         const balance = req.body.balance
@@ -241,6 +234,63 @@ exports.update = async (req, res) => {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
 };
+
+function terminateMembership(membershipId, reason) {
+  return new Promise((resolve, reject) => {
+    buyMembership.findByIdAndUpdate(
+      membershipId,
+      {
+        $set: { isTerminate: true, membership_status: "Terminated" },
+        $push: {
+          whenTerminate: {
+            date: new Date(),
+            reason: reason,
+          },
+        },
+      },
+      (err, data) => {
+        if (err) {
+          resolve({
+            msg: "Membership terminate failed!",
+            success: false,
+          });
+        } else {
+          resolve({
+            msg: "Membership terminated successfully",
+            success: true,
+          });
+        }
+      }
+    );
+  })
+}
+
+function forfeitSubscription(membershipId, reason) {
+  return new Promise((resolve, reject) => {
+    buyMembership.findByIdAndUpdate(
+      membershipId,
+      {
+        $set: { isForfeit: true },
+        $push: {
+          whenForFeit: { date: new Date(), reason: reason },
+        },
+      },
+      (er, data) => {
+        if (er) {
+          resolve({
+            msg: "Membership forfeit failed!",
+            success: false,
+          });
+        } else {
+          resolve({
+            msg: "Membership forfeit successfully!",
+            success: true,
+          });
+        }
+      }
+    );
+  })
+}
 
 async function freezeMembership(membershipId, payload) {
   return new Promise((resolve, reject) => {
@@ -566,7 +616,11 @@ exports.buyMembership = async (req, res) => {
               const addresp = await valorTechPaymentGateWay.addSubscription(
                 addFormatedPayload
               );
-              console.log(addresp, "UPDATED PAY")
+              if (addresp.data.error_no ==="S00"){
+                membershipData.subscription_id =  addresp.data.subscription_id
+              } else {
+                membershipData.subscription_id =  "failed" 
+              }
             }
             membershipData.transactionId = {
               rrn: resp.data.rrn,
@@ -608,9 +662,9 @@ exports.buyMembership = async (req, res) => {
         });
       }
     } else {
+      membershipData.due_status = "paid";
+      membershipData.membership_status = "Active";
       if (!membershipData.isEMI && membershipData.balance == 0 && ptype === 'credit card') {
-        membershipData.due_status = "paid";
-        membershipData.membership_status = "Active";
         if (valorPayload.pan) {
           const { uid } = getUidAndInvoiceNumber();
           valorPayload = { ...valorPayload, uid };
@@ -653,7 +707,11 @@ exports.buyMembership = async (req, res) => {
           res.send(memberShipDoc);
         }
       } else {
-        res.send({ msg: "payment type should be  pif ", success: false });
+        memberShipDoc = await createMemberShipDocument(
+          membershipData,
+          studentId
+        );
+        res.send(memberShipDoc);
       }
     }
   } catch (error) {

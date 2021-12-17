@@ -104,7 +104,7 @@ exports.sendEmail = async (req, res) => {
             const emailData = {
                 sendgrid_key: process.env.SENDGRID_API_KEY,
                 to: to,
-                from:"diwakar17@nextlevelmedia.com",
+                from: process.env.from_email,
                 // from_name: 'noreply@gmail.com',
                 subject: req.body.subject,
                 html: req.body.template,

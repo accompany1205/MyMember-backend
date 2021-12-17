@@ -266,15 +266,6 @@ exports.upcoming_taskread = async (req, res) => {
                     createdAt: 1,
                     todoDate: 1,
                     todoDate: { $dateFromString: { dateString: "$todoDate" } },
-                    expectedDeliveryDate:
-                    {
-                        $dateAdd:
-                        {
-                            startDate:  "$todoDate",
-                            unit: "day",
-                            amount: 3
-                        }
-                    }
                 }
             },
             {
