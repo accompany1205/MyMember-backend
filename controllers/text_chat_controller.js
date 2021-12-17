@@ -1,5 +1,7 @@
 const textMessage = require("../models/text_message");
 const textContact = require("../models/text_contact");
+const member = require("../models/addmember");
+const mongoose = require("mongoose");
 
 // Adding member in text contact list
 exports.addTextContact = (req, res) => {
@@ -53,4 +55,25 @@ exports.getTextMessages= (req, res) => {
     });
 };
 
+// Get members details
+exports.getTextContactsDetails = (req, res) => {
+  let body = req.body;
+  let ids = [];
+  console.log('Body: ', body);
+  if (body.hasOwnProperty('ids')) {
+    body.ids.forEach(id => {
+      ids.push(mongoose.Types.ObjectId(id));
+    });
+  }
+  member.find({'_id': {$in: [ids]}})
+    .populate('textContacts')
+    .exec((err,textContactList)=>{
+    if(err){
+      res.send({error:'text contact list not found'})
+    }
+    else{
+      res.send(textContactList)
+    }
+  });
+};
 

@@ -6,11 +6,13 @@ const {
   sendTextMessage,
   getTextContacts,
   getTextMessages,
+  getTextContactsDetails,
 } = require("../controllers/text_chat_controller");
 
-router.post("text-chat/add-contact", verifySchool, addTextContact);
-router.post("text-chat/send-message", verifySchool, sendTextMessage);
-router.get("text-chat/get-contacts/:userId", verifySchool, getTextContacts);
-router.get("text-chat/get-messages/:userId", verifySchool, getTextMessages);
+router.post("/text-chat/add-contact/:userId", verifySchool, addTextContact);
+router.post("/text-chat/send-message/:userId", verifySchool, sendTextMessage);
+router.post("/text-chat/contacts-details/:userId", verifySchool, getTextContactsDetails);
+router.get("/text-chat/get-contacts/:userId", verifySchool, getTextContacts);
+router.get("/text-chat/get-messages/:userId", verifySchool, getTextMessages);
 
 module.exports = router;
