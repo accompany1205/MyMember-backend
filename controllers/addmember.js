@@ -414,139 +414,144 @@ exports.studentCount = (req, res) => {
 };
 
 exports.addmember = async (req, res) => {
-  var pDetail = await program.findOne({
-    programName: req.body.program,
-  });
-  var memberdetails = req.body;
-  var memberObj = new addmemberModal(memberdetails);
-  memberObj.userId = req.params.userId;
-  // memberObj.programColor = pDetail.color
-  memberObj.save(function (err, data) {
-    if (err) {
-      res.send({
-        error: "member is not added",
-      });
-    } else {
-      if (req.file) {
-        cloudUrl
-          .imageUrl(req.file)
-          .then((stdImgUrl) => {
-            addmemberModal
-              .findByIdAndUpdate(data._id, {
-                $set: {
-                  memberprofileImage: stdImgUrl,
-                },
-              })
-              .then((response) => {
-                // res.send({'res':response})
-                program
-                  .findOne({
-                    programName: req.body.program,
-                  })
-                  .select("programName")
-                  .populate({
-                    path: "program_rank",
-                    model: "Program_rank",
-                    select: "rank_name rank_image",
-                  })
-                  .exec((err, proData) => {
+  try {
+    var pDetail = await program.findOne({
+      programName: req.body.program,
+    });
+    var memberdetails = req.body;
+    var memberObj = new addmemberModal(memberdetails);
+    memberObj.userId = req.params.userId;
+    // memberObj.programColor = pDetail.color
+    memberObj.save(function (err, data) {
+      if (err) {
+        res.send({
+          error: "member is not added",
+        });
+      } else {
+        if (req.file) {
+          cloudUrl
+            .imageUrl(req.file)
+            .then((stdImgUrl) => {
+              addmemberModal
+                .findByIdAndUpdate(data._id, {
+                  $set: {
+                    memberprofileImage: stdImgUrl,
+                  },
+                })
+                .then((response) => {
+                  // res.send({'res':response})
+                  program
+                    .findOne({
+                      programName: req.body.program,
+                    })
+                    .select("programName")
+                    .populate({
+                      path: "program_rank",
+                      model: "Program_rank",
+                      select: "rank_name rank_image",
+                    })
+                    .exec((err, proData) => {
+                      if (err) {
+                        res.send({
+                          code: 400,
+                          msg: "program not found",
+                        });
+                      } else {
+                        var d = proData.program_rank[0];
+                        addmemberModal.findByIdAndUpdate(
+                          {
+                            _id: response._id,
+                          },
+                          {
+                            $set: {
+                              next_rank_id: d._id,
+                              next_rank_name: d.rank_name,
+                              next_rank_img: d.rank_image,
+                              programID: proData._id,
+                            },
+                          },
+                          (err, mangerank) => {
+                            if (err) {
+                              res.send({
+                                code: 400,
+                                msg: "manage rank not found",
+                              });
+                            } else {
+                              res.send({
+                                mangerank: mangerank,
+                                message: "Student created successfully",
+                                status: true,
+                              });
+                            }
+                          }
+                        );
+                      }
+                    });
+                })
+                .catch((err) => {
+                  res.send(err);
+                });
+            })
+            .catch((error) => {
+              res.send({
+                error: "image url is not create",
+              });
+            });
+        } else {
+          program
+            .findOne({
+              programName: req.body.program,
+            })
+            .select("programName")
+            .populate({
+              path: "program_rank",
+              model: "Program_rank",
+              select: "rank_name rank_image",
+            })
+            .exec((err, proData) => {
+              if (err || !proData) {
+                res.send({
+                  code: 400,
+                  msg: "program not find",
+                });
+              } else {
+                var d = proData.program_rank[0];
+                addmemberModal.findByIdAndUpdate(
+                  {
+                    _id: data._id,
+                  },
+                  {
+                    $set: {
+                      next_rank_id: d._id,
+                      next_rank_name: d.rank_name,
+                      next_rank_img: d.rank_image,
+                      programID: proData._id,
+                    },
+                  },
+                  (err, mangerank) => {
                     if (err) {
                       res.send({
                         code: 400,
-                        msg: "program not found",
+                        msg: "manage rank not find of program",
                       });
                     } else {
-                      var d = proData.program_rank[0];
-                      addmemberModal.findByIdAndUpdate(
-                        {
-                          _id: response._id,
-                        },
-                        {
-                          $set: {
-                            next_rank_id: d._id,
-                            next_rank_name: d.rank_name,
-                            next_rank_img: d.rank_image,
-                            programID: proData._id,
-                          },
-                        },
-                        (err, mangerank) => {
-                          if (err) {
-                            res.send({
-                              code: 400,
-                              msg: "manage rank not found",
-                            });
-                          } else {
-                            res.send({
-                              mangerank: mangerank,
-                              message: "Student created successfully",
-                              status: true,
-                            });
-                          }
-                        }
-                      );
+                      res.send({
+                        mangerank: mangerank,
+                        message: "Student created successfully",
+                        status: true,
+                      });
                     }
-                  });
-              })
-              .catch((err) => {
-                res.send(err);
-              });
-          })
-          .catch((error) => {
-            res.send({
-              error: "image url is not create",
-            });
-          });
-      } else {
-        program
-          .findOne({
-            programName: req.body.program,
-          })
-          .select("programName")
-          .populate({
-            path: "program_rank",
-            model: "Program_rank",
-            select: "rank_name rank_image",
-          })
-          .exec((err, proData) => {
-            if (err || !proData) {
-              res.send({
-                code: 400,
-                msg: "program not find",
-              });
-            } else {
-              var d = proData.program_rank[0];
-              addmemberModal.findByIdAndUpdate(
-                {
-                  _id: data._id,
-                },
-                {
-                  $set: {
-                    next_rank_id: d._id,
-                    next_rank_name: d.rank_name,
-                    next_rank_img: d.rank_image,
-                    programID: proData._id,
-                  },
-                },
-                (err, mangerank) => {
-                  if (err) {
-                    res.send({
-                      code: 400,
-                      msg: "manage rank not find of program",
-                    });
-                  } else {
-                    res.send({
-                      mangerank: mangerank,
-                      message: "Student created successfully",
-                      status: true,
-                    });
                   }
-                }
-              );
-            }
-          });
+                );
+              }
+            });
+        }
       }
-    }
-  });
+    });
+  }
+  catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+  }
 };
 
 exports.read = (req, res) => {
@@ -818,9 +823,10 @@ exports.after_school_Std = async (req, res) => {
 
 exports.studentinfo = (req, res) => {
   var studentinfo = req.params.StudentId;
+  let sortBy = req.params.sortBy || "firstName"
   addmemberModal
     .findById(studentinfo)
-    .populate("membership_details")
+    .populate({ path: "membership_details", options: { sort: { [sortBy]: 1 } } })
     .populate("finance_details")
     .populate("myFaimly")
     .exec((err, data) => {
