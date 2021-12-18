@@ -85,7 +85,7 @@ router.get('/member/this_month_active_trial/:userId', verifySchool, trial_this_m
 
 router.get("/member/member_list_name/:userId", verifySchool, listMember)
 router.get('/member/member_list/:userId', verifySchool, read);
-router.get('/member/member_info/:userId/:StudentId/:sortBy', verifySchool, studentinfo);
+router.get('/member/member_info/:userId/:StudentId', verifySchool, studentinfo);
 
 router.get('/member/invoice_listing/:userId/:StudentId', verifySchool, invoice_listing)
 
