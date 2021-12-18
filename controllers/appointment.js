@@ -8,9 +8,9 @@ exports.Create = (req, res) => {
   const campaigns = new appoint(App);
   campaigns.save((err, appdata) => {
     if (err) {
-      res.send({ error: "appoinment is not add" });
+      res.send({ msg: "appoinment is not added", success:false });
     } else {
-      res.send(appdata);
+      res.send({success:true, msg:"apoointment added!", appdata});
     }
   });
 };
@@ -19,10 +19,10 @@ exports.read = (req, res) => {
   appoint
     .find({ userId: req.params.userId })
     .then((result) => {
-      res.json(result);
+      res.send({success:true, msg:"Data!", result});
     })
     .catch((err) => {
-      res.send(err);
+      res.send({ msg: "No data!", success:false });
     });
 };
 
