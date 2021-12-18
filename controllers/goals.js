@@ -100,7 +100,7 @@ exports.annual_goalread = (req, res) => {
 exports.searching_goal = (req, res) => {
 
     const all = url.parse(req.url, true).query
-   
+
 
     let searchKeyWord = new RegExp(".*" + all.q + ".*", 'i');
 
@@ -131,9 +131,9 @@ exports.weekly_goal_counter = (req, res) => {
     ) {
         if (err) {
             return handleError(err)
-        } 
+        }
         weeklyCount = docCount
-        res.json({count : weeklyCount})
+        res.json({ count: weeklyCount })
     })
 
 };
@@ -148,9 +148,9 @@ exports.monthly_goal_counter = (req, res) => {
     ) {
         if (err) {
             return handleError(err)
-        } 
+        }
         monthlyCount = docCount
-        res.json({count : monthlyCount})
+        res.json({ count: monthlyCount })
     })
 
 };
@@ -165,9 +165,9 @@ exports.quaterly_goal_counter = (req, res) => {
     ) {
         if (err) {
             return handleError(err)
-        } 
+        }
         quaterlyCount = docCount
-        res.json({count : quaterlyCount})
+        res.json({ count: quaterlyCount })
     })
 
 };
@@ -183,9 +183,9 @@ exports.annual_goal_counter = (req, res) => {
     ) {
         if (err) {
             return handleError(err)
-        } 
+        }
         annualCount = docCount
-        res.json({count : annualCount})
+        res.json({ count: annualCount })
     })
 
 };
@@ -200,9 +200,9 @@ exports.completed_goal_counter = (req, res) => {
     ) {
         if (err) {
             return handleError(err)
-        } 
+        }
         completedCount = docCount
-        res.json({count : completedCount})
+        res.json({ count: completedCount })
     })
 
 };
@@ -217,9 +217,293 @@ exports.not_completed_goal_counter = (req, res) => {
     ) {
         if (err) {
             return handleError(err)
-        } 
+        }
         notCompletedCount = docCount
-        res.json({count : notCompletedCount})
+        res.json({ count: notCompletedCount })
     })
 
 };
+
+exports.this_month_pending_goals = (req, res) => {
+    const userId = req.params.userId
+    goals.aggregate([
+        { $match: { userId: userId, goal_status: "Pending" } },
+
+        {
+            $project: {
+                subject: 1,
+                goal_category: 1,
+                compeleting_Date: 1,
+                reminder_Date: 1,
+                tag: 1,
+                goal_status: 1,
+                compeleting_Date: { $toDate: "$compeleting_Date" },
+                notes: 1,
+            }
+        },
+        {
+            $match: {
+                $expr: { $eq: [{ $month: "$compeleting_Date" }, { $month: "$$NOW" }] },
+            },
+        }
+    ])
+        .then((result) => {
+            res.json(result)
+        }).catch((err) => {
+            res.send(err)
+        })
+};
+exports.this_week_pending_goals = (req, res) => {
+    const userId = req.params.userId
+    goals.aggregate([
+        { $match: { userId: userId, goal_status: "Pending" } },
+
+        {
+            $project: {
+                subject: 1,
+                goal_category: 1,
+                compeleting_Date: 1,
+                reminder_Date: 1,
+                tag: 1,
+                goal_status: 1,
+                compeleting_Date: { $toDate: "$compeleting_Date" },
+                notes: 1,
+            }
+        },
+        {
+            $match: {
+                $expr: {
+                    $eq: [{ $week: "$compeleting_Date" }, { $week: "$$NOW" }]
+                },
+            },
+        }
+    ])
+        .then((result) => {
+            res.json(result)
+        }).catch((err) => {
+            res.send(err)
+        })
+};
+
+exports.today_pending_goals = (req, res) => {
+    const userId = req.params.userId
+    goals.aggregate([
+        { $match: { userId: userId, goal_status: "Pending" } },
+
+        {
+            $project: {
+                subject: 1,
+                goal_category: 1,
+                compeleting_Date: 1,
+                reminder_Date: 1,
+                tag: 1,
+                goal_status: 1,
+                compeleting_Date: { $toDate: "$compeleting_Date" },
+                notes: 1,
+            }
+        },
+        {
+            $match: {
+                $expr: {
+                    $and: [
+                        { $eq: [{ $dayOfMonth: '$compeleting_Date' }, { $dayOfMonth: new Date() }] },
+                        { $eq: [{ $month: '$compeleting_Date' }, { $month: new Date() }] },
+                        { $eq: [{ $year: '$compeleting_Date' }, { $year: new Date() }] },
+
+                    ]
+                }
+            },
+        }
+    ])
+        .then((result) => {
+            res.json(result)
+        }).catch((err) => {
+            res.send(err)
+        })
+};
+
+exports.this_month_completed_goals = (req, res) => {
+    const userId = req.params.userId
+    goals.aggregate([
+        { $match: { userId: userId, goal_status: "Completed" } },
+
+        {
+            $project: {
+                subject: 1,
+                goal_category: 1,
+                compeleting_Date: 1,
+                reminder_Date: 1,
+                tag: 1,
+                goal_status: 1,
+                compeleting_Date: { $toDate: "$compeleting_Date" },
+                notes: 1,
+            }
+        },
+        {
+            $match: {
+                $expr: { $eq: [{ $month: "$compeleting_Date" }, { $month: "$$NOW" }] },
+            },
+        }])
+        .then((result) => {
+            res.json(result)
+        }).catch((err) => {
+            res.send(err)
+        })
+};
+exports.this_week_completed_goals = (req, res) => {
+    const userId = req.params.userId
+    goals.aggregate([
+        { $match: { userId: userId, goal_status: "Completed" } },
+
+        {
+            $project: {
+                subject: 1,
+                goal_category: 1,
+                compeleting_Date: 1,
+                reminder_Date: 1,
+                tag: 1,
+                goal_status: 1,
+                compeleting_Date: { $toDate: "$compeleting_Date" },
+                notes: 1,
+            }
+        },
+        {
+            $match: {
+                $expr: {
+                    $eq: [{ $week: "$compeleting_Date" }, { $week: "$$NOW" }]
+                }
+            },
+        }])
+        .then((result) => {
+            res.json(result)
+        }).catch((err) => {
+            res.send(err)
+        })
+};
+exports.today_completed_goals = (req, res) => {
+    const userId = req.params.userId
+    goals.aggregate([
+        { $match: { userId: userId, goal_status: "Completed" } },
+
+        {
+            $project: {
+                subject: 1,
+                goal_category: 1,
+                compeleting_Date: 1,
+                reminder_Date: 1,
+                tag: 1,
+                goal_status: 1,
+                compeleting_Date: { $toDate: "$compeleting_Date" },
+                notes: 1,
+            }
+        },
+        {
+            $match: {
+                $expr: {
+                    $and: [
+                        { $eq: [{ $dayOfMonth: '$compeleting_Date' }, { $dayOfMonth: new Date() }] },
+                        { $eq: [{ $month: '$compeleting_Date' }, { $month: new Date() }] },
+                        { $eq: [{ $year: '$compeleting_Date' }, { $year: new Date() }] },
+
+                    ]
+                }
+            }
+        }])
+        .then((result) => {
+            res.json(result)
+        }).catch((err) => {
+            res.send(err)
+        })
+};
+exports.this_month_not_completed_goals = (req, res) => {
+    const userId = req.params.userId
+    goals.aggregate([
+        { $match: { userId: userId, goal_status: "Not Completed" } },
+
+        {
+            $project: {
+                subject: 1,
+                goal_category: 1,
+                compeleting_Date: 1,
+                reminder_Date: 1,
+                tag: 1,
+                goal_status: 1,
+                compeleting_Date: { $toDate: "$compeleting_Date" },
+                notes: 1,
+            }
+        },
+        {
+            $match: {
+                $expr: { $eq: [{ $month: "$compeleting_Date" }, { $month: "$$NOW" }] },
+            },
+        }]).then((result) => {
+            res.json(result)
+        }).catch((err) => {
+            res.send(err)
+        })
+};
+exports.this_week_not_completed_goals = (req, res) => {
+    const userId = req.params.userId
+    goals.aggregate([
+        { $match: { userId: userId, goal_status: "Not Completed" } },
+
+        {
+            $project: {
+                subject: 1,
+                goal_category: 1,
+                compeleting_Date: 1,
+                reminder_Date: 1,
+                tag: 1,
+                goal_status: 1,
+                compeleting_Date: { $toDate: "$compeleting_Date" },
+                notes: 1,
+            }
+        },
+        {
+            $match: {
+                $expr: {
+                    $eq: [{ $week: "$compeleting_Date" }, { $week: "$$NOW" }]
+                }
+            },
+        }]).then((result) => {
+            res.json(result)
+        }).catch((err) => {
+            res.send(err)
+        })
+};
+exports.today_not_completed_goals = (req, res) => {
+    const userId = req.params.userId
+    goals.aggregate([
+        { $match: { userId: userId, goal_status: "Not Completed" } },
+
+        {
+            $project: {
+                subject: 1,
+                goal_category: 1,
+                compeleting_Date: 1,
+                reminder_Date: 1,
+                tag: 1,
+                goal_status: 1,
+                compeleting_Date: { $toDate: "$compeleting_Date" },
+                notes: 1,
+            }
+        },
+        {
+            $match: {
+                $expr: {
+                    $and: [
+                        { $eq: [{ $dayOfMonth: '$compeleting_Date' }, { $dayOfMonth: new Date() }] },
+                        { $eq: [{ $month: '$compeleting_Date' }, { $month: new Date() }] },
+                        { $eq: [{ $year: '$compeleting_Date' }, { $year: new Date() }] },
+
+                    ]
+                }
+            }
+        }]).then((result) => {
+            res.json(result)
+        }).catch((err) => {
+            res.send(err)
+        })
+};
+
+
