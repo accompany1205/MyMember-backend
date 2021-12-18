@@ -386,7 +386,7 @@ exports.updatePayments = async (req, res) => {
       const {uid} = getUidAndInvoiceNumber()
       let valorRes = await valorTechPaymentGateWay.forfeitSubscription({subscription_id, uid})
       if (valorRes.data.error_no == "S00") {
-        const pay = await paymentProcessing(buy_membershipId, emiId, balance, createdBy, "paid", payment_type, req.body.check_number);
+        const pay = await paymentProcessing(buy_membershipId, emiId, balance, createdBy, "paid", payment_type, req.body.cheque_number);
         res.send(pay)
       } else {
         res.status(400).send({
@@ -396,16 +396,21 @@ exports.updatePayments = async (req, res) => {
       }
     } else {
       const { uid } = getUidAndInvoiceNumber();
-      const valorPayload = { ...cardDetails, uid, amount: req.body.Amount};
-      const resp = await valorTechPaymentGateWay.saleSubscription(valorPayload);
-      if (resp.data.error_no == "S00") {
-        const pay = await paymentProcessing(buy_membershipId, emiId, balance, createdBy, "paid", payment_type, req.body.check_number);
-        res.send(pay)
+      if (cardDetails) {
+        const valorPayload = { ...cardDetails, uid, amount: req.body.Amount};
+        const resp = await valorTechPaymentGateWay.saleSubscription(valorPayload);
+        if (resp.data.error_no == "S00") {
+          const pay = await paymentProcessing(buy_membershipId, emiId, balance, createdBy, "paid", payment_type, req.body.cheque_number);
+          res.send(pay)
+        } else {
+          res.status(400).send({
+            success: false,
+            msg: "Payment is not completed due to technical reason please try again!"
+          })
+        }
       } else {
-        res.status(400).send({
-          success: false,
-          msg: "Payment is not completed due to technical reason please try again!"
-        })
+        const pay = await paymentProcessing(buy_membershipId, emiId, balance, createdBy, "paid", payment_type, req.body.cheque_number);
+          res.send(pay)
       }
     }
   } catch (err) {
