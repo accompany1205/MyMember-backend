@@ -11,7 +11,7 @@ const Joi = require('@hapi/joi');
 exports.getRecommededForTest = async (req, res) => {
     let userId = req.params.userId;
     var order = req.query.order
-    let sortBy = req.params.sortBy || "firstName"
+    let sortBy = req.query.sortBy
     if (!userId) {
         res.json({
             status: false,
@@ -37,7 +37,7 @@ exports.getRecommededForTest = async (req, res) => {
 }
 
 exports.getRegisteredForTest = async (req, res) => {
-    let sortBy = req.params.sortBy || "firstName"
+    let sortBy = req.query.sortBy 
     var order = req.query.order
     let userId = req.params.userId;
     if (!userId) {
