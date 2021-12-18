@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const schema =  mongoose.Schema ;
+const schema = mongoose.Schema;
 const todoSchema = schema(
     {
         subject: {
@@ -11,21 +11,28 @@ const todoSchema = schema(
         todoDate: {
             type: String,
             required: true
-        }, todoTime: {
-            type: String,
-            required: true
-        }, tag: {
-            type: String,
-            required: true
-        }, status: {
+        },
+        todoTime: {
             type: String,
             required: true
         },
-         notes: { type: String, required: true },
+        tag: {
+            type: String,
+            required: true
+        },
+        status: {
+            type: String,
+            required: true
+        },
+        is_Favorite: {
+            type: Boolean,
+            default: false
+        },
+        notes: { type: String, required: true },
 
-        userId:{
-            type:String,
-        } 
+        userId: {
+            type: String,
+        }
     },
     { timestamps: true }
 );

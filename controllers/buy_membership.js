@@ -200,7 +200,7 @@ exports.update = async (req, res) => {
             if (refundRes) {
               res.status(200).send({
                 msg: "Membership refunded successfully!",
-                success: true,  
+                success: true,
               });
             } else {
               res.status(400).send({
@@ -339,7 +339,7 @@ function refundMembership(membershipId, payload) {
     buyMembership.findByIdAndUpdate(
       membershipId,
       {
-        $set: { isRefund: true, membership_status: "Deactivated"},
+        $set: { isRefund: true, membership_status: "Deactivated" },
         $push: {
           refund: {
             Amount: payload.Amount,
@@ -381,8 +381,8 @@ function paymentProcessing(buy_membershipId, emiId, balance, createdBy, type) {
       },
       {
         $set: {
-           balance: balance,
-           membership_status: "Active",
+          balance: balance,
+          membership_status: "Active",
           "schedulePayments.$.status": type,
           "schedulePayments.$.createdBy": createdBy,
           "schedulePayments.$.paidDate": new Date(),
@@ -595,7 +595,7 @@ exports.buyMembership = async (req, res) => {
           membershipData.payment_type,
           payLatter
         );
-        if (valorPayload && ptype=="credit card") {
+        if (valorPayload && ptype == "credit card") {
           valorPayload.descriptor = "BETA TESTING";
           valorPayload.product_description = "Mymember brand Product";
           // valorPayload.surchargeIndicator = 1;
@@ -607,11 +607,11 @@ exports.buyMembership = async (req, res) => {
           const saleFormatedPayload = getFormatedPayload(valorPayload);
           saleFormatedPayload.surchargeIndicator = 1;
           const resp = await valorTechPaymentGateWay.saleSubscription(
-              saleFormatedPayload 
-            );
+            saleFormatedPayload
+          );
           if (resp.data.error_no == 'S00') {
             if (payLatter === "credit card") {
-              addValorPay = { ...addValorPay, amount: membershipData.payment_money, subscription_starts_from: membershipData.schedulePayments[0].date.split('-').join(''), Subscription_valid_for:membershipData.schedulePayments.length - 1, ...getUidAndInvoiceNumber() };
+              addValorPay = { ...addValorPay, amount: membershipData.payment_money, subscription_starts_from: membershipData.schedulePayments[0].date.split('-').join(''), Subscription_valid_for: membershipData.schedulePayments.length - 1, ...getUidAndInvoiceNumber() };
               const addFormatedPayload = getFormatedPayload(addValorPay);
               const addresp = await valorTechPaymentGateWay.addSubscription(
                 addFormatedPayload
@@ -623,10 +623,10 @@ exports.buyMembership = async (req, res) => {
               }
             }
             membershipData.transactionId = {
-                  rrn: resp.data.rrn,
-                  txnid: resp.data.txnid,
-                  token: resp.data.token,
-                };
+              rrn: resp.data.rrn,
+              txnid: resp.data.txnid,
+              token: resp.data.token,
+            };
             valorPayload.address = Address;
             valorPayload.userId = userId;
             valorPayload.studentId = studentId;
@@ -730,7 +730,7 @@ function getFormatedPayload(valorPayload) {
       shipping_street_no: address.street_no,
       shipping_street_name: address.address,
       shipping_zip: address.zip,
-      billing_customer_name: payload.card_holder_name ,
+      billing_customer_name: payload.card_holder_name,
       billing_street_no: address.street_no,
       billing_street_name: address.address,
       billing_zip: address.zip,
@@ -803,7 +803,7 @@ function createMemberShipDocument(membershipData, studentId) {
 }
 
 function createFinanceDoc(data, financeId) {
-  const {studentId} = data;
+  const { studentId } = data;
   return new Promise((resolve, reject) => {
     const financeData = new Finance_infoSchema(data);
     if (financeId) {
@@ -870,12 +870,11 @@ exports.membership_InfoById = async (req, res) => {
 
 exports.members_info = async (req, res) => {
   var studentId = req.params.studentId;
-  let studentInfo = await AddMember.findById(studentId);
+  // let studentInfo = await AddMember.findById(studentId);
   currentDate = moment().format("YYYY-MM-DD");
   try {
-    let { membership_details } = studentInfo;
     let membershipDa = await buyMembership.find({
-      _id: { $in: membership_details, membershipIds },
+      studentInfo: { $in: studentId }
     });
     // membershipDa.filter(i => {
     //     if (moment(currentDate).isSameOrAfter(i.expiry_date)) {
