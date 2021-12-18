@@ -39,6 +39,14 @@ exports.update = async (req, res) => {
   const membershipId = req.params.membershipId;
   const type = req.params.type;
   const subscription_id = req.body.subscription_id;
+  const cardDetails = req.body.cardDetails;
+  let expiry_date = ""
+  if (cardDetails) {
+    expiry_date = toString(cardDetails.expiry_month) + toString(cardDetails.expiry_year)
+    delete cardDetails.expiry_month;
+    delete cardDetails.expiry_year;
+    cardDetails.expiry_date = expiry_date; 
+  }
   try {
     if (req.body.isTerminate) {
       res.status(200).send({
@@ -134,7 +142,7 @@ exports.update = async (req, res) => {
           const {uid} = getUidAndInvoiceNumber()
           let valorRes = await valorTechPaymentGateWay.forfeitSubscription({subscription_id, uid})
           if (valorRes.data.error_no == "S00") {
-            await paymentProcessing(membershipId, emiId, balance, createdBy, type);
+            await paymentProcessing(membershipId, emiId, balance, createdBy, type, req.body.ptype);
             forfeit = await forfeitSubscription(membershipId, req.body.reason)
             if (forfeit.success) {
               res.status(200).send(forfeit)
@@ -148,7 +156,7 @@ exports.update = async (req, res) => {
             })
           }
         } else {
-          await paymentProcessing(membershipId, emiId, balance, createdBy, type);
+          await paymentProcessing(membershipId, emiId, balance, createdBy, type, req.body.ptype);
           forfeit = await forfeitSubscription(membershipId, req.body.reason)
           if (forfeit.success) {
             res.status(200).send(forfeit)
@@ -186,16 +194,13 @@ exports.update = async (req, res) => {
         const balance = req.body.balance
         const emiId = req.body.emiId;
         const createdBy = req.body.createdBy;
-        if (emiId) {
-          await paymentProcessing(membershipId, emiId, balance, createdBy, type);
-        }
-        if (valorPayload) {
-          const valorRefundRes =
-            await valorTechPaymentGateWay.refundSubscription({
-              ...valorPayload,
-              amount: req.body.Amount,
-            });
+        if (cardDetails) {
+          const {uid} = getUidAndInvoiceNumber();
+          const valorRefundRes = await valorTechPaymentGateWay.refundSubscription({...cardDetails, uid, amount: req.body.Amount});
           if (valorRefundRes.data.error_no === "S00") {
+            if (emiId) {
+              await paymentProcessing(membershipId, emiId, balance, createdBy, type, req.body.ptype);
+            }
             refundRes = await refundMembership(membershipId, req.body);
             if (refundRes) {
               res.status(200).send({
@@ -345,6 +350,7 @@ function refundMembership(membershipId, payload) {
             Amount: payload.Amount,
             date: new Date(),
             reason: payload.reason,
+            refund_method: payload.payment_type
           },
         },
       },
@@ -365,14 +371,49 @@ exports.updatePayments = async (req, res) => {
     const emiId = req.params.emiID;
     const createdBy = req.body.createdBy;
     const balance = req.body.balance - req.body.Amount;
-    const pay = await paymentProcessing(buy_membershipId, emiId, balance, createdBy, "paid");
-    res.send(pay)
+    const subscription_id = req.body.subscription_id;
+    const ptype = req.body.ptype;
+    const payment_type = req.body.payment_type;
+    const cardDetails = req.body.cardDetails;
+    let expiry_date = ""
+    if (cardDetails) {
+      expiry_date = toString(cardDetails.expiry_month) + toString(cardDetails.expiry_year)
+      delete cardDetails.expiry_month;
+      delete cardDetails.expiry_year;
+      cardDetails.expiry_date = expiry_date;
+    }
+    if (ptype == "credit card" && (payment_type == "cash" || payment_type == "cheque")) {
+      const {uid} = getUidAndInvoiceNumber()
+      let valorRes = await valorTechPaymentGateWay.forfeitSubscription({subscription_id, uid})
+      if (valorRes.data.error_no == "S00") {
+        const pay = await paymentProcessing(buy_membershipId, emiId, balance, createdBy, "paid", payment_type, req.body.check_number);
+        res.send(pay)
+      } else {
+        res.status(400).send({
+          success: false,
+          msg: "Payment is not completed due to technical reason please try again!"
+        })
+      }
+    } else {
+      const { uid } = getUidAndInvoiceNumber();
+      const valorPayload = { ...cardDetails, uid, amount: req.body.Amount};
+      const resp = await valorTechPaymentGateWay.saleSubscription(valorPayload);
+      if (resp.data.error_no == "S00") {
+        const pay = await paymentProcessing(buy_membershipId, emiId, balance, createdBy, "paid", payment_type, req.body.check_number);
+        res.send(pay)
+      } else {
+        res.status(400).send({
+          success: false,
+          msg: "Payment is not completed due to technical reason please try again!"
+        })
+      }
+    }
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
 };
 
-function paymentProcessing(buy_membershipId, emiId, balance, createdBy, type) {
+function paymentProcessing(buy_membershipId, emiId, balance, createdBy, type, ptype, check_number="") {
   return new Promise((resolve, reject) => {
     buyMembership.updateOne(
       {
@@ -384,6 +425,8 @@ function paymentProcessing(buy_membershipId, emiId, balance, createdBy, type) {
            balance: balance,
            membership_status: "Active",
           "schedulePayments.$.status": type,
+          "schedulePayments.$.ptype": ptype,
+          "schedulePayments.$.cheque_number": check_number,
           "schedulePayments.$.createdBy": createdBy,
           "schedulePayments.$.paidDate": new Date(),
         },
@@ -579,11 +622,6 @@ exports.buyMembership = async (req, res) => {
   delete req.body.membership_details.valorPayload;
   let memberShipDoc;
   membershipData.userId = userId;
-  // console.log(membershipData, "PAYLOAD")
-  // console.log(valorPayload, "VPP")
-  // console.log(Address, "ADDD")
-  // console.log(payLatter, "PAYLATTER")
-  // console.log(ptype, "PAYMENT TYPE")
   try {
     if (membershipData.isEMI) {
       if (membershipData.payment_time > 0 && membershipData.balance > 0 && membershipData.payment_type != "pif") {
@@ -593,24 +631,23 @@ exports.buyMembership = async (req, res) => {
           membershipData.mactive_date,
           membershipData.createdBy,
           membershipData.payment_type,
-          payLatter
+          payLatter,
+          membershipData.due_every
         );
         if (valorPayload && ptype=="credit card") {
           valorPayload.descriptor = "BETA TESTING";
           valorPayload.product_description = "Mymember brand Product";
-          // valorPayload.surchargeIndicator = 1;
           const { uid } = getUidAndInvoiceNumber();
           delete valorPayload.subscription_starts_from;
           delete valorPayload.Subscription_valid_for;
           let addValorPay = valorPayload;
           valorPayload = { ...valorPayload, uid };
           const saleFormatedPayload = getFormatedPayload(valorPayload);
-          saleFormatedPayload.surchargeIndicator = 1;
           const resp = await valorTechPaymentGateWay.saleSubscription(
               saleFormatedPayload 
             );
           if (resp.data.error_no == 'S00') {
-            if (payLatter === "credit card") {
+            if (payLatter === "credit card" && req.body.membership_details.payment_type === "monthly") {
               addValorPay = { ...addValorPay, amount: membershipData.payment_money, subscription_starts_from: membershipData.schedulePayments[0].date.split('-').join(''), Subscription_valid_for:membershipData.schedulePayments.length - 1, ...getUidAndInvoiceNumber() };
               const addFormatedPayload = getFormatedPayload(addValorPay);
               const addresp = await valorTechPaymentGateWay.addSubscription(
@@ -619,7 +656,11 @@ exports.buyMembership = async (req, res) => {
               if (addresp.data.error_no ==="S00"){
                 membershipData.subscription_id =  addresp.data.subscription_id
               } else {
-                membershipData.subscription_id =  "failed" 
+                membershipData.subscription_id =  "failed"
+                for(let i =0; i < membershipData.schedulePayments.length; i++) {
+                  membershipData.schedulePayments[i].status = "due";
+                  membershipData.schedulePayments[i].ptype = "cash";
+                }
               }
             }
             membershipData.transactionId = {
@@ -668,7 +709,6 @@ exports.buyMembership = async (req, res) => {
         if (valorPayload.pan) {
           const { uid } = getUidAndInvoiceNumber();
           valorPayload = { ...valorPayload, uid };
-          valorPayload.surchargeIndicator = 1;
           const FormatedPayload = getFormatedPayload(valorPayload);
           const resp = await valorTechPaymentGateWay.saleSubscription(
             FormatedPayload
