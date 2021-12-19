@@ -220,6 +220,9 @@ exports.update = async (req, res) => {
             });
           }
         } else {
+          if (emiId) {
+            await paymentProcessing(membershipId, emiId, balance, createdBy, type, req.body.ptype);
+          }
           refundRes = await refundMembership(membershipId, req.body);
           if (refundRes) {
             res.status(200).send({
@@ -377,7 +380,7 @@ exports.updatePayments = async (req, res) => {
     const cardDetails = req.body.cardDetails;
     let expiry_date = ""
     if (cardDetails) {
-      expiry_date = toString(cardDetails.expiry_month) + toString(cardDetails.expiry_year)
+      expiry_date = cardDetails.expiry_month + cardDetails.expiry_year
       delete cardDetails.expiry_month;
       delete cardDetails.expiry_year;
       cardDetails.expiry_date = expiry_date;
@@ -389,7 +392,7 @@ exports.updatePayments = async (req, res) => {
         const pay = await paymentProcessing(buy_membershipId, emiId, balance, createdBy, "paid", payment_type, req.body.cheque_number);
         res.send(pay)
       } else {
-        res.status(400).send({
+        res.send({
           success: false,
           msg: "Payment is not completed due to technical reason please try again!"
         })
@@ -403,7 +406,7 @@ exports.updatePayments = async (req, res) => {
           const pay = await paymentProcessing(buy_membershipId, emiId, balance, createdBy, "paid", payment_type, req.body.cheque_number);
           res.send(pay)
         } else {
-          res.status(400).send({
+          res.send({
             success: false,
             msg: "Payment is not completed due to technical reason please try again!"
           })
