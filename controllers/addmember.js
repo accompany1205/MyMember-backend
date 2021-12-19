@@ -357,6 +357,27 @@ exports.listMember = (req, res) => {
     .select("memberprofileImage")
     .select("primaryPhone")
     .select("studentType")
+    .select("status")
+    .select("dob")
+    .select("email")
+    .select("street")
+    .select("town")
+    .select("country")
+    .select("zipPostalCode")
+    .select("notes")
+    .select("program")
+    .select("current_rank_name")
+    .select("current_stripe")
+    .select("category")
+    .select("subcategory")
+    .select("location")
+    .select("leadsTracking")
+    .select("intrested")
+    .select("school")
+    .select("rating")
+    .select("class_count")
+    .select("rank_update_history")
+    .select("rank_update_test_history")
     .exec((err, data) => {
       if (err) {
         res.send({
@@ -580,7 +601,7 @@ exports.read = (req, res) => {
 
 exports.active_trial_Std = async (req, res) => {
   var order = req.query.order
-  let sortBy = req.params.sortBy
+  let sortBy = req.query.sortBy
   var totalCount = await addmemberModal
     .find({
       userId: req.params.userId,
@@ -618,7 +639,7 @@ exports.leads_Std = async (req, res) => {
   try {
 
     var order = req.query.order
-    let sortBy = req.params.sortBy
+    let sortBy = req.query.sortBy
     var totalCount = await addmemberModal
       .find({
         userId: req.params.userId,
@@ -657,7 +678,7 @@ exports.leads_Std = async (req, res) => {
 
 exports.Former_Std = async (req, res) => {
   var order = req.query.order
-  let sortBy = req.params.sortBy
+  let sortBy = req.query.sortBy
   var totalCount = await addmemberModal
     .find({
       userId: req.params.userId,
@@ -693,7 +714,7 @@ exports.Former_Std = async (req, res) => {
 
 exports.active_Std = async (req, res) => {
   var order = req.query.order
-  let sortBy = req.params.sortBy
+  let sortBy = req.query.sortBy
   var totalCount = await addmemberModal
     .find({
       userId: req.params.userId,
@@ -729,7 +750,7 @@ exports.active_Std = async (req, res) => {
 
 exports.Former_trial_Std = async (req, res) => {
   var order = req.query.order
-  let sortBy = req.params.sortBy
+  let sortBy = req.query.sortBy
   var totalCount = await addmemberModal
     .find({
       userId: req.params.userId,
@@ -765,7 +786,7 @@ exports.Former_trial_Std = async (req, res) => {
 
 exports.camp_Std = async (req, res) => {
   var order = req.query.order
-  let sortBy = req.params.sortBy
+  let sortBy = req.query.sortBy
   var totalCount = await addmemberModal
     .find({
       userId: req.params.userId,
@@ -800,7 +821,7 @@ exports.camp_Std = async (req, res) => {
 
 exports.after_school_Std = async (req, res) => {
   var order = req.query.order
-  let sortBy = req.params.sortBy
+  let sortBy = req.query.sortBy
   var totalCount = await addmemberModal
     .find({
       userId: req.params.userId,
@@ -836,7 +857,7 @@ exports.after_school_Std = async (req, res) => {
 exports.studentinfo = (req, res) => {
   var studentinfo = req.params.StudentId;
   var order = req.query.order
-  let sortBy = req.params.sortBy
+  let sortBy = req.query.sortBy
   addmemberModal
     .findById(studentinfo)
     .populate({ path: "membership_details", options: { sort: { ['membership_name']: order } } })

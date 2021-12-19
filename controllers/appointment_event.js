@@ -1,4 +1,4 @@
-const appointmetEvent = require("../models/appointment_event");
+const appointmetEvent = require("../models/appointment_category");
 const _ = require("lodash");
 
 exports.create = (req, res) => {

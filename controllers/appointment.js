@@ -32,10 +32,10 @@ exports.appointInfo = (req, res) => {
     .findById(id)
     .populate('studentInfo','firstName lastName primaryPhone studentType memberprofileImage status')
     .then((result) => {
-      res.json(result);
+      res.send({msg:"Data!", success:true, result});
     })
     .catch((err) => {
-      res.send(err);
+      res.send({ msg: "No data!", success:false });
     });
 };
 
@@ -44,10 +44,10 @@ exports.update = (req, res) => {
   appoint
     .findByIdAndUpdate(id, { $set: req.body })
     .then((update_resp) => {
-      res.send("Appointment has been updated successfully");
+      res.send({msg:"Appointment Updated successfuly", success:true, update_resp});
     })
     .catch((err) => {
-      res.send(err);
+      res.send({ msg: "Appointment Not updated!", success:false });
     });
 };
 
@@ -56,9 +56,9 @@ exports.remove = (req, res) => {
   appoint
     .deleteOne({ _id: id })
     .then((resp) => {
-      res.json("Appointment has been deleted successfully");
+      res.send({msg:"appointment deleted successfuly", success:true});
     })
     .catch((err) => {
-      res.send(err);
+      res.send({msg:"appointment not deleted!", success:false});
     });
 };
