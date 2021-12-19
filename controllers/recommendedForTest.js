@@ -10,7 +10,8 @@ const Joi = require('@hapi/joi');
 
 exports.getRecommededForTest = async (req, res) => {
     let userId = req.params.userId;
-    let sortBy = req.params.sortBy || "firstName"
+    var order = req.query.order
+    let sortBy = req.query.sortBy
     if (!userId) {
         res.json({
             status: false,
@@ -21,7 +22,7 @@ exports.getRecommededForTest = async (req, res) => {
     let students = await RecommendedForTest.find({
         "userId": userId,
         "isDeleted": false
-    }).sort([[sortBy, 1]]);
+    }).sort([[sortBy, order]]);
     if (!students.length) {
         res.json({
             status: false,
@@ -36,7 +37,8 @@ exports.getRecommededForTest = async (req, res) => {
 }
 
 exports.getRegisteredForTest = async (req, res) => {
-    let sortBy = req.params.sortBy || "firstName"
+    let sortBy = req.query.sortBy 
+    var order = req.query.order
     let userId = req.params.userId;
     if (!userId) {
         res.json({
@@ -47,7 +49,7 @@ exports.getRegisteredForTest = async (req, res) => {
 
     let students = await RegisterdForTest.find({
         "isDeleted": false
-    }).sort([[sortBy, 1]])
+    }).sort([[sortBy, order]])
     if (!students.length) {
         res.json({
             status: false,
