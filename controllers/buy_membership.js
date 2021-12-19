@@ -636,7 +636,7 @@ exports.buyMembership = async (req, res) => {
           membershipData.mactive_date,
           membershipData.createdBy,
           membershipData.payment_type,
-          payLatter,
+          membershipData.pay_latter,
           membershipData.due_every
         );
         if (valorPayload && ptype == "credit card") {
