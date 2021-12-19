@@ -441,7 +441,7 @@ exports.searchAttendance = async (req, res) => {
           res.send(err)
         })
     } else if (filter === "Today") {
-      let cDate = ("0" + (date.getDate() - 8)).slice(-2);
+      let cDate = ("0" + (date.getDate())).slice(-2);
       let cMonth = ("0" + (date.getMonth() + 1)).slice(-2);
       let cYear = date.getFullYear();
       let currentDate = `${cMonth}/${cDate}/${cYear}`;
