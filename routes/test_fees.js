@@ -1,4 +1,5 @@
 const express = require('express');
+const upload = require('../handler/multer');
 const router = express.Router();
 const { create,
         fee_info,
@@ -9,9 +10,9 @@ const { create,
 const { requireSignin,isAuth,verifySchool } = require("../controllers/auth");
 
 router.get('/test/fees_list/:userId',verifySchool,read);
-router.post('/test_fees/:userId',verifySchool,create); 
+router.post('/test_fees/:userId',upload.single('attach'),verifySchool,create); 
 router.get('/test/fees_info/:feeId',requireSignin,fee_info);
 router.delete('/test/feesdelete/:userId/:feeId',requireSignin,deletetestfee);
-router.put('/test/testfeesupdate/:userId/:feeId',requireSignin,updatetestFee);
+router.put('/test/testfeesupdate/:userId/:feeId',upload.single('attach'),requireSignin,updatetestFee);
 
 module.exports = router

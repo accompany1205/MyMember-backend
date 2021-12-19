@@ -1,9 +1,16 @@
 var testFee = require('../models/TestingFees')
+const cloudUrl = require("../gcloud/imageUrl");
 var _ = require('lodash')
-exports.create = (req, res) => {
-    var test_fees = req.body;
+exports.create = async (req, res) => {
     
-    // var testData = _.extend(test_fees,req.params)
+    var test_fees = req.body;
+    if(req.file){
+        await cloudUrl.imageUrl(req.file).then(response => {
+           test_fees.feeFile = response;
+        }).catch(err => {
+            res.send({msg:"file not uploaded!", success:false})
+        })
+    }
     var testFeeObj = new testFee(test_fees);
     testFeeObj.save(function (err, FeeData){
         if(err){
@@ -58,22 +65,31 @@ exports.deletetestfee = (req, res) => {
     })
 };
 
-exports.updatetestFee = (req, res) => {
+exports.updatetestFee = async (req, res) => {
     var feeID = req.params.feeId;
     var data = req.body
-    testFee.findByIdAndUpdate({ _id: feeID },{
+    var img = ''; 
+    if(req.file){
+        await cloudUrl.imageUrl(req.file).then(response => {
+           img = response;
+        }).catch(err => {
+            res.send({msg:"file not uploaded!", success:false})
+        })
+    }
+    await testFee.findByIdAndUpdate({ _id: feeID },{
         fees_name: data.fees_name,
         fees_description: data.fees_description,
         programName: data.programName,
         total_price: data.total_price,
-        color: data.color
+        color: data.color,
+        feeFile:img
     })
     .exec((err,updateData)=>{
         if(err){
-            res.send({error:'fees details is not update'})
+            res.send({msg:'fees details is not update', success:false})
         }
         else{
-            res.send({msg:'fees details is update successfully'})
+            res.send({msg:'fees details is update successfully', success:true})
         }
     })
 }

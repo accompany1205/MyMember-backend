@@ -50,15 +50,15 @@ exports.smartList = (req, res) => {
             $group: {
                 _id: "$studentType",
                 "count": { "$sum": 1 },
-                list: { $push: { firstName: "$firstName", lastName: "$lastName", primaryPhone: "$primaryPhone", email: "$email", status: "$status" } },
+                list: { $push: { firstName: "$firstName", lastName: "$lastName", primaryPhone: "$primaryPhone", email: "$email", status: "$status", _id:"$_id" } },
             }
         }
     ]).exec((err, sList) => {
         if (err) {
-            res.send({ code: 400, msg: 'smart list not found' })
+            res.send({ code: 400, msg: 'smart list not found', success:false })
         }
         else {
-            res.send({ code: 200, msg: sList })
+            res.send({ code: 200, msg: sList, success:true })
         }
     })
 }
