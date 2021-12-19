@@ -19,11 +19,11 @@ const appointSchema = new schema(
         app_color: {
             type: String
         },
-        start_date: {
+        start: {
             type: String,
             required: true
         },
-        end_date: {
+        end: {
             type: String,
             required: true
         },
