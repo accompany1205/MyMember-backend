@@ -34,8 +34,9 @@ exports.update = (req, res) => {
 };
 
 exports.getAllEvents = (req, res) => {
+  let userId = req.params.userId;
   appointmetEvent
-    .find({})
+    .find({userId})
     .then((result) => {
       res.send({ success: true, data: result });
     })

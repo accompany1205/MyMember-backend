@@ -19,6 +19,9 @@ const TestingSchema = new schema(
             type: Number,
             required:true
         },
+        feeFile:{
+            type:String
+        },
         color:{
             type:String,
             required:true
