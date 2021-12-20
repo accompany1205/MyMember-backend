@@ -8,5 +8,6 @@ router.get("/appointment/list_of_appointments/:userId",verifySchool,appointment.
 router.get("/appointment/list_of_appoinment_info/:userId/:appointId",requireSignin,appointment.appointInfo)
 router.put("/appointment/update_appointment/:userId/:appointId",requireSignin,appointment.update);
 router.delete("/delete_appointment/:userId/:appointId",requireSignin,appointment.remove);
+router.post("/appointmentFilter/:userId/:page_no/:per_page",verifySchool, appointment.appointmentFilter);
 
 module.exports = router;

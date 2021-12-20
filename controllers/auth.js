@@ -48,7 +48,7 @@ exports.signup = async (req, res) => {
     from: from_email, // Change to your verified sender
     subject: 'Varification Email For User',
     text: 'Thanks for signing-up in ',
-    html: `<h2>Worth waiting! Soon you will get login credential once Admin aproove your request :)</h2>`,
+    html: `<h2>Worth the wait! Soon you will get login credentials once the admin approves your request :)</h2>`,
   }
   user.save((err, user) => {
     if (err) {

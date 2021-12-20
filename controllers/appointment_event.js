@@ -1,4 +1,4 @@
-const appointmetEvent = require("../models/appointment_event");
+const appointmetEvent = require("../models/appointment_category");
 const _ = require("lodash");
 
 exports.create = (req, res) => {
@@ -34,8 +34,9 @@ exports.update = (req, res) => {
 };
 
 exports.getAllEvents = (req, res) => {
+  let userId = req.params.userId;
   appointmetEvent
-    .find({})
+    .find({userId})
     .then((result) => {
       res.send({ success: true, data: result });
     })

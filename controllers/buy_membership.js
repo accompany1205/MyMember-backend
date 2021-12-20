@@ -38,7 +38,15 @@ exports.membership_Info = (req, res) => {
 exports.update = async (req, res) => {
   const membershipId = req.params.membershipId;
   const type = req.params.type;
-  const valorPayload = req.body.valorPayload;
+  const subscription_id = req.body.subscription_id;
+  const cardDetails = req.body.cardDetails;
+  let expiry_date = ""
+  if (cardDetails) {
+    expiry_date = toString(cardDetails.expiry_month) + toString(cardDetails.expiry_year)
+    delete cardDetails.expiry_month;
+    delete cardDetails.expiry_year;
+    cardDetails.expiry_date = expiry_date; 
+  }
   try {
     if (req.body.isTerminate) {
       res.status(200).send({
@@ -53,13 +61,8 @@ exports.update = async (req, res) => {
           success: true,
         });
       } else if (type == "freeze") {
-        if (valorPayload) {
-          const freezeValorPayload =
-            await valorTechPaymentGateWay.freezeSubscription({
-              ...valorPayload,
-              freeze_start_date: req.body.freeze_start_date,
-              freeze_stop_date: req.body.freeze_stop_date,
-            });
+        if (subscription_id) {
+          const freezeValorPayload = await valorTechPaymentGateWay.freezeSubscription({subscription_id, freeze_start_date: req.body.freeze_start_date.split('-').join(''), freeze_stop_date: req.body.freeze_stop_date.split('-').join('')});
           if (freezeValorPayload?.data?.error_no === "S00") {
             const freezeRes = await freezeMembership(membershipId, req.body);
             if (freezeRes) {
@@ -69,14 +72,13 @@ exports.update = async (req, res) => {
               });
             } else {
               res.status(400).send({
-                msg: "Membership not updated but valor freezed for membership!",
+                msg: "Membership not updated but valor freezed membership!",
                 success: false,
               });
             }
           } else {
             res.status(400).send({
-              msg:
-                "Due to the technical issue subscription not freeze please try again or later!",
+              msg:"Due to the technical issue subscription not freeze please try again or later!",
               success: false,
             });
           }
@@ -96,10 +98,8 @@ exports.update = async (req, res) => {
         }
       } else if (type == "unfreeze") {
         let unfreezeRes;
-        if (valorPayload) {
-          const valorRes = await valorTechPaymentGateWay.unfreezeSubscription(
-            valorPayload
-          );
+        if (subscription_id) {
+          const valorRes = await valorTechPaymentGateWay.unfreezeSubscription({subscription_id});
           if (valorRes.data.error_no === "S00") {
             unfreezeRes = await unFreezeMembership(membershipId, req.body);
             if (unfreezeRes) {
@@ -137,77 +137,75 @@ exports.update = async (req, res) => {
         const emiId = req.body.emiId;
         const createdBy = req.body.createdBy;
         const balance = req.body.balance;
-        if (emiId) {
-          await paymentProcessing(membershipId, emiId, balance, createdBy, type);
+        let forfeit;
+        if (subscription_id) {
+          const {uid} = getUidAndInvoiceNumber()
+          let valorRes = await valorTechPaymentGateWay.forfeitSubscription({subscription_id, uid})
+          if (valorRes.data.error_no == "S00") {
+            await paymentProcessing(membershipId, emiId, balance, createdBy, type, req.body.ptype);
+            forfeit = await forfeitSubscription(membershipId, req.body.reason)
+            if (forfeit.success) {
+              res.status(200).send(forfeit)
+            } else {
+              res.status(400).send(forfeit)
+            }
+          } else {
+            res.status(400).send({
+              success: false,
+              msg: "Membership forfeting failed please try again!"
+            })
+          }
+        } else {
+          await paymentProcessing(membershipId, emiId, balance, createdBy, type, req.body.ptype);
+          forfeit = await forfeitSubscription(membershipId, req.body.reason)
+          if (forfeit.success) {
+            res.status(200).send(forfeit)
+          } else {
+            res.status(400).send(forfeit)
+          }
         }
-        await buyMembership.findByIdAndUpdate(
-          membershipId,
-          {
-            $set: { isForfeit: true },
-            $push: {
-              whenForFeit: { date: new Date(), reason: req.body.reason },
-            },
-          },
-          (er, data) => {
-            if (er) {
-              res.send({
-                msg: "Membership forfeit failed!",
-                success: false,
-              });
-            } else {
-              res.status(200).send({
-                msg: "Membership forfeit successfully!",
-                success: true,
-              });
-            }
-          }
-        );
       } else if (type == "terminate") {
-        await buyMembership.findByIdAndUpdate(
-          membershipId,
-          {
-            $set: { isTerminate: true, membership_status: "Terminated" },
-            $push: {
-              whenTerminate: {
-                date: new Date(),
-                reason: req.body.reason,
-              },
-            },
-          },
-          (err, data) => {
-            if (err) {
-              res.send({
-                msg: "Membership terminate failed!",
-                success: false,
-              });
+        let terminate;
+        if (subscription_id) {
+          const valorDelete = await valorTechPaymentGateWay.deleteSubscription({subscription_id});
+          if (valorDelete.data.error_no === "S00") {
+            terminate = await terminateMembership(membershipId, req.body.reason)
+            if (terminate.success) {
+              res.status(200).send(terminate)
             } else {
-              res.status(200).send({
-                msg: "Membership terminated successfully",
-                success: true,
-              });
+              res.status(400).send(terminate)
             }
+          } else {
+            res.send({
+              msg: "Due to technical reason membership not terminating please try later!",
+              success: false
+            })
           }
-        );
+        } else {
+          terminate = await terminateMembership(membershipId, req.body.reason)
+          if (terminate.success) {
+            res.status(200).send(terminate)
+          } else {
+            res.status(400).send(terminate)
+          }
+        }
       } else if (type == "refund") {
         let refundRes;
         const balance = req.body.balance
         const emiId = req.body.emiId;
         const createdBy = req.body.createdBy;
-        if (emiId) {
-          await paymentProcessing(membershipId, emiId, balance, createdBy, type);
-        }
-        if (valorPayload) {
-          const valorRefundRes =
-            await valorTechPaymentGateWay.refundSubscription({
-              ...valorPayload,
-              amount: req.body.Amount,
-            });
+        if (cardDetails) {
+          const {uid} = getUidAndInvoiceNumber();
+          const valorRefundRes = await valorTechPaymentGateWay.refundSubscription({...cardDetails, uid, amount: req.body.Amount});
           if (valorRefundRes.data.error_no === "S00") {
+            if (emiId) {
+              await paymentProcessing(membershipId, emiId, balance, createdBy, type, req.body.ptype);
+            }
             refundRes = await refundMembership(membershipId, req.body);
             if (refundRes) {
               res.status(200).send({
                 msg: "Membership refunded successfully!",
-                success: true,  
+                success: true,
               });
             } else {
               res.status(400).send({
@@ -222,6 +220,9 @@ exports.update = async (req, res) => {
             });
           }
         } else {
+          if (emiId) {
+            await paymentProcessing(membershipId, emiId, balance, createdBy, type, req.body.ptype);
+          }
           refundRes = await refundMembership(membershipId, req.body);
           if (refundRes) {
             res.status(200).send({
@@ -241,6 +242,63 @@ exports.update = async (req, res) => {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
 };
+
+function terminateMembership(membershipId, reason) {
+  return new Promise((resolve, reject) => {
+    buyMembership.findByIdAndUpdate(
+      membershipId,
+      {
+        $set: { isTerminate: true, membership_status: "Terminated" },
+        $push: {
+          whenTerminate: {
+            date: new Date(),
+            reason: reason,
+          },
+        },
+      },
+      (err, data) => {
+        if (err) {
+          resolve({
+            msg: "Membership terminate failed!",
+            success: false,
+          });
+        } else {
+          resolve({
+            msg: "Membership terminated successfully",
+            success: true,
+          });
+        }
+      }
+    );
+  })
+}
+
+function forfeitSubscription(membershipId, reason) {
+  return new Promise((resolve, reject) => {
+    buyMembership.findByIdAndUpdate(
+      membershipId,
+      {
+        $set: { isForfeit: true },
+        $push: {
+          whenForFeit: { date: new Date(), reason: reason },
+        },
+      },
+      (er, data) => {
+        if (er) {
+          resolve({
+            msg: "Membership forfeit failed!",
+            success: false,
+          });
+        } else {
+          resolve({
+            msg: "Membership forfeit successfully!",
+            success: true,
+          });
+        }
+      }
+    );
+  })
+}
 
 async function freezeMembership(membershipId, payload) {
   return new Promise((resolve, reject) => {
@@ -289,12 +347,13 @@ function refundMembership(membershipId, payload) {
     buyMembership.findByIdAndUpdate(
       membershipId,
       {
-        $set: { isRefund: true, membership_status: "Deactivated"},
+        $set: { isRefund: true, membership_status: "Deactivated" },
         $push: {
           refund: {
             Amount: payload.Amount,
             date: new Date(),
             reason: payload.reason,
+            refund_method: payload.payment_type
           },
         },
       },
@@ -315,14 +374,54 @@ exports.updatePayments = async (req, res) => {
     const emiId = req.params.emiID;
     const createdBy = req.body.createdBy;
     const balance = req.body.balance - req.body.Amount;
-    const pay = await paymentProcessing(buy_membershipId, emiId, balance, createdBy, "paid");
-    res.send(pay)
+    const subscription_id = req.body.subscription_id;
+    const ptype = req.body.ptype;
+    const payment_type = req.body.payment_type;
+    const cardDetails = req.body.cardDetails;
+    let expiry_date = ""
+    if (cardDetails) {
+      expiry_date = cardDetails.expiry_month + cardDetails.expiry_year
+      delete cardDetails.expiry_month;
+      delete cardDetails.expiry_year;
+      cardDetails.expiry_date = expiry_date;
+    }
+    if (ptype == "credit card" && (payment_type == "cash" || payment_type == "cheque")) {
+      const {uid} = getUidAndInvoiceNumber()
+      let valorRes = await valorTechPaymentGateWay.forfeitSubscription({subscription_id, uid})
+      if (valorRes.data.error_no == "S00") {
+        const pay = await paymentProcessing(buy_membershipId, emiId, balance, createdBy, "paid", payment_type, req.body.cheque_number);
+        res.send(pay)
+      } else {
+        res.send({
+          success: false,
+          msg: "Payment is not completed due to technical reason please try again!"
+        })
+      }
+    } else {
+      const { uid } = getUidAndInvoiceNumber();
+      if (cardDetails) {
+        const valorPayload = { ...cardDetails, uid, amount: req.body.Amount};
+        const resp = await valorTechPaymentGateWay.saleSubscription(valorPayload);
+        if (resp.data.error_no == "S00") {
+          const pay = await paymentProcessing(buy_membershipId, emiId, balance, createdBy, "paid", payment_type, req.body.cheque_number);
+          res.send(pay)
+        } else {
+          res.send({
+            success: false,
+            msg: "Payment is not completed due to technical reason please try again!"
+          })
+        }
+      } else {
+        const pay = await paymentProcessing(buy_membershipId, emiId, balance, createdBy, "paid", payment_type, req.body.cheque_number);
+          res.send(pay)
+      }
+    }
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
 };
 
-function paymentProcessing(buy_membershipId, emiId, balance, createdBy, type) {
+function paymentProcessing(buy_membershipId, emiId, balance, createdBy, type, ptype, check_number="") {
   return new Promise((resolve, reject) => {
     buyMembership.updateOne(
       {
@@ -331,9 +430,11 @@ function paymentProcessing(buy_membershipId, emiId, balance, createdBy, type) {
       },
       {
         $set: {
-           balance: balance,
-           membership_status: "Active",
+          balance: balance,
+          membership_status: "Active",
           "schedulePayments.$.status": type,
+          "schedulePayments.$.ptype": ptype,
+          "schedulePayments.$.cheque_number": check_number,
           "schedulePayments.$.createdBy": createdBy,
           "schedulePayments.$.paidDate": new Date(),
         },
@@ -529,11 +630,6 @@ exports.buyMembership = async (req, res) => {
   delete req.body.membership_details.valorPayload;
   let memberShipDoc;
   membershipData.userId = userId;
-  // console.log(membershipData, "PAYLOAD")
-  // console.log(valorPayload, "VPP")
-  // console.log(Address, "ADDD")
-  // console.log(payLatter, "PAYLATTER")
-  // console.log(ptype, "PAYMENT TYPE")
   try {
     if (membershipData.isEMI) {
       if (membershipData.payment_time > 0 && membershipData.balance > 0 && membershipData.payment_type != "pif") {
@@ -543,36 +639,43 @@ exports.buyMembership = async (req, res) => {
           membershipData.mactive_date,
           membershipData.createdBy,
           membershipData.payment_type,
-          payLatter
+          membershipData.pay_latter,
+          membershipData.due_every
         );
-        if (valorPayload && ptype=="credit card") {
+        if (valorPayload && ptype == "credit card") {
           valorPayload.descriptor = "BETA TESTING";
           valorPayload.product_description = "Mymember brand Product";
-          // valorPayload.surchargeIndicator = 1;
           const { uid } = getUidAndInvoiceNumber();
           delete valorPayload.subscription_starts_from;
           delete valorPayload.Subscription_valid_for;
           let addValorPay = valorPayload;
           valorPayload = { ...valorPayload, uid };
           const saleFormatedPayload = getFormatedPayload(valorPayload);
-          saleFormatedPayload.surchargeIndicator = 1;
           const resp = await valorTechPaymentGateWay.saleSubscription(
-              saleFormatedPayload 
-            );
+            saleFormatedPayload
+          );
           if (resp.data.error_no == 'S00') {
-            if (payLatter === "credit card") {
+            if (payLatter === "credit card" && req.body.membership_details.payment_type === "monthly") {
               addValorPay = { ...addValorPay, amount: membershipData.payment_money, subscription_starts_from: membershipData.schedulePayments[0].date.split('-').join(''), Subscription_valid_for:membershipData.schedulePayments.length - 1, ...getUidAndInvoiceNumber() };
               const addFormatedPayload = getFormatedPayload(addValorPay);
               const addresp = await valorTechPaymentGateWay.addSubscription(
                 addFormatedPayload
               );
-              console.log(addresp, "UPDATED PAY")
+              if (addresp.data.error_no ==="S00"){
+                membershipData.subscription_id =  addresp.data.subscription_id
+              } else {
+                membershipData.subscription_id =  "failed"
+                for(let i =0; i < membershipData.schedulePayments.length; i++) {
+                  membershipData.schedulePayments[i].status = "due";
+                  membershipData.schedulePayments[i].ptype = "cash";
+                }
+              }
             }
             membershipData.transactionId = {
-                  rrn: resp.data.rrn,
-                  txnid: resp.data.txnid,
-                  token: resp.data.token,
-                };
+              rrn: resp.data.rrn,
+              txnid: resp.data.txnid,
+              token: resp.data.token,
+            };
             valorPayload.address = Address;
             valorPayload.userId = userId;
             valorPayload.studentId = studentId;
@@ -614,7 +717,6 @@ exports.buyMembership = async (req, res) => {
         if (valorPayload.pan) {
           const { uid } = getUidAndInvoiceNumber();
           valorPayload = { ...valorPayload, uid };
-          valorPayload.surchargeIndicator = 1;
           const FormatedPayload = getFormatedPayload(valorPayload);
           const resp = await valorTechPaymentGateWay.saleSubscription(
             FormatedPayload
@@ -676,7 +778,7 @@ function getFormatedPayload(valorPayload) {
       shipping_street_no: address.street_no,
       shipping_street_name: address.address,
       shipping_zip: address.zip,
-      billing_customer_name: payload.card_holder_name ,
+      billing_customer_name: payload.card_holder_name,
       billing_street_no: address.street_no,
       billing_street_name: address.address,
       billing_zip: address.zip,
@@ -749,7 +851,7 @@ function createMemberShipDocument(membershipData, studentId) {
 }
 
 function createFinanceDoc(data, financeId) {
-  const {studentId} = data;
+  const { studentId } = data;
   return new Promise((resolve, reject) => {
     const financeData = new Finance_infoSchema(data);
     if (financeId) {
@@ -816,12 +918,11 @@ exports.membership_InfoById = async (req, res) => {
 
 exports.members_info = async (req, res) => {
   var studentId = req.params.studentId;
-  let studentInfo = await AddMember.findById(studentId);
+  // let studentInfo = await AddMember.findById(studentId);
   currentDate = moment().format("YYYY-MM-DD");
   try {
-    let { membership_details } = studentInfo;
     let membershipDa = await buyMembership.find({
-      _id: { $in: membership_details, membershipIds },
+      studentInfo: { $in: studentId }
     });
     // membershipDa.filter(i => {
     //     if (moment(currentDate).isSameOrAfter(i.expiry_date)) {

@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const schema = mongoose.Schema;
 
 
-const appointEventSchema = new schema(
+const appointCategorySchema = new schema(
     {
         app_event_name: {
             type: String,
@@ -25,4 +25,4 @@ const appointEventSchema = new schema(
     { timestamps: true }
 );
 
-module.exports = mongoose.model("AppointmentEvent", appointEventSchema);
+module.exports = mongoose.model("AppointmentCategory", appointCategorySchema);

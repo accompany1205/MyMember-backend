@@ -57,10 +57,6 @@ const membershipSchema = schema({
         type:Number,
         default:0
     },
-    subscription_id: {
-        type: Number,
-    },
-    transactionId: {},
     userId:{
         type:String
     },
