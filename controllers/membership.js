@@ -42,7 +42,7 @@ exports.create = async (req, res) => {
 exports.read = (req, res) => {
   const userId = req.params.userId
   const adminId = req.params.adminId
-  membershipModal.find({ $and: [{ userId: userId }, { adminId: adminId }] }).exec((err, data) => {
+  membershipModal.find({ $and: [{ userId: { $in: [userId ] }}, { adminId: adminId }] }).exec((err, data) => {
     if (err) {
       res.send({ error: "membership list is not find" });
     } else {
