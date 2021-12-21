@@ -414,6 +414,11 @@ exports.signin = (req, res) => {
               country,
               state,
               city,
+              app_id,
+              auth_key,
+              epi,
+              descriptor,
+              product_description
             } = data;
             return res.json({
               token,
@@ -428,7 +433,12 @@ exports.signin = (req, res) => {
                 bussinessAddress,
                 city,
                 state,
-                country
+                country,
+                app_id,
+                auth_key,
+                epi,
+                descriptor,
+                product_description
               },
             });
           } else {

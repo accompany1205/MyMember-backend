@@ -5,7 +5,7 @@ const membershipFolderSchema = schema(
     folderName: {
       type: String,
       unique: true,
-      require: true,
+      required: true,
     },
     membership: [
       {
@@ -15,7 +15,9 @@ const membershipFolderSchema = schema(
     ],
     userId: {
       type: String,
-      require: true,
+    },
+    adminId: {
+      type: String,
     },
   },
   { timestamps: true }

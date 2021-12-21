@@ -8,6 +8,7 @@ exports.create = async (req, res) => {
   try {
     const membershipDetails = await req.body;
     membershipDetails.userId = req.params.userId;
+    membershipDetails.adminId = req.params.adminId;
     membershipDetails.folderId = req.params.folderId;
     const membershipObj = new membershipModal(membershipDetails);
     await membershipObj.save((err, data) => {
@@ -39,7 +40,9 @@ exports.create = async (req, res) => {
 };
 
 exports.read = (req, res) => {
-  membershipModal.find({ userId: req.params.userId }).exec((err, data) => {
+  const userId = req.params.userId
+  const adminId = req.params.adminId
+  membershipModal.find({ $and: [{ userId: { $in: [userId ] }}, { adminId: adminId }] }).exec((err, data) => {
     if (err) {
       res.send({ error: "membership list is not find" });
     } else {
