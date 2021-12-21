@@ -28,18 +28,27 @@ exports.create_smart_list = async (req, res) => {
         }
         let promises = [];
         let { leads, activetrial, formertrial, activestudent, formerstudent, status, programName, current_rank_name, age, zipPostalCode, location } = req.body
-
+        status = status === undefined ? null : status
+        programName = programName === undefined ? null : programName
+        current_rank_name = current_rank_name === undefined ? null : current_rank_name
+        age = age === undefined ? null : age
+        zipPostalCode = zipPostalCode === undefined ? null : zipPostalCode
+        location = location === undefined ? null : location
+        console.log("status, programName, current_rank_name, age, zipPostalCode, location", status, programName, current_rank_name, age, zipPostalCode,)
         if (req.body.leads) {
             let leadData = await member.find({
                 studentType: leads,
-                status: status,
-                program: programName,
-                current_rank_name: current_rank_name,
-                age: age,
-                location: location,
-                zipPostalCode: zipPostalCode,
-                userId: userId
-            }, { email: 1 })
+                userId: userId,
+                $or: [
+                    { status: status },
+                    { program: programName },
+                    { current_rank_name: current_rank_name },
+                    { age: age },
+                    { location: location },
+                    { zipPostalCode: zipPostalCode },
+                ]
+            }
+                , { email: 1 })
             promises = [...leadData];
         }
         if (req.body.activetrial) {
@@ -58,13 +67,15 @@ exports.create_smart_list = async (req, res) => {
         if (req.body.formertrial) {
             let formerTData = await member.find({
                 studentType: formertrial,
-                status: status,
-                program: programName,
-                current_rank_name: current_rank_name,
-                age: age,
-                location: location,
-                zipPostalCode: zipPostalCode,
-                userId: userId
+                userId: userId,
+                $or: [
+                    { status: status },
+                    { program: programName },
+                    { current_rank_name: current_rank_name },
+                    { age: age },
+                    { location: location },
+                    { zipPostalCode: zipPostalCode },
+                ]
             }, { email: 1 })
             promises = [...formerTData, ...promises]
 
@@ -72,13 +83,15 @@ exports.create_smart_list = async (req, res) => {
         if (req.body.activestudent) {
             let activeSData = await member.find({
                 studentType: activestudent,
-                status: status,
-                program: programName,
-                current_rank_name: current_rank_name,
-                age: age,
-                location: location,
-                zipPostalCode: zipPostalCode,
-                userId: userId
+                userId: userId,
+                $or: [
+                    { status: status },
+                    { program: programName },
+                    { current_rank_name: current_rank_name },
+                    { age: age },
+                    { location: location },
+                    { zipPostalCode: zipPostalCode },
+                ]
             }, { email: 1 })
             promises = [...activeSData, ...promises]
 
@@ -86,14 +99,17 @@ exports.create_smart_list = async (req, res) => {
         if (req.body.formerstudent) {
             let formerSData = await member.find({
                 studentType: formerstudent,
-                status: status,
-                program: programName,
-                current_rank_name: current_rank_name,
-                age: age,
-                location: location,
-                zipPostalCode: zipPostalCode,
-                userId: userId
-            }, { email: 1 })
+                userId: userId,
+                $or: [
+                    { status: status },
+                    { program: programName },
+                    { current_rank_name: current_rank_name },
+                    { age: age },
+                    { location: location },
+                    { zipPostalCode: zipPostalCode },
+                ]
+            },
+                { email: 1 })
             promises = [...formerSData, ...promises]
 
         }
