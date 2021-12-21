@@ -33,7 +33,7 @@ exports.getTextContacts = (req, res) => {
 exports.sendTextMessage = async (req, res) => {
   const accountSid = process.env.aid;
   const authToken = process.env.authkey;
-  const orgPhone = process.env.phone;
+  const orgPhone = process.env.phone; // TODO: get it from user table
   let {primaryPhone} = await member.findById(req.body.uid);
   const client = await require('twilio')(accountSid, authToken);
   if (primaryPhone) {
@@ -121,3 +121,43 @@ exports.getTextContactsDetails = (req, res) => {
     }
   });
 };
+
+
+// Incoming Message API to test SMS
+exports.listenIncomingSMS = async (req, res) => {
+  const msg = req.body.hasOwnProperty('Body') ? req.body.Body : 'Failed to receive sms';
+  const from = req.from.hasOwnProperty('From') ? req.from.From : 'Unknown sender';
+  const to =  process.env.phone; // TODO: Use company twilio number
+
+  const getUid = phoneNumber => {
+    return member.findOne({primaryPhone: from}).then(data => {
+      return data._id;
+    });
+  };
+
+  const getUserId = phoneNumber => {
+    // TODO: Update after twilio number is added
+    // Find userid of user matching phoneNumber with twilio number
+
+    // Below is hardcoded user id should be removed after twilio number per organization logic is added
+    let userId = '606aea95a145ea2d26e0f1ab';
+
+    return userId;
+  };
+
+  const obj = {
+    userId: await getUserId(to),
+    uid: await getUid(from),
+    textContent:  msg,
+    isSent: false,
+  };
+
+  let text = new textMessage(obj);
+
+  text.save().then(textMessage => {
+    res.send({msg:'text sms sent successfully'})
+  }).catch(error => {
+    res.send({error:'txt msg not send'})
+  });
+
+}

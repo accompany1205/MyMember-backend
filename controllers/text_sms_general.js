@@ -16,48 +16,6 @@ require('dotenv').config()
 // const msgService = 'ISb21aa5fdf2d5a8c60dd25d5dd7389d7f'
 // const client = require('twilio')(asid, authtoken)
 
-// Dummy API to test SMS
-exports.send_message = async (req,res) => {
-    const accountSid = process.env.aid;
-    const authToken = process.env.authkey;
-    const phone = process.env.phone;
-    const toPhone = '+918963993333';
-    const client = await require('twilio')(accountSid, authToken);
-    client.messages.create({
-        body: 'This is test text message', // Dummy message
-        to: toPhone, // Put your phone number
-        from: phone // This is registered number for Twilio
-    }).then((message) => {
-        res.send({msg: 'Text message sent to ' + toPhone});
-        console.log('Message: ', message);
-    }).catch((error) => {
-        res.send({error: 'Failed to send text message to ' + toPhone});
-        console.log('Error: ', error);
-    }).done();
-};
-
-// Incoming Message API to test SMS
-exports.get_message = async (req, res) => {
-    const msg = req.body.hasOwnProperty('Body') ? req.body.Body : 'Failed to receive sms';
-    const from = req.from.hasOwnProperty('From') ? req.from.From : 'Unknown sender';
-    const to =  process.env.phone;
-
-    const obj = {
-        from: from,
-        msg: msg,
-        to:  to,
-    };
-
-    let text = new getText(obj);
-
-    text.save().then(textMessage => {
-        res.send({msg:'text sms sent successfully'})
-    }).catch(error => {
-        res.send({error:'txt msg not send'})
-    });
-
-}
-
 exports.send_sms =(req,res)=>{
     function sendBulkMessages(msg,to,textKey){
         const client = require('twilio')(textKey.ACCOUNT_SID, textKey.AUTH_TOKEN);
