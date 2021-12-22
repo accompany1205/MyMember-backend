@@ -43,9 +43,9 @@ const appointSchema = new schema(
             type: String,
             default: 'not completed'
         },
-        groupInfoList: [
-            {type: String}
-        ],
+        groupInfoList: {
+            type:Array
+    },
         studentInfo: [
             {
                 type: schema.Types.ObjectId,

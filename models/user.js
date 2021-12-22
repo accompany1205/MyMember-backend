@@ -219,7 +219,19 @@ const userSchema = new schema(
         resetPasswordExpires: {
             type: String,
             default: ''
-        }
+        },
+        sendgridVerification: [{
+            isVerified: {
+                type: Boolean,
+                default: false
+            },
+            email:{
+                type:String
+            },
+            link:{
+                type:String
+            }
+        }]
     },
     { timestamps: true }
 );
