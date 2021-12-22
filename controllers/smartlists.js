@@ -27,85 +27,46 @@ exports.create_smart_list = async (req, res) => {
             })
         }
         let promises = [];
-        let { leads, activetrial, formertrial, activestudent, formerstudent, status, programName, current_rank_name, age, zipPostalCode, location } = req.body
+        let { studentType, status, program, category, current_rank_name, age, state, town, zipPostalCode, location } = req.body
+        console.log(studentType, program)
+        // const getFilter = (query, fields) => fields.reduce(
+        //     (filter, field) => query[field] !== [] ? {
+        //         [field]: query[field],
+        //         ...filter,
+        //     } : filter, {}
+        // );
+        // const query = {
+        //     status: status,
+        //     program: program,
+        //     current_rank_name: current_rank_name,
+        //     age: age,
+        //     location: location,
+        //     zipPostalCode: zipPostalCode
+        // // }
+        // const fields = ['status', 'program', 'current_rank_name', "age", "location", "zipPostalCode"];
+        // let filter = getFilter(query, fields)
+        // console.log(filter)
 
-        const getFilter = (query, fields) => fields.reduce(
-            (filter, field) => query[field] !== undefined ? {
-                [field]: query[field],
-                ...filter,
-            } : filter, {}
-        );
-
-        const query = {
-            status: status,
-            program: programName,
-            current_rank_name: current_rank_name,
-            age: age,
-            location: location,
-            zipPostalCode: zipPostalCode
+        let leadData = await member.find({
+            userId: userId,
+            $and: [
+                { studentType: { $in: studentType } },
+                { program: { $in: program } },
+                { category: { $in: category } },
+                { status: { $in: status } },
+                { current_rank_name: { $in: current_rank_name } },
+                { age: { $in: age } },
+                { zipPostalCode: { $in: zipPostalCode } },
+                { location: { $in: location } },
+                { state: { $in: state } },
+                { town: { $in: town } }
+            ]
         }
-        const fields = ['status', 'program', 'current_rank_name', "age", "location", "zipPostalCode"];
-        let filter = getFilter(query, fields)
-
-        if (req.body.leads) {
-            let leadData = await member.find({
-                studentType: leads,
-                userId: userId,
-                ...filter
-            }
-                , { email: 1 })
-            promises = [...leadData];
-        }
-        if (req.body.activetrial) {
-            let activeTData = await member.find({
-                studentType: activetrial,
-                userId: userId,
-                ...filter
-            }, { email: 1 })
-            promises = [...activeTData, ...promises]
-        }
-        if (req.body.formertrial) {
-            let formerTData = await member.find({
-                studentType: formertrial,
-                userId: userId,
-                ...filter
-            }, { email: 1 })
-            promises = [...formerTData, ...promises]
-
-        }
-        if (req.body.activestudent) {
-            let activeSData = await member.find({
-                studentType: activestudent,
-                userId: userId,
-                ...filter
-            }, { email: 1 })
-            promises = [...activeSData, ...promises]
-
-        }
-        if (req.body.formerstudent) {
-            let formerSData = await member.find({
-                studentType: formerstudent,
-                userId: userId,
-                ...filter
-            },
-                { email: 1 })
-            promises = [...formerSData, ...promises]
-
-        }
-        await Promise.all(promises);
-        console.log(promises.length)
-        const map = {};
-        const newArray = [];
-        promises.forEach(el => {
-            if (!map[JSON.stringify(el)]) {
-                map[JSON.stringify(el)] = true;
-                newArray.push(el);
-            }
-        });
+            , { email: 1 })
 
         let sldata = smartlist({
             smartlistname: req.body.smartlistname,
-            smartlists: newArray,
+            smartlists: leadData,
             userId: userId
         })
 
@@ -118,10 +79,6 @@ exports.create_smart_list = async (req, res) => {
 
             }
         })
-
-
-
-
     } catch (err) {
         res.send({ error: err.message.replace(/\"/g, ""), success: false });
 
