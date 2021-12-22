@@ -4,6 +4,7 @@ const authKey = require("../models/email_key");
 const async = require("async");
 const sgMail = require("sendgrid-v3-node");
 const moment = require("moment");
+var request = require("request");
 const cron = require("node-cron");
 const axios = require("axios");
 const cloudUrl = require("../gcloud/imageUrl");
@@ -201,8 +202,49 @@ exports.allSent = async (req, res) => {
   })
 }
 
+exports.sendVerificationMail = (req, res) => {
+  try {
+    let reqData = req.body;
+    let key = process.env.SENDGRID_API_KEY;
+    var options = {
+      method: 'POST',
+      url: 'https://api.sendgrid.com/v3/verified_senders',
+      headers:
+      {
+        'content-type': 'application/json',
+        authorization: `Bearer ${key}`
+      },
+      body:
+      {
+        nickname: reqData.nickname,
+        from_email: reqData.from_email,
+        from_name: reqData.from_name,
+        reply_to: reqData.reply_to,
+        reply_to_name: reqData.reply_to_name,
+        address: reqData.address,
+        address2: reqData.address2,
+        state: reqData.state,
+        city: reqData.city,
+        zip: reqData.zip,
+        country: reqData.country
+      },
+      json: true
+    };
+
+    request(options, function (errors, response, body) {
+      if (errors || body.errors) { res.send({ success: false, msg: body.errors }) }
+      else {
+        res.send({ msg: "verification link sent!", success: true, body })
+      }
+    });
+  } catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false })
+  }
+
+}
+
 exports.all_email_list = async (req, res) => {
-  all_temp.find({ userId: req.params.userId ,is_Sent:true}).exec((err, allTemp) => {
+  all_temp.find({ userId: req.params.userId, is_Sent: true }).exec((err, allTemp) => {
     if (err) {
       res.send({ code: 400, msg: "email list not found" });
     } else {
@@ -447,9 +489,9 @@ var emailCronFucntionality = async () => {
       if (ele.is_Sent === false) {
         sgMail
           .send_via_sendgrid(emailData)
-          .then( resp => {
+          .then(resp => {
             try {
-            all_temp.findByIdAndUpdate(mailId, { is_Sent: true });
+              all_temp.findByIdAndUpdate(mailId, { is_Sent: true });
             } catch (err) {
               throw new Error("Mail status not updated", err)
             }
