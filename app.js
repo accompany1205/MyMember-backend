@@ -123,6 +123,10 @@ const sample_doc = require("./routes/admin/upload_sample_file");
 const recomendedForTestRoutes = require("./routes/recommendedForTest");
 const registeredForTestRoutes = require("./routes/registerdForTest");
 const recommendedCandidatesRoutes = require("./routes/recommededCandidate");
+
+const textTemplateRoutes = require('./routes/text_templates_routes');
+const textChatRoutes = require('./routes/text_chat_routes');
+
 const appointmentEvent = require("./routes/appointment_event")
 const app = express();
 // app.use(fileUpload({ safeFileNames: true, preserveExtension: true }))
@@ -235,6 +239,8 @@ app.use("/api", text_Library_Folder);
 app.use("/api", document_folder);
 app.use("/api", document_subFolder);
 app.use("/api", upload_doc);
+app.use("/api", textTemplateRoutes);
+app.use("/api", textChatRoutes);
 app.use("/api", finance_list);
 app.use("/api", student_email);
 app.use("/api", student_text);

@@ -1,11 +1,12 @@
 const txtKey = require("../models/text_key")
 const textSentSave = require("../models/textSentSave")
+const getText = require("../models/get_text")
 const generalfolder = require("../models/text_general_folder")
 require('dotenv').config()
 // textKey
 // const MessagingResponse = require('twilio').twiml.MessagingResponse
 // exports.recieve =(req,res)=>{
-//  const twiml = new MessagingResponse() 
+//  const twiml = new MessagingResponse()
 //  twiml.messages('hello world')
 //  res.writeHead(200,{'Content-Type':'text/xml'})
 //  res.end(twiml.toString())
@@ -18,22 +19,22 @@ require('dotenv').config()
 exports.send_sms =(req,res)=>{
     function sendBulkMessages(msg,to,textKey){
         const client = require('twilio')(textKey.ACCOUNT_SID, textKey.AUTH_TOKEN);
-       
-        var numbers = []; 
-        for(i = 0; i < to.length; i++) 
-        { 
-            numbers.push(JSON.stringify({  
-            binding_type: 'sms', address: to[i]})) 
-        } 
-       
-        const notificationOpts = { 
-          toBinding: numbers, 
-          body: msg, 
-        }; 
-       
-         client.notify 
-        .services(textKey.MSG_SERVICE_SID) 
-        .notifications.create(notificationOpts) 
+
+        var numbers = [];
+        for(i = 0; i < to.length; i++)
+        {
+            numbers.push(JSON.stringify({
+            binding_type: 'sms', address: to[i]}))
+        }
+
+        const notificationOpts = {
+          toBinding: numbers,
+          body: msg,
+        };
+
+         client.notify
+        .services(textKey.MSG_SERVICE_SID)
+        .notifications.create(notificationOpts)
         .then((resp)=>{
             var txt = new textSentSave(req.body)
             txt.save((err,txtMsg)=>{
@@ -55,7 +56,7 @@ exports.send_sms =(req,res)=>{
         }).catch((error)=>{
             res.send(error)
         })
-    } 
+    }
     txtKey.findOne({userId:req.params.userId})
     .exec((err,textKey)=>{
         if(err){
@@ -75,7 +76,6 @@ exports.save_sms =(req,res)=>{
         }
         else{
             // var dt = new Date(req.body.schedule_date)
-           
             var obj ={
                 from:req.body.from,
                 to:req.body.to,
@@ -111,7 +111,7 @@ exports.save_sms =(req,res)=>{
     }
   })
 }
-   
+
 
 exports.remove_sms = (req,res)=>{
     textSentSave.deleteOne({_id:req.params.textId},(err,removeText)=>{
