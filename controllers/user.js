@@ -17,6 +17,20 @@ exports.userById = (req, res, next, id) => {
   });
 };
 
+exports.verificationLink = (req, res) => {
+  let userId = req.params.userId;
+  let body = req.body;
+  try {
+    User.findByIdAndUpdate(userId, { $push: { sendgridVerification: body } }).then((resp) => {
+      res.send({ msg: "Verified!", success: true, resp })
+    }).catch((error) => {
+      res.send({ msg: "Email not verified", success: false })
+    })
+  } catch (err) {
+    console.log(err)
+  }
+}
+
 exports.read = (req, res) => {
   req.profile.hashed_password = undefined;
   req.profile.salt = undefined;
