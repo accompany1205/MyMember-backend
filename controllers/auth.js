@@ -397,7 +397,12 @@ exports.signin = (req, res) => {
             //     });
             // }
             token = jwt.sign({
-              id: data._id
+              id: data._id,
+              auth_key: data.auth_key,
+              app_id: data.app_id,
+              epi: data.epi,
+              descriptor: data.descriptor,
+              product_description: data.product_description
             }, process.env.JWT_SECRET);
             res.cookie("t", token, {
               expire: new Date() + 9999
@@ -413,12 +418,8 @@ exports.signin = (req, res) => {
               bussinessAddress,
               country,
               state,
-              city,
-              app_id,
-              auth_key,
-              epi,
-              descriptor,
-              product_description
+              city
+
             } = data;
             return res.json({
               token,
@@ -434,11 +435,6 @@ exports.signin = (req, res) => {
                 city,
                 state,
                 country,
-                app_id,
-                auth_key,
-                epi,
-                descriptor,
-                product_description
               },
             });
           } else {
