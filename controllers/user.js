@@ -22,12 +22,26 @@ exports.verificationLink = (req, res) => {
   let body = req.body;
   try {
     User.findByIdAndUpdate(userId, { $push: { sendgridVerification: body } }).then((resp) => {
-      res.send({ msg: "Verified!", success: true, resp })
+      res.send({ msg: "Request sent for verification to admin!!", success: true, resp })
     }).catch((error) => {
-      res.send({ msg: "Email not verified", success: false })
+      res.send({ msg: "Request not send to Admin!", success: false, error })
     })
   } catch (err) {
-    console.log(err)
+    res.send({ error: err.message.replace(/\"/g, ""), success: false })
+  }
+}
+
+exports.listingVerifications = async (req, res) => {
+  let userId = req.params.userId;
+  try {
+    await User.findById(userId, { sendgridVerification: 1, _id:0 }).then(resp =>{
+      console.log(resp)
+      res.send({msg:"data!", resp, success:true})
+    }).catch(err => {
+      res.send({msg:"not Data!", success:false, err})
+    })
+  } catch (error) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false })
   }
 }
 
