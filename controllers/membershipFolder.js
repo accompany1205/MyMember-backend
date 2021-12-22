@@ -2,10 +2,13 @@ const membershipFolder = require("../models/membershipFolder");
 
 exports.create_folder = (req, res) => {
   let userId = req.params.userId;
+  let adminId = req.params.adminId;
+
 
   let folderObj = new membershipFolder({
     folderName: req.body.folderName,
     userId: userId,
+    adminId: adminId,
   });
   folderObj.save((err, folder) => {
     if (err) {
@@ -20,9 +23,10 @@ exports.create_folder = (req, res) => {
   });
 };
 exports.getFolders = (req, res) => {
+  let adminId = req.params.adminId;
   const userId = req.params.userId;
   membershipFolder
-    .find({ userId: userId })
+    .find({ $and: [{ userId: userId }, { adminId: adminId }] })
     .populate("membership")
 
     .exec((err, folder) => {
@@ -30,7 +34,6 @@ exports.getFolders = (req, res) => {
         res.send({ error: "membership folder is not create", success: false });
       } else {
         res.send({
-          msg: "membership folder create successfully",
           data: folder,
           success: true,
         });
@@ -42,7 +45,7 @@ exports.update_folder = (req, res) => {
     .findByIdAndUpdate(req.params.folderId, req.body)
     .exec((err, updateFolder) => {
       if (err) {
-        res.send({ error: "membership folder is not update", success: false });
+        res.send({ error: "membership folder is not updated", success: false });
       } else {
         res.send({
           msg: "Folder is update successfully",

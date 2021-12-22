@@ -56,6 +56,7 @@ const psubcategory = require("./routes/psubcategory");
 const add_membership = require("./routes/membership");
 const finance_info = require("./routes/finance_info");
 const bymember_ship = require("./routes/buy_membership");
+const membershipFolderRoute = require("./routes/membershipFolder");
 const purchaseMembership = require("./routes/purchaseMemberships");
 const candidates = require("./routes/candidate");
 const withdraw_funds = require("./routes/withdraw_fund");
@@ -107,9 +108,8 @@ const email_system = require("./routes/admin/email_system_Category");
 const email_system_folder = require("./routes/admin/email_system_folder");
 const email_system_template = require("./routes/admin/email_system_template");
 const location = require("./routes/admin/settings/location");
-const user_membership = require("./routes/admin/membership_management/school_membership");
-const buy_user_membership = require("./routes/admin/membership_management/school_buy_membership");
-const membershipFolderRoute = require("./routes/membershipFolder");
+const user_membership = require("./routes/admin/membership_management/admin_membership");
+const user_membershipFolder = require("./routes/admin/membership_management/admin_membershipFolder");
 
 //menu routes
 const student_menu = require("./routes/menu/std_menu/all_student_menu");
@@ -245,7 +245,7 @@ app.use("/api", email_system_folder);
 app.use("/api", email_system_template);
 app.use("/api", location);
 app.use("/api", user_membership);
-app.use("/api", buy_user_membership);
+app.use("/api", user_membershipFolder);
 app.use("/api", purchaseMembership);
 app.use("/api", sample_doc);
 // school auth key middleware
