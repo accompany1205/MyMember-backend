@@ -115,7 +115,6 @@ exports.update_smart_list = async (req, res) => {
                 msg: "Please give the leadsId  in params!"
             })
         }
-        let promises = [];
         let { membership_status } = req.body.criteria
         let promises = [];
         let obj = req.body.criteria
