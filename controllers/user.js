@@ -72,7 +72,7 @@ exports.deleteVerifiedSendgridUser = async (req, res) => {
         body: '{}'
       };
       deleteVerifiedSendgridUser(option).then(resp => {
-        User.updateOne({_id:userId}, {$pull:{'sendgridVerification':{email:email}}}).then(respon =>{
+        User.updateOne({_id:userId}, {$pull:{sendgridVerification:{email:email}}}).then(respon =>{
           res.send(respon);
         }).catch(err =>{
           res.send({ error: err.message.replace(/\"/g, ""), success: false });

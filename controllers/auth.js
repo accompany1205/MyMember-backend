@@ -250,7 +250,8 @@ exports.approvesendgridverification = (req, res) => {
   let userId = req.params.userId;
   try {
     User.updateOne({ _id: userId, "sendgridVerification.email": email },
-      { $set: { "sendgridVerification.isVerified": true } }).then(resp => {
+      { $set: { "sendgridVerification.$.isVerified": true } }).then(resp => {
+        console.log(resp)
         res.send({ msg: "Email succesfuly verified!", resp, success: true })
       }).catch(err => {
         res.send({ error: err.message.replace(/\"/g, ""), success: false })
