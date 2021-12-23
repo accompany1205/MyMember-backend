@@ -49,6 +49,7 @@ exports.listingVerifications = async (req, res) => {
 
 exports.deleteVerifiedSendgridUser = async (req, res) => {
   try {
+    let userId = req.params.userId;
     let key = process.env.SENDGRID_API_KEY;
     let email = req.params.email;
     var options = {
@@ -71,7 +72,11 @@ exports.deleteVerifiedSendgridUser = async (req, res) => {
         body: '{}'
       };
       deleteVerifiedSendgridUser(option).then(resp => {
-        res.send(resp);
+        User.updateOne({_id:userId}, {$pull:{'sendgridVerification':{email:email}}}).then(respon =>{
+          res.send(respon);
+        }).catch(err =>{
+          res.send({ error: err.message.replace(/\"/g, ""), success: false });
+        })
       }).catch(err =>{
         res.send({ error: err.message.replace(/\"/g, ""), success: false });
       })

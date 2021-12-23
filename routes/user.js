@@ -19,7 +19,7 @@ router.put('/user/:userId', upload.single('profile_image'), requireSignin, isAut
 router.get('/orders/by/user/:userId', requireSignin, isAuth, purchaseHistory);
 router.put('/sendgridverification/emails/:userId', requireSignin, verificationLink)
 router.get('/getsendgridverification/:userId', requireSignin, listingVerifications)
-router.delete('/delete/verifiedsendgriduser/:email', requireSignin, deleteVerifiedSendgridUser)
+router.delete('/delete/verifiedsendgriduser/:userId/:email', requireSignin, deleteVerifiedSendgridUser)
 
 router.param('userId', userById);
 
