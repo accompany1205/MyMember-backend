@@ -246,7 +246,7 @@ exports.forgetpasaword = (req, res) => {
 };
 
 exports.approvesendgridverification = (req, res) => {
-  let { email } = req.body;
+  let email  = req.body.email;
   let userId = req.params.userId;
   try {
     User.updateOne({ _id: userId, "sendgridVerification.email": email },
@@ -262,7 +262,7 @@ exports.approvesendgridverification = (req, res) => {
 
 exports.unverifiedsendgriduserlist = (req, res) => {
   try {
-    User.find({"sendgridVerification.isVerified":false}, )
+    User.find({"sendgridVerification.isVerified":false}, {sendgridVerification:1, userId:1})
       .then(resp => { 
         console.log(resp)
         res.send({msg:resp, success:true})
@@ -273,6 +273,7 @@ exports.unverifiedsendgriduserlist = (req, res) => {
     res.send({ error: err.message.replace(/\"/g, ""), success: false })
   }
 }
+
 exports.resetPassword = (req, res) => {
   var newPass = req.body.newPass;
   var Token = req.headers["authorization"];
