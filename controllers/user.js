@@ -3,6 +3,8 @@ const { Order } = require('../models/order');
 const { errorHandler } = require('../helpers/dbErrorHandler');
 const navbar = require('../models/navbar.js')
 const cloudUrl = require("../gcloud/imageUrl")
+const request = require("request");
+
 
 
 exports.userById = (req, res, next, id) => {
@@ -22,13 +24,93 @@ exports.verificationLink = (req, res) => {
   let body = req.body;
   try {
     User.findByIdAndUpdate(userId, { $push: { sendgridVerification: body } }).then((resp) => {
-      res.send({ msg: "Verified!", success: true, resp })
+      res.send({ msg: "Request sent for verification to admin!!", success: true, resp })
     }).catch((error) => {
-      res.send({ msg: "Email not verified", success: false })
+      res.send({ msg: "Request not send to Admin!", success: false, error })
     })
   } catch (err) {
-    console.log(err)
+    res.send({ error: err.message.replace(/\"/g, ""), success: false })
   }
+}
+
+exports.listingVerifications = async (req, res) => {
+  let userId = req.params.userId;
+  try {
+    await User.findById(userId, { sendgridVerification: 1, _id: 0 }).then(resp => {
+      console.log(resp)
+      res.send({ msg: "data!", resp, success: true })
+    }).catch(err => {
+      res.send({ msg: "not Data!", success: false, err })
+    })
+  } catch (error) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false })
+  }
+}
+
+exports.deleteVerifiedSendgridUser = async (req, res) => {
+  try {
+    let userId = req.params.userId;
+    let key = process.env.SENDGRID_API_KEY;
+    let email = req.params.email;
+    var options = {
+      method: 'GET',
+      url: 'https://api.sendgrid.com/v3/verified_senders',
+      headers: { authorization: `Bearer ${key}` },
+      body: '{}'
+    };
+    getverifiedSendgrid(options).then(data => {
+      let currentEmail;
+      data.results.map(ele => {
+        if (email === ele.from_email) {
+          currentEmail = ele.id
+        }
+      })
+      var option = {
+        method: 'DELETE',
+        url: `https://api.sendgrid.com/v3/verified_senders/${currentEmail}`,
+        headers: { authorization: `Bearer ${key}` },
+        body: '{}'
+      };
+      deleteVerifiedSendgridUser(option).then(resp => {
+        User.updateOne({_id:userId}, {$pull:{'sendgridVerification':{email:email}}}).then(respon =>{
+          res.send(respon);
+        }).catch(err =>{
+          res.send({ error: err.message.replace(/\"/g, ""), success: false });
+        })
+      }).catch(err =>{
+        res.send({ error: err.message.replace(/\"/g, ""), success: false });
+      })
+    }).catch(err => {
+      res.send({ error: err.message.replace(/\"/g, ""), success: false })
+    })
+  } catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false })
+  }
+
+}
+
+function deleteVerifiedSendgridUser(option) {
+  return new Promise((resolve, reject) => {
+    request(option, function (error, response, body) {
+      if (error) {
+        reject({ msg: "User Email not deleted!", success: false, error })
+      } else {
+        resolve({ msg: "deleted successfuly!", success: true })
+      }
+    });
+  })
+}
+function getverifiedSendgrid(options) {
+  return new Promise((resolve, reject) => {
+    request(options, function (error, response, body) {
+      if (error) {
+        reject({ error })
+      } else {
+        resolve(JSON.parse(body))
+      }
+
+    });
+  })
 }
 
 exports.read = (req, res) => {
