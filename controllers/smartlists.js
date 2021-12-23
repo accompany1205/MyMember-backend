@@ -1,6 +1,6 @@
 const smartlist = require('../models/smartlists')
 const member = require('../models/addmember')
-
+const membership = require('../models/buy_membership')
 exports.get_smart_list = async (req, res) => {
     try {
         let userId = req.params.userId
@@ -26,47 +26,67 @@ exports.create_smart_list = async (req, res) => {
                 msg: "Please give the userId  in params!"
             })
         }
+        let { membership_status } = req.body.criteria
         let promises = [];
-        let { studentType, status, program, category, current_rank_name, age, state, town, zipPostalCode, location } = req.body
-        console.log(studentType, program)
-        // const getFilter = (query, fields) => fields.reduce(
-        //     (filter, field) => query[field] !== [] ? {
-        //         [field]: query[field],
-        //         ...filter,
-        //     } : filter, {}
-        // );
-        // const query = {
-        //     status: status,
-        //     program: program,
-        //     current_rank_name: current_rank_name,
-        //     age: age,
-        //     location: location,
-        //     zipPostalCode: zipPostalCode
-        // // }
-        // const fields = ['status', 'program', 'current_rank_name', "age", "location", "zipPostalCode"];
-        // let filter = getFilter(query, fields)
-        // console.log(filter)
-
+        let obj = req.body.criteria
+        for (const i in obj) {
+            if (obj[i].length && i !== "membership_status") {
+                promises.push({ [i]: { $in: obj[i] } })
+            }
+        }
+        Promise.all(promises);
         let leadData = await member.find({
             userId: userId,
-            $and: [
-                { studentType: { $in: studentType } },
-                { program: { $in: program } },
-                { category: { $in: category } },
-                { status: { $in: status } },
-                { current_rank_name: { $in: current_rank_name } },
-                { age: { $in: age } },
-                { zipPostalCode: { $in: zipPostalCode } },
-                { location: { $in: location } },
-                { state: { $in: state } },
-                { town: { $in: town } }
-            ]
-        }
-            , { email: 1 })
+            $and: promises
+        }, { email: 1 })
 
+        if (membership_status.length) {
+            var membershipData = await membership.aggregate([{
+                $match: { userId: userId, membership_status: { $in: membership_status } }
+            }, {
+                $project: {
+                    studentInfo: 1,
+                    membership_status: 1
+                }
+            }, { $unwind: "$studentInfo" }, {
+                $lookup: {
+                    from: "members",
+                    localField: "studentInfo",
+                    foreignField: "_id",
+                    as: "data"
+                }
+            },
+            {
+                $project: {
+                    membership_status: 1,
+                    "data._id": 1,
+                    "data.email": 1,
+                    _id: 0,
+
+                }
+            },
+
+            { $unwind: "$data" },
+            {
+                "$group": {
+                    "_id": "",
+                    "data": { "$addToSet": "$data" }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                }
+            },
+            ])
+            membershipData = membershipData[0].data
+            var arr = leadData.filter(e => {
+                return !membershipData.some(item => item._id === e._id);
+            });
+        }
         let sldata = smartlist({
             smartlistname: req.body.smartlistname,
-            smartlists: leadData,
+            smartlists: arr,
             userId: userId
         })
 
@@ -95,84 +115,67 @@ exports.update_smart_list = async (req, res) => {
                 msg: "Please give the leadsId  in params!"
             })
         }
+        let { membership_status } = req.body.criteria
         let promises = [];
-        let { leads, activetrial, formertrial, activestudent, formerstudent, status, programName, current_rank_name, age, zipPostalCode, location } = req.body
-        const getFilter = (query, fields) => fields.reduce(
-            (filter, field) => query[field] !== undefined ? {
-                [field]: query[field],
-                ...filter,
-            } : filter, {}
-        );
-
-        const query = {
-            status: status,
-            program: programName,
-            current_rank_name: current_rank_name,
-            age: age,
-            location: location,
-            zipPostalCode: zipPostalCode
-        }
-        const fields = ['status', 'program', 'current_rank_name', "age", "location", "zipPostalCode"];
-        let filter = getFilter(query, fields)
-
-        if (req.body.leads) {
-            let leadData = await member.find({
-                studentType: leads,
-                userId: userId,
-                ...filter
+        let obj = req.body.criteria
+        for (const i in obj) {
+            if (obj[i].length && i !== "membership_status") {
+                promises.push({ [i]: { $in: obj[i] } })
             }
-                , { email: 1 })
-            promises = [...leadData];
         }
-        if (req.body.activetrial) {
-            let activeTData = await member.find({
-                studentType: activetrial,
-                userId: userId,
-                ...filter
-            }, { email: 1 })
-            promises = [...activeTData, ...promises]
-        }
-        if (req.body.formertrial) {
-            let formerTData = await member.find({
-                studentType: formertrial,
-                userId: userId,
-                ...filter
-            }, { email: 1 })
-            promises = [...formerTData, ...promises]
+        Promise.all(promises);
+        let leadData = await member.find({
+            userId: userId,
+            $and: promises
+        }, { email: 1 })
 
-        }
-        if (req.body.activestudent) {
-            let activeSData = await member.find({
-                studentType: activestudent,
-                userId: userId,
-                ...filter
-            }, { email: 1 })
-            promises = [...activeSData, ...promises]
-
-        }
-        if (req.body.formerstudent) {
-            let formerSData = await member.find({
-                studentType: formerstudent,
-                userId: userId,
-                ...filter
+        if (membership_status.length) {
+            var membershipData = await membership.aggregate([{
+                $match: { userId: userId, membership_status: { $in: membership_status } }
+            }, {
+                $project: {
+                    studentInfo: 1,
+                    membership_status: 1
+                }
+            }, { $unwind: "$studentInfo" }, {
+                $lookup: {
+                    from: "members",
+                    localField: "studentInfo",
+                    foreignField: "_id",
+                    as: "data"
+                }
             },
-                { email: 1 })
-            promises = [...formerSData, ...promises]
+            {
+                $project: {
+                    membership_status: 1,
+                    "data._id": 1,
+                    "data.email": 1,
+                    _id: 0,
 
+                }
+            },
+
+            { $unwind: "$data" },
+            {
+                "$group": {
+                    "_id": "",
+                    "data": { "$addToSet": "$data" }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                }
+            },
+            ])
+            membershipData = membershipData[0].data
+            var arr = leadData.filter(e => {
+                return !membershipData.some(item => item._id === e._id);
+            });
         }
-
-        await Promise.all(promises);
-        const map = {};
-        const newArray = [];
-        promises.forEach(el => {
-            if (!map[JSON.stringify(el)]) {
-                map[JSON.stringify(el)] = true;
-                newArray.push(el);
-            }
-        });
         await smartlist.findByIdAndUpdate(slId, {
             smartlistname: req.body.smartlistname,
-            smartlists: newArray
+            smartlists: arr
         },
             ((err, leads_data) => {
                 if (err) {
