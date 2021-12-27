@@ -39,8 +39,7 @@ exports.create_smart_list = async (req, res) => {
             userId: userId,
             $and: promises
         }, { email: 1 })
-
-        if (membership_status.length) {
+        if (membership_status) {
             var membershipData = await membership.aggregate([{
                 $match: { userId: userId, membership_status: { $in: membership_status } }
             }, {
@@ -83,7 +82,10 @@ exports.create_smart_list = async (req, res) => {
             var arr = leadData.filter(e => {
                 return !membershipData.some(item => item._id === e._id);
             });
+        }else{
+            arr=leadData
         }
+        console.log(arr)
         let sldata = smartlist({
             smartlistname: req.body.smartlistname,
             smartlists: arr,
