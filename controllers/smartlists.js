@@ -40,7 +40,7 @@ exports.create_smart_list = async (req, res) => {
             $and: promises
         }, { email: 1 })
 
-        if (membership_status.length) {
+        if (membership_status) {
             var membershipData = await membership.aggregate([{
                 $match: { userId: userId, membership_status: { $in: membership_status } }
             }, {
