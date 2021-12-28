@@ -84,165 +84,165 @@ exports.create_smart_list = async (req, res) => {
                 return !membershipData.some(item => item._id === e._id);
             });
         }
-        if (finance) {
-            if (finance.includes('expired')) {
-                var financeData = await financeInfo.aggregate(
-                    [{
-                        $match: {
-                            userId: userId
-                        }
-                    },
-                    {
-                        $project: {
-                            studentId: 1,
-                            expiry_date: 1,
-                            month: { $month: "$$NOW" },
-                            year: { $toInt: { $substrBytes: [{ $toString: { $year: "$$NOW" } }, 2, -1] } },
-                            expired_month: { $toInt: { $substrBytes: ["$expiry_date", 0, 2] } },
-                            expired_year: { $toInt: { $substrBytes: ["$expiry_date", 2, -1] } },
+        // if (finance) {
+        //     if (finance.includes('expired')) {
+        //         var financeData = await financeInfo.aggregate(
+        //             [{
+        //                 $match: {
+        //                     userId: userId
+        //                 }
+        //             },
+        //             {
+        //                 $project: {
+        //                     studentId: 1,
+        //                     expiry_date: 1,
+        //                     month: { $month: "$$NOW" },
+        //                     year: { $toInt: { $substrBytes: [{ $toString: { $year: "$$NOW" } }, 2, -1] } },
+        //                     expired_month: { $toInt: { $substrBytes: ["$expiry_date", 0, 2] } },
+        //                     expired_year: { $toInt: { $substrBytes: ["$expiry_date", 2, -1] } },
 
-                        }
-                    },
-                    {
-                        $addFields: {
-                            studentId: { $convert: { input: '$studentId', to: 'objectId', onError: '', onNull: '' } }
-                        }
-                    },
-                    {
-                        $lookup: {
-                            from: "members",
-                            localField: "studentId",
-                            foreignField: "_id",
-                            as: "data"
-                        }
-                    },
-                    {
-                        $match: {
-                            $expr: {
-                                $and: [
-                                    { $gte: ["$year", "$expired_year"] },
-                                    { $gte: ["$month", "$expired_month"] }
-                                ]
-                            },
-                        }
-                    },
-                    {
-                        $project: {
-                            "data._id": 1,
-                            "data.email": 1,
-                            _id: 0,
+        //                 }
+        //             },
+        //             {
+        //                 $addFields: {
+        //                     studentId: { $convert: { input: '$studentId', to: 'objectId', onError: '', onNull: '' } }
+        //                 }
+        //             },
+        //             {
+        //                 $lookup: {
+        //                     from: "members",
+        //                     localField: "studentId",
+        //                     foreignField: "_id",
+        //                     as: "data"
+        //                 }
+        //             },
+        //             {
+        //                 $match: {
+        //                     $expr: {
+        //                         $and: [
+        //                             { $gte: ["$year", "$expired_year"] },
+        //                             { $gte: ["$month", "$expired_month"] }
+        //                         ]
+        //                     },
+        //                 }
+        //             },
+        //             {
+        //                 $project: {
+        //                     "data._id": 1,
+        //                     "data.email": 1,
+        //                     _id: 0,
 
-                        }
-                    },
+        //                 }
+        //             },
 
-                    { $unwind: "$data" },
-                    {
-                        "$group": {
-                            "_id": "",
-                            "data": { "$addToSet": "$data" }
-                        }
-                    },
-                    {
-                        $project: {
-                            _id: 0,
-                        }
-                    },
-                    ]
-                )
-                financeData = financeData[0].data
-            }
-            if (finance.includes('not_expired')) {
-                let not_expiredFinance = await financeInfo.aggregate(
-                    [{
-                        $match: {
-                            userId: userId
-                        }
-                    },
-                    {
-                        $project: {
-                            studentId: 1,
-                            expiry_date: 1,
-                            month: { $month: "$$NOW" },
-                            year: { $toInt: { $substrBytes: [{ $toString: { $year: "$$NOW" } }, 2, -1] } },
-                            expired_month: { $toInt: { $substrBytes: ["$expiry_date", 0, 2] } },
-                            expired_year: { $toInt: { $substrBytes: ["$expiry_date", 2, -1] } },
-                        }
-                    },
-                    {
-                        $addFields: {
-                            studentId: { $convert: { input: '$studentId', to: 'objectId', onError: '', onNull: '' } }
-                        }
-                    },
-                    {
-                        $lookup: {
-                            from: "members",
-                            localField: "studentId",
-                            foreignField: "_id",
-                            as: "data"
-                        }
-                    },
-                    {
-                        $match: {
-                            $expr: {
-                                $and: [
-                                    { $gt: ["$expired_year", "$year"] },
-                                ]
-                            },
-                        }
-                    },
-                    {
-                        $project: {
-                            "data._id": 1,
-                            "data.email": 1,
-                            _id: 0,
-
-                        }
-                    },
-
-                    { $unwind: "$data" },
-                    {
-                        "$group": {
-                            "_id": "",
-                            "data": { "$addToSet": "$data" }
-                        }
-                    },
-                    {
-                        $project: {
-                            _id: 0,
-                        }
-                    },
-                    ]
-                )
-                if (financeData) {
-                    financeData.push(...not_expiredFinance[0].data)
-                } else {
-                    financeData = [...not_expiredFinance[0].data]
-                }
-            }
-        
-
-            console.log(inBoth(financeData, leadData))
-            var arr1 = financeData.filter(e => {
-                return !leadData.some(item => item._id === e._id);
-            });
-            console.log("arr1", arr1)
-        }
-
-        // let sldata = smartlist({
-        //     smartlistname: req.body.smartlistname,
-        //     smartlists: arr,
-        //     userId: userId
-        // })
-
-        // sldata.save((err, sldata) => {
-        //     if (err) {
-        //         res.send({ error: err.message.replace(/\"/g, ""), success: false });
-
-        //     } else {
-        //         return res.send({ msg: sldata, success: true });
-
+        //             { $unwind: "$data" },
+        //             {
+        //                 "$group": {
+        //                     "_id": "",
+        //                     "data": { "$addToSet": "$data" }
+        //                 }
+        //             },
+        //             {
+        //                 $project: {
+        //                     _id: 0,
+        //                 }
+        //             },
+        //             ]
+        //         )
+        //         financeData = financeData[0].data
         //     }
-        // })
+        //     if (finance.includes('not_expired')) {
+        //         let not_expiredFinance = await financeInfo.aggregate(
+        //             [{
+        //                 $match: {
+        //                     userId: userId
+        //                 }
+        //             },
+        //             {
+        //                 $project: {
+        //                     studentId: 1,
+        //                     expiry_date: 1,
+        //                     month: { $month: "$$NOW" },
+        //                     year: { $toInt: { $substrBytes: [{ $toString: { $year: "$$NOW" } }, 2, -1] } },
+        //                     expired_month: { $toInt: { $substrBytes: ["$expiry_date", 0, 2] } },
+        //                     expired_year: { $toInt: { $substrBytes: ["$expiry_date", 2, -1] } },
+        //                 }
+        //             },
+        //             {
+        //                 $addFields: {
+        //                     studentId: { $convert: { input: '$studentId', to: 'objectId', onError: '', onNull: '' } }
+        //                 }
+        //             },
+        //             {
+        //                 $lookup: {
+        //                     from: "members",
+        //                     localField: "studentId",
+        //                     foreignField: "_id",
+        //                     as: "data"
+        //                 }
+        //             },
+        //             {
+        //                 $match: {
+        //                     $expr: {
+        //                         $and: [
+        //                             { $gt: ["$expired_year", "$year"] },
+        //                         ]
+        //                     },
+        //                 }
+        //             },
+        //             {
+        //                 $project: {
+        //                     "data._id": 1,
+        //                     "data.email": 1,
+        //                     _id: 0,
+
+        //                 }
+        //             },
+
+        //             { $unwind: "$data" },
+        //             {
+        //                 "$group": {
+        //                     "_id": "",
+        //                     "data": { "$addToSet": "$data" }
+        //                 }
+        //             },
+        //             {
+        //                 $project: {
+        //                     _id: 0,
+        //                 }
+        //             },
+        //             ]
+        //         )
+        //         if (financeData) {
+        //             financeData.push(...not_expiredFinance[0].data)
+        //         } else {
+        //             financeData = [...not_expiredFinance[0].data]
+        //         }
+        //     }
+
+
+        //     console.log(inBoth(financeData, leadData))
+        //     var arr1 = financeData.filter(e => {
+        //         return !leadData.some(item => item._id === e._id);
+        //     });
+        //     console.log("arr1", arr1)
+        // }
+
+        let sldata = smartlist({
+            smartlistname: req.body.smartlistname,
+            smartlists: leadData,
+            userId: userId
+        })
+
+        sldata.save((err, sldata) => {
+            if (err) {
+                res.send({ error: err.message.replace(/\"/g, ""), success: false });
+
+            } else {
+                return res.send({ msg: sldata, success: true });
+
+            }
+        })
     } catch (err) {
         res.send({ error: err.message.replace(/\"/g, ""), success: false });
 
