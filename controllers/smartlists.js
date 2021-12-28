@@ -231,6 +231,7 @@ exports.create_smart_list = async (req, res) => {
         let sldata = smartlist({
             smartlistname: req.body.smartlistname,
             smartlists: leadData,
+            criteria: req.body.criteria
             userId: userId
         })
 
