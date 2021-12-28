@@ -82,13 +82,13 @@ exports.create_smart_list = async (req, res) => {
             var arr = leadData.filter(e => {
                 return !membershipData.some(item => item._id === e._id);
             });
-        }else{
-            arr=leadData
+        } else {
+            arr = leadData
         }
-        console.log(arr)
         let sldata = smartlist({
             smartlistname: req.body.smartlistname,
             smartlists: arr,
+            criteria: req.body.criteria,
             userId: userId
         })
 

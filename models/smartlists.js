@@ -11,7 +11,9 @@ const smartlistSchema = new schema({
     smartlists: {
         type: Array,
     },
-
+    criteria: {
+        type: Object
+    },
     userId: {
         type: String,
     }
