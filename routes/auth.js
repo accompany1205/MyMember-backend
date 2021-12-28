@@ -40,5 +40,5 @@ router.post("/edit_navbar_li", edit_navbar_li);
 router.post("/edit_navbar_ui", edit_navbar_ui)
 router.get("/school_listing/:adminId/:page_no", isAdmin, school_listing)
 router.put("/approvesendgridverification/:adminId/:userId", isAdmin, approvesendgridverification);
-router.get("/unverifiedsendgriduserlist/", isAdmin, unverifiedsendgriduserlist)
+router.get("/unverifiedsendgriduserlist/:adminId", isAdmin,unverifiedsendgriduserlist)
 module.exports = router;
