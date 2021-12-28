@@ -2,11 +2,25 @@ require('dotenv').config();
 const User = require('../models/user');
 const Member = require('../models/addmember');
 const RecommendedForTest = require('../models/recommendedForTest');
+const Finance_infoSchema = require("../models/finance_info");
+const AddMember = require("../models/addmember");
 const RegisterdForTest = require('../models/registerdForTest');
 const program_rank = require("../models/program_rank");
 const Joi = require('@hapi/joi');
+const { valorTechPaymentGateWay } = require("./valorTechPaymentGateWay");
 
 
+const randomNumber = (length, addNumber) => {
+    return parseInt(
+      (Math.floor(Math.random() * length) + addNumber).toString().substring(1)
+    );
+  };
+  
+const getUidAndInvoiceNumber = () => {
+    return {
+      uid: randomNumber(100000000000, 100),
+    };
+  };
 
 exports.getRecommededForTest = async (req, res) => {
     let userId = req.params.userId;
@@ -136,21 +150,36 @@ const updateStudentsById = async (studentId) => {
 
 exports.payAndPromoteTheStudent = async (req, res) => {
     let userId = req.params.userId;
-    let {
-        testId,
-        studentId,
-        rating,
-        current_rank_name,
-        next_rank_name,
-        current_rank_img,
-        next_rank_img,
-        method,
-        phone,
-        firstName,
-        lastName,
-        memberprofileImage,
-        program
-    } = req.body;
+    let {cardDetails, paidAmount, studentId, financeId} = req.body;
+    let updatePayment;
+    if (cardDetails) {
+        const { uid } = getUidAndInvoiceNumber();
+        const expiry_date = cardDetails?.expiry_month + cardDetails?.expiry_year;
+        cardDetails.expiry_date = expiry_date;
+        delete cardDetails.expiry_month;
+        delete cardDetails.expiry_year
+        const valorPayload = {...cardDetails, amount: paidAmount, uid }
+        const resp = await valorTechPaymentGateWay.saleSubscription(valorPayload);
+        if (resp.data.error_no == "S00") {
+            const address = {
+                address: cardDetails?.address,
+                zip: cardDetails?.zip,
+                street_no: cardDetails?.street_no,
+            }
+            cardDetails.address = address;
+            await createFinanceDoc({...cardDetails, studentId: studentId, userId: userId}, financeId)
+            updatePayment = await addTestPayment(req.body, userId)
+            res.send(updatePayment)
+        } else {
+            res.send({
+              success: false,
+              msg: "Payment is not completed due to technical reason please try again!"
+            })
+        }
+    } else {
+        updatePayment = await addTestPayment(req.body, userId)
+        res.send(updatePayment)
+    }
     //If student removed by mistake and adding again to the registerd list...
     // let isStudentRegisterd = await RegisterdForTest.findOne({
     //     "studentId": studentId
@@ -191,6 +220,26 @@ exports.payAndPromoteTheStudent = async (req, res) => {
     // } 
     //else {
     //If moving the student to the registerd list for the fist time.
+    //}
+}
+
+const addTestPayment = async (payload, userId) => {
+    let {
+        testId,
+        studentId,
+        rating,
+        current_rank_name,
+        next_rank_name,
+        current_rank_img,
+        next_rank_img,
+        method,
+        phone,
+        firstName,
+        lastName,
+        memberprofileImage,
+        program,
+        cheque_no
+    } = payload;
     let registerd = await RegisterdForTest.create({
         "studentId": studentId,
         "firstName": firstName,
@@ -205,13 +254,14 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         "memberprofileImage": memberprofileImage,
         "next_rank_img": next_rank_img,
         "phone": phone,
-        "program": program
+        "program": program,
+        "cheque_no": cheque_no
     });
     if (registerd === null) {
-        res.json({
+        return {
             status: false,
             msg: "Having some issue while register!!!!!!!"
-        })
+        }
     }
     let date = new Date();
     let history = {
@@ -230,10 +280,10 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         new: true
     })
     if (updatedTestPurchasing === null) {
-        res.json({
+        return {
             status: false,
             msg: "Having some issue while register!!"
-        })
+        }
     }
     let removedFromRecommended = await RecommendedForTest.updateMany({
         "studentId": studentId
@@ -242,23 +292,52 @@ exports.payAndPromoteTheStudent = async (req, res) => {
     }, {
         new: true
     });
-    console.log("removed", removedFromRecommended)
     if (!removedFromRecommended) {
-        res.json({
+        return {
             status: false,
             msg: "Having issue while removing form recommeded list!!"
-        })
+        }
     }
 
-    res.json({
+    return {
         status: true,
         msg: "Student successfully promoted to registerd list!!",
         data: registerd
-    })
-    //}
+    }
 }
 
-
+function createFinanceDoc(data, financeId) {
+    const { studentId } = data;
+    return new Promise((resolve, reject) => {
+      const financeData = new Finance_infoSchema(data);
+      if (financeId) {
+        Finance_infoSchema.findByIdAndUpdate(financeId, {
+          $set: data
+        }).exec((err, resData) => {
+          if (err) {
+            resolve({ success: false });
+          }
+          resolve({ success: true });
+        })
+      } else {
+        financeData.save((err, Fdata) => {
+          if (err) {
+            resolve({ success: false, msg: "Finance data is not stored!" });
+          } else {
+            AddMember.findByIdAndUpdate(studentId, {
+              $push: { finance_details: Fdata._id },
+            }).exec((err, data) => {
+              if (data) {
+                resolve({ success: true });
+              } else {
+                resolve({ success: false });
+              }
+            });
+          }
+        });
+      }
+    });
+  }
 
 exports.removeFromRecomended = async (req, res) => {
     let recommededId = req.params.recommendedId;
