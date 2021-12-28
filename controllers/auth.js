@@ -248,12 +248,14 @@ exports.forgetpasaword = (req, res) => {
 exports.approvesendgridverification = (req, res) => {
   let email  = req.body.email;
   let userId = req.params.userId;
+  console.log("email", email)
   try {
     User.updateOne({ _id: userId, "sendgridVerification.email": email },
       { $set: { "sendgridVerification.$.isVerified": true } }).then(resp => {
         if(resp.n===0){
           res.send({ msg: "Email not verified!", resp, success: false })
         }
+        console.log(resp)
         res.send({ msg: "Email succesfuly verified!", resp, success: true })
       }).catch(err => {
         res.send({ error: err.message.replace(/\"/g, ""), success: false })
