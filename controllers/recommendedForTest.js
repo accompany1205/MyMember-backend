@@ -170,12 +170,12 @@ exports.payAndPromoteTheStudent = async (req, res) => {
             await createFinanceDoc({...cardDetails, studentId: studentId, userId: userId}, financeId)
             updatePayment = await addTestPayment(req.body, userId)
             res.send(updatePayment)
-          } else {
+        } else {
             res.send({
               success: false,
               msg: "Payment is not completed due to technical reason please try again!"
             })
-          }
+        }
     } else {
         updatePayment = await addTestPayment(req.body, userId)
         res.send(updatePayment)
@@ -238,6 +238,7 @@ const addTestPayment = async (payload, userId) => {
         lastName,
         memberprofileImage,
         program,
+        cheque_no
     } = payload;
     let registerd = await RegisterdForTest.create({
         "studentId": studentId,
@@ -253,7 +254,8 @@ const addTestPayment = async (payload, userId) => {
         "memberprofileImage": memberprofileImage,
         "next_rank_img": next_rank_img,
         "phone": phone,
-        "program": program
+        "program": program,
+        "cheque_no": cheque_no
     });
     if (registerd === null) {
         return {

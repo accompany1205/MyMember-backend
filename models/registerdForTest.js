@@ -51,6 +51,9 @@ const registerdForTest = new mongoose.Schema({
     phone:{
         type:String
     },
+    cheque_no: {
+        type: String
+    },
     memberprofileImage:{
         type:String
     },
