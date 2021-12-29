@@ -230,6 +230,12 @@ const userSchema = new schema(
             },
             link:{
                 type:String
+            },
+            staffName:{
+                type:String
+            },
+            password:{
+                type:String
             }
         }]
     },

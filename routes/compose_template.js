@@ -16,7 +16,7 @@ router.put("/email_compose/single_template_status_change/:userId/:tempId",verify
 router.put("/email_compose/update_template_status/:userId/:folderId",verifySchool,status_update_template)//all template status change
 router.delete("/email_compose/remove_template/:userId/:templateId",requireSignin,remove_template)
 router.delete("/email_compose/multipal_remove_template/:userId/:folderId",verifySchool,multipal_temp_remove)
-router.post("/emailsendgrid/sendverification", sendVerificationMail)
+router.post("/emailsendgrid/sendverification/:userId", sendVerificationMail)
 
 router.get('/date_and_time',getData)
     

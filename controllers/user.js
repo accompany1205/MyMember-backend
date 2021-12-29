@@ -19,11 +19,14 @@ exports.userById = (req, res, next, id) => {
   });
 };
 
-exports.verificationLink = (req, res) => {
+exports.verificationLink = async (req, res) => {
   let userId = req.params.userId;
-  let body = req.body;
+  let link = req.body.link;
+  let email = req.body.email;
   try {
-    User.findByIdAndUpdate(userId, { $push: { sendgridVerification: body } }).then((resp) => {
+    await User.updateOne({ _id: userId, "sendgridVerification.email": email },
+      { $set: { "sendgridVerification.$.link": link } }
+    ).then((resp) => {
       res.send({ msg: "Request sent for verification to admin!!", success: true, resp })
     }).catch((error) => {
       res.send({ msg: "Request not send to Admin!", success: false, error })
@@ -72,12 +75,12 @@ exports.deleteVerifiedSendgridUser = async (req, res) => {
         body: '{}'
       };
       deleteVerifiedSendgridUser(option).then(resp => {
-        User.updateOne({_id:userId}, {$pull:{sendgridVerification:{email:email}}}).then(respon =>{
+        User.updateOne({ _id: userId }, { $pull: { sendgridVerification: { email: email } } }).then(respon => {
           res.send(respon);
-        }).catch(err =>{
+        }).catch(err => {
           res.send({ error: err.message.replace(/\"/g, ""), success: false });
         })
-      }).catch(err =>{
+      }).catch(err => {
         res.send({ error: err.message.replace(/\"/g, ""), success: false });
       })
     }).catch(err => {

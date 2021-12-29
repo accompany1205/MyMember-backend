@@ -5,6 +5,7 @@ const async = require("async");
 const sgMail = require("sendgrid-v3-node");
 const moment = require("moment");
 var request = require("request");
+const User = require("../models/user");
 const cron = require("node-cron");
 const axios = require("axios");
 const cloudUrl = require("../gcloud/imageUrl");
@@ -202,8 +203,9 @@ exports.allSent = async (req, res) => {
   })
 }
 
-exports.sendVerificationMail = (req, res) => {
+exports.sendVerificationMail =async  (req, res) => {
   try {
+    let userId = req.params.userId;
     let reqData = req.body;
     let key = process.env.SENDGRID_API_KEY;
     var options = {
@@ -230,6 +232,17 @@ exports.sendVerificationMail = (req, res) => {
       },
       json: true
     };
+    await User.findByIdAndUpdate(userId, { $push: { sendgridVerification: { staffName: reqData.staffName, password: reqData.password, email:reqData.from_email } } })
+
+    // let staffuser = new User({
+    //   username: reqData.staffName,
+    //   password: reqData.password
+    // })
+    // staffuser.save((err, user) => {
+    //   if (err) {
+    //     res.send({ error: err.message.replace(/\"/g, ""), success: false })
+    //   }
+    // })
 
     request(options, function (errors, response, body) {
       if (errors || body.errors) { res.send({ success: false, msg: body.errors }) }
