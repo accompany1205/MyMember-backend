@@ -1,6 +1,7 @@
 const smartlist = require('../models/smartlists')
 const member = require('../models/addmember')
 const membership = require('../models/buy_membership')
+const financeInfo = require('../models/finance_info')
 exports.get_smart_list = async (req, res) => {
     try {
         let userId = req.params.userId
@@ -26,16 +27,16 @@ exports.create_smart_list = async (req, res) => {
                 msg: "Please give the userId  in params!"
             })
         }
-        let { membership_status } = req.body.criteria
+        let { membership_status, finance } = req.body.criteria
         let promises = [];
         let obj = req.body.criteria
         for (const i in obj) {
-            if (obj[i].length && i !== "membership_status") {
+            if (obj[i].length && i !== "membership_status" && i !== "finance") {
                 promises.push({ [i]: { $in: obj[i] } })
             }
         }
         Promise.all(promises);
-        let leadData = await member.find({
+        var leadData = await member.find({
             userId: userId,
             $and: promises
         }, { email: 1 })
@@ -47,7 +48,8 @@ exports.create_smart_list = async (req, res) => {
                     studentInfo: 1,
                     membership_status: 1
                 }
-            }, { $unwind: "$studentInfo" }, {
+            }, { $unwind: "$studentInfo" },
+            {
                 $lookup: {
                     from: "members",
                     localField: "studentInfo",
@@ -64,7 +66,6 @@ exports.create_smart_list = async (req, res) => {
 
                 }
             },
-
             { $unwind: "$data" },
             {
                 "$group": {
@@ -79,16 +80,158 @@ exports.create_smart_list = async (req, res) => {
             },
             ])
             membershipData = membershipData[0].data
-            var arr = leadData.filter(e => {
+            leadData = leadData.filter(e => {
                 return !membershipData.some(item => item._id === e._id);
             });
-        }else{
-            arr=leadData
         }
-        console.log(arr)
+        // if (finance) {
+        //     if (finance.includes('expired')) {
+        //         var financeData = await financeInfo.aggregate(
+        //             [{
+        //                 $match: {
+        //                     userId: userId
+        //                 }
+        //             },
+        //             {
+        //                 $project: {
+        //                     studentId: 1,
+        //                     expiry_date: 1,
+        //                     month: { $month: "$$NOW" },
+        //                     year: { $toInt: { $substrBytes: [{ $toString: { $year: "$$NOW" } }, 2, -1] } },
+        //                     expired_month: { $toInt: { $substrBytes: ["$expiry_date", 0, 2] } },
+        //                     expired_year: { $toInt: { $substrBytes: ["$expiry_date", 2, -1] } },
+
+        //                 }
+        //             },
+        //             {
+        //                 $addFields: {
+        //                     studentId: { $convert: { input: '$studentId', to: 'objectId', onError: '', onNull: '' } }
+        //                 }
+        //             },
+        //             {
+        //                 $lookup: {
+        //                     from: "members",
+        //                     localField: "studentId",
+        //                     foreignField: "_id",
+        //                     as: "data"
+        //                 }
+        //             },
+        //             {
+        //                 $match: {
+        //                     $expr: {
+        //                         $and: [
+        //                             { $gte: ["$year", "$expired_year"] },
+        //                             { $gte: ["$month", "$expired_month"] }
+        //                         ]
+        //                     },
+        //                 }
+        //             },
+        //             {
+        //                 $project: {
+        //                     "data._id": 1,
+        //                     "data.email": 1,
+        //                     _id: 0,
+
+        //                 }
+        //             },
+
+        //             { $unwind: "$data" },
+        //             {
+        //                 "$group": {
+        //                     "_id": "",
+        //                     "data": { "$addToSet": "$data" }
+        //                 }
+        //             },
+        //             {
+        //                 $project: {
+        //                     _id: 0,
+        //                 }
+        //             },
+        //             ]
+        //         )
+        //         financeData = financeData[0].data
+        //     }
+        //     if (finance.includes('not_expired')) {
+        //         let not_expiredFinance = await financeInfo.aggregate(
+        //             [{
+        //                 $match: {
+        //                     userId: userId
+        //                 }
+        //             },
+        //             {
+        //                 $project: {
+        //                     studentId: 1,
+        //                     expiry_date: 1,
+        //                     month: { $month: "$$NOW" },
+        //                     year: { $toInt: { $substrBytes: [{ $toString: { $year: "$$NOW" } }, 2, -1] } },
+        //                     expired_month: { $toInt: { $substrBytes: ["$expiry_date", 0, 2] } },
+        //                     expired_year: { $toInt: { $substrBytes: ["$expiry_date", 2, -1] } },
+        //                 }
+        //             },
+        //             {
+        //                 $addFields: {
+        //                     studentId: { $convert: { input: '$studentId', to: 'objectId', onError: '', onNull: '' } }
+        //                 }
+        //             },
+        //             {
+        //                 $lookup: {
+        //                     from: "members",
+        //                     localField: "studentId",
+        //                     foreignField: "_id",
+        //                     as: "data"
+        //                 }
+        //             },
+        //             {
+        //                 $match: {
+        //                     $expr: {
+        //                         $and: [
+        //                             { $gt: ["$expired_year", "$year"] },
+        //                         ]
+        //                     },
+        //                 }
+        //             },
+        //             {
+        //                 $project: {
+        //                     "data._id": 1,
+        //                     "data.email": 1,
+        //                     _id: 0,
+
+        //                 }
+        //             },
+
+        //             { $unwind: "$data" },
+        //             {
+        //                 "$group": {
+        //                     "_id": "",
+        //                     "data": { "$addToSet": "$data" }
+        //                 }
+        //             },
+        //             {
+        //                 $project: {
+        //                     _id: 0,
+        //                 }
+        //             },
+        //             ]
+        //         )
+        //         if (financeData) {
+        //             financeData.push(...not_expiredFinance[0].data)
+        //         } else {
+        //             financeData = [...not_expiredFinance[0].data]
+        //         }
+        //     }
+
+
+        //     console.log(inBoth(financeData, leadData))
+        //     var arr1 = financeData.filter(e => {
+        //         return !leadData.some(item => item._id === e._id);
+        //     });
+        //     console.log("arr1", arr1)
+        // }
+
         let sldata = smartlist({
             smartlistname: req.body.smartlistname,
-            smartlists: arr,
+            smartlists: leadData,
+            criteria:req.body.criteria,
             userId: userId
         })
 
