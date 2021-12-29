@@ -31,6 +31,10 @@ const middleware = require('./middlewear/middlewear')
 
 //shivani's
 const leads_tracking = require("./routes/leads_tracking");
+const after_camp = require("./routes/after_camp");
+const summer_camp = require("./routes/summer_camp");
+const speciality_program1 = require("./routes/speciality_program1");
+const speciality_program2 = require("./routes/speciality_program2");
 const smartlists = require("./routes/smartlists");
 const administrate_user = require("./routes/administrater_user");
 const programRoutes = require("./routes/program");
@@ -222,6 +226,10 @@ app.use("/api", nurturing_template);
 app.use("/api", library_template);
 app.use("/api", email_library_folder);
 app.use("/api", leads_tracking);
+app.use("/api", after_camp);
+app.use("/api", summer_camp);
+app.use("/api", speciality_program1);
+app.use("/api", speciality_program2);
 app.use("/api", smartlists);
 
 // Appointment Event
