@@ -95,6 +95,9 @@ const addmemberSchema = new schema(
       type: String,
       default: "",
     },
+    candidate: {
+      type: String
+    },
     current_stripe: {
       type: Number,
     },
@@ -121,6 +124,18 @@ const addmemberSchema = new schema(
       type: String,
     },
     leadsTracking: {
+      type: String,
+    },
+    after_camp: {
+      type: String,
+    },
+    summer_camp: {
+      type: String,
+    },
+    speciality_program1: {
+      type: String,
+    },
+    speciality_program2: {
       type: String,
     },
     staff: {
