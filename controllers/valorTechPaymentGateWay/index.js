@@ -46,6 +46,7 @@ class PaymentGateWay {
       throw new Error(ex);
     }
   };
+  
   editSubscription = async (payload) => {
     try {
       let formData = await this.formData(payload);

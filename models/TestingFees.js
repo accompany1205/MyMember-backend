@@ -28,6 +28,10 @@ const TestingSchema = new schema(
         },
         userId:{
             type:String
+        },
+        folderId:{
+            type: schema.Types.ObjectId,
+            ref:'productFolder'
         }
     },{ timestamps: true }
 );
