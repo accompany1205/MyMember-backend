@@ -10,7 +10,7 @@ const { create,
 const { requireSignin,isAuth,verifySchool } = require("../controllers/auth");
 
 router.get('/test/fees_list/:userId',verifySchool,read);
-router.post('/test_fees/:userId',upload.single('attach'),verifySchool,create); 
+router.post('/test_fees/:userId/:folderId',upload.single('attach'),verifySchool,create); 
 router.get('/test/fees_info/:feeId',requireSignin,fee_info);
 router.delete('/test/feesdelete/:userId/:feeId',requireSignin,deletetestfee);
 router.put('/test/testfeesupdate/:userId/:feeId',upload.single('attach'),requireSignin,updatetestFee);

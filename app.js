@@ -54,6 +54,7 @@ const category_manag = require("./routes/category_manag");
 const appointment = require("./routes/appointment");
 const events = require("./routes/events");
 const add_member = require("./routes/addmember");
+const productFolder = require("./routes/productFolder");
 const test_fees = require("./routes/test_fees");
 const pcategory = require("./routes/pcategory");
 const psubcategory = require("./routes/psubcategory");
@@ -230,11 +231,11 @@ app.use("/api", after_camp);
 app.use("/api", summer_camp);
 app.use("/api", speciality_program1);
 app.use("/api", speciality_program2);
+app.use("/api", productFolder);
 app.use("/api", smartlists);
 
 // Appointment Event
 app.use("/api", appointmentEvent)
-
 // app.use('/api',emailSystem)
 app.use("/api", text_sms);
 app.use("/api", text_genral);

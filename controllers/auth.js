@@ -246,16 +246,16 @@ exports.forgetpasaword = (req, res) => {
 };
 
 exports.approvesendgridverification = (req, res) => {
-  let email  = req.body.email;
+  let email = req.body.email;
   let userId = req.params.userId;
   try {
     User.updateOne({ _id: userId, "sendgridVerification.email": email },
       { $set: { "sendgridVerification.$.isVerified": true } }).then(resp => {
-        if(resp.n===0){
-          res.send({ msg: "Email not verified!", resp, success: false })
-        }
-        console.log(resp)
-        res.send({ msg: "Email succesfuly verified!", resp, success: true })
+        User.updateOne({_id:userId}, { $push: { bussinessEmail: email } }).then(rep => {
+          res.send({ msg: "Email succesfuly verified!", success: true })
+        }).catch(err => {
+          res.send({ error: err.message.replace(/\"/g, ""), success: false })
+        })
       }).catch(err => {
         res.send({ error: err.message.replace(/\"/g, ""), success: false })
       })
@@ -266,11 +266,11 @@ exports.approvesendgridverification = (req, res) => {
 
 exports.unverifiedsendgriduserlist = (req, res) => {
   try {
-    User.find({"sendgridVerification.isVerified":false}, {sendgridVerification:1, userId:1, username:1})
-      .then(data => { 
-        res.send({msg:"data!", success:true, data })
+    User.find({ "sendgridVerification.isVerified": false }, { sendgridVerification: 1, userId: 1, username: 1 })
+      .then(data => {
+        res.send({ msg: "data!", success: true, data })
       }).catch(err => {
-        res.send({msg:"No data", success:false})
+        res.send({ msg: "No data", success: false })
       })
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false })

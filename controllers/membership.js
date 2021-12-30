@@ -73,7 +73,7 @@ exports.remove = (req, res) => {
   try {
     membershipModal.findByIdAndDelete(membershipId, (err, data) => {
       if (err) {
-        res.send({ error: "membership is not delete" });
+        res.send({ msg: "membership is not delete", success:false });
       } else {
         membershipFolder.updateOne(
           { membership: data._id },
