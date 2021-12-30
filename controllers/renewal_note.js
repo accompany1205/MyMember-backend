@@ -108,7 +108,7 @@ exports.expire_thirty_std = async (req, res) => {
                 { $match: { userId: userId } },
                 {
                     $project: {
-                        membership_type:1,
+                        membership_type: 1,
                         membership_name: 1,
                         membership_status: 1,
                         expiry_date: { $toDate: "$expiry_date" },
@@ -126,7 +126,7 @@ exports.expire_thirty_std = async (req, res) => {
                 {
                     $project: {
                         membership_name: 1,
-                        membership_type:1,
+                        membership_type: 1,
                         membership_status: 1,
                         data: 1,
                         expiry_date: 1,
@@ -149,7 +149,7 @@ exports.expire_thirty_std = async (req, res) => {
                         no_of_Memberships: { $sum: 1 },
                         firstName: { "$first": '$data.firstName' },
                         lastName: { "$first": '$data.lastName' },
-                
+
                         program: { "$first": '$data.program' },
                         notes: { "$first": '$data.notes' },
                         primaryPhone: { "$first": '$data.primaryPhone' },
@@ -160,7 +160,7 @@ exports.expire_thirty_std = async (req, res) => {
                         memberships: {
                             "$push":
                             {
-                                membership_name: "$membership_name",membership_type: "$membership_type", membership_status: "$membership_status", expiry_date: "$expiry_date", days_till_Expire: "$days_till_Expire", whenFreeze: "$whenFreeze"
+                                membership_name: "$membership_name", membership_type: "$membership_type", membership_status: "$membership_status", expiry_date: "$expiry_date", days_till_Expire: "$days_till_Expire", whenFreeze: "$whenFreeze"
                             }
                         }
                     }
@@ -225,7 +225,7 @@ exports.expire_sixty_std = async (req, res) => {
                 { $match: { userId: userId } },
                 {
                     $project: {
-                        membership_type:1,
+                        membership_type: 1,
                         membership_name: 1,
                         membership_status: 1,
                         expiry_date: { $toDate: "$expiry_date" },
@@ -243,7 +243,7 @@ exports.expire_sixty_std = async (req, res) => {
                 {
                     $project: {
                         membership_name: 1,
-                        membership_type:1,
+                        membership_type: 1,
                         membership_status: 1,
                         data: 1,
                         expiry_date: 1,
@@ -265,7 +265,7 @@ exports.expire_sixty_std = async (req, res) => {
                         no_of_Memberships: { $sum: 1 },
                         firstName: { "$first": '$data.firstName' },
                         lastName: { "$first": '$data.lastName' },
-                
+
                         program: { "$first": '$data.program' },
                         notes: { "$first": '$data.notes' },
                         primaryPhone: { "$first": '$data.primaryPhone' },
@@ -276,7 +276,7 @@ exports.expire_sixty_std = async (req, res) => {
                         memberships: {
                             "$push":
                             {
-                                membership_name: "$membership_name", membership_type: "$membership_type",membership_status: "$membership_status", expiry_date: "$expiry_date", days_till_Expire: "$days_till_Expire", whenFreeze: "$whenFreeze"
+                                membership_name: "$membership_name", membership_type: "$membership_type", membership_status: "$membership_status", expiry_date: "$expiry_date", days_till_Expire: "$days_till_Expire", whenFreeze: "$whenFreeze"
                             }
                         }
                     }
@@ -340,7 +340,7 @@ exports.expire_ninty_std = async (req, res) => {
                 { $match: { userId: userId } },
                 {
                     $project: {
-                        membership_type:1,
+                        membership_type: 1,
                         membership_name: 1,
                         membership_status: 1,
                         expiry_date: { $toDate: "$expiry_date" },
@@ -358,7 +358,7 @@ exports.expire_ninty_std = async (req, res) => {
                 {
                     $project: {
                         membership_name: 1,
-                        membership_type:1,
+                        membership_type: 1,
                         membership_status: 1,
                         data: 1,
                         expiry_date: 1,
@@ -382,7 +382,7 @@ exports.expire_ninty_std = async (req, res) => {
                         no_of_Memberships: { $sum: 1 },
                         firstName: { "$first": '$data.firstName' },
                         lastName: { "$first": '$data.lastName' },
-                
+
                         program: { "$first": '$data.program' },
                         notes: { "$first": '$data.notes' },
                         primaryPhone: { "$first": '$data.primaryPhone' },
@@ -393,7 +393,7 @@ exports.expire_ninty_std = async (req, res) => {
                         memberships: {
                             "$push":
                             {
-                                membership_name: "$membership_name",membership_type: "$membership_type", membership_status: "$membership_status", expiry_date: "$expiry_date", days_till_Expire: "$days_till_Expire", whenFreeze: "$whenFreeze"
+                                membership_name: "$membership_name", membership_type: "$membership_type", membership_status: "$membership_status", expiry_date: "$expiry_date", days_till_Expire: "$days_till_Expire", whenFreeze: "$whenFreeze"
                             }
                         }
                     }
@@ -459,7 +459,7 @@ exports.frozenmembership = async (req, res) => {
                 {
                     $project: {
                         membership_name: 1,
-                        membership_type:1,
+                        membership_type: 1,
                         membership_status: 1,
                         expiry_date: { $toDate: "$expiry_date" },
                         studentInfo: 1,
@@ -478,7 +478,7 @@ exports.frozenmembership = async (req, res) => {
                     $project: {
                         membership_name: 1,
                         membership_status: 1,
-                        membership_type:1,
+                        membership_type: 1,
                         data: 1,
                         whenFreeze: 1,
                         expiry_date: 1,
@@ -505,7 +505,7 @@ exports.frozenmembership = async (req, res) => {
                         no_of_Memberships: { $sum: 1 },
                         firstName: { "$first": '$data.firstName' },
                         lastName: { "$first": '$data.lastName' },
-                
+
                         program: { "$first": '$data.program' },
                         notes: { "$first": '$data.notes' },
                         primaryPhone: { "$first": '$data.primaryPhone' },
