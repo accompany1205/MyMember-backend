@@ -53,7 +53,8 @@ exports.recomendStudent = async (req, res) => {
                 await recommendedForcandidateSchema.validateAsync(student);
                 recommendedCandidates.push(student)
                 let studentId = student.studentId
-                promises.push(updateStudentsById(studentId))
+                let candidate = student.candidate
+                promises.push(updateStudentsById(studentId, candidate))
             } else {
                 alredyRecomend += `${student.firstName} ${student.lastName}, `
             }
@@ -83,15 +84,13 @@ exports.recomendStudent = async (req, res) => {
 }
 
 
-const updateStudentsById = async (studentId) => {
-    return Member.findByIdAndUpdate({ _id: studentId }, { isRecommended: true })
+const updateStudentsById = async (studentId, candidate) => {
+    return Member.findByIdAndUpdate({ _id: studentId }, { candidate: candidate, isRecommended: true })
 }
 
 exports.promoteTheStudentStripe = async (req, res) => {
     try {
         if (_.isEmpty(req.body)) {
-            console.log(req.body)
-
             return res.json({
                 success: false,
                 msg: "invalid input"
@@ -156,6 +155,10 @@ exports.promoteTheStudentStripe = async (req, res) => {
 
         let updateStripeIntoStudent = await Member.findByIdAndUpdate(
             studentId, {
+            $set: {
+                candidate: candidate,
+                current_stripe: current_stripe
+            },
             $push: {
                 rank_update_history: history
             }
