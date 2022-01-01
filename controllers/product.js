@@ -17,7 +17,7 @@ exports.create = async (req, res) => {
     var productObj = new product(producBody);
     productObj.save(function (err, productData) {
         if (err) {
-            res.send({ msg: "product not added!", success: err })
+            res.send({ msg: "product not added!", success: false })
         }
         else {
             productFolders.findByIdAndUpdate(req.params.folderId, { $push: { products: productData._id } })
@@ -36,7 +36,7 @@ exports.create = async (req, res) => {
 exports.read = (req, res) => {
     product.find({ userId: req.params.userId }).exec((err, data) => {
         if (err) {
-            res.send({ error: 'product list is not found' })
+            res.send({ msg: 'product list is not found' })
         }
         else {
             res.send({ data, success: true })
@@ -48,7 +48,7 @@ exports.product_info = (req, res) => {
     var productId = req.params.productId;
     product.findById(productId).exec((err, data) => {
         if (err) {
-            res.send({ error: 'productId is not found', success: true })
+            res.send({ msg: 'productId is not found', success: true })
         }
         else {
             res.send(data)
@@ -82,7 +82,7 @@ exports.deleteproduct = (req, res) => {
             }
         })
     } catch (err) {
-        res.send({ error: err.message.replace(/\"/g, ""), success: false })
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
     }
 };
 
@@ -130,7 +130,7 @@ exports.updateproduct = async (req, res) => {
             }
         })
     } catch (err) {
-        res.send({ error: err.message.replace(/\"/g, ""), success: false })
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
     }
 
 }
