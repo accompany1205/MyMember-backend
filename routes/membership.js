@@ -6,8 +6,8 @@ const upload = require('../handler/multer')
 
 router.get('/membership/membership_list/:userId',verifySchool,read)
 router.get('/membership/info_membership/:userId/:membershipId',requireSignin,membershipInfo)
-router.post('/membership/add_membership/:userId/:folderId',verifySchool,upload.single('membership_profile'),create)
+router.post('/membership/add_membership/:userId/:folderId',verifySchool,upload.array('docs'),create)
 router.delete('/membership/delete_membership/:userId/:membershipId',requireSignin,remove)
-router.put('/membership/update_membership/:userId/:membershipId',requireSignin,upload.single('membership_profile'),membershipUpdate)
+router.put('/membership/update_membership/:userId/:membershipId',requireSignin,upload.array('docs'),membershipUpdate)
 
 module.exports = router;

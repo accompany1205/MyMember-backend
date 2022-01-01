@@ -6,6 +6,9 @@ const membershipSchema = schema({
         type: String,
         required: true
     },
+    membershipDoc:{
+        type:Array
+    },
     color: {
         type: String,
         required: true
