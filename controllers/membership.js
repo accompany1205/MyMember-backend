@@ -10,6 +10,17 @@ exports.create = async (req, res) => {
     membershipDetails.userId = req.params.userId;
     membershipDetails.adminId = req.params.adminId;
     membershipDetails.folderId = req.params.folderId;
+    const promises = []
+    if (req.files) {
+      (req.files).map(file => {
+        promises.push(cloudUrl.imageUrl(file))
+      });
+      var docs = await Promise.all(promises);
+    }
+    membershipDetails.membershipDoc = docs;
+    if (!membershipDetails.membershipDoc) {
+      res.send({ msg: "no file uploaded!", success: false })
+    }
     const membershipObj = new membershipModal(membershipDetails);
     await membershipObj.save((err, data) => {
       if (err) {
@@ -42,7 +53,7 @@ exports.create = async (req, res) => {
 exports.read = (req, res) => {
   const userId = req.params.userId
   const adminId = req.params.adminId
-  membershipModal.find({ $and: [{ userId: { $in: [userId ] }}, { adminId: adminId }] }).exec((err, data) => {
+  membershipModal.find({ $and: [{ userId: { $in: [userId] } }, { adminId: adminId }] }).exec((err, data) => {
     if (err) {
       res.send({ error: "membership list is not find" });
     } else {
@@ -73,7 +84,7 @@ exports.remove = (req, res) => {
   try {
     membershipModal.findByIdAndDelete(membershipId, (err, data) => {
       if (err) {
-        res.send({ msg: "membership is not delete", success:false });
+        res.send({ msg: "membership is not delete", success: false });
       } else {
         membershipFolder.updateOne(
           { membership: data._id },
@@ -100,13 +111,21 @@ exports.remove = (req, res) => {
   }
 };
 
-exports.membershipUpdate = (req, res) => {
+exports.membershipUpdate = async (req, res) => {
+  var membershipData = req.body;
   const membershipId = req.params.membershipId;
   const new_folderId = req.body.folderId;
   const old_folderId = req.body.old_folderId;
-
+  const promises = []
+  if (req.files) {
+    (req.files).map(file => {
+      promises.push(cloudUrl.imageUrl(file))
+    });
+    var docs = await Promise.all(promises);
+    membershipData.membershipDoc = docs;
+  }
   membershipModal
-    .updateOne({ _id: membershipId }, req.body)
+    .updateOne({ _id: membershipId }, membershipData)
 
     .exec(async (err, data) => {
       if (err) {
