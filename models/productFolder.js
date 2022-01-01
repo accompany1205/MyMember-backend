@@ -15,7 +15,10 @@ const productFolderSchema = schema(
     ],
     userId: {
       type: String,
-    }
+    },
+    adminId: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

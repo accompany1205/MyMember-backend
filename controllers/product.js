@@ -3,38 +3,46 @@ const cloudUrl = require("../gcloud/imageUrl");
 var productFolders = require('../models/productFolder')
 var _ = require('lodash')
 exports.create = async (req, res) => {
-
-    var producBody = req.body;
-    producBody.userId = req.params.userId;
-    producBody.folderId = req.params.folderId;
-    if (req.file) {
-        await cloudUrl.imageUrl(req.file).then(response => {
-            producBody.productFile = response;
-        }).catch(err => {
-            res.send({ msg: "attachment  not uploaded!", success: false })
+    try {
+        var producBody = req.body;
+        producBody.userId = req.params.userId;
+        producBody.adminId = req.params.adminId;
+        producBody.folderId = req.params.folderId;
+        if (req.file) {
+            await cloudUrl.imageUrl(req.file).then(response => {
+                producBody.productFile = response;
+            }).catch(err => {
+                res.send({ msg: "attachment  not uploaded!", success: false })
+            })
+        }
+        var productObj = new product(producBody);
+        productObj.save(function (err, productData) {
+            if (err) {
+                res.send({ msg: "product not added!", success: false })
+            }
+            else {
+                productFolders.findByIdAndUpdate(req.params.folderId, { $push: { products: productData._id } })
+                    .exec((err, product) => {
+                        if (err) {
+                            res.send({ msg: 'not updated to folder', success: false })
+                        }
+                        else {
+                            res.send({ msg: "product added successfully to folder", success: true })
+                        }
+                    })
+            }
         })
-    }
-    var productObj = new product(producBody);
-    productObj.save(function (err, productData) {
-        if (err) {
-            res.send({ msg: "product not added!", success: false })
-        }
-        else {
-            productFolders.findByIdAndUpdate(req.params.folderId, { $push: { products: productData._id } })
-                .exec((err, product) => {
-                    if (err) {
-                        res.send({ msg: 'not updated to folder', success: false })
-                    }
-                    else {
-                        res.send({ msg: "product added successfully to folder", success: true })
-                    }
-                })
-        }
-    })
-}
 
+    }
+    catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+    }
+}
 exports.read = (req, res) => {
-    product.find({ userId: req.params.userId }).exec((err, data) => {
+    const adminId = req.params.adminId
+    const userId = req.params.userId
+
+    product.find({ $and: [{ userId: { $in: [userId] } }, { adminId: adminId }] }).exec((err, data) => {
         if (err) {
             res.send({ msg: 'product list is not found' })
         }

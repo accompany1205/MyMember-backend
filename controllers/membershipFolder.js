@@ -3,12 +3,10 @@ const membershipFolder = require("../models/membershipFolder");
 exports.create_folder = (req, res) => {
   let userId = req.params.userId;
   let adminId = req.params.adminId;
-
-
   let folderObj = new membershipFolder({
     folderName: req.body.folderName,
     userId: userId,
-    adminId: adminId,
+    adminId: adminId
   });
   folderObj.save((err, folder) => {
     if (err) {

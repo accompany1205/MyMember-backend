@@ -32,7 +32,10 @@ const productSchema = new schema(
         folderId: {
             type: schema.Types.ObjectId,
             ref: 'productFolder'
-        }
+        },
+        adminId: {
+            type: String
+        },
     }, { timestamps: true }
 );
 

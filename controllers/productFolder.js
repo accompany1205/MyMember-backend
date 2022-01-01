@@ -1,10 +1,12 @@
 var productFolders = require('../models/productFolder')
 
-exports.addproductFolder = async (req, res) => {
+exports.createproductFolder = async (req, res) => {
+    let adminId = req.params.adminId;
     let userId = req.params.userId;
     let folderObj = new productFolders({
         folderName: req.body.folderName,
         userId: userId,
+        adminId: adminId
     });
     folderObj.save((err, folder) => {
         if (err) {
@@ -23,7 +25,8 @@ exports.getproductFolder = async (req, res) => {
     let userId = req.params.userId;
     let adminId = req.params.adminId;
 
-    productFolders.find({ $and: [{ userId: userId }, { adminId: adminId }] })
+    productFolders.
+        find({ $and: [{ userId: userId }, { adminId: adminId }] })
         .populate("products")
         .exec((err, folder) => {
             if (err) {
