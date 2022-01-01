@@ -87,42 +87,43 @@ exports.deleteproduct = (req, res) => {
 };
 
 exports.updateproduct = async (req, res) => {
-    var productId = req.params.productId;
-    const new_folderId = req.body.folderId;
-    const old_folderId = req.body.old_folderId;
+
     try {
+        var productId = req.params.productId;
+        const new_folderId = req.body.folderId;
+        const old_folderId = req.body.old_folderId;
         var img = '';
         if (req.file) {
             await cloudUrl.imageUrl(req.file).then(response => {
                 img = response;
+                product.findByIdAndUpdate(productId, { $set: { productFile: img } })
+
             }).catch(err => {
                 res.send({ msg: "attachments not uploaded!", success: false })
             })
         }
         product.updateOne({ _id: productId }, req.body).exec(async (err, updateData) => {
             if (err) {
-                res.send({ msg: 'product details is not update', success: false })
+                res.send({ msg: err, success: false })
             }
             else {
-                if (img) {
-                    await product.findByIdAndUpdate(productId, { $set: { productFile: img } })
-                }
+
                 await productFolders.findByIdAndUpdate(new_folderId, {
                     $addToSet: { products: productId },
                 });
                 productFolders
-                    .findByIdAndUpdate({ _id: old_folderId }, {
+                    .findByIdAndUpdate(old_folderId, {
                         $pull: { products: productId },
                     })
                     .exec((err, temp) => {
                         if (err) {
                             res.send({
-                                msg: "product is not update from folder",
+                                msg: "product  is not update from folder",
                                 success: false,
                             });
                         } else {
                             res.send({
-                                msg: "product is updated successfully",
+                                msg: "product  updated successfully",
                                 success: true,
                             });
                         }
