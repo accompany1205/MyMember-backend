@@ -10,7 +10,7 @@ const productFolderSchema = schema(
     products: [
       {
         type: schema.Types.ObjectId,
-        ref: "TestFees",
+        ref: "Product",
       },
     ],
     userId: {
