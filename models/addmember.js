@@ -99,7 +99,7 @@ const addmemberSchema = new schema(
       type: String
     },
     current_stripe: {
-      type: Number,
+      type: String,
     },
     last_stripe_given_date: {
       type: String,

@@ -1,6 +1,6 @@
 // const { findByIdAndUpdate } = require("../models/test_purchase");
 const testpurchaseModal = require("../models/test_purchase");
-var testFee = require('../models/TestingFees')
+var testFee = require('../models/product')
 const studentModal = require("../models/addmember");
 
 exports.create = (req,res)=>{

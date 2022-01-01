@@ -1,5 +1,6 @@
 const smartlist = require('../models/smartlists')
 const member = require('../models/addmember')
+const buymembership = require('../models/buy_membership')
 const membership = require('../models/buy_membership')
 const financeInfo = require('../models/finance_info')
 exports.get_smart_list = async (req, res) => {
@@ -27,19 +28,23 @@ exports.create_smart_list = async (req, res) => {
                 msg: "Please give the userId  in params!"
             })
         }
-        let { membership_status, finance } = req.body.criteria
+        let { membership_status, finance, renewal } = req.body.criteria
         let promises = [];
         let obj = req.body.criteria
         for (const i in obj) {
-            if (obj[i].length && i !== "membership_status" && i !== "finance") {
+            if (obj[i].length && i !== "membership_status" && i !== "finance" && i !== "renewal") {
                 promises.push({ [i]: { $in: obj[i] } })
             }
         }
         Promise.all(promises);
-        var leadData = await member.find({
-            userId: userId,
-            $and: promises
-        }, { email: 1 })
+        if (promises.length) {
+            var leadData = await member.find({
+                userId: userId,
+                $and: promises
+            }, { email: 1 })
+        } else {
+            leadData = []
+        }
         if (membership_status) {
             var membershipData = await membership.aggregate([{
                 $match: { userId: userId, membership_status: { $in: membership_status } }
@@ -81,9 +86,13 @@ exports.create_smart_list = async (req, res) => {
             ])
             if (membershipData.length) {
                 membershipData = membershipData[0].data
-                leadData = leadData.filter(e => {
-                    return membershipData.some(item => item._id === e._id);
-                })
+                if (leadData.length) {
+                    leadData = leadData.filter(e => {
+                        return membershipData.some(item => String(item._id) === String(e._id));
+                    })
+                } else {
+                    leadData = []
+                }
             }
         }
         if (finance) {
@@ -221,11 +230,91 @@ exports.create_smart_list = async (req, res) => {
                     financeData = [...not_expiredFinance[0].data]
                 }
             }
-            leadData = leadData.filter(e => {
-                return financeData.some(item => item._id === e._id);
-            })
+            if (leadData.length) {
+                leadData = leadData.filter(e => {
+                    return financeData.some(item => String(item._id) === String(e._id));
+                })
+            } else {
+                leadData = []
+            }
         }
 
+        if (renewal) {
+            var renewalData = await buymembership
+                .aggregate([
+                    { $match: { userId: userId } },
+                    {
+                        $project: {
+                            membership_type: 1,
+                            membership_name: 1,
+                            membership_status: 1,
+                            expiry_date: { $toDate: "$expiry_date" },
+                            studentInfo: 1,
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: "members",
+                            localField: "studentInfo",
+                            foreignField: "_id",
+                            as: 'data'
+                        }
+                    },
+                    {
+                        $project: {
+                            membership_name: 1,
+                            membership_type: 1,
+                            membership_status: 1,
+                            data: 1,
+                            expiry_date: 1,
+                            days_till_Expire: {
+                                $multiply: [{
+                                    $floor: {
+                                        $divide: [{ $subtract: [new Date(), '$expiry_date'] }, 1000 * 60 * 60 * 24]
+                                    }
+                                }, -1]
+
+                            },
+                        }
+                    },
+
+                    { $match: { days_till_Expire: { $lte: renewal[0], $gt: 0 } } },
+                    {
+                        $project: {
+                            "data._id": 1,
+                            "data.email": 1,
+                            _id: 0,
+
+                        }
+                    },
+
+                    { $unwind: "$data" },
+                    {
+                        "$group": {
+                            "_id": "",
+                            "data": { "$addToSet": "$data" }
+                        }
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                        }
+                    },
+                ])
+            if (renewalData.length) {
+                renewalData = renewalData[0].data
+
+
+                if (leadData.length) {
+                    leadData = leadData.filter(e => {
+                        return renewalData.some(item => String(item._id) === String(e._id));
+                    })
+                } else {
+                    leadData = []
+                }
+            }
+
+        }
         let sldata = smartlist({
             smartlistname: req.body.smartlistname,
             smartlists: leadData,
@@ -257,20 +346,23 @@ exports.update_smart_list = async (req, res) => {
                 msg: "Please give the leadsId  in params!"
             })
         }
-        let { membership_status, finance } = req.body.criteria
+        let { membership_status, finance, renewal } = req.body.criteria
         let promises = [];
         let obj = req.body.criteria
         for (const i in obj) {
-            if (obj[i].length && i !== "membership_status" && i !== "finance") {
+            if (obj[i].length && i !== "membership_status" && i !== "finance" && i !== "renewal") {
                 promises.push({ [i]: { $in: obj[i] } })
             }
         }
         Promise.all(promises);
-        let leadData = await member.find({
-            userId: userId,
-            $and: promises
-        }, { email: 1 })
-
+        if (promises.length) {
+            var leadData = await member.find({
+                userId: userId,
+                $and: promises
+            }, { email: 1 })
+        } else {
+            leadData = []
+        }
         if (membership_status) {
             var membershipData = await membership.aggregate([{
                 $match: { userId: userId, membership_status: { $in: membership_status } }
@@ -312,9 +404,13 @@ exports.update_smart_list = async (req, res) => {
             ])
             if (membershipData.length) {
                 membershipData = membershipData[0].data
-                leadData = leadData.filter(e => {
-                    return membershipData.some(item => item._id === e._id);
-                })
+                if (leadData.length) {
+                    leadData = leadData.filter(e => {
+                        return membershipData.some(item => String(item._id) === String(e._id));
+                    })
+                } else {
+                    leadData = []
+                }
             }
         }
         if (finance) {
@@ -452,9 +548,90 @@ exports.update_smart_list = async (req, res) => {
                     financeData = [...not_expiredFinance[0].data]
                 }
             }
-            leadData = leadData.filter(e => {
-                return financeData.some(item => item._id === e._id);
-            })
+            if (leadData.length) {
+                leadData = leadData.filter(e => {
+                    return financeData.some(item => String(item._id) === String(e._id));
+                })
+            } else {
+                leadData = []
+            }
+        }
+
+        if (renewal) {
+            var renewalData = await buymembership
+                .aggregate([
+                    { $match: { userId: userId } },
+                    {
+                        $project: {
+                            membership_type: 1,
+                            membership_name: 1,
+                            membership_status: 1,
+                            expiry_date: { $toDate: "$expiry_date" },
+                            studentInfo: 1,
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: "members",
+                            localField: "studentInfo",
+                            foreignField: "_id",
+                            as: 'data'
+                        }
+                    },
+                    {
+                        $project: {
+                            membership_name: 1,
+                            membership_type: 1,
+                            membership_status: 1,
+                            data: 1,
+                            expiry_date: 1,
+                            days_till_Expire: {
+                                $multiply: [{
+                                    $floor: {
+                                        $divide: [{ $subtract: [new Date(), '$expiry_date'] }, 1000 * 60 * 60 * 24]
+                                    }
+                                }, -1]
+
+                            },
+                        }
+                    },
+
+                    { $match: { days_till_Expire: { $lte: renewal[0], $gt: 0 } } },
+                    {
+                        $project: {
+                            "data._id": 1,
+                            "data.email": 1,
+                            _id: 0,
+
+                        }
+                    },
+
+                    { $unwind: "$data" },
+                    {
+                        "$group": {
+                            "_id": "",
+                            "data": { "$addToSet": "$data" }
+                        }
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                        }
+                    },
+                ])
+            if (renewalData.length) {
+                renewalData = renewalData[0].data
+
+
+                if (leadData.length) {
+                    leadData = leadData.filter(e => {
+                        return renewalData.some(item => String(item._id) === String(e._id));
+                    })
+                } else {
+                    leadData = []
+                }
+            }
+
         }
         await smartlist.findByIdAndUpdate(slId, {
             smartlistname: req.body.smartlistname,

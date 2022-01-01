@@ -21,7 +21,10 @@ exports.addproductFolder = async (req, res) => {
 
 exports.getproductFolder = async (req, res) => {
     let userId = req.params.userId;
-    productFolders.find({userId}).populate("TestFees")
+    let adminId = req.params.adminId;
+
+    productFolders.find({ $and: [{ userId: userId }, { adminId: adminId }] })
+        .populate("products")
         .exec((err, folder) => {
             if (err) {
                 res.send({ msg: "product folder not found", success: false });
@@ -50,16 +53,16 @@ exports.updateproductFolder = async (req, res) => {
 
 exports.deleteproductFolder = async (req, res) => {
     productFolders.findOneAndRemove(
-    { _id: req.params.folderId },
-    (err, delFolder) => {
-        if (err) {
-            res.send({ msg: " folder is not remove", success: false });
-        } else {
-            res.send({
-                msg: "Folder removed successfully",
-                success: true,
-            });
+        { _id: req.params.folderId },
+        (err, delFolder) => {
+            if (err) {
+                res.send({ msg: " folder is not remove", success: false });
+            } else {
+                res.send({
+                    msg: "Folder removed successfully",
+                    success: true,
+                });
+            }
         }
-    }
-);
+    );
 }
