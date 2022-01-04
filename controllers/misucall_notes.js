@@ -1112,56 +1112,56 @@ exports.more_than_forteen = async (req, res) => {
 
 exports.missclasses = async (req, res) => {
   try {
-    let userId = req.params.userId
-    let [id] = await student.aggregate([{
-      $match: { userId: userId }
-    },
-    {
-      $group: {
-        _id: " ",
-        id: { $push: "$_id" }
+    let [id] = await student.aggregate([
+      {
+        $group: {
+          _id: " ",
+          id: { $push: "$_id" }
+        }
+      },
+      {
+        $project: {
+          id: 1,
+          _id: 0
+        }
       }
-    },
-    {
-      $project: {
-        id: 1,
-        _id: 0
-      }
-    }
     ]);
-    console.log(id)
-    let allClasses = await classes.aggregate(
-      [
-        { $match: { userId: userId } },
-        // "class_attendanceArray": { $in: id } }
+
+    id = "61d3e4ba4f618d227e321da1"
+    var objId = mongo.Types.ObjectId(id)
+    id = [objId]
+    for await (const i of id) {
+
+      let data = await classes.aggregate([
         {
           $project: {
-            // repeat_weekly_on: 1,
             class_name: 1,
             class_attendanceArray: "$class_attendanceArray.studentInfo",
-            end_time: 1,
-            program_color: 1,
-            program_name: 1,
-            start_date: 1,
-            end_date: 1,
-            start_time: 1,
-            wholeSeriesEndDate: 1,
-            wholeSeriesStartDate: 1
           }
         },
+        { $match: { class_attendanceArray: { $nin: [i] } } },
         {
-          $project: {
-            class_name: 1,
-            class_attendanceArray: 1,
+          $group: {
+            _id: "_id",
+            missclass_count: {
+              $sum: 1,
+            }
           }
         },
-        { $match: { class_attendanceArray: { $nin: id.id } } }
+        { $project: { _id: 0 }, }
       ])
 
-    res.send(allClasses)
+      let { missclass_count } = data[0]
+      await updateStudentsById(i, missclass_count)
+    }
+    console.log("miss_Classes updated!" )
   }
   catch (err) {
     throw new Error(err);
 
   }
 }
+const updateStudentsById = async (studentId, missclass_count) => {
+  return student.findByIdAndUpdate({ _id: studentId }, { missclass_count: missclass_count })
+}
+

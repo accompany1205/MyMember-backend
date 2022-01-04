@@ -66,6 +66,7 @@ exports.create = async (req, res) => {
                   {
                     $set: {
                       rating: 0,
+                      missclass_count: 0,
                       attendedclass_count: stdData.attendedclass_count + 1,
                       attendence_color: "#00FF00",
                       attendence_status: true,
@@ -175,7 +176,7 @@ exports.list_attendence = (req, res) => {
     schedule.
       aggregate([
         { $match: { userId: userId } },
-                {
+        {
           $sort: {
             updatedAt: -1,
           }
