@@ -1,7 +1,7 @@
 
 const express = require("express");
 const router = express.Router();
-const { create, remove, updateNote, seven_to_forteen, fifteen_to_thirty, Thirty_to_sixty, more_than_sixty, listApp_and_callHistory, more_than_forteen } = require("../controllers/misucall_notes");
+const { create, remove, updateNote, seven_to_forteen, fifteen_to_thirty, Thirty_to_sixty, more_than_sixty, listApp_and_callHistory, more_than_forteen ,missclasses} = require("../controllers/misucall_notes");
 const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 
 router.get("/missyouCall/seven_to_fourteen_miss/:userId/:page_no/:per_page", verifySchool, seven_to_forteen)
@@ -15,5 +15,8 @@ router.get("/missyouCall/list_appoinment_and_call_history/:userId", verifySchool
 router.post("/missYouCall/add_note/:userId/:studentId", verifySchool, create);
 router.put("/missYouCall/update_note/:userId/notesId", requireSignin, updateNote)
 router.delete("/missYouCall/delete_note/:userId/:notesId", requireSignin, remove);
+
+// missclass counts
+router.get("/updateMember/missClassCounts/:userId", requireSignin, missclasses)
 
 module.exports = router;

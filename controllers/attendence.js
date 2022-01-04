@@ -1,6 +1,5 @@
 const student = require("../models/addmember");
 const schedule = require("../models/class_schedule");
-const attendance = require("../models/attendence");
 var mongo = require("mongoose")
 
 function TimeZone() {
@@ -67,7 +66,7 @@ exports.create = async (req, res) => {
                   {
                     $set: {
                       rating: 0,
-                      class_count: stdData.class_count + 1,
+                      attendedclass_count: stdData.attendedclass_count + 1,
                       attendence_color: "#00FF00",
                       attendence_status: true,
                     },
@@ -176,6 +175,11 @@ exports.list_attendence = (req, res) => {
     schedule.
       aggregate([
         { $match: { userId: userId } },
+                {
+          $sort: {
+            updatedAt: -1,
+          }
+        },
         {
           $project: {
             program_name: 1,
@@ -241,15 +245,11 @@ exports.list_attendence = (req, res) => {
           }
         },
         { $project: { data: 0, class_attendanceArray: 0 } },
-        {
-          $sort: {
-            createdAt: -1,
-          }
-        },
+
         // {
         //   $group: {
         //     _id: "$studentId",
-        //     class_count: { $sum: 1 },
+        //     attendedclass_count: { $sum: 1 },
         //     class_name: { "$first": "$class_name" },
         //     // attendence: { "$push": { firstName: '$data.firstName', lastName: '$data.lastName', image: "$data.memberprofileImage" } },
         //     firstName: { "$first": '$firstName' },

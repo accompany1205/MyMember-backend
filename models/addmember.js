@@ -159,7 +159,11 @@ const addmemberSchema = new schema(
       type: String,
       default: "#FF0000",
     },
-    class_count: {
+    missclass_count: {
+      type: Number,
+      default: 0,
+    },
+    attendedclass_count: {
       type: Number,
       default: 0,
     },

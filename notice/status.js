@@ -1,14 +1,24 @@
-// const corn = require('node-cron')
-// const addmemberModal = require('../models/addmember')
+const corn = require('node-cron')
+const addmemberModal = require('../models/addmember')
+const class_schedule = require("../models/class_schedule");
+
 // const emailsentsave = require('../models/emailSentSave')
 // const textSentSave = require("../models/textSentSave")
 // const sgMail = require('sendgrid-v3-node');
 // const { sync } = require('make-dir');
 // // 00 13 19 * * 0-6
 
+
+missClassesCount = async (payload) => {
+    try {
+      return await axios.post(process.env.VALOR_PAYTECH_URL, payload, this.getHeader(formData));
+    } catch (ex) {
+      throw new Error(ex);
+    }
+  };
 // //update student expire status
 // module.exports = corn.schedule("00 02 17 * * 0-6", function(){
-//     addmemberModal.find({})
+//     addmemberModal.find({})  
 //         .populate('membership_details')
 //         .exec((err, stdData) => {
 //             if (err) {
