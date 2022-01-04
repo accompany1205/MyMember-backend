@@ -1127,9 +1127,7 @@ exports.missclasses = async (req, res) => {
       }
     ]);
 
-    id = "61d3e4ba4f618d227e321da1"
-    var objId = mongo.Types.ObjectId(id)
-    id = [objId]
+    id = id.id
     for await (const i of id) {
 
       let data = await classes.aggregate([
