@@ -236,7 +236,7 @@ exports.bluckStd = async (req, res) => {
                     res.send(err);
                   });
               })
-              .catch((msg) => {
+              .catch((err) => {
                 res.send({
                   success: false,
                   msg: "image url is not create",
@@ -292,8 +292,8 @@ exports.bluckStd = async (req, res) => {
     .then((resp) => {
       res.send({ msg: "student add successfully", success: true });
     })
-    .catch((msg) => {
-      res.send({ msg: msg, success: false });
+    .catch((err) => {
+      res.send({ msg: err, success: false });
     });
 };
 
@@ -348,8 +348,8 @@ exports.std_count = async (req, res) => {
       after_school: resdata5,
       leads: resdata6,
     });
-  } catch (msg) {
-    res.send({ msg: msg.message.replace(/\"/g, ""), success: false });
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }
 };
 
@@ -432,9 +432,9 @@ exports.studentCount = (req, res) => {
           Total = Total + ele.count;
         });
         res.send({
-          code: 200,
           Total_std: Total,
-          Student_count: stdCount,
+          data: stdCount,
+          success: true
         });
       }
     });
@@ -519,7 +519,7 @@ exports.addmember = async (req, res) => {
                   res.send(err);
                 });
             })
-            .catch((msg) => {
+            .catch((err) => {
               res.send({
                 msg: "image url is not create",
                 success: false
@@ -565,7 +565,7 @@ exports.addmember = async (req, res) => {
                     } else {
                       res.send({
                         msg: "Student created successfully",
-                        success: false
+                        success: true
                       });
                     }
                   }
@@ -592,6 +592,7 @@ exports.read = (req, res) => {
       if (err) {
         res.send({
           msg: "member list is not found",
+          success: false
         });
       } else {
         if (data.length > 0) {
@@ -1695,9 +1696,8 @@ exports.getRankUpdateTestHistoryByStudentId = async (req, res) => {
   let rankTestHistory = student.rank_update_test_history;
   if (rankTestHistory.lenght === 0) {
     return res.json({
-      stasus: false,
+      success: false,
       msg: "No rank history available for this student!!",
-      data: rankTestHistory,
     });
   }
   return res.json({
