@@ -522,6 +522,7 @@ exports.addmember = async (req, res) => {
             .catch((msg) => {
               res.send({
                 msg: "image url is not create",
+                success: false
               });
             });
         } else {
@@ -563,8 +564,8 @@ exports.addmember = async (req, res) => {
                       });
                     } else {
                       res.send({
-                        message: "Student created successfully",
-                        status: true,
+                        msg: "Student created successfully",
+                        success: false
                       });
                     }
                   }
