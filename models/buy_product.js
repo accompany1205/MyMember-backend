@@ -30,6 +30,12 @@ const productSchema = new schema(
             type: String,
             required: true,
         },
+        start_date: {
+            type: String,
+        },
+        expiry_date: {
+            type: String,
+        },
         programName: {
             type: String,
             required: true
@@ -42,7 +48,23 @@ const productSchema = new schema(
             type: Number,
             required: true
         },
+        balance: {
+            type: Number,
+            required: true
+        },
         payment_type: {
+            type: String,
+            required: true
+        },
+        due_every: {
+            type: String,
+            required: true
+        },
+        duration_time: {
+            type: String,
+            required: true
+        },
+        duration_type: {
             type: String,
             required: true
         },
