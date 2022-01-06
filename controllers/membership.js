@@ -54,7 +54,6 @@ exports.create = async (req, res) => {
         );
       }
     });
-    // let obj = await membershipModal.findByIdAndUpdate({ _id: membershipObj._id }, { $set: { userId: userId } })
   } catch (error) {
     res.send({ error: error.message.replace(/\"/g, ""), success: false });
   }
@@ -129,7 +128,17 @@ exports.membershipUpdate = async (req, res) => {
   const promises = []
   if (req.files) {
     (req.files).map(file => {
-      promises.push(cloudUrl.imageUrl(file))
+      if (file.originalname.split('.')[0] === "thumbnail") {
+        cloudUrl.imageUrl(file)
+          .then(data => {
+            membershipData.membershipThumbnail = data
+          })
+          .catch(err => {
+            res.send({ msg: "thumbnail not uploaded!", success: false })
+          })
+      } else {
+        promises.push(cloudUrl.imageUrl(file))
+      }
     });
     var docs = await Promise.all(promises);
     membershipData.membershipDoc = docs;
