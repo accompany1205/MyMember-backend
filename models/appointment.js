@@ -43,6 +43,9 @@ const appointSchema = new schema(
             type: String,
             default: 'not completed'
         },
+        repeatedDates: {
+            type:Array
+        },
         groupInfoList: {
             type:Array
     },
