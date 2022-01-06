@@ -2,18 +2,69 @@ const appoint = require("../models/appointment");
 const _ = require("lodash");
 // const todo = require("../models/todo_schema")
 
-exports.Create = (req, res) => {
+exports.Create = async (req, res) => {
   var appoinemnt = req.body;
-  var App = _.extend(appoinemnt, req.params);
-  const campaigns = new appoint(App);
-  campaigns.save((err, appdata) => {
-    if (err) {
-      res.send({ msg: "appoinment is not added", success: false });
+  let userId = req.params.userId
+  let dateRanges = req.body.repeatedDates;
+  try {
+    let allAppt = [];
+    if (dateRanges.length > 1) {
+      for (let dates in dateRanges) {
+        let newAppt = { ...req.body, start: dateRanges[dates], end: dateRanges[dates], userId: userId, repeatedDates: dateRanges };
+        allAppt.push(newAppt);
+      }
+      let resp = await appoint.insertMany(allAppt);
+      res.send({ msg: "Appointment added!", success: true, resp })
     } else {
-      res.send({ success: true, msg: "apoointment added!", appdata });
+      var App = _.extend(appoinemnt, req.params);
+      const campaigns = new appoint(App);
+      campaigns.save((err, appdata) => {
+        if (err) {
+          res.send({ msg: "appoinment is not added", success: false });
+        } else {
+          res.send({ success: true, msg: "apoointment added!", appdata });
+        }
+      });
     }
-  });
+  } catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false })
+  }
 };
+
+exports.updateAll = async (req, res) => {
+  let userId = req.params.userId;
+  let oldCategoryId = req.params.oldcategoryname;
+  let dateRanges = req.body.repeatedDates;
+  try {
+    let allAppt = [];
+    for (let dates in dateRanges) {
+      let newAppt = { ...req.body, start: dateRanges[dates], end: dateRanges[dates], userId: userId, repeatedDates: dateRanges };
+      allAppt.push(newAppt);
+    }
+    await appoint.deleteMany({
+      $and: [{ userId: userId },
+      { category: oldCategoryId }]
+    }).then(async (updatedRes) => {
+      if (updatedRes.nModified < 1) {
+        res.status(403).json({
+          msg: 'class_name/program_name not found',
+          success: false
+        })
+      }
+      else {
+        const res1 = await appoint.insertMany(allAppt);
+        res.status(200).json({
+          msg: 'All class schedule has been updated Successfully',
+          success: true
+        })
+      }
+    })
+    // let resp = await appoint.insertMany(allAppt);
+    // res.send({ msg: "Appointment added!", success: true, resp })
+  } catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false })
+  }
+}
 
 exports.read = (req, res) => {
   appoint
@@ -38,6 +89,7 @@ exports.appointInfo = (req, res) => {
       res.send({ msg: "No data!", success: false });
     });
 };
+
 
 exports.update = (req, res) => {
   const id = req.params.appointId;
@@ -86,7 +138,7 @@ exports.appointmentFilter = async (req, res) => {
       }).catch((err) => {
         res.send(err)
       })
-  }else if (filter === "Tomorrow") {
+  } else if (filter === "Tomorrow") {
     let cDate = ("0" + (date.getDate() + 1)).slice(-2);
     let cMonth = ("0" + (date.getMonth() + 1)).slice(-2);
     let cYear = date.getFullYear();
@@ -110,7 +162,7 @@ exports.appointmentFilter = async (req, res) => {
       }).catch((err) => {
         res.send(err)
       })
-  }else if (filter === "This Week") {
+  } else if (filter === "This Week") {
     let cDate = ("0" + (date.getDate())).slice(-2);
     console.log("ddfdfdf--", cDate)
     let cMonth = ("0" + (date.getMonth() + 1)).slice(-2);
@@ -122,14 +174,14 @@ exports.appointmentFilter = async (req, res) => {
     const totalCount = await appoint.find({
       $and: [
         { userId: userId },
-        { start:{ $gte: (currentDate), $lt: (week) } }
+        { start: { $gte: (currentDate), $lt: (week) } }
       ]
     }).countDocuments();
 
     appoint.find({
       $and: [
         { userId: userId },
-        {start:{ $gte: (currentDate), $lt: (week) } }
+        { start: { $gte: (currentDate), $lt: (week) } }
       ]
     }).limit(pagination.limit)
       .skip(pagination.skip)
@@ -138,7 +190,7 @@ exports.appointmentFilter = async (req, res) => {
       }).catch((err) => {
         res.send(err)
       })
-  }else if (filter === "This Month") {
+  } else if (filter === "This Month") {
     let cDate = ("0" + (date.getDate())).slice(-2);
     let cMonth = ("0" + (date.getMonth() + 1)).slice(-2);
     let monthDay = ("0" + (date.getDate())).slice(-2);
@@ -150,14 +202,14 @@ exports.appointmentFilter = async (req, res) => {
     const totalCount = await appoint.find({
       $and: [
         { userId: userId },
-        { start:{ $gte: (currentDate), $lt: (month) } }
+        { start: { $gte: (currentDate), $lt: (month) } }
       ]
     }).countDocuments();
 
     appoint.find({
       $and: [
         { userId: userId },
-        {start:{ $gte: (currentDate), $lt: (month) } }
+        { start: { $gte: (currentDate), $lt: (month) } }
       ]
     }).limit(pagination.limit)
       .skip(pagination.skip)
