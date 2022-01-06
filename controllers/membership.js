@@ -13,7 +13,17 @@ exports.create = async (req, res) => {
     const promises = []
     if (req.files) {
       (req.files).map(file => {
-        promises.push(cloudUrl.imageUrl(file))
+        if (file.originalname.split('.')[0] === "thumbnail") {
+          cloudUrl.imageUrl(file)
+            .then(data => {
+              membershipDetails.membershipThumbnail = data
+            })
+            .catch(err => {
+              res.send({ msg: "thumbnail not uploaded!", success: false })
+            })
+        } else {
+          promises.push(cloudUrl.imageUrl(file))
+        }
       });
       var docs = await Promise.all(promises);
     }

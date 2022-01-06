@@ -183,6 +183,12 @@ const addmemberSchema = new schema(
         ref: "Buy_Membership",
       },
     ],
+    product_details: [
+      {
+        type: schema.Types.ObjectId,
+        ref: "Buy_Product",
+      },
+    ],
     finance_details: [
       {
         type: schema.Types.ObjectId,

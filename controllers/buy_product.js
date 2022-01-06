@@ -1,4 +1,4 @@
-const product = require("../models/product");
+// const product = require("../models/product");
 const moment = require("moment");
 const buy_product = require("../models/buy_product");
 const Finance_infoSchema = require("../models/finance_info");
@@ -58,7 +58,7 @@ exports.buy_product = async (req, res) => {
                 productData.schedulePayments = createEMIRecord(
                     productData.payment_time,
                     productData.payment_money,
-                    productData.mactive_date,
+                    productData.start_payment_date,
                     productData.createdBy,
                     productData.payment_type,
                     productData.pay_latter,
@@ -104,7 +104,7 @@ exports.buy_product = async (req, res) => {
                         const financeDoc = await createFinanceDoc(valorPayload, financeId);
                         if (financeDoc.success) {
                             productData.product_status = "Active";
-                            memberShipDoc = await createMemberShipDocument(
+                            memberShipDoc = await createProductDocument(
                                 productData,
                                 studentId
                             );
@@ -120,7 +120,7 @@ exports.buy_product = async (req, res) => {
                     }
                 } else {
                     productData.product_status = "Active";
-                    memberShipDoc = await createMemberShipDocument(
+                    memberShipDoc = await createProductDocument(
                         productData,
                         studentId
                     );
@@ -134,7 +134,6 @@ exports.buy_product = async (req, res) => {
             }
         } else {
             productData.due_status = "paid";
-            productData.product_status = "Active";
             if (!productData.isEMI && productData.balance == 0 && ptype === 'credit card') {
                 if (valorPayload.pan) {
                     const { uid } = getUidAndInvoiceNumber();
@@ -143,7 +142,6 @@ exports.buy_product = async (req, res) => {
                     const resp = await valorTechPaymentGateWay.saleSubscription(
                         FormatedPayload
                     );
-
                     if (resp.data.error_no === "S00") {
                         productData.transactionId = {
                             rrn: resp.data.rrn,
@@ -155,7 +153,7 @@ exports.buy_product = async (req, res) => {
                         valorPayload.studentId = studentId;
                         const financeDoc = await createFinanceDoc(valorPayload, financeId);
                         if (financeDoc.success) {
-                            memberShipDoc = await createMemberShipDocument(
+                            memberShipDoc = await createProductDocument(
                                 productData,
                                 studentId
                             );
@@ -170,14 +168,14 @@ exports.buy_product = async (req, res) => {
                         res.send({ msg: resp.data.mesg, success: false });
                     }
                 } else {
-                    memberShipDoc = await createMemberShipDocument(
+                    memberShipDoc = await createProductDocument(
                         productData,
                         studentId
                     );
                     res.send(memberShipDoc);
                 }
             } else {
-                memberShipDoc = await createMemberShipDocument(
+                memberShipDoc = await createProductDocument(
                     productData,
                     studentId
                 );
@@ -219,7 +217,7 @@ function getFormatedPayload(valorPayload) {
     };
 }
 
-function createMemberShipDocument(productData, studentId) {
+function createProductDocument(productData, studentId) {
     return new Promise((resolve, reject) => {
         let product = new buy_product(productData);
         product.save((err, data) => {
@@ -227,7 +225,6 @@ function createMemberShipDocument(productData, studentId) {
                 resolve({ msg: "product not buy", success: false });
             } else {
                 update = {
-                    $set: { status: "active" },
                     $push: { product_details: data._id },
                 };
                 AddMember.findOneAndUpdate(
@@ -246,32 +243,31 @@ function createMemberShipDocument(productData, studentId) {
                                     {
                                         $push: {
                                             studentInfo: stdData._id,
-                                            productIds: productData.productId,
-                                        },
+                                        }
                                     }
                                 )
                                 .exec(async (err, result) => {
                                     if (err) {
                                         resolve({
-                                            msg: "student id is not add in buy product",
+                                            msg: "student id is not add in buy membership",
                                             success: false,
                                         });
                                     } else {
                                         resolve({
                                             msg: "product purchase successfully",
-                                            data: result,
                                             success: true,
                                         });
                                     }
                                 });
                         }
-                    }
-                );
-            }
-        });
-    });
-}
 
+                    })
+            }
+        }
+        );
+    }
+    )
+}
 function createFinanceDoc(data, financeId) {
     const { studentId } = data;
     return new Promise((resolve, reject) => {
@@ -522,9 +518,9 @@ exports.remove = (req, res) => {
                 { $pull: { product_details: id } },
                 function (err, data) {
                     if (err) {
-                        res.send({ error: "mebership is not delete in student" });
+                        res.send({ error: "product is not deleted", success: false });
                     } else {
-                        res.send({ msg: "mebership is delete in student" });
+                        res.send({ msg: "product is deleted successfully", success: true });
                     }
                 }
             );

@@ -9,9 +9,20 @@ exports.create = async (req, res) => {
         productDetails.adminId = req.params.adminId;
         productDetails.folderId = req.params.folderId;
         const promises = []
+        // console.log(req.files)
         if (req.files) {
             (req.files).map(file => {
-                promises.push(cloudUrl.imageUrl(file))
+                if (file.originalname.split('.')[0] === "thumbnail") {
+                    cloudUrl.imageUrl(file)
+                        .then(data => {
+                            productDetails.productThumbnail = data
+                        })
+                        .catch(err => {
+                            res.send({ msg: "thumbnail not uploaded!", success: false })
+                        })
+                } else {
+                    promises.push(cloudUrl.imageUrl(file))
+                }
             });
             var docs = await Promise.all(promises);
         }
@@ -19,11 +30,10 @@ exports.create = async (req, res) => {
         if (!productDetails.productFile) {
             res.send({ msg: "no file uploaded!", success: false })
         }
-
         var productObj = new product(productDetails);
         productObj.save((err, productData) => {
             if (err) {
-                res.send({ msg: "product not created!", success: false })
+                res.send({ msg: "product not created!", success: err })
             }
             else {
                 productFolders.findByIdAndUpdate(req.params.folderId, { $push: { products: productData._id } })
