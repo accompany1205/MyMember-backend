@@ -19,7 +19,6 @@ require("dotenv").config();
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
 const categoryRoutes = require("./routes/category");
-const productRoutes = require("./routes/product");
 const braintreeRoutes = require("./routes/braintree");
 const orderRoutes = require("./routes/order");
 
@@ -55,7 +54,7 @@ const appointment = require("./routes/appointment");
 const events = require("./routes/events");
 const add_member = require("./routes/addmember");
 const productFolder = require("./routes/productFolder");
-const test_fees = require("./routes/product");
+const product = require("./routes/product");
 const pcategory = require("./routes/pcategory");
 const psubcategory = require("./routes/psubcategory");
 const add_membership = require("./routes/membership");
@@ -115,7 +114,8 @@ const email_system_template = require("./routes/admin/email_system_template");
 const location = require("./routes/admin/settings/location");
 const user_membership = require("./routes/admin/membership_management/admin_membership");
 const user_membershipFolder = require("./routes/admin/membership_management/admin_membershipFolder");
-
+const user_product = require("./routes/admin/product_manage/admin_product");
+const user_productFolder = require("./routes/admin/product_manage/admin_productFolder");
 //menu routes
 const student_menu = require("./routes/menu/std_menu/all_student_menu");
 
@@ -148,6 +148,11 @@ mongoose
       useNewUrlParser: true,
       useCreateIndex: true,
       useUnifiedTopology: true,
+      reconnectInterval: 500, // Reconnect every 500ms
+      poolSize: 5, // Maintain up to 5 socket connections
+      connectTimeoutMS: 10000, // Give up initial connection after 10 seconds
+      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+      family: 4 // Use IPv4, skip trying IPv6
     }
   )
   .then(() => console.log("DB Connected"));
@@ -171,7 +176,6 @@ app.use('/api', TTL)
 app.use("/api", authRoutes);
 app.use("/api", userRoutes);
 app.use("/api", categoryRoutes);
-app.use("/api", productRoutes);
 app.use("/api", braintreeRoutes);
 app.use("/api", orderRoutes);
 app.use("/api", programRoutes);
@@ -201,7 +205,7 @@ app.use("/api", withdraw_funds);
 app.use("/api", family_member);
 app.use("/api", my_group);
 app.use("/api", camp);
-app.use("/api", test_fees);
+app.use("/api", product);
 app.use("/api", test_purchase);
 app.use("/api", test);
 app.use("/api", expences_category);
@@ -261,6 +265,8 @@ app.use("/api", email_system_template);
 app.use("/api", location);
 app.use("/api", user_membership);
 app.use("/api", user_membershipFolder);
+app.use("/api", user_product);
+app.use("/api", user_productFolder);
 app.use("/api", purchaseMembership);
 app.use("/api", sample_doc);
 // school auth key middleware

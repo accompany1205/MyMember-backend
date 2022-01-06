@@ -3,38 +3,51 @@ const cloudUrl = require("../gcloud/imageUrl");
 var productFolders = require('../models/productFolder')
 var _ = require('lodash')
 exports.create = async (req, res) => {
+    try {
+        const productDetails = req.body;
+        productDetails.userId = req.params.userId;
+        productDetails.adminId = req.params.adminId;
+        productDetails.folderId = req.params.folderId;
+        const promises = []
+        if (req.files) {
+            (req.files).map(file => {
+                promises.push(cloudUrl.imageUrl(file))
+            });
+            var docs = await Promise.all(promises);
+        }
+        productDetails.productFile = docs;
+        if (!productDetails.productFile) {
+            res.send({ msg: "no file uploaded!", success: false })
+        }
 
-    var producBody = req.body;
-    producBody.userId = req.params.userId;
-    producBody.folderId = req.params.folderId;
-    if (req.file) {
-        await cloudUrl.imageUrl(req.file).then(response => {
-            producBody.productFile = response;
-        }).catch(err => {
-            res.send({ msg: "attachment  not uploaded!", success: false })
+        var productObj = new product(productDetails);
+        productObj.save((err, productData) => {
+            if (err) {
+                res.send({ msg: "product not created!", success: false })
+            }
+            else {
+                productFolders.findByIdAndUpdate(req.params.folderId, { $push: { products: productData._id } })
+                    .exec((err, product) => {
+                        if (err) {
+                            res.send({ msg: 'product not added in folder', success: false })
+                        }
+                        else {
+                            res.send({ msg: "product created successfully", success: true })
+                        }
+                    })
+            }
         })
-    }
-    var productObj = new product(producBody);
-    productObj.save(function (err, productData) {
-        if (err) {
-            res.send({ msg: "product not added!", success: false })
-        }
-        else {
-            productFolders.findByIdAndUpdate(req.params.folderId, { $push: { products: productData._id } })
-                .exec((err, product) => {
-                    if (err) {
-                        res.send({ msg: 'not updated to folder', success: false })
-                    }
-                    else {
-                        res.send({ msg: "product added successfully to folder", success: true })
-                    }
-                })
-        }
-    })
-}
 
+    }
+    catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+    }
+}
 exports.read = (req, res) => {
-    product.find({ userId: req.params.userId }).exec((err, data) => {
+    const adminId = req.params.adminId
+    const userId = req.params.userId
+
+    product.find({ $and: [{ userId: { $in: [userId] } }, { adminId: adminId }] }).exec((err, data) => {
         if (err) {
             res.send({ msg: 'product list is not found' })
         }
@@ -87,49 +100,47 @@ exports.deleteproduct = (req, res) => {
 };
 
 exports.updateproduct = async (req, res) => {
-
     try {
-        var productId = req.params.productId;
+        var productData = req.body
+        const productId = req.params.productId;
         const new_folderId = req.body.folderId;
         const old_folderId = req.body.old_folderId;
-        var img = '';
-        if (req.file) {
-            await cloudUrl.imageUrl(req.file).then(response => {
-                img = response;
-                product.findByIdAndUpdate(productId, { $set: { productFile: img } })
-
-            }).catch(err => {
-                res.send({ msg: "attachments not uploaded!", success: false })
-            })
+        const promises = []
+        if (req.files) {
+            (req.files).map(file => {
+                promises.push(cloudUrl.imageUrl(file))
+            });
+            var docs = await Promise.all(promises);
+            productData.productFile = docs;
         }
-        product.updateOne({ _id: productId }, req.body).exec(async (err, updateData) => {
-            if (err) {
-                res.send({ msg: err, success: false })
-            }
-            else {
-
-                await productFolders.findByIdAndUpdate(new_folderId, {
-                    $addToSet: { products: productId },
-                });
-                productFolders
-                    .findByIdAndUpdate(old_folderId, {
-                        $pull: { products: productId },
-                    })
-                    .exec((err, temp) => {
-                        if (err) {
-                            res.send({
-                                msg: "product  is not update from folder",
-                                success: false,
-                            });
-                        } else {
-                            res.send({
-                                msg: "product  updated successfully",
-                                success: true,
-                            });
-                        }
+        product.updateOne({ _id: productId }, productData)
+            .exec(async (err, updateData) => {
+                if (err) {
+                    res.send({ msg: err, success: false })
+                }
+                else {
+                    await productFolders.findByIdAndUpdate(new_folderId, {
+                        $addToSet: { products: productId },
                     });
-            }
-        })
+                    productFolders
+                        .findByIdAndUpdate(old_folderId, {
+                            $pull: { products: productId },
+                        })
+                        .exec((err, temp) => {
+                            if (err) {
+                                res.send({
+                                    msg: "product  is not update from folder",
+                                    success: false,
+                                });
+                            } else {
+                                res.send({
+                                    msg: "product  updated successfully",
+                                    success: true,
+                                });
+                            }
+                        });
+                }
+            })
     } catch (err) {
         res.send({ msg: err.message.replace(/\"/g, ""), success: false })
     }

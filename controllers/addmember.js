@@ -30,7 +30,7 @@ exports.getStudentsByProgramm = async (req, res) => {
   let program = req.params.program;
   if (!userid || !program) {
     res.json({
-      status: false,
+      success: false,
       msg: "Please give userId and program into params!!",
     });
   }
@@ -41,12 +41,12 @@ exports.getStudentsByProgramm = async (req, res) => {
   let studentsByProgram = await addmemberModel.find(filter);
   if (!studentsByProgram) {
     res.json({
-      status: false,
-      msg: "Having error while fetching data!!",
+      success: false,
+      msg: "Having msg while fetching data!!",
     });
   } else {
     res.json({
-      status: false,
+      success: true,
       msg: "Please find the data",
       data: studentByProgram,
     });
@@ -58,7 +58,7 @@ exports.getStudentsByCategory = async (req, res) => {
   let category = req.params.category;
   if (!userid || !category) {
     res.json({
-      status: false,
+      success: false,
       msg: "Please give userId and category into params!!",
     });
   }
@@ -69,12 +69,12 @@ exports.getStudentsByCategory = async (req, res) => {
   let studentsByCategory = await addmemberModel.find(filter);
   if (!studentsByCategory) {
     res.json({
-      status: false,
-      msg: "Having error while fetching data!!",
+      success: false,
+      msg: "Having msg while fetching data!!",
     });
   } else {
     res.json({
-      status: false,
+      success: true,
       msg: "Please find the data",
       data: studentByCategory,
     });
@@ -98,7 +98,8 @@ exports.std_program = async (req, res) => {
     .exec((err, resp) => {
       if (err) {
         res.send({
-          error: "program details not found",
+          success: false,
+          msg: "program details not found",
         });
       } else {
         if (resp.length > 0) {
@@ -141,16 +142,19 @@ exports.std_program = async (req, res) => {
 
             .then((resp) => {
               res.send({
+                success: true,
                 data: ary,
               });
             })
             .catch((err) => {
               res.send({
-                error: "data not found",
+                success: false,
+                msg: "data not found"
               });
             });
         } else {
           res.send({
+            success: false,
             msg: "programs list not found",
           });
         }
@@ -168,7 +172,8 @@ exports.bluckStd = async (req, res) => {
       memberObj.save(function (err, data) {
         if (err) {
           res.send({
-            error: "member is not add",
+            success: false,
+            msg: "member is not add",
           });
         } else {
           if (req.file) {
@@ -196,7 +201,7 @@ exports.bluckStd = async (req, res) => {
                       .exec((err, proData) => {
                         if (err) {
                           res.send({
-                            code: 400,
+                            success: false,
                             msg: "program not found",
                           });
                         } else {
@@ -216,11 +221,11 @@ exports.bluckStd = async (req, res) => {
                             (err, mangerank) => {
                               if (err) {
                                 res.send({
-                                  code: 400,
+                                  success: false,
                                   msg: "manage rank not found",
                                 });
                               } else {
-                                res.send(mangerank);
+                                res.send({ data: mangerank, success: true });
                               }
                             }
                           );
@@ -231,9 +236,10 @@ exports.bluckStd = async (req, res) => {
                     res.send(err);
                   });
               })
-              .catch((error) => {
+              .catch((err) => {
                 res.send({
-                  error: "image url is not create",
+                  success: false,
+                  msg: "image url is not create",
                 });
               });
           } else {
@@ -250,7 +256,7 @@ exports.bluckStd = async (req, res) => {
               .exec(async (err, proData) => {
                 if (err || !proData) {
                   res.send({
-                    code: 400,
+                    success: false,
                     msg: "program not find",
                   });
                 } else {
@@ -284,10 +290,10 @@ exports.bluckStd = async (req, res) => {
     })
   )
     .then((resp) => {
-      res.send("student add successfully");
+      res.send({ msg: "student add successfully", success: true });
     })
-    .catch((error) => {
-      res.send(error);
+    .catch((err) => {
+      res.send({ msg: err, success: false });
     });
 };
 
@@ -342,8 +348,8 @@ exports.std_count = async (req, res) => {
       after_school: resdata5,
       leads: resdata6,
     });
-  } catch (error) {
-    res.send({ error: error.message.replace(/\"/g, ""), success: false });
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }
 };
 
@@ -375,7 +381,7 @@ exports.listMember = (req, res) => {
     .select("intrested")
     .select("school")
     .select("rating")
-    .select("class_count")
+    .select("attendedclass_count")
     .select("rank_update_history")
     .select("rank_update_test_history")
     .exec((err, data) => {
@@ -417,7 +423,7 @@ exports.studentCount = (req, res) => {
     .exec((err, stdCount) => {
       if (err) {
         res.send({
-          code: 400,
+          success: false,
           msg: "student count not found",
         });
       } else {
@@ -426,9 +432,9 @@ exports.studentCount = (req, res) => {
           Total = Total + ele.count;
         });
         res.send({
-          code: 200,
           Total_std: Total,
-          Student_count: stdCount,
+          data: stdCount,
+          success: true
         });
       }
     });
@@ -446,7 +452,8 @@ exports.addmember = async (req, res) => {
     memberObj.save(function (err, data) {
       if (err) {
         res.send({
-          error: "member is not added",
+          success: false,
+          msg: "member is not added",
         });
       } else {
         if (req.file) {
@@ -474,11 +481,11 @@ exports.addmember = async (req, res) => {
                     .exec((err, proData) => {
                       if (err) {
                         res.send({
-                          code: 400,
+                          success: false,
                           msg: "program not found",
                         });
                       } else {
-                        var d = proData.program_rank[0];
+                        var d = proData.program_rank[0] || ''
                         addmemberModal.findByIdAndUpdate(
                           {
                             _id: response._id,
@@ -494,14 +501,13 @@ exports.addmember = async (req, res) => {
                           (err, mangerank) => {
                             if (err) {
                               res.send({
-                                code: 400,
+                                success: false,
                                 msg: "manage rank not found",
                               });
                             } else {
                               res.send({
-                                mangerank: mangerank,
-                                message: "Student created successfully",
-                                status: true,
+                                msg: "Student created successfully",
+                                success: true,
                               });
                             }
                           }
@@ -513,9 +519,10 @@ exports.addmember = async (req, res) => {
                   res.send(err);
                 });
             })
-            .catch((error) => {
+            .catch((err) => {
               res.send({
-                error: "image url is not create",
+                msg: "image url is not create",
+                success: false
               });
             });
         } else {
@@ -532,11 +539,11 @@ exports.addmember = async (req, res) => {
             .exec((err, proData) => {
               if (err || !proData) {
                 res.send({
-                  code: 400,
-                  msg: "program not find",
+                  success: false,
+                  msg: "Please select a Program",
                 });
               } else {
-                var d = proData.program_rank[0];
+                var d = proData.program_rank[0] || ''
                 addmemberModal.findByIdAndUpdate(
                   {
                     _id: data._id,
@@ -552,14 +559,13 @@ exports.addmember = async (req, res) => {
                   (err, mangerank) => {
                     if (err) {
                       res.send({
-                        code: 400,
+                        success: false,
                         msg: "manage rank not find of program",
                       });
                     } else {
                       res.send({
-                        mangerank: mangerank,
-                        message: "Student created successfully",
-                        status: true,
+                        msg: "Student created successfully",
+                        success: true
                       });
                     }
                   }
@@ -571,7 +577,7 @@ exports.addmember = async (req, res) => {
     });
   }
   catch (err) {
-    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }
 };
 
@@ -585,14 +591,16 @@ exports.read = (req, res) => {
     .exec((err, data) => {
       if (err) {
         res.send({
-          error: "member list is not found",
+          msg: "member list is not found",
+          success: false
         });
       } else {
         if (data.length > 0) {
-          res.send(data);
+          res.send({ data: data, success: true });
         } else {
           res.send({
             msg: "member list is empty",
+            success: false
           });
         }
       }
@@ -627,7 +635,7 @@ exports.active_trial_Std = async (req, res) => {
     .exec((err, active_trial) => {
       if (err) {
         res.send({
-          error: "active trial student is not found",
+          msg: "active trial student is not found",
         });
       } else {
         res.send({ active_trial, totalCount: totalCount, success: true });
@@ -665,14 +673,15 @@ exports.leads_Std = async (req, res) => {
       .exec((err, lead) => {
         if (err) {
           res.send({
-            error: "leads student is not found",
+            msg: "leads student is not found",
+            success: false
           });
         } else {
           res.send({ lead, totalCount: totalCount, success: true });
         }
       });
   } catch (err) {
-    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }
 };
 
@@ -704,7 +713,8 @@ exports.Former_Std = async (req, res) => {
     .exec((err, former) => {
       if (err) {
         res.send({
-          error: "former student is not found",
+          msg: "former student is not found",
+          success: false
         });
       } else {
         res.send({ former, totalCount: totalCount, success: true });
@@ -740,7 +750,8 @@ exports.active_Std = async (req, res) => {
     .exec((err, active_std) => {
       if (err) {
         res.send({
-          error: "active student is not found",
+          msg: "active student is not found",
+          success: false
         });
       } else {
         res.send({ active_std, totalCount: totalCount, success: true });
@@ -776,7 +787,8 @@ exports.Former_trial_Std = async (req, res) => {
     .exec((err, former_trial) => {
       if (err) {
         res.send({
-          error: "former trial student is not found",
+          msg: "former trial student is not found",
+          success: false
         });
       } else {
         res.send({ former_trial, totalCount: totalCount, success: true });
@@ -811,7 +823,8 @@ exports.camp_Std = async (req, res) => {
     .exec((err, camp) => {
       if (err) {
         res.send({
-          error: "camp student not found",
+          msg: "camp student not found",
+          success: false
         });
       } else {
         res.send({ camp, totalCount: totalCount, success: true });
@@ -846,7 +859,8 @@ exports.after_school_Std = async (req, res) => {
     .exec((err, after_school) => {
       if (err) {
         res.send({
-          error: "after school student not found",
+          msg: "after school student not found",
+          success: false
         });
       } else {
         res.send({ after_school, totalCount: totalCount, success: true });
@@ -866,10 +880,15 @@ exports.studentinfo = (req, res) => {
     .exec((err, data) => {
       if (err) {
         res.send({
-          error: "member is not found",
+          msg: "member is not found",
+          success: false
         });
       } else {
-        res.send(data);
+        success: false
+        res.send({
+          data: data,
+          success: true
+        });
       }
     });
 };
@@ -905,7 +924,8 @@ exports.latestMember = async (req, res) => {
     .exec((err, memberdata) => {
       if (err) {
         res.send({
-          error: "member data is not find",
+          msg: "member data is not find",
+          success: false
         });
       } else {
         res.send({ memberdata, totalCount: totalCount, success: true });
@@ -931,10 +951,14 @@ exports.expire_member = (req, res) => {
     .exec((err, expMember) => {
       if (err) {
         res.send({
-          error: "member list not found",
+          msg: "member list not found",
+          success: false
         });
       } else {
-        res.send(expMember);
+        res.send({
+          data: expMember,
+          success: true
+        });
       }
     });
 };
@@ -960,10 +984,14 @@ exports.missuCall_list = (req, res) => {
     .exec((err, list_missUCall) => {
       if (err) {
         res.send({
-          error: "student list not find",
+          msg: "student list not find",
+          success: false
         });
       } else {
-        res.send(list_missUCall);
+        res.send({
+          data: list_missUCall,
+          success: true
+        });
       }
     });
 };
@@ -989,10 +1017,14 @@ exports.missuCall_list_urjent = (req, res) => {
     .exec((err, list_missUCall) => {
       if (err) {
         res.send({
-          error: "student list not find",
+          msg: "student list not find",
+          success: false
         });
       } else {
-        res.send(list_missUCall);
+        res.send({
+          data: list_missUCall,
+          success: true
+        });
       }
     });
 };
@@ -1080,7 +1112,8 @@ exports.birth_this_month = (req, res) => {
     function (err, docs) {
       if (err) {
         res.send({
-          error: "this month birthday data not found",
+          msg: "this month birthday data not found",
+          success: false
         });
       } else {
         var options = {
@@ -1091,10 +1124,14 @@ exports.birth_this_month = (req, res) => {
         addmemberModal.populate(docs, options, function (err, thisMonth) {
           if (err) {
             res.send({
-              error: "birthday checklist not populate",
+              msg: "birthday checklist not populate",
+              success: false
             });
           } else {
-            res.send(thisMonth);
+            res.send({
+              data: thisMonth,
+              success: true
+            });
           }
         });
       }
@@ -1134,7 +1171,7 @@ exports.trial_this_month = (req, res) => {
         $project: {
           firstName: 1,
           lastName: 1,
-          class_count: 1,
+          attendedclass_count: 1,
           leadsTracking: 1,
           primaryPhone: 1,
           membership_details: 1,
@@ -1146,7 +1183,8 @@ exports.trial_this_month = (req, res) => {
     (err, trial) => {
       if (err) {
         res.send({
-          error: "this month active trial student data not found",
+          msg: "this month active trial student data not found",
+          success: false
         });
       } else {
         var options = {
@@ -1157,10 +1195,15 @@ exports.trial_this_month = (req, res) => {
         addmemberModal.populate(trial, options, (err, result) => {
           if (err) {
             res.send({
-              error: "buy membership details is not populate",
+              msg: "buy membership details is not populate",
+              success: false
             });
           } else {
-            res.send(result);
+            res.send({
+              data: result,
+              success: true
+
+            });
           }
         });
       }
@@ -1208,11 +1251,12 @@ exports.collectionModify = async (req, res) => {
     //   });
 
     res.send({
-      msg: 'success',
-      users
+      data: users,
+      success: true
+
     })
   } catch (err) {
-    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }
 };
 
@@ -1264,7 +1308,8 @@ exports.birth_next_month = (req, res) => {
     function (err, docs) {
       if (err) {
         res.send({
-          error: "next month birthday data not found",
+          msg: "next month birthday data not found",
+          success: false
         });
       } else {
         var options = {
@@ -1275,10 +1320,14 @@ exports.birth_next_month = (req, res) => {
         addmemberModal.populate(docs, options, function (err, thisMonth) {
           if (err) {
             res.send({
-              error: "birthday checklist not populate",
+              msg: "birthday checklist not populate",
+              success: false
             });
           } else {
-            res.send(thisMonth);
+            res.send({
+              data: thisMonth,
+              success: true
+            });
           }
         });
       }
@@ -1331,10 +1380,14 @@ exports.this_month_lead = (req, res) => {
     .exec((err, leadMonth) => {
       if (err) {
         res.send({
-          error: "leads this month data not found",
+          msg: "leads this month data not found",
+          success: false
         });
       } else {
-        res.send(leadMonth);
+        res.send({
+          data: leadMonth,
+          success: true
+        });
       }
     });
 };
@@ -1383,9 +1436,15 @@ exports.last_three_month = (req, res) => {
     ])
     .exec((err, mon) => {
       if (err) {
-        res.send("data not found");
+        res.send({
+          msg: "data not found",
+          success: false
+        });
       } else {
-        res.send(mon);
+        res.send({
+          data: mon,
+          success: true
+        });
       }
     });
 };
@@ -1395,11 +1454,13 @@ exports.deletemember = (req, res) => {
   addmemberModal.findByIdAndDelete(memberID).exec((err, data) => {
     if (err) {
       res.send({
-        error: "member is not delete",
+        msg: "member is not delete",
+        success: false
       });
     } else {
       res.send({
-        msg: "member is delete",
+        msg: "member is deleted",
+        success: true
       });
     }
   });
@@ -1413,13 +1474,13 @@ exports.delete_multipal_member = (req, res) => {
     .exec((err, resp) => {
       if (err) {
         res.json({
-          code: 400,
+          success: false,
           msg: "student is not delete",
         });
       } else {
         res.json({
-          code: 200,
           msg: "student delete successfully",
+          success: true
         });
       }
     });
@@ -1438,7 +1499,7 @@ exports.updatemember = (req, res) => {
       if (err) {
         res.send({
           success: false,
-          error: "member is not update",
+          msg: "member is not update",
         });
       } else {
         if (req.file) {
@@ -1457,17 +1518,17 @@ exports.updatemember = (req, res) => {
                     success: true,
                   });
                 })
-                .catch((error) => {
+                .catch((msg) => {
                   res.send({
-                    error: "student image is not update",
+                    msg: "student image is not update",
                     success: false,
                   });
                 });
             })
-            .catch((error) => {
+            .catch((msg) => {
               res.send({
                 success: false,
-                error: "image url is not create",
+                msg: "image url is not create",
               });
             });
         } else {
@@ -1514,14 +1575,14 @@ exports.send_mail_std = (req, res) => {
         emailDetail.sent_time = DT.Time;
         emailDetail.save((err, resp) => {
           res.send({
-            code: 200,
             msg: "email sent successfully",
+            success: true
           });
         });
       })
-      .catch((error) => {
+      .catch((msg) => {
         res.send({
-          code: 400,
+          success: false,
           msg: "email not send",
         });
       });
@@ -1543,11 +1604,13 @@ exports.send_sms_std = (req, res) => {
     function (err, data) {
       if (err) {
         res.send({
-          error: "msg not set",
+          msg: "msg not set",
+          success: false
         });
       } else {
         res.send({
           msg: "text sms send successfully",
+          success: true
         });
       }
     }
@@ -1558,8 +1621,8 @@ exports.getActiveStudents = async (req, res) => {
   let userId = req.params.userId;
   if (!userId) {
     return res.json({
-      status: false,
-      error: "userId not found in params",
+      msg: "userId not found in params",
+      success: false
     });
   }
 
@@ -1570,14 +1633,14 @@ exports.getActiveStudents = async (req, res) => {
 
   if (!students) {
     res.json({
-      status: false,
-      error: "Students not found",
+      msg: "Students not found",
+      success: false
     });
   }
 
   res.json({
-    status: true,
     data: students,
+    success: true
   });
 };
 
@@ -1591,28 +1654,27 @@ exports.getRankUpdateStripeHistoryByStudentId = async (req, res) => {
   let studentId = req.params.studentId;
   if (!studentId) {
     res.json({
-      status: false,
-      error: "userId not found in params",
+      msg: "userId not found in params",
+      success: false
     });
   }
   let student = await addmemberModal.findById(studentId);
   if (!student) {
     res.json({
-      status: false,
-      error: "Student is not available with this id!!",
+      msg: "Student is not available with this id!!",
+      success: false
     });
   }
   let history = student.rank_update_history;
   if (history.length === 0) {
     return res.json({
-      stasus: false,
-      error: "Not any history available for this student!!",
+      msg: "Not any history available for this student!!",
+      success: false
     });
   }
   return res.json({
-    status: true,
-    msg: "Please find the student's rank update history!",
     data: history,
+    success: true
   });
 };
 
@@ -1620,29 +1682,27 @@ exports.getRankUpdateTestHistoryByStudentId = async (req, res) => {
   let studentId = req.params.studentId;
   if (!studentId) {
     res.json({
-      status: false,
-      error: "userId not found in params",
+      msg: "userId not found in params",
+      success: false
     });
   }
   let student = await addmemberModal.findById(studentId);
   if (!student) {
     res.json({
-      status: false,
-      error: "Student is not available with this id!!",
+      msg: "Student is not available with this id!!",
+      success: false
     });
   }
   let rankTestHistory = student.rank_update_test_history;
   if (rankTestHistory.lenght === 0) {
     return res.json({
-      stasus: false,
-      error: "No rank history available for this student!!",
-      data: rankTestHistory,
+      success: false,
+      msg: "No rank history available for this student!!",
     });
   }
   return res.json({
-    status: true,
-    msg: "Please find the student's rank update history!",
     data: rankTestHistory,
+    success: true
   });
 };
 
@@ -1674,13 +1734,13 @@ exports.filter_members = async (req, res) => {
           status: 1,
           current_rank_img: 1,
           primaryPhone: 1,
-          class_count: 1,
+          attendedclass_count: 1,
           updatedAt: 1,
         }
       );
       res.status(200).send({
-        status: "success",
         data: response,
+        success: true
       });
     } else if (cat && pro && !subcat) {
       const response = await addmemberModal.find(
@@ -1697,14 +1757,14 @@ exports.filter_members = async (req, res) => {
           status: 1,
           current_rank_img: 1,
           primaryPhone: 1,
-          class_count: 1,
+          attendedclass_count: 1,
           updatedAt: 1,
         }
       );
 
       res.status(200).send({
-        status: "success",
         data: response,
+        success: true
       });
     } else if (!cat && pro && !subcat) {
       const response = await addmemberModal.find(
@@ -1721,25 +1781,26 @@ exports.filter_members = async (req, res) => {
           status: 1,
           current_rank_img: 1,
           primaryPhone: 1,
-          class_count: 1,
+          attendedclass_count: 1,
           updatedAt: 1,
         }
       );
 
       res.status(200).send({
-        status: "success",
         data: response,
+        success: true
       });
     } else {
       res.status(403).send({
-        status: "false",
         data: "not found",
+        success: false
       });
     }
   } catch (er) {
     res.status(500).send({
-      message: er,
-      status: "failure",
+      msg: er,
+      success: false
+
     });
   }
 };
@@ -1766,7 +1827,10 @@ exports.invoice_listing = async (req, res) => {
     })
     .exec((err, data) => {
       if (err) {
-        res.send({ error: "membership list is not find" });
+        res.send({
+          msg: "membership list is not find",
+          success: false
+        });
       } else {
         res.status(200).send({ data: data[0], success: true });
       }
@@ -1799,7 +1863,7 @@ exports.invoice_details = (req, res) => {
     })
     .exec((err, data) => {
       if (err) {
-        res.send({ error: err.message.replace(/\"/g, ""), success: false });
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false });
       } else {
         res.status(200).send({ data: data, success: true });
       }
@@ -1815,18 +1879,18 @@ exports.ActiveMemberslist = async (req, res) => {
       .exec((err, user) => {
         if (err || !user) {
           return res.status(400).json({
-            error: "User not found",
+            msg: "User not found",
+            success: false
           });
         } else {
           return res.status(200).send({
             data: user,
-            success: true,
-            error: false,
+            success: true
           });
         }
       });
   } catch (err) {
-    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }
 };
 
@@ -1840,18 +1904,19 @@ exports.ActiveMemberslistByProgramName = async (req, res) => {
       .exec((err, user) => {
         if (err || !user) {
           return res.status(400).json({
-            error: "User not found",
+            msg: "User not found",
+            success: false
+
           });
         } else {
           return res.status(200).send({
             data: user,
             success: true,
-            error: false,
           });
         }
       });
   } catch (err) {
-    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }
 };
 
@@ -1871,9 +1936,12 @@ exports.searchStudentbyType = async (req, res) => {
         ],
       },
     );
-    res.send(data);
+    res.send({
+      data: data,
+      success: true
+    });
   } catch (err) {
-    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }
 };
 
@@ -1893,9 +1961,12 @@ exports.searchStudentbyInterest = async (req, res) => {
         ],
       },
     );
-    res.send(data);
-  } catch (er) {
-    console.log(er);
+    res.send({
+      data: data,
+      success: true
+    });
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }
 };
 
@@ -1946,7 +2017,7 @@ exports.active_trial_this_month = async (req, res) => {
       .exec((err, memberdata) => {
         if (err) {
           res.send({
-            error: err, success: false
+            msg: err, success: false
           });
         } else {
           let data = memberdata[0].paginatedResults
@@ -1966,7 +2037,7 @@ exports.active_trial_this_month = async (req, res) => {
       });
   }
   catch (err) {
-    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
 
   }
 }
@@ -2026,7 +2097,7 @@ exports.active_trial_past3_month = async (req, res) => {
       .exec((err, memberdata) => {
         if (err) {
           res.send({
-            error: err,
+            msg: err,
             suceess: false
           });
         } else {
@@ -2042,7 +2113,7 @@ exports.active_trial_past3_month = async (req, res) => {
       });
   }
   catch (err) {
-    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
 
   }
 }
@@ -2093,7 +2164,7 @@ exports.leads_this_month = async (req, res) => {
       .exec((err, memberdata) => {
         if (err) {
           res.send({
-            error: err,
+            msg: err,
             success: false
           });
         } else {
@@ -2109,7 +2180,7 @@ exports.leads_this_month = async (req, res) => {
       });
   }
   catch (err) {
-    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
 
   }
 }
@@ -2168,7 +2239,7 @@ exports.leads_past3_month = async (req, res) => {
       .exec((err, memberdata) => {
         if (err) {
           res.send({
-            error: err,
+            msg: err,
             success: false
           });
         } else {
@@ -2183,7 +2254,7 @@ exports.leads_past3_month = async (req, res) => {
       });
   }
   catch (err) {
-    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
 
   }
 }

@@ -56,7 +56,7 @@ exports.seven_to_forteen = async (req, res) => {
             "data.memberprofileImage": 1,
             "data.missYouCall_notes": 1,
             "data.last_contact_missCall": 1,
-            "data.class_count": 1,
+            "data.attendedclass_count": 1,
             "data._id": 1,
           }
         },
@@ -253,7 +253,7 @@ exports.fifteen_to_thirty = async (req, res) => {
             "data.memberprofileImage": 1,
             "data.missYouCall_notes": 1,
             "data.last_contact_missCall": 1,
-            "data.class_count": 1,
+            "data.attendedclass_count": 1,
             "data._id": 1,
           }
         },
@@ -450,7 +450,7 @@ exports.Thirty_to_sixty = async (req, res) => {
             "data.memberprofileImage": 1,
             "data.missYouCall_notes": 1,
             "data.last_contact_missCall": 1,
-            "data.class_count": 1,
+            "data.attendedclass_count": 1,
             "data._id": 1,
           }
         },
@@ -647,7 +647,7 @@ exports.more_than_sixty = async (req, res) => {
             "data.memberprofileImage": 1,
             "data.missYouCall_notes": 1,
             "data.last_contact_missCall": 1,
-            "data.class_count": 1,
+            "data.attendedclass_count": 1,
             "data._id": 1,
           }
         },
@@ -958,7 +958,7 @@ exports.more_than_forteen = async (req, res) => {
             "data.memberprofileImage": 1,
             "data.missYouCall_notes": 1,
             "data.last_contact_missCall": 1,
-            "data.class_count": 1,
+            "data.attendedclass_count": 1,
             "data._id": 1,
           }
         },
@@ -1109,3 +1109,57 @@ exports.more_than_forteen = async (req, res) => {
     throw new Error(err);
   }
 };
+
+exports.missclasses = async (req, res) => {
+  try {
+    let [id] = await student.aggregate([
+      {
+        $group: {
+          _id: " ",
+          id: { $push: "$_id" }
+        }
+      },
+      {
+        $project: {
+          id: 1,
+          _id: 0
+        }
+      }
+    ]);
+
+    id = id.id
+    for await (const i of id) {
+
+      let data = await classes.aggregate([
+        {
+          $project: {
+            class_name: 1,
+            class_attendanceArray: "$class_attendanceArray.studentInfo",
+          }
+        },
+        { $match: { class_attendanceArray: { $nin: [i] } } },
+        {
+          $group: {
+            _id: "_id",
+            missclass_count: {
+              $sum: 1,
+            }
+          }
+        },
+        { $project: { _id: 0 }, }
+      ])
+
+      let { missclass_count } = data[0]
+      await updateStudentsById(i, missclass_count)
+    }
+    console.log("miss_Classes updated!" )
+  }
+  catch (err) {
+    throw new Error(err);
+
+  }
+}
+const updateStudentsById = async (studentId, missclass_count) => {
+  return student.findByIdAndUpdate({ _id: studentId }, { missclass_count: missclass_count })
+}
+
