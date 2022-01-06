@@ -1,5 +1,5 @@
 const membershipFolder = require("../models/membershipFolder");
-
+const membership = require('../models/membership')
 exports.create_folder = (req, res) => {
   let userId = req.params.userId;
   let adminId = req.params.adminId;
@@ -29,7 +29,7 @@ exports.getFolders = (req, res) => {
 
     .exec((err, folder) => {
       if (err) {
-        res.send({ error: "membership folder is not create", success: false });
+        res.send({ msg: "membership folder is not create", success: false });
       } else {
         res.send({
           data: folder,
@@ -43,7 +43,7 @@ exports.update_folder = (req, res) => {
     .findByIdAndUpdate(req.params.folderId, req.body)
     .exec((err, updateFolder) => {
       if (err) {
-        res.send({ error: "membership folder is not updated", success: false });
+        res.send({ msg: "membership folder is not updated", success: false });
       } else {
         res.send({
           msg: "Folder is update successfully",
@@ -58,13 +58,22 @@ exports.delete_folder = (req, res) => {
     { _id: req.params.folderId },
     (err, delFolder) => {
       if (err) {
-        res.send({ error: " folder is not remove", success: false });
+        res.send({ msg: "Folder is not remove", success: false });
       } else {
-        res.send({
-          msg: "Folder removed successfully",
-          success: true,
-        });
+        membership.deleteMany(
+          { folderId: req.params.folderId },
+          (err, delFolder) => {
+            if (err) {
+              res.send({ msg: "Folder is not remove", success: false });
+            } else {
+              res.send({
+                msg: "Folder removed successfully",
+                success: true,
+              })
+            }
+          })
+
       }
-    }
-  );
-};
+    })
+}
+
