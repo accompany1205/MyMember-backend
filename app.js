@@ -56,6 +56,7 @@ const events = require("./routes/events");
 const add_member = require("./routes/addmember");
 const productFolder = require("./routes/productFolder");
 const product = require("./routes/product");
+const buy_product = require("./routes/buy_product");
 const pcategory = require("./routes/pcategory");
 const psubcategory = require("./routes/psubcategory");
 const add_membership = require("./routes/membership");
@@ -239,7 +240,7 @@ app.use("/api", speciality_program1);
 app.use("/api", speciality_program2);
 app.use("/api", productFolder);
 app.use("/api", smartlists);
-
+app.use("/api", buy_product)
 // Appointment Event
 app.use("/api", appointmentEvent)
 // app.use('/api',emailSystem)

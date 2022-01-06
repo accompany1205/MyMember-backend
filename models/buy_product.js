@@ -15,22 +15,11 @@ const productSchema = new schema(
             type: String,
             required: true
         },
-        productFile: {
-            type: Array
-        },
-        color: {
-            type: String,
-            required: true
-        },
-        isfavorite: {
-            type: Number,
-            default: 0
-        },
         event_date: {
             type: String,
             required: true,
         },
-        start_date: {
+        start_payment_date: {
             type: String,
         },
         expiry_date: {
@@ -52,33 +41,77 @@ const productSchema = new schema(
             type: Number,
             required: true
         },
-        payment_type: {
+        payment_type: {      //weekly/monthly
             type: String,
             required: true
+        },
+        isEMI: {
+            type: Boolean,
+            required: true,
+        },
+        ptype: {    //cash/cheque
+            type: String,
+            required: true,
+        },
+        payment_time: { //number of EMIs
+            type: Number,
+            required: true
+        },
+        due_status: {
+            type: String,
+            default: "due",
+            enum: ["paid", "due", "over_due"],
         },
         due_every: {
             type: String,
             required: true
         },
-        duration_time: {
-            type: String,
-            required: true
+        schedulePayments: {
+            type: Array,
+            requred: true,
         },
-        duration_type: {
-            type: String,
-            required: true
+        refund: {
+            type: Array,
         },
+        isRefund: {
+            type: Boolean,
+            default: false,
+        },
+        pay_inout: {
+            type: String,
+            required: true,
+        },
+        pay_latter: {
+            type: String
+        },
+        createdBy: {
+            type: String,
+            required: true,
+        },
+        transactionId: {
+            type: Object
+        },
+        subscription_id: {
+            type: String
+        },
+        cheque_no: {
+            type: String
+        },
+        student_name: {
+            type: String,
+        },
+        studentInfo: [
+            {
+                type: schema.Types.ObjectId,
+                ref: "member",
+                required: true,
+            },
+        ],
         userId: {
-            type: String
-        },
-        folderId: {
-            type: schema.Types.ObjectId,
-            ref: 'productFolder'
-        },
-        adminId: {
-            type: String
+            type: String,
+            required: true,
         },
     }, { timestamps: true }
 );
 
-module.exports = mongoose.model("Product", productSchema);
+module.exports = mongoose.model("Buy_Product", productSchema);

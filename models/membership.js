@@ -6,8 +6,11 @@ const membershipSchema = schema({
         type: String,
         required: true
     },
-    membershipDoc:{
-        type:Array
+    membershipDoc: {
+        type: Array
+    },
+    membershipThumbnail: {
+        type: String
     },
     color: {
         type: String,
@@ -59,6 +62,10 @@ const membershipSchema = schema({
     isfavorite: {
         type: Number,
         default: 0
+    },
+    isSignatured: {
+        type: Boolean,
+        default: false
     },
     userId: {
         type: String

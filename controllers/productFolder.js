@@ -1,5 +1,5 @@
-var productFolders = require('../models/productFolder')
-
+const productFolders = require('../models/productFolder')
+const product = require('../models/product')
 exports.createproductFolder = async (req, res) => {
     let adminId = req.params.adminId;
     let userId = req.params.userId;
@@ -60,12 +60,24 @@ exports.deleteproductFolder = async (req, res) => {
         (err, delFolder) => {
             if (err) {
                 res.send({ msg: " folder is not remove", success: false });
-            } else {
-                res.send({
-                    msg: "Folder removed successfully",
-                    success: true,
-                });
             }
-        }
-    );
+            else {
+                product.deleteMany(
+                    { folderId: req.params.folderId },
+                    (err, delFolder) => {
+                        if (err) {
+                            res.send({ msg: "Folder is not remove", success: false });
+                        }
+
+                        else {
+                            res.send({
+                                msg: "Folder removed successfully",
+                                success: true,
+                            });
+                        }
+                    })
+
+            }
+        })
 }
+

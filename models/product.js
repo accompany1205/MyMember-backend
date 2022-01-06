@@ -7,6 +7,9 @@ const productSchema = new schema(
             type: String,
             required: true
         },
+        productThumbnail: {
+            type: String
+        },
         product_type: {
             type: String,
             required: true
@@ -45,6 +48,10 @@ const productSchema = new schema(
         payment_type: {
             type: String,
             required: true
+        },
+        isSignatured: {
+            type: Boolean,
+            default: false
         },
         userId: {
             type: String

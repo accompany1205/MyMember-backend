@@ -4,7 +4,6 @@ const router = express.Router();
 
 const {
     update,
-    buy_product,
     remove,
     buy_product,
     product_InfoById,
