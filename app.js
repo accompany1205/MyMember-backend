@@ -30,6 +30,7 @@ const middleware = require('./middlewear/middlewear')
 
 //shivani's
 const leads_tracking = require("./routes/leads_tracking");
+const userSectionFiles = require("./routes/userSectionFiles");
 const after_camp = require("./routes/after_camp");
 const summer_camp = require("./routes/summer_camp");
 const speciality_program1 = require("./routes/speciality_program1");
@@ -232,6 +233,7 @@ app.use("/api", library_template);
 app.use("/api", email_library_folder);
 app.use("/api", leads_tracking);
 app.use("/api", after_camp);
+app.use("/api", userSectionFiles);
 app.use("/api", summer_camp);
 app.use("/api", speciality_program1);
 app.use("/api", speciality_program2);
