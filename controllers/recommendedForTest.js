@@ -12,20 +12,20 @@ const { valorTechPaymentGateWay } = require("./valorTechPaymentGateWay");
 
 const randomNumber = (length, addNumber) => {
     return parseInt(
-      (Math.floor(Math.random() * length) + addNumber).toString().substring(1)
+        (Math.floor(Math.random() * length) + addNumber).toString().substring(1)
     );
-  };
-  
+};
+
 const getUidAndInvoiceNumber = () => {
     return {
-      uid: randomNumber(100000000000, 100),
+        uid: randomNumber(100000000000, 100),
     };
-  };
+};
 
 exports.getRecommededForTest = async (req, res) => {
     let userId = req.params.userId;
-    var order = req.query.order
-    let sortBy = req.query.sortBy
+    var order = req.query.order || 1
+    let sortBy = req.query.sortBy || "firstName"
     if (!userId) {
         res.json({
             status: false,
@@ -36,7 +36,8 @@ exports.getRecommededForTest = async (req, res) => {
     let students = await RecommendedForTest.find({
         "userId": userId,
         "isDeleted": false
-    }).sort([[sortBy, order]]);
+    })
+        .sort({ [sortBy]: order });
     if (!students.length) {
         res.json({
             status: false,
@@ -51,8 +52,8 @@ exports.getRecommededForTest = async (req, res) => {
 }
 
 exports.getRegisteredForTest = async (req, res) => {
-    let sortBy = req.query.sortBy 
-    var order = req.query.order
+    let sortBy = req.query.sortBy || "fistName"
+    var order = req.query.order || 1
     let userId = req.params.userId;
     if (!userId) {
         res.json({
@@ -63,7 +64,8 @@ exports.getRegisteredForTest = async (req, res) => {
 
     let students = await RegisterdForTest.find({
         "isDeleted": false
-    }).sort([[sortBy, order]])
+    })
+        .sort({ [sortBy]: order });
     if (!students.length) {
         res.json({
             status: false,
@@ -150,7 +152,7 @@ const updateStudentsById = async (studentId) => {
 
 exports.payAndPromoteTheStudent = async (req, res) => {
     let userId = req.params.userId;
-    let {cardDetails, paidAmount, studentId, financeId} = req.body;
+    let { cardDetails, paidAmount, studentId, financeId } = req.body;
     let updatePayment;
     if (cardDetails) {
         const { uid } = getUidAndInvoiceNumber();
@@ -158,7 +160,7 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         cardDetails.expiry_date = expiry_date;
         delete cardDetails.expiry_month;
         delete cardDetails.expiry_year
-        const valorPayload = {...cardDetails, amount: paidAmount, uid }
+        const valorPayload = { ...cardDetails, amount: paidAmount, uid }
         const resp = await valorTechPaymentGateWay.saleSubscription(valorPayload);
         if (resp.data.error_no == "S00") {
             const address = {
@@ -167,13 +169,13 @@ exports.payAndPromoteTheStudent = async (req, res) => {
                 street_no: cardDetails?.street_no,
             }
             cardDetails.address = address;
-            await createFinanceDoc({...cardDetails, studentId: studentId, userId: userId}, financeId)
+            await createFinanceDoc({ ...cardDetails, studentId: studentId, userId: userId }, financeId)
             updatePayment = await addTestPayment(req.body, userId)
             res.send(updatePayment)
         } else {
             res.send({
-              success: false,
-              msg: "Payment is not completed due to technical reason please try again!"
+                success: false,
+                msg: "Payment is not completed due to technical reason please try again!"
             })
         }
     } else {
@@ -309,35 +311,35 @@ const addTestPayment = async (payload, userId) => {
 function createFinanceDoc(data, financeId) {
     const { studentId } = data;
     return new Promise((resolve, reject) => {
-      const financeData = new Finance_infoSchema(data);
-      if (financeId) {
-        Finance_infoSchema.findByIdAndUpdate(financeId, {
-          $set: data
-        }).exec((err, resData) => {
-          if (err) {
-            resolve({ success: false });
-          }
-          resolve({ success: true });
-        })
-      } else {
-        financeData.save((err, Fdata) => {
-          if (err) {
-            resolve({ success: false, msg: "Finance data is not stored!" });
-          } else {
-            AddMember.findByIdAndUpdate(studentId, {
-              $push: { finance_details: Fdata._id },
-            }).exec((err, data) => {
-              if (data) {
+        const financeData = new Finance_infoSchema(data);
+        if (financeId) {
+            Finance_infoSchema.findByIdAndUpdate(financeId, {
+                $set: data
+            }).exec((err, resData) => {
+                if (err) {
+                    resolve({ success: false });
+                }
                 resolve({ success: true });
-              } else {
-                resolve({ success: false });
-              }
+            })
+        } else {
+            financeData.save((err, Fdata) => {
+                if (err) {
+                    resolve({ success: false, msg: "Finance data is not stored!" });
+                } else {
+                    AddMember.findByIdAndUpdate(studentId, {
+                        $push: { finance_details: Fdata._id },
+                    }).exec((err, data) => {
+                        if (data) {
+                            resolve({ success: true });
+                        } else {
+                            resolve({ success: false });
+                        }
+                    });
+                }
             });
-          }
-        });
-      }
+        }
     });
-  }
+}
 
 exports.removeFromRecomended = async (req, res) => {
     let recommededId = req.params.recommendedId;
