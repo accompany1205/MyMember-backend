@@ -2,11 +2,13 @@ const mongoose = require("mongoose");
 const schema = mongoose.Schema;
 
 const userSectionFiles = new schema({
-    fileName:{
-        type:String
+    fileName: {
+        type: String,
+        required: true
     },
     SettingFile: {
-        type: String
+        type: String,
+        required: true
     },
     fileType: {
         type: String,
@@ -18,7 +20,13 @@ const userSectionFiles = new schema({
     userId: {
         type: String
     },
+    description: {
+        type: String,
+        required: true
+    }
+},
+    { timestamps: true }
 
-})
+)
 
 module.exports = mongoose.model("usersectionfiles", userSectionFiles)

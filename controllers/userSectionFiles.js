@@ -38,7 +38,7 @@ exports.updateFile = async (req, res) => {
         if (req.file) {
             let file = await cloudUrl.imageUrl(req.file);
             let updatedFolderData = { ...req.body, SettingFile: file };
-            await userSettingFile.updateOne({ _id: userSectionFiles }, { $set: { updatedFolderData } }).then(data => {
+            await userSettingFile.findByIdAndUpdate(userSectionFiles , { $set: updatedFolderData }).then(data => {
                 res.send({
                     msg: "folder updated!", success: true
                 })
@@ -48,7 +48,7 @@ exports.updateFile = async (req, res) => {
                 })
             })
         } else {
-            await userSettingFile.updateOne({ _id: userSectionFiles }, { $set: { updatedData } })
+            await userSettingFile.findByIdAndUpdate( userSectionFiles , { $set: updatedData })
                 .then(data => {
                     res.send({
                         msg: "folder updated!", success: true, data
