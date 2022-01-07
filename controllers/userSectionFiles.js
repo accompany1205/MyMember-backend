@@ -6,18 +6,18 @@ exports.addFile = async (req, res) => {
     let userId = req.params.userId;
     let studentId = req.params.studentId;
     try {
-        if (req.files) {
+        if (req.file) {
             let file = await cloudUrl.imageUrl(req.file);
             let folderdata = { ...req.body, userId: userId, studentId: studentId, SettingFile: file };
             const userFile = new userSettingFile(folderdata);
             userFile.save(function (err, data) {
                 if (err) {
                     res.send({
-                        msg: "file added!", success: false,
+                        msg: "file not added!", success: false,
                     })
                 } else {
                     res.send({
-                        msg: "file not added!", success: true, data
+                        msg: "file added!", success: true, data
                     })
                 }
             });
@@ -35,12 +35,12 @@ exports.updateFile = async (req, res) => {
     let userSectionFiles = req.params.userSectionFiles;
     let updatedData = req.body
     try {
-        if (req.files) {
+        if (req.file) {
             let file = await cloudUrl.imageUrl(req.file);
             let updatedFolderData = { ...req.body, SettingFile: file };
             await userSettingFile.updateOne({ _id: userSectionFiles }, { $set: { updatedFolderData } }).then(data => {
                 res.send({
-                    msg: "folder updated!", success: true, data
+                    msg: "folder updated!", success: true
                 })
             }).catch(err => {
                 res.send({
@@ -48,7 +48,7 @@ exports.updateFile = async (req, res) => {
                 })
             })
         } else {
-            await updateOne({ _id: userSectionFiles }, { $set: { updatedData } })
+            await userSettingFile.updateOne({ _id: userSectionFiles }, { $set: { updatedData } })
                 .then(data => {
                     res.send({
                         msg: "folder updated!", success: true, data
@@ -67,7 +67,7 @@ exports.updateFile = async (req, res) => {
 exports.getFile = async (req, res) => {
     let userSectionFiles = req.params.userSectionFiles;
     try {
-        await userSettingFile.findById(userSectionFiles).then(data => {
+        await userSettingFile.findById({_id:userSectionFiles}).then(data => {
             res.send({
                 msg: "getData!", success: true, data
             })
@@ -106,7 +106,7 @@ exports.getAll = async (req, res) => {
 exports.deleteFile = async (req, res) => {
     let userSectionFiles = req.params.userSectionFiles;
     try {
-        await userSettingFile.remove({ _id: userSectionFiles }).then(resp => {
+        userSettingFile.remove({ _id: userSectionFiles }).then(resp => {
             res.send({
                 msg: "deleted!", success: true
             })
