@@ -182,7 +182,7 @@ exports.promoteTheStudentStripe = async (req, res) => {
 exports.getRecommendedCandidateStudents = async (req, res) => {
     try {
         let sortBy = req.query.sortBy || "firstName"
-        let order = req.query.order
+        let order = req.query.order || 1
         let userId = req.params.userId;
         if (!userId) {
             res.json({
@@ -193,7 +193,8 @@ exports.getRecommendedCandidateStudents = async (req, res) => {
 
         let students = await RecommendedCandidateModel.find({
             "userId": userId
-        }).sort([[sortBy, order]]);
+        })
+            .sort({ [sortBy]: order });
         if (!students.length) {
             res.json({
                 success: false,
