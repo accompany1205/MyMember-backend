@@ -46,6 +46,9 @@ const appointSchema = new schema(
         repeatedDates: {
             type:Array
         },
+        repeatedConcurrence:{
+            type:String
+        },
         groupInfoList: {
             type:Array
     },

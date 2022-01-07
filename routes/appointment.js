@@ -10,5 +10,6 @@ router.put("/appointment/update_appointment/:userId/:appointId",requireSignin,ap
 router.put("/appointment/update_all_appointment/:userId/:oldcategoryname",requireSignin,appointment.updateAll);
 router.delete("/delete_appointment/:userId/:appointId",requireSignin,appointment.remove);
 router.post("/appointmentFilter/:userId/:page_no/:per_page",verifySchool, appointment.appointmentFilter);
+router.delete("/appointment/delete_all/:userId/:oldcategoryname", verifySchool, appointment.deleteAll)
 
 module.exports = router;

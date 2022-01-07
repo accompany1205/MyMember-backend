@@ -47,7 +47,7 @@ exports.updateAll = async (req, res) => {
     }).then(async (updatedRes) => {
       if (updatedRes.nModified < 1) {
         res.status(403).json({
-          msg: 'class_name/program_name not found',
+          msg: 'appointment not updated!',
           success: false
         })
       }
@@ -62,7 +62,7 @@ exports.updateAll = async (req, res) => {
     // let resp = await appoint.insertMany(allAppt);
     // res.send({ msg: "Appointment added!", success: true, resp })
   } catch (err) {
-    res.send({ error: err.message.replace(/\"/g, ""), success: false })
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
   }
 }
 
@@ -220,6 +220,30 @@ exports.appointmentFilter = async (req, res) => {
       })
   }
 };
+exports.deleteAll = (req, res) => {
+  try {
+    appoint.deleteMany({
+      $and: [{ userId: req.params.userId },
+      { category: req.params.oldcategoryname }]
+    }).then(resp => {
+      if (resp.deleteCount < 1) {
+        res.send({
+          msg: "No category found!", success: false
+        })
+      } else {
+        res.status(200).json({
+          msg: 'All Appointment has been deleted Successfully',
+          success: true
+
+        })
+      }
+    }).catch(err => {
+      res.send({ error: err.message.replace(/\"/g, ""), success: false })
+    })
+  } catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false })
+  }
+}
 
 exports.remove = (req, res) => {
   const id = req.params.appointId;
