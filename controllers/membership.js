@@ -28,9 +28,6 @@ exports.create = async (req, res) => {
       var docs = await Promise.all(promises);
     }
     membershipDetails.membershipDoc = docs;
-    if (!membershipDetails.membershipDoc) {
-      res.send({ msg: "no file uploaded!", success: false })
-    }
     const membershipObj = new membershipModal(membershipDetails);
     await membershipObj.save((err, data) => {
       if (err) {

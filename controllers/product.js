@@ -26,9 +26,6 @@ exports.create = async (req, res) => {
             var docs = await Promise.all(promises);
         }
         productDetails.productFile = docs;
-        if (!productDetails.productFile) {
-            res.send({ msg: "no file uploaded!", success: false })
-        }
         var productObj = new product(productDetails);
         productObj.save((err, productData) => {
             if (err) {
