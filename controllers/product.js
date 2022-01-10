@@ -78,30 +78,40 @@ exports.product_info = (req, res) => {
 }
 
 exports.deleteproduct = (req, res) => {
-    var productId = req.params.productId;
+    const productId = req.params.productId;
+    const adminId = req.params.adminId
+    const userId = req.params.userId;
     try {
-        product.findByIdAndDelete(productId).exec((err, data) => {
-            if (err) {
-                res.send({ error: 'product is not delete' })
-            }
-            else {
-                productFolders.updateOne({ products: data._id },
-                    { $pull: { products: data._id } },
-                    function (err, temp) {
-                        if (err) {
-                            res.send({
-                                msg: "product is not remove from folder",
-                                success: false,
-                            });
-                        } else {
-                            res.send({
-                                msg: "product is remove successfully",
-                                success: true,
-                            });
-                        }
-                    })
-            }
-        })
+        product.findOneAndRemove(
+            { _id: productId, $and: [{ userId: userId }, { adminId: adminId }] })
+            .exec((err, data) => {
+                if (err) {
+                    res.send({ error: 'product is not delete' })
+                }
+                else {
+                    if (!data) {
+                        return res.status(401).send({
+                            msg: "This is system generated membership Only admin can delete",
+                            success: false,
+                        });
+                    }
+                    productFolders.updateOne({ products: data._id },
+                        { $pull: { products: data._id } },
+                        function (err, temp) {
+                            if (err) {
+                                res.send({
+                                    msg: "product is not remove from folder",
+                                    success: false,
+                                });
+                            } else {
+                                res.send({
+                                    msg: "product is remove successfully",
+                                    success: true,
+                                });
+                            }
+                        })
+                }
+            })
     } catch (err) {
         res.send({ msg: err.message.replace(/\"/g, ""), success: false })
     }
@@ -111,6 +121,8 @@ exports.updateproduct = async (req, res) => {
     try {
         var productData = req.body
         const productId = req.params.productId;
+        const adminId = req.params.adminId
+        const userId = req.params.userId;
         const new_folderId = req.body.folderId;
         const old_folderId = req.body.old_folderId;
         const promises = []
@@ -131,12 +143,19 @@ exports.updateproduct = async (req, res) => {
             var docs = await Promise.all(promises);
             productData.productFile = docs;
         }
-        product.updateOne({ _id: productId }, productData)
+        product
+            .updateOne({ _id: membershipId, $and: [{ userId: userId }, { adminId: adminId }] }, { $set: productData })
             .exec(async (err, updateData) => {
                 if (err) {
                     res.send({ msg: err, success: false })
                 }
                 else {
+                    if (updateData.n < 1) {
+                        return res.status(401).send({
+                            msg: "This is system generated membership Only admin can update",
+                            success: false,
+                        });
+                    }
                     await productFolders.findByIdAndUpdate(new_folderId, {
                         $addToSet: { products: productId },
                     });

@@ -93,7 +93,7 @@ exports.delete_folder = (req, res) => {
       } else {
         if (!delFolder) {
           return res.status(401).send({
-            msg: "This is system generated folder Only admin can update",
+            msg: "This is system generated folder Only admin can delete",
             success: false,
           });
         }

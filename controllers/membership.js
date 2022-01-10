@@ -101,7 +101,7 @@ exports.remove = (req, res) => {
         } else {
           if (!data) {
             return res.status(401).send({
-              msg: "This is system generated folder Only admin can update",
+              msg: "This is system generated membership Only admin can delete",
               success: false,
             });
           }
@@ -116,7 +116,7 @@ exports.remove = (req, res) => {
                 });
               } else {
                 res.send({
-                  msg: "membership is remove successfully",
+                  msg: "membership  removed successfully",
                   success: true,
                 });
               }
@@ -167,7 +167,7 @@ exports.membershipUpdate = async (req, res) => {
       } else {
         if (data.n < 1) {
           return res.status(401).send({
-            msg: "This is system generated folder Only admin can update",
+            msg: "This is system generated membership Only admin can update",
             success: false,
           });
         }
@@ -186,7 +186,7 @@ exports.membershipUpdate = async (req, res) => {
               });
             } else {
               res.send({
-                msg: "membership is updated successfully",
+                msg: "membership  updated successfully",
                 success: true,
               });
             }
