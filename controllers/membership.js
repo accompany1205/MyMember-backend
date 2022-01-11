@@ -28,9 +28,6 @@ exports.create = async (req, res) => {
       var docs = await Promise.all(promises);
     }
     membershipDetails.membershipDoc = docs;
-    if (!membershipDetails.membershipDoc) {
-      res.send({ msg: "no file uploaded!", success: false })
-    }
     const membershipObj = new membershipModal(membershipDetails);
     await membershipObj.save((err, data) => {
       if (err) {
@@ -90,31 +87,41 @@ exports.membershipInfo = (req, res) => {
 
 exports.remove = (req, res) => {
   const membershipId = req.params.membershipId;
+  const adminId = req.params.adminId
+  const userId = req.params.userId;
   try {
-    membershipModal.findByIdAndDelete(membershipId, (err, data) => {
-      if (err) {
-        res.send({ msg: "membership is not delete", success: false });
-      } else {
-        membershipFolder.updateOne(
-          { membership: data._id },
-          { $pull: { membership: data._id } },
-          function (err, temp) {
-            if (err) {
-              res.send({
-                error: "membership is not remove from folder",
-                success: false,
-              });
-            } else {
-              res.send({
-                msg: "membership is remove successfully",
-                success: true,
-              });
-            }
+    membershipModal.findOneAndRemove(
+      { _id: membershipId, $and: [{ userId: userId }, { adminId: adminId }] },
+      (err, data) => {
+        if (err) {
+          res.send({ msg: "membership is not delete", success: false });
+        } else {
+          if (!data) {
+            return res.status(401).send({
+              msg: "This is system generated membership Only admin can delete",
+              success: false,
+            });
           }
-        );
-        //   res.send({ error: data });
-      }
-    });
+          membershipFolder.updateOne(
+            { membership: data._id },
+            { $pull: { membership: data._id } },
+            function (err, temp) {
+              if (err) {
+                res.send({
+                  error: "membership is not remove from folder",
+                  success: false,
+                });
+              } else {
+                res.send({
+                  msg: "membership  removed successfully",
+                  success: true,
+                });
+              }
+            }
+          );
+          //   res.send({ error: data });
+        }
+      });
   } catch (er) {
     throw new Error(er);
   }
@@ -123,6 +130,8 @@ exports.remove = (req, res) => {
 exports.membershipUpdate = async (req, res) => {
   var membershipData = req.body;
   const membershipId = req.params.membershipId;
+  const adminId = req.params.adminId
+  const userId = req.params.userId;
   const new_folderId = req.body.folderId;
   const old_folderId = req.body.old_folderId;
   const promises = []
@@ -144,12 +153,21 @@ exports.membershipUpdate = async (req, res) => {
     membershipData.membershipDoc = docs;
   }
   membershipModal
-    .updateOne({ _id: membershipId }, membershipData)
+    .updateOne({ _id: membershipId, $and: [{ userId: userId }, { adminId: adminId }] }, { $set: membershipData })
 
     .exec(async (err, data) => {
       if (err) {
-        res.send(err);
+        res.send({
+          msg: err,
+          success: false,
+        });
       } else {
+        if (data.n < 1) {
+          return res.status(401).send({
+            msg: "This is system generated membership Only admin can update",
+            success: false,
+          });
+        }
         await membershipFolder.findByIdAndUpdate(new_folderId, {
           $addToSet: { membership: membershipId },
         });
@@ -165,7 +183,7 @@ exports.membershipUpdate = async (req, res) => {
               });
             } else {
               res.send({
-                msg: "membership is updated successfully",
+                msg: "membership  updated successfully",
                 success: true,
               });
             }

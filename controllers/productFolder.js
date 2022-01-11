@@ -26,7 +26,24 @@ exports.getproductFolder = async (req, res) => {
     let adminId = req.params.adminId;
 
     productFolders.
-        find({ $and: [{ userId: userId }, { adminId: adminId }] })
+        find({ $or: [{ userId: userId }, { adminId: adminId }] })
+        .populate("products")
+        .exec((err, folder) => {
+            if (err) {
+                res.send({ msg: "product folder not found", success: false });
+            } else {
+                res.send({
+                    data: folder,
+                    success: true,
+                });
+            }
+        });
+}
+exports.getadminproductFolder = async (req, res) => {
+    let adminId = req.params.adminId;
+
+    productFolders.
+        find({ adminId: adminId })
         .populate("products")
         .exec((err, folder) => {
             if (err) {
@@ -41,11 +58,21 @@ exports.getproductFolder = async (req, res) => {
 }
 
 exports.updateproductFolder = async (req, res) => {
-    productFolders.findByIdAndUpdate(req.params.folderId, req.body)
+    const adminId = req.params.adminId
+    const userId = req.params.userId;
+    const folderId = req.params.folderId
+    productFolders
+        .updateOne({ _id: folderId, $and: [{ userId: userId }, { adminId: adminId }] }, { $set: req.body })
         .exec((err, updateFolder) => {
             if (err) {
                 res.send({ msg: "Product folder is not updated", success: false });
             } else {
+                if (updateFolder.n < 1) {
+                    return res.status(401).send({
+                        msg: "This is system generated folder Only admin can update",
+                        success: false,
+                    });
+                }
                 res.send({
                     msg: "Folder is update successfully",
                     success: true,
@@ -55,13 +82,22 @@ exports.updateproductFolder = async (req, res) => {
 }
 
 exports.deleteproductFolder = async (req, res) => {
+    const adminId = req.params.adminId
+    const userId = req.params.userId;
+    const folderId = req.params.folderId
     productFolders.findOneAndRemove(
-        { _id: req.params.folderId },
+        { _id: folderId, $and: [{ userId: userId }, { adminId: adminId }] },
         (err, delFolder) => {
             if (err) {
                 res.send({ msg: " folder is not remove", success: false });
             }
             else {
+                if (!delFolder) {
+                    return res.status(401).send({
+                        msg: "This is system generated folder Only admin can delete",
+                        success: false,
+                    });
+                }
                 product.deleteMany(
                     { folderId: req.params.folderId },
                     (err, delFolder) => {
