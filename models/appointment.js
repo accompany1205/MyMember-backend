@@ -56,13 +56,9 @@ const appointSchema = new schema(
         groupInfoList: {
             type: Array
         },
-        studentInfo: [
-            {
-                type: schema.Types.ObjectId,
-                ref: "member",
-                required: true,
-            },
-        ],
+        studentInfo: {
+            type:Array
+    },
         userId: {
             type: schema.Types.ObjectId
         }
