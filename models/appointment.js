@@ -12,6 +12,12 @@ const appointSchema = new schema(
             type: String,
             required: true
         },
+        interval:{
+            type:String
+        },
+        range:{
+            type:String
+        },
         appointment_type: {
             type: String,
             required: true
