@@ -110,7 +110,7 @@ exports.getTextContactsDetails = (req, res) => {
       ids.push(mongoose.Types.ObjectId(id));
     });
   }
-  member.find({'_id': {$in: [ids]}})
+  member.find({'_id': {$in: ids}})
     .populate('textContacts')
     .exec((err,textContactList)=>{
     if(err){
