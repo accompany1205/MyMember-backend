@@ -8,13 +8,15 @@ const appointSchema = new schema(
             type: String,
             required: true
         },
-        isCompleted: {
-            type: Boolean,
-            default: false
-        },
         category: {
             type: String,
             required: true
+        },
+        interval:{
+            type:String
+        },
+        range:{
+            type:String
         },
         appointment_type: {
             type: String,
@@ -44,8 +46,8 @@ const appointSchema = new schema(
             required: true
         },
         status: {
-            type: String,
-            default: 'not completed'
+            type: Boolean,
+            default: false
         },
         repeatedDates: {
             type: Array
