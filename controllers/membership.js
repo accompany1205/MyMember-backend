@@ -17,7 +17,7 @@ exports.create = async (req, res) => {
               membershipDetails.membershipThumbnail = data
             })
             .catch(err => {
-              res.send({ msg: "thumbnail not uploaded!", success: false })
+              res.send({ msg: "Thumbnail not uploaded!", success: false })
             })
         } else {
           promises.push(cloudUrl.imageUrl(file))
@@ -29,7 +29,7 @@ exports.create = async (req, res) => {
     const membershipObj = new membershipModal(membershipDetails);
     await membershipObj.save((err, data) => {
       if (err) {
-        res.send({ msg: "membership not created", success: false });
+        res.send({ msg: "Membership not created", success: false });
       } else {
         membershipFolder.findByIdAndUpdate(
           req.params.folderId,
@@ -39,7 +39,7 @@ exports.create = async (req, res) => {
           (err, data) => {
             if (err) {
               res.send({
-                msg: "membership not addd in folder",
+                msg: "Membership not added in folder",
                 success: false,
               });
             } else {
@@ -61,13 +61,7 @@ exports.read = (req, res) => {
     if (err) {
       res.send({ error: "membership list is not find" });
     } else {
-      res.send(data);
-      // if(data.length>0){
-      //     res.send(data);
-      // }
-      // else{
-      //     res.send({msg:'membership list is empty'})
-      // }
+      res.send({ data, success: true });
     }
   });
 };
@@ -76,9 +70,9 @@ exports.membershipInfo = (req, res) => {
   var membershipId = req.params.membershipId;
   membershipModal.findById(membershipId).exec((err, data) => {
     if (err) {
-      res.send({ error: "membership data not found" });
+      res.send({ msg: "membership  not found", success: false });
     } else {
-      res.send(data);
+      res.send({ data, success: true });
     }
   });
 };
@@ -106,12 +100,12 @@ exports.remove = (req, res) => {
             function (err, temp) {
               if (err) {
                 res.send({
-                  error: "membership is not remove from folder",
+                  error: "membership not removed",
                   success: false,
                 });
               } else {
                 res.send({
-                  msg: "membership  removed successfully",
+                  msg: "membership removed successfully",
                   success: true,
                 });
               }
@@ -177,12 +171,12 @@ exports.membershipUpdate = async (req, res) => {
             .exec((err, temp) => {
               if (err) {
                 res.send({
-                  error: "membership is not update from folder",
+                  msg: "membership not updated",
                   success: false,
                 });
               } else {
                 res.send({
-                  msg: "membership  updated successfully",
+                  msg: "membership updated successfully",
                   success: true,
                 });
               }
