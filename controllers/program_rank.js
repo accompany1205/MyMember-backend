@@ -5,6 +5,8 @@ const cloudUrl = require("../gcloud/imageUrl")
 
 exports.create = async (req, res) => {
     const rankBody = req.body
+    rankBody.userId = req.params.userId;
+    rankBody.adminId = req.params.adminId;
     let isExist = await program.find({ programName: rankBody.programName })
     try {
         if (isExist.length) {
@@ -71,7 +73,8 @@ exports.program_Info = async (req, res) => {
 };
 exports.update = async (req, res) => {
     const program_rank_id = req.params.program_rank_id;
-
+    const adminId = req.params.adminId
+    const userId = req.params.userId;
 
     const rankBody = req.body
     let isExist = await program.find({ programName: rankBody.programName })
@@ -86,12 +89,18 @@ exports.update = async (req, res) => {
                         res.send({ msg: err.message.replace(/\"/g, ""), success: false })
                     })
             }
-            await manage_rank.updateOne({ _id: program_rank_id }, { $set: rankBody })
+            await manage_rank.updateOne({ _id: program_rank_id, $and: [{ userId: userId }, { adminId: adminId }] }, { $set: rankBody })
                 .exec((err, data) => {
                     if (err) {
                         res.send({ msg: err, success: false })
                     }
                     else {
+                        if (data.n < 1) {
+                            return res.status(401).send({
+                                msg: "This is system generated Rank Only admin can update",
+                                success: false,
+                            });
+                        }
                         res.send({ msg: 'rank updated successfully', success: true })
                     }
                 })
@@ -109,15 +118,23 @@ exports.update = async (req, res) => {
 exports.remove = async (req, res) => {
     try {
         const program_rank_id = req.params.program_rank_id;
-        manage_rank.remove({ _id: program_rank_id }, async (err, data) => {
+        const adminId = req.params.adminId
+        const userId = req.params.userId;
+        manage_rank.remove({ _id: program_rank_id, $and: [{ userId: userId }, { adminId: adminId }] }, async (err, data) => {
             if (err) {
-                res.send({ msg: 'program rank not deleted', success: false })
+                res.send({ msg: 'Rank not removed', success: false })
             }
             else {
+                if (!data) {
+                    return res.status(401).send({
+                        msg: "This is system generated Rank Only admin can delete",
+                        success: false,
+                    });
+                }
                 await program.updateOne({ "program_rank": program_rank_id }, { $pull: { "program_rank": program_rank_id } },
                     function (err, data) {
                         if (err) {
-                            res.send({ msg: 'Rank not removed  ', success: false })
+                            res.send({ msg: 'Rank not removed', success: false })
                         }
                         else {
                             res.send({ msg: 'Rank removed successfully', success: true })

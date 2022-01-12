@@ -135,7 +135,7 @@ exports.candidate_detail = (req, res) => {
 
 };
 
-exports.candidate_remove = (req, res) => {
+exports.candidate_remove = async (req, res) => {
     try {
         var candidateId = req.params.candidateId;
         const adminId = req.params.adminId

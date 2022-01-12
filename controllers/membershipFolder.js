@@ -1,9 +1,10 @@
 const membershipFolder = require("../models/membershipFolder");
 const membership = require('../models/membership')
-exports.create_folder = (req, res) => {
+
+exports.create_folder = async (req, res) => {
   let userId = req.params.userId;
   let adminId = req.params.adminId;
-  let folderObj = new membershipFolder({
+  let folderObj = await new membershipFolder({
     folderName: req.body.folderName,
     userId: userId,
     adminId: adminId
@@ -14,19 +15,17 @@ exports.create_folder = (req, res) => {
     } else {
       res.send({
         msg: "membership folder create successfully",
-        data: folder,
         success: true,
       });
     }
   });
 };
-exports.getFolders = (req, res) => {
+exports.getFolders = async (req, res) => {
   let adminId = process.env.ADMINID
   const userId = req.params.userId;
-  membershipFolder
+  await membershipFolder
     .find({ $or: [{ userId: userId }, { adminId: adminId }] })
     .populate("membership")
-
     .exec((err, folder) => {
       if (err) {
         res.send({ msg: "membership folder is not create", success: false });
@@ -39,16 +38,14 @@ exports.getFolders = (req, res) => {
     });
 };
 
-exports.getadminFolders = (req, res) => {
-
+exports.getadminFolders = async (req, res) => {
   const adminId = req.params.adminId;
-  membershipFolder
+  await membershipFolder
     .find({ adminId: adminId })
     .populate("membership")
-
     .exec((err, folder) => {
       if (err) {
-        res.send({ msg: "membership folder is not found", success: false });
+        res.send({ msg: "membership folder is  found", success: false });
       } else {
         res.status(200).send({
           data: folder,
@@ -57,11 +54,12 @@ exports.getadminFolders = (req, res) => {
       }
     });
 };
-exports.update_folder = (req, res) => {
+
+exports.update_folder = async (req, res) => {
   const adminId = req.params.adminId
   const userId = req.params.userId;
   const folderId = req.params.folderId
-  membershipFolder
+  await membershipFolder
     .updateOne({ _id: folderId, $and: [{ userId: userId }, { adminId: adminId }] }, { $set: req.body })
     .exec((err, updateFolder) => {
       if (err) {
@@ -81,11 +79,11 @@ exports.update_folder = (req, res) => {
     });
 };
 
-exports.delete_folder = (req, res) => {
+exports.delete_folder = async (req, res) => {
   const adminId = req.params.adminId
   const userId = req.params.userId;
   const folderId = req.params.folderId
-  membershipFolder.findOneAndRemove(
+  await membershipFolder.findOneAndRemove(
     { _id: folderId, $and: [{ userId: userId }, { adminId: adminId }] },
     (err, delFolder) => {
       if (err) {

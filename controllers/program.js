@@ -113,28 +113,33 @@ exports.program_rank = (req, res) => {
 };
 
 exports.update = async (req, res) => {
+    const programBody = req.body
     const programId = req.params.proId;
     const adminId = req.params.adminId
     const userId = req.params.userId;
     try {
-        program.updateOne({ _id: programId, $and: [{ userId: userId }, { adminId: adminId }] }, { $set: req.body })
-            .exec(async (err, updateData) => {
-                if (err) {
-                    res.send({ msg: err, success: false })
-                }
-                else {
-                    if (updateData.n < 1) {
-                        return res.status(401).send({
-                            msg: "This is system generated membership Only admin can update",
-                            success: false,
-                        });
+        let isExist = await program.find({ programName: programBody.programName })
+        if (!isExist.length) {
+            program.updateOne({ _id: programId, $and: [{ userId: userId }, { adminId: adminId }] }, { $set: programBody })
+                .exec(async (err, updateData) => {
+                    if (err) {
+                        res.send({ msg: err, success: false })
                     }
-                    res.send({ msg: "programm updated succesfully", success: true });
+                    else {
+                        if (updateData.n < 1) {
+                            return res.status(401).send({
+                                msg: "This is system generated program Only admin can update",
+                                success: false,
+                            });
+                        }
+                        res.send({ msg: "programm updated succesfully", success: true });
 
-                }
-            })
-
-
+                    }
+                })
+        }
+        else {
+            res.send({ msg: "Program alredy exist!", success: false })
+        }
     }
     catch (err) {
         res.send({ msg: err.message.replace(/\"/g, ""), success: false })

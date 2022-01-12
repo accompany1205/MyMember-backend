@@ -1,7 +1,7 @@
 var product = require('../models/product')
 const cloudUrl = require("../gcloud/imageUrl");
 var productFolders = require('../models/productFolder')
-var _ = require('lodash')
+
 exports.create = async (req, res) => {
     try {
         const productDetails = req.body;
@@ -17,7 +17,7 @@ exports.create = async (req, res) => {
                             productDetails.productThumbnail = data
                         })
                         .catch(err => {
-                            res.send({ msg: "thumbnail not uploaded!", success: false })
+                            res.send({ msg: "Thumbnail not uploaded!", success: false })
                         })
                 } else {
                     promises.push(cloudUrl.imageUrl(file))
@@ -29,16 +29,16 @@ exports.create = async (req, res) => {
         var productObj = new product(productDetails);
         productObj.save((err, productData) => {
             if (err) {
-                res.send({ msg: "product not created!", success: err })
+                res.send({ msg: "Product not created!", success: false })
             }
             else {
                 productFolders.findByIdAndUpdate(req.params.folderId, { $push: { products: productData._id } })
                     .exec((err, product) => {
                         if (err) {
-                            res.send({ msg: 'product not added in folder', success: false })
+                            res.send({ msg: 'Product not added in folder', success: false })
                         }
                         else {
-                            res.send({ msg: "product created successfully", success: true })
+                            res.send({ msg: "Product created successfully", success: true })
                         }
                     })
             }
@@ -54,7 +54,7 @@ exports.read = (req, res) => {
 
     product.find({ $and: [{ userId: { $in: [userId] } }, { adminId: adminId }] }).exec((err, data) => {
         if (err) {
-            res.send({ msg: 'product list is not found' })
+            res.send({ msg: 'Products not found' })
         }
         else {
             res.send({ data, success: true })
@@ -66,10 +66,10 @@ exports.product_info = (req, res) => {
     var productId = req.params.productId;
     product.findById(productId).exec((err, data) => {
         if (err) {
-            res.send({ msg: 'productId is not found', success: true })
+            res.send({ msg: 'Product not found', success: true })
         }
         else {
-            res.send(data)
+            res.send({ data, success: true })
         }
     })
 }
@@ -83,7 +83,7 @@ exports.deleteproduct = (req, res) => {
             { _id: productId, $and: [{ userId: userId }, { adminId: adminId }] })
             .exec((err, data) => {
                 if (err) {
-                    res.send({ error: 'product is not delete' })
+                    res.send({ msg: err, success: false })
                 }
                 else {
                     if (!data) {
@@ -97,12 +97,12 @@ exports.deleteproduct = (req, res) => {
                         function (err, temp) {
                             if (err) {
                                 res.send({
-                                    msg: "product is not remove from folder",
+                                    msg: "Product not removed",
                                     success: false,
                                 });
                             } else {
                                 res.send({
-                                    msg: "product is remove successfully",
+                                    msg: "Product removed successfully",
                                     success: true,
                                 });
                             }
@@ -131,7 +131,7 @@ exports.updateproduct = async (req, res) => {
                             productData.productThumbnail = data
                         })
                         .catch(err => {
-                            res.send({ msg: "thumbnail not uploaded!", success: false })
+                            res.send({ msg: "Thumbnail not uploaded!", success: false })
                         })
                 } else {
                     promises.push(cloudUrl.imageUrl(file))
@@ -141,7 +141,7 @@ exports.updateproduct = async (req, res) => {
             productData.productFile = docs;
         }
         product
-            .updateOne({ _id: membershipId, $and: [{ userId: userId }, { adminId: adminId }] }, { $set: productData })
+            .updateOne({ _id: productId, $and: [{ userId: userId }, { adminId: adminId }] }, { $set: productData })
             .exec(async (err, updateData) => {
                 if (err) {
                     res.send({ msg: err, success: false })
@@ -149,7 +149,7 @@ exports.updateproduct = async (req, res) => {
                 else {
                     if (updateData.n < 1) {
                         return res.status(401).send({
-                            msg: "This is system generated membership Only admin can update",
+                            msg: "This is system generated product Only admin can update",
                             success: false,
                         });
                     }
@@ -163,12 +163,12 @@ exports.updateproduct = async (req, res) => {
                         .exec((err, temp) => {
                             if (err) {
                                 res.send({
-                                    msg: "product  is not update from folder",
+                                    msg: "Product  not updated",
                                     success: false,
                                 });
                             } else {
                                 res.send({
-                                    msg: "product  updated successfully",
+                                    msg: "Product updated successfully",
                                     success: true,
                                 });
                             }
