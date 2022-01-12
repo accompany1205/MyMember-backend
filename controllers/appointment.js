@@ -70,7 +70,7 @@ exports.read = (req, res) => {
   appoint
     .find({ userId: req.params.userId })
     .then((result) => {
-      res.send({ success: true, msg: "Data!", result });
+      res.send({ success: true, msg: "Data!", data:result });
     })
     .catch((err) => {
       res.send({ msg: "No data!", success: false });
