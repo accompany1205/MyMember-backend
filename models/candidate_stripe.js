@@ -35,7 +35,10 @@ const stripeSchema = new schema(
             },
         ],
         userId: {
-            type: schema.Types.ObjectId,
+            type: String,
+        },
+        adminId: {
+            type: String,
         },
         status: {
             type: String

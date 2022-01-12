@@ -48,7 +48,7 @@ exports.getadminFolders = (req, res) => {
 
     .exec((err, folder) => {
       if (err) {
-        res.send({ msg: "membership folder is not create", success: false });
+        res.send({ msg: "membership folder is not found", success: false });
       } else {
         res.status(200).send({
           data: folder,

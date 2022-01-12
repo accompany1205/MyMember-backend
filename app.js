@@ -118,6 +118,11 @@ const user_membership = require("./routes/admin/membership_management/admin_memb
 const user_membershipFolder = require("./routes/admin/membership_management/admin_membershipFolder");
 const user_product = require("./routes/admin/product_manage/admin_product");
 const user_productFolder = require("./routes/admin/product_manage/admin_productFolder");
+const user_program = require("./routes/admin/program_manage/admin_program");
+const user_programCategory = require("./routes/admin/program_manage/admin_programCategory");
+const user_programRanks = require("./routes/admin/program_manage/admin_programRanks");
+const user_candidate = require("./routes/admin/candidate_manage/admin_candidate");
+const user_candidateStripes = require("./routes/admin/candidate_manage/admin_candidatesStripes");
 //menu routes
 const student_menu = require("./routes/menu/std_menu/all_student_menu");
 
@@ -270,6 +275,11 @@ app.use("/api", user_membership);
 app.use("/api", user_membershipFolder);
 app.use("/api", user_product);
 app.use("/api", user_productFolder);
+app.use("/api", user_program);
+app.use("/api", user_programCategory);
+app.use("/api", user_programRanks);
+app.use("/api", user_candidate);
+app.use("/api", user_candidateStripes);
 app.use("/api", purchaseMembership);
 app.use("/api", sample_doc);
 // school auth key middleware
