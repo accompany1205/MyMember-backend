@@ -48,7 +48,7 @@ exports.create = async (req, res) => {
                                 res.send({ msg: err, success: false })
                             }
                             else {
-                                res.send({ msg: 'Category added successfully', category: categoryData })
+                                res.send({ msg: 'Category added successfully', success: true })
                             }
                         })
                 }

@@ -1,7 +1,7 @@
 var product = require('../models/product')
 const cloudUrl = require("../gcloud/imageUrl");
 var productFolders = require('../models/productFolder')
-var _ = require('lodash')
+
 exports.create = async (req, res) => {
     try {
         const productDetails = req.body;
@@ -29,7 +29,7 @@ exports.create = async (req, res) => {
         var productObj = new product(productDetails);
         productObj.save((err, productData) => {
             if (err) {
-                res.send({ msg: "product not created!", success: err })
+                res.send({ msg: "product not created!", success: false })
             }
             else {
                 productFolders.findByIdAndUpdate(req.params.folderId, { $push: { products: productData._id } })
