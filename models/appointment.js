@@ -8,6 +8,10 @@ const appointSchema = new schema(
             type: String,
             required: true
         },
+        isCompleted: {
+            type: Boolean,
+            default: false
+        },
         category: {
             type: String,
             required: true
@@ -44,14 +48,14 @@ const appointSchema = new schema(
             default: 'not completed'
         },
         repeatedDates: {
-            type:Array
+            type: Array
         },
-        repeatedConcurrence:{
-            type:String
+        repeatedConcurrence: {
+            type: String
         },
         groupInfoList: {
-            type:Array
-    },
+            type: Array
+        },
         studentInfo: [
             {
                 type: schema.Types.ObjectId,
