@@ -196,7 +196,7 @@ exports.getRecommendedCandidateStudents = async (req, res) => {
         })
             .sort({ [sortBy]: order });
         if (!students.length) {
-            res.json({
+            return res.json({
                 success: false,
                 msg: "There no data available for this query!!"
             })
