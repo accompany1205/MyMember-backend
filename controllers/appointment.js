@@ -66,11 +66,25 @@ exports.updateAll = async (req, res) => {
   }
 }
 
-exports.read = (req, res) => {
-  appoint
+exports.read = async (req, res) => {
+  var totalCount = await appoint
+    .find({
+      userId: req.params.userId,
+    })
+    .countDocuments();
+
+  var per_page = parseInt(req.params.per_page) || 10;
+  var page_no = parseInt(req.params.page_no) || 0;
+  var pagination = {
+    limit: per_page,
+    skip: per_page * page_no,
+  };
+  await appoint
     .find({ userId: req.params.userId })
+    .skip(pagination.skip)
+    .limit(pagination.limit)
     .then((result) => {
-      res.send({ success: true, msg: "Data!", data:result });
+      res.send({ success: true, totalCount: totalCount, data: result });
     })
     .catch((err) => {
       res.send({ msg: "No data!", success: false });
