@@ -16,6 +16,10 @@ const userSchema = new schema(
             trim: true,
             maxlength: 100
         },
+        twilio: {
+          type: String,
+          unique: true,
+        },
         isverify: {
             type: Boolean,
             default: false //for email verify status

@@ -1,6 +1,7 @@
 const textMessage = require("../models/text_message");
 const textContact = require("../models/text_contact");
 const member = require("../models/addmember");
+const user = require("../models/user");
 const mongoose = require("mongoose");
 
 // Adding member in text contact list
@@ -33,7 +34,12 @@ exports.getTextContacts = (req, res) => {
 exports.sendTextMessage = async (req, res) => {
   const accountSid = process.env.aid;
   const authToken = process.env.authkey;
-  const orgPhone = process.env.phone; // TODO: get it from user table
+  let orgPhone = process.env.phone; // TODO: get it from user table
+
+  // Please uncomment code below in production once we are setting correct twilio number for user
+  // let {twilio} = await user.findById(req.params.userId);
+  // orgPhone = twilio;
+
   let {primaryPhone} = await member.findById(req.body.uid);
   const client = await require('twilio')(accountSid, authToken);
   if (primaryPhone) {
@@ -127,7 +133,13 @@ exports.getTextContactsDetails = (req, res) => {
 exports.listenIncomingSMS = async (req, res) => {
   const msg = req.body.hasOwnProperty('Body') ? req.body.Body : 'Failed to receive sms';
   const from = req.from.hasOwnProperty('From') ? req.from.From : 'Unknown sender';
-  const to =  process.env.phone; // TODO: Use company twilio number
+  let to =  process.env.phone; // TODO: Use company twilio number
+
+  // Pass twilio number as parameter in webhooks
+
+  // Uncomment this code in production when web hooks is placed for production twilio number
+  // let {twilio} = await user.findById(req.params.userId);
+  // to = twilio;
 
   const getUid = phoneNumber => {
     return member.findOne({primaryPhone: from}).then(data => {
@@ -137,8 +149,14 @@ exports.listenIncomingSMS = async (req, res) => {
 
   const getUserId = phoneNumber => {
     // TODO: Update after twilio number is added
-    // Find userid of user matching phoneNumber with twilio number
+    // Find userid of user with twilio number
 
+    // Uncomment this in production once twilio number is added
+    // return user.findOne({twilio: phoneNumber}).then(data => {
+    //   return data._id;
+    // });
+
+    // Remove below code in production once twilio number is added
     // Below is hardcoded user id should be removed after twilio number per organization logic is added
     let userId = '606aea95a145ea2d26e0f1ab';
 
