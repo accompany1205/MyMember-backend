@@ -31,7 +31,6 @@ const productSchema = new schema(
         },
         event_date: {
             type: String,
-            required: true,
         },
         programName: {
             type: String,

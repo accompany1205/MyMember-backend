@@ -28,6 +28,12 @@ const programSchema = new mongoose.Schema(
         },
         rank_image: {
             type: String,
+        },
+        userId:{
+            type:String
+        },
+        adminId:{
+            type:String
         }
     },
     { timestamps: true }

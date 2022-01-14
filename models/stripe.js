@@ -17,7 +17,13 @@ const managestripeSchema = new mongoose.Schema(
         },
         stripe_image: {
             type: String
-        }
+        },
+        userId: {
+            type: String,
+        },
+        adminId: {
+            type: String,
+        },
     },
     { timestamps: true }
 );

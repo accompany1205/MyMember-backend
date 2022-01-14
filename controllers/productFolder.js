@@ -3,7 +3,7 @@ const product = require('../models/product')
 exports.createproductFolder = async (req, res) => {
     let adminId = req.params.adminId;
     let userId = req.params.userId;
-    let folderObj = new productFolders({
+    let folderObj = await new productFolders({
         folderName: req.body.folderName,
         userId: userId,
         adminId: adminId
@@ -14,7 +14,6 @@ exports.createproductFolder = async (req, res) => {
         } else {
             res.send({
                 msg: "product folder create successfully",
-                data: folder,
                 success: true,
             });
         }
@@ -23,9 +22,9 @@ exports.createproductFolder = async (req, res) => {
 
 exports.getproductFolder = async (req, res) => {
     let userId = req.params.userId;
-    let adminId = req.params.adminId;
+    let adminId = process.env.ADMINID
 
-    productFolders.
+    await productFolders.
         find({ $or: [{ userId: userId }, { adminId: adminId }] })
         .populate("products")
         .exec((err, folder) => {
@@ -42,7 +41,7 @@ exports.getproductFolder = async (req, res) => {
 exports.getadminproductFolder = async (req, res) => {
     let adminId = req.params.adminId;
 
-    productFolders.
+    await productFolders.
         find({ adminId: adminId })
         .populate("products")
         .exec((err, folder) => {
@@ -61,7 +60,7 @@ exports.updateproductFolder = async (req, res) => {
     const adminId = req.params.adminId
     const userId = req.params.userId;
     const folderId = req.params.folderId
-    productFolders
+    await productFolders
         .updateOne({ _id: folderId, $and: [{ userId: userId }, { adminId: adminId }] }, { $set: req.body })
         .exec((err, updateFolder) => {
             if (err) {
@@ -85,7 +84,7 @@ exports.deleteproductFolder = async (req, res) => {
     const adminId = req.params.adminId
     const userId = req.params.userId;
     const folderId = req.params.folderId
-    productFolders.findOneAndRemove(
+    await productFolders.findOneAndRemove(
         { _id: folderId, $and: [{ userId: userId }, { adminId: adminId }] },
         (err, delFolder) => {
             if (err) {
@@ -104,7 +103,6 @@ exports.deleteproductFolder = async (req, res) => {
                         if (err) {
                             res.send({ msg: "Folder is not remove", success: false });
                         }
-
                         else {
                             res.send({
                                 msg: "Folder removed successfully",

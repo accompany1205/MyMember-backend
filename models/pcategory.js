@@ -15,6 +15,9 @@ var pcategorySchema = new schema(
         }],
         userId:{
             type:String
+        },
+        adminId:{
+            type:String
         }
     },
 );
