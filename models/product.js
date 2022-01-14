@@ -42,11 +42,9 @@ const productSchema = new schema(
         },
         deposite: {
             type: Number,
-            required: true
         },
         payment_type: {
             type: String,
-            required: true
         },
         isSignatured: {
             type: Boolean,
