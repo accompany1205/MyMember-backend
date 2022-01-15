@@ -22,7 +22,7 @@ exports.createproductFolder = async (req, res) => {
 
 exports.getproductFolder = async (req, res) => {
     let userId = req.params.userId;
-    let adminId = req.params.adminId;
+    let adminId = process.env.ADMINID
 
     await productFolders.
         find({ $or: [{ userId: userId }, { adminId: adminId }] })

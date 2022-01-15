@@ -31,7 +31,6 @@ const productSchema = new schema(
         },
         event_date: {
             type: String,
-            required: true,
         },
         programName: {
             type: String,
@@ -43,11 +42,9 @@ const productSchema = new schema(
         },
         deposite: {
             type: Number,
-            required: true
         },
         payment_type: {
             type: String,
-            required: true
         },
         isSignatured: {
             type: Boolean,
