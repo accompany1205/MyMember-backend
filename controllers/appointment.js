@@ -91,6 +91,68 @@ exports.read = async (req, res) => {
     });
 };
 
+exports.catRead = async (req, res) => {
+  let userId = req.params.userId
+  let catType = req.params.catType;
+  try {
+    if (catType === "event") {
+      let totalCount = await appoint
+        .find({
+          $and: [{ userId: userId },
+          { category: catType }]
+        })
+        .countDocuments();
+      let per_page = parseInt(req.params.per_page) || 10;
+      let page_no = parseInt(req.params.page_no) || 0;
+      let pagination = {
+        limit: per_page,
+        skip: per_page * page_no,
+      };
+      await appoint
+        .find({
+          $and: [{ userId: userId },
+          { category: catType }]
+        })
+        .skip(pagination.skip)
+        .limit(pagination.limit)
+        .then((result) => {
+          res.send({ success: true, totalCount: totalCount, data: result });
+        })
+        .catch((err) => {
+          res.send({ msg: "No data!", success: false });
+        });
+    } else {
+      let totalCount = await appoint
+        .find({
+          $and: [{ userId: userId },
+          { category: catType }]
+        })
+        .countDocuments();
+      let per_page = parseInt(req.params.per_page) || 10;
+      let page_no = parseInt(req.params.page_no) || 0;
+      let pagination = {
+        limit: per_page,
+        skip: per_page * page_no,
+      };
+      await appoint
+        .find({
+          $and: [{ userId: userId },
+          { category: catType }]
+        })
+        .skip(pagination.skip)
+        .limit(pagination.limit)
+        .then((result) => {
+          res.send({ success: true, totalCount: totalCount, data: result });
+        })
+        .catch((err) => {
+          res.send({ msg: "No data!", success: false });
+        });
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
 exports.appointInfo = (req, res) => {
   const id = req.params.appointId;
   appoint
