@@ -138,8 +138,7 @@ exports.listenIncomingSMS = async (req, res) => {
   // Pass twilio number as parameter in webhooks
 
   // Uncomment this code in production when web hooks is placed for production twilio number
-  // let {twilio} = await user.findById(req.params.userId);
-  // to = twilio;
+  // to = req.params.twilio;
 
   const getUid = phoneNumber => {
     return member.findOne({primaryPhone: from}).then(data => {
