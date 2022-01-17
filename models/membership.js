@@ -67,6 +67,12 @@ const membershipSchema = schema({
         type: Boolean,
         default: false
     },
+    amount: {
+        type: String,
+    },
+    no_of_payment: {
+        type: String,
+    },
     userId: {
         type: String
     },
