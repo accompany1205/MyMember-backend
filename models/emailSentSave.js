@@ -78,6 +78,9 @@ const EmailSchema = schema({
     attachments: {
         type: Array
     },
+    days: {
+        type: String
+    },
     smartLists: [{
         stdtype: String,
         smrtList: Array

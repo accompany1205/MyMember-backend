@@ -34,25 +34,10 @@ exports.update = (req, res) => {
 };
 
 exports.getAllEvents = async (req, res) => {
-  let userId = req.params.userId;
-  var totalCount = await appointmetEvent
-    .find({
-      userId: req.params.userId,
-    })
-    .countDocuments();
-
-  var per_page = parseInt(req.params.per_page) || 10;
-  var page_no = parseInt(req.params.page_no) || 0;
-  var pagination = {
-    limit: per_page,
-    skip: per_page * page_no,
-  };
   await appointmetEvent
     .find({ userId })
-    .skip(pagination.skip)
-    .limit(pagination.limit)
     .then((result) => {
-      res.send({ success: true, totalCount: totalCount, data: result });
+      res.send({ success: true, data: result });
     })
     .catch((err) => {
       res.send({ success: false, data: [] });

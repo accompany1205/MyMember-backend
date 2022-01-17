@@ -1,9 +1,11 @@
 const all_temp = require("../models/emailSentSave");
+const students = require("../models/addmember");
 const compose_folder = require("../models/email_compose_folder");
 const authKey = require("../models/email_key");
 const async = require("async");
 const sgMail = require("sendgrid-v3-node");
 const moment = require("moment");
+const mongoose = require("mongoose")
 var request = require("request");
 const User = require("../models/user");
 const cron = require("node-cron");
@@ -203,7 +205,7 @@ exports.allSent = async (req, res) => {
   })
 }
 
-exports.sendVerificationMail =async  (req, res) => {
+exports.sendVerificationMail = async (req, res) => {
   try {
     let userId = req.params.userId;
     let reqData = req.body;
@@ -232,7 +234,7 @@ exports.sendVerificationMail =async  (req, res) => {
       },
       json: true
     };
-    await User.findByIdAndUpdate(userId, { $push: { sendgridVerification: { staffName: reqData.staffName, password: reqData.password, email:reqData.from_email } } })
+    await User.findByIdAndUpdate(userId, { $push: { sendgridVerification: { staffName: reqData.staffName, password: reqData.password, email: reqData.from_email } } })
 
     // let staffuser = new User({
     //   username: reqData.staffName,
@@ -484,7 +486,7 @@ function saveEmailTemplate(obj) {
 
 var emailCronFucntionality = async () => {
   let promises = [];
-  let scheduledListing = await all_temp.find({ is_Sent: false });
+  let scheduledListing = await all_temp.find({ category: "compose", is_Sent: false });
   scheduledListing.forEach(async (ele) => {
     let sentDate = ele.sent_date;
     let mailId = ele._id;
@@ -520,9 +522,9 @@ var emailCronFucntionality = async () => {
   await Promise.all(promises);
 };
 
-cron.schedule(`*/1 * * * *`, () => {
-  emailCronFucntionality();
-});
+// cron.schedule(`*/5 * * * *`, () => {
+//   emailCronFucntionality();
+// });
 
 
 exports.remove_template = (req, res) => {
@@ -573,3 +575,162 @@ exports.multipal_temp_remove = async (req, res) => {
   }
 
 };
+
+
+exports.criteria_met = async (req, res) => {
+  let userId = req.params.userId
+  let folderId = req.params.folderId
+  try {
+    const {
+      to,
+      from,
+      subject,
+      template,
+      sent_time,
+      sent_date,
+      smartLists,
+      days
+    } = req.body;
+    const obj = {
+      to,
+      from,
+      subject,
+      template,
+      sent_date,
+      sent_time,
+      email_type: "schedule",
+      email_status: true,
+      category: "nurturing",
+      userId,
+      folderId,
+      days
+    }
+    saveEmailTemplate(obj)
+      .then((data) => {
+        compose_folder
+          .findOneAndUpdate(
+            { _id: folderId },
+            { $push: { template: data._id } }
+          )
+          .then((data) => {
+            res.send({
+              msg: `Email scheduled  Successfully on ${sent_date}`,
+              success: true,
+            });
+          })
+          .catch((er) => {
+            res.send({
+              error: "compose template details is not add in folder",
+              success: er,
+            });
+          });
+      })
+      .catch((ex) => {
+        res.send({
+          success: false,
+          msg: ex.message,
+        });
+      });
+    // let dayofMonth = parseInt(moment(new Date()).add(days, "days").format('DD'))
+    // let Month = parseInt(moment(new Date()).add(days, "days").format('MM'))
+    // let objectIdArray = smartLists.map(s => mongoose.Types.ObjectId(s));
+    // let scheduleData = await students.aggregate([
+    //   {
+    //     $match: {
+    //       _id: { $in: objectIdArray }
+    //     }
+    //   },
+    //   {
+    //     $project: {
+    //       email: 1,
+    //       dob: 1,
+    //     }
+    //   },
+    // {
+    //   $match: {
+    //     $expr: {
+    //       $and: [
+    //         { $eq: [{ $month: "$dob" }, Month] },
+    //         { $eq: [{ $dayOfMonth: "$dob" }, dayofMonth], }
+    //       ]
+    //     },
+    //   },
+    // }
+    // ]
+    // )
+
+    // scheduleData.forEach(element => {
+    //   const emailData = {
+    //     sendgrid_key: process.env.SENDGRID_API_KEY,
+    //     to: to,
+    //     from_email: from,
+    //     subject: subject,
+    //     content: template,
+    //     //attachments:ele.attachments
+    //   };
+    //   sgMail
+    //     .send_via_sendgrid(emailData)
+    //     .then(resp => {
+    //       try {
+    //         all_temp.findByIdAndUpdate(mailId, { is_Sent: true });
+    //       } catch (err) {
+    //         throw new Error("Mail status not updated", err)
+    //       }
+    //     })
+    //     .catch((err) => {
+    //       throw new Error(err);
+    //     });
+    // })
+
+    // res.send({ scheduleData })
+  }
+  catch (err) {
+    throw new Error(err);
+  }
+
+};
+
+
+var emailCronFucntionalityfor30DaysBirthday = async () => {
+  let promises = [];
+
+  let scheduledListing = await all_temp.find({ category: "nurturing", is_Sent: false });
+
+  scheduledListing.forEach(async (ele) => {
+    let sentDate = ele.sent_date;
+    let days = ele.days;
+    let mailId = ele._id;
+    let TargetdayofMonth = 17 || parseInt(moment(new Date()).add(days, "days").format('DD'));
+    let TargetMonth = 1 || parseInt(moment(new Date()).add(days, "days").format('MM'));
+    let currentdayofMonth = parseInt(moment().format("DD"));
+    let currentMonth = parseInt(moment().format("MM"));
+    if (TargetdayofMonth === currentdayofMonth && TargetMonth === currentMonth) {
+      const emailData = {
+        sendgrid_key: process.env.SENDGRID_API_KEY,
+        to: ele.to,
+        from_email: process.env.from_email,
+        subject: ele.subject,
+        content: ele.template,
+      };
+      if (ele.is_Sent === false) {
+        sgMail
+          .send_via_sendgrid(emailData)
+          .then(resp => {
+            try {
+              all_temp.findByIdAndUpdate(mailId, { is_Sent: true });
+            } catch (err) {
+              throw new Error("Mail status not updated", err)
+            }
+          })
+          .catch((err) => {
+            throw new Error(err)
+          });
+      } else {
+        new Error("No email Scheduled for this Email");
+      }
+    }
+  })
+  await Promise.all(promises);
+};
+
+cron.schedule("0 0 * * *", () => emailCronFucntionalityfor30DaysBirthday())
