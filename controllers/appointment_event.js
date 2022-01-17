@@ -34,8 +34,9 @@ exports.update = (req, res) => {
 };
 
 exports.getAllEvents = async (req, res) => {
+  let userId = req.params.userId
   await appointmetEvent
-    .find({ userId })
+    .find({ userId: userId })
     .then((result) => {
       res.send({ success: true, data: result });
     })
