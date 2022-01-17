@@ -27,9 +27,10 @@ exports.create = async (req, res) => {
         }
         productDetails.productFile = docs;
         var productObj = new product(productDetails);
+        console.log(productObj)
         productObj.save((err, productData) => {
             if (err) {
-                res.send({ msg: "Product not created!", success: false })
+                res.send({ msg: "Product not created!", success: false, err })
             }
             else {
                 productFolders.findByIdAndUpdate(req.params.folderId, { $push: { products: productData._id } })
