@@ -1,6 +1,12 @@
 const membershipModal = require("../models/membership");
 const membershipFolder = require("../models/membershipFolder");
 const cloudUrl = require("../gcloud/imageUrl");
+const Student = require("../models/addmember");
+const jszip = require('jszip');
+const axios = require('axios');
+let fs = require('fs')
+
+const Docxtemplater = require("docxtemplater");
 
 exports.create = async (req, res) => {
   try {
@@ -187,3 +193,50 @@ exports.membershipUpdate = async (req, res) => {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false })
   }
 };
+
+exports.mergeDoc = async (req, res) => {
+  let docBody = req.body.docUrl;
+  let studentId = req.params.studentId;
+  let userId = req.params.userId;
+  let membershipId = req.params.membershipId;
+  try {
+    const studentInfo = await Student.findOne({ _id: studentId });
+    // const membershitInfo = await membershipModal.findOne({ _id: membershipId });
+    const mergedInfo = { ...studentInfo };
+    // var archive = new zip();
+    // let data = await dataFromUrl()
+    // let resp = await writeFile(docBody)
+    await axios.get(docBody, {
+      responseType: 'arraybuffer',
+    }).then(respon => {
+      let buffers = respon.data
+      var zip = new jszip;
+      zip.file('simple.doc', buffers, { binary: true })
+      zip.generateAsync({ type: "nodebuffer", compression: 'DEFLATE' })
+        .then(function callback(buffer) {
+          saveAs(buffer, "main.zip");
+          const doc = new Docxtemplater("main.zip", {
+            paragraphLoop: true,
+            linebreaks: true,
+          })
+          doc.render(mergedInfo, function (err, resp) {
+            if (err) {
+              res.send({ msg: "PDF not created", success: false })
+            } else {
+              console.log(resp);
+              //const buf = doc.getZip().generate({ type: "nodebuffer" });
+              res.send({ msg: resp, success: true })
+            }
+          })
+        }).catch(err => {
+          console.log(err)
+        })
+    }).catch(err => {
+      console.log(err)
+    })
+
+
+  } catch (err) {
+    throw (err);
+  }
+}
