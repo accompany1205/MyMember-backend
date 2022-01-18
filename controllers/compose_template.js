@@ -699,16 +699,9 @@ var emailCronFucntionalityfor30DaysBirthday = async () => {
 
 
   scheduledListing.forEach(async (ele) => {
-    let sentDate = ele.sent_date;
     let days = ele.days;
-    let mailId = ele._id;
     let dayofMonth = parseInt(moment(new Date()).add(days, "days").format('DD'))
     let Month = parseInt(moment(new Date()).add(days, "days").format('MM'))
-    let currentdayofMonth = parseInt(moment().format("DD"));
-    let currentMonth = parseInt(moment().format("MM"));
-
-    console.log(dayofMonth, Month)
-
     let objectIdArray = ele.smartLists.map(s => mongoose.Types.ObjectId(s));
     let scheduleData = await students.aggregate([
       {
@@ -759,6 +752,9 @@ var emailCronFucntionalityfor30DaysBirthday = async () => {
       })
 
 
+    }
+    {
+      console.warn("no Email scheduled for this crone !")
     }
   })
   await Promise.all(promises);
