@@ -81,10 +81,9 @@ const EmailSchema = schema({
     days: {
         type: String
     },
-    smartLists: [{
-        stdtype: String,
-        smrtList: Array
-    }]
+    smartLists: {
+        type: Array
+    }
 },
     { timestamps: true }
 )
