@@ -47,6 +47,12 @@ class Tasks {
                         case "today":
                             conditions.due_date = { "$gte": moment().add("-1", "days").toISOString()};
                             break;
+                        case "tommorow":
+                            conditions.due_date = { "$gte": moment().add("1", "days").toISOString()};
+                            break;
+                        case "upcoming":
+                            conditions.due_date = { "$gte": moment().toISOString()};
+                            break;
                         case "week":
                             conditions.due_date = { "$gte": moment().add("-1", "weeks").toISOString()};
                             break;

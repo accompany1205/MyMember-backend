@@ -8,7 +8,8 @@ const taskSchema = schema(
             type: String,
             trim: true,
             required: true,
-            maxlength: 32
+            maxlength: 32,
+            enum : ['personal','mymember'],
         },
         name: {
             type: String,
