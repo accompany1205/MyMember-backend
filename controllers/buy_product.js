@@ -47,7 +47,7 @@ exports.buy_product = async (req, res) => {
     let productData = req.body.product_details;
     const Address = valorPayload ? valorPayload.address : "";
     const payLatter = req.body.product_details.pay_latter;
-    const financeId = req.body.product_details.financeId;
+    const financeId = req.body.product_details.finance_id;
     const ptype = req.body.product_details.ptype;
     delete req.body.product_details.valorPayload;
     let memberShipDoc;
@@ -101,19 +101,29 @@ exports.buy_product = async (req, res) => {
                         valorPayload.address = Address;
                         valorPayload.userId = userId;
                         valorPayload.studentId = studentId;
-                        const financeDoc = await createFinanceDoc(valorPayload, financeId);
-                        if (financeDoc.success) {
+                        if (!financeId) {
+                            const financeDoc = await createFinanceDoc(valorPayload);
+                            if (financeDoc.success) {
+                                productData.product_status = "Active";
+                                memberShipDoc = await createProductDocument(
+                                    productData,
+                                    studentId
+                                );
+                                res.send(memberShipDoc);
+                            } else {
+                                res.send({
+                                    msg: "Finance and product doc not created!",
+                                    success: false,
+                                });
+                            }
+                        }
+                        else {
                             productData.product_status = "Active";
                             memberShipDoc = await createProductDocument(
                                 productData,
                                 studentId
                             );
                             res.send(memberShipDoc);
-                        } else {
-                            res.send({
-                                msg: "Finance and product doc not created!",
-                                success: false,
-                            });
                         }
                     } else {
                         res.send({ msg: resp.data.mesg, success: false });
@@ -148,21 +158,31 @@ exports.buy_product = async (req, res) => {
                             txnid: resp.data.txnid,
                             token: resp.data.token,
                         };
-                        valorPayload.address = Address;
+                        // valorPayload.address = Address;
                         valorPayload.userId = userId;
                         valorPayload.studentId = studentId;
-                        const financeDoc = await createFinanceDoc(valorPayload, financeId);
-                        if (financeDoc.success) {
+                        if (!financeId) {
+                            const financeDoc = await createFinanceDoc(valorPayload);
+                            if (financeDoc.success) {
+                                memberShipDoc = await createProductDocument(
+                                    productData,
+                                    studentId
+                                );
+                                res.send(memberShipDoc);
+                            } else {
+                                res.send({
+                                    msg: "Finace and product doc not created!",
+                                    success: false,
+                                });
+                            }
+                        }
+                        else {
+                            productData.product_status = "Active";
                             memberShipDoc = await createProductDocument(
                                 productData,
                                 studentId
                             );
                             res.send(memberShipDoc);
-                        } else {
-                            res.send({
-                                msg: "Finace and product doc not created!",
-                                success: false,
-                            });
                         }
                     } else {
                         res.send({ msg: resp.data.mesg, success: false });
@@ -268,36 +288,36 @@ function createProductDocument(productData, studentId) {
     }
     )
 }
-function createFinanceDoc(data, financeId) {
+function createFinanceDoc(data) {
     const { studentId } = data;
     return new Promise((resolve, reject) => {
         const financeData = new Finance_infoSchema(data);
-        if (financeId) {
-            Finance_infoSchema.findByIdAndUpdate(financeId, {
-                $set: data
-            }).exec((err, resData) => {
-                if (err) {
-                    resolve({ success: false });
-                }
-                resolve({ success: true });
-            })
-        } else {
-            financeData.save((err, Fdata) => {
-                if (err) {
-                    resolve({ success: false, msg: "Finance data is not stored!" });
-                } else {
-                    AddMember.findByIdAndUpdate(studentId, {
-                        $push: { finance_details: Fdata._id },
-                    }).exec((err, data) => {
-                        if (data) {
-                            resolve({ success: true });
-                        } else {
-                            resolve({ success: false });
-                        }
-                    });
-                }
-            });
-        }
+        // if (financeId) {
+        //     Finance_infoSchema.findByIdAndUpdate(financeId, {
+        //         $set: data
+        //     }).exec((err, resData) => {
+        //         if (err) {
+        //             resolve({ success: false });
+        //         }
+        //         resolve({ success: true });
+        //     })
+        // } else {
+        financeData.save((err, Fdata) => {
+            if (err) {
+                resolve({ success: false, msg: "Finance data is not stored!" });
+            } else {
+                AddMember.findByIdAndUpdate(studentId, {
+                    $push: { finance_details: Fdata._id },
+                }).exec((err, data) => {
+                    if (data) {
+                        resolve({ success: true });
+                    } else {
+                        resolve({ success: false });
+                    }
+                });
+            }
+        });
+        // }
     });
 }
 exports.update = async (req, res) => {
