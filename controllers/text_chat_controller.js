@@ -140,7 +140,7 @@ exports.listenIncomingSMS = async (req, res) => {
   let to = req.params.twilio;
 
   const getUid = phoneNumber => {
-    return member.findOne({primaryPhone: from}).then(data => {
+    return member.findOne({primaryPhone: phoneNumber}).then(data => {
       return data._id;
     }).catch(err => {
       return '';
