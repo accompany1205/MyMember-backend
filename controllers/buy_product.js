@@ -54,7 +54,7 @@ exports.buy_product = async (req, res) => {
     productData.userId = userId;
     try {
         if (productData.isEMI) {
-            if (productData.payment_time > 0 && productData.balance > 0 && productData.payment_type != "pif") {
+            if (productData.payment_time > 0 && productData.balance > 0 && productData.payment_type !== "pif") {
                 productData.schedulePayments = createEMIRecord(
                     productData.payment_time,
                     productData.payment_money,
@@ -77,7 +77,7 @@ exports.buy_product = async (req, res) => {
                         saleFormatedPayload
                     );
                     if (resp.data.error_no == 'S00') {
-                        if (payLatter === "credit card" && req.body.product_details.payment_type === "monthly") {
+                        if (payLatter === "credit card" && req.body.product_details.payment_type === ("monthly" || "weekly")) {
                             addValorPay = { ...addValorPay, amount: productData.payment_money, subscription_starts_from: productData.schedulePayments[0].date.split('-').join(''), Subscription_valid_for: productData.schedulePayments.length - 1, ...getUidAndInvoiceNumber() };
                             const addFormatedPayload = getFormatedPayload(addValorPay);
                             const addresp = await valorTechPaymentGateWay.addSubscription(
@@ -85,50 +85,97 @@ exports.buy_product = async (req, res) => {
                             );
                             if (addresp.data.error_no === "S00") {
                                 productData.subscription_id = addresp.data.subscription_id
-                            } else {
-                                productData.subscription_id = "failed"
-                                for (let i = 0; i < productData.schedulePayments.length; i++) {
-                                    productData.schedulePayments[i].status = "due";
-                                    productData.schedulePayments[i].ptype = "cash";
+                                productData.transactionId = {
+                                    rrn: resp.data.rrn,
+                                    txnid: resp.data.txnid,
+                                    token: resp.data.token,
+                                };
+                                if (!financeId) {
+                                    valorPayload.address = Address;
+                                    valorPayload.userId = userId;
+                                    valorPayload.studentId = studentId;
+                                    const financeDoc = await createFinanceDoc(valorPayload);
+                                    if (financeDoc.success) {
+                                        productData.product_status = "Active";
+                                        memberShipDoc = await createProductDocument(
+                                            productData,
+                                            studentId
+                                        );
+                                        res.send(memberShipDoc);
+                                    } else {
+                                        res.send({
+                                            msg: "Finance and product doc not created!",
+                                            success: false,
+                                        });
+                                    }
                                 }
-                            }
-                        }
-                        productData.transactionId = {
-                            rrn: resp.data.rrn,
-                            txnid: resp.data.txnid,
-                            token: resp.data.token,
-                        };
-                        valorPayload.address = Address;
-                        valorPayload.userId = userId;
-                        valorPayload.studentId = studentId;
-                        if (!financeId) {
-                            const financeDoc = await createFinanceDoc(valorPayload);
-                            if (financeDoc.success) {
+
                                 productData.product_status = "Active";
                                 memberShipDoc = await createProductDocument(
                                     productData,
                                     studentId
                                 );
                                 res.send(memberShipDoc);
+
                             } else {
-                                res.send({
-                                    msg: "Finance and product doc not created!",
-                                    success: false,
-                                });
+                                res.send({ msg: addresp.data.mesg, success: false });
                             }
                         }
                         else {
+                            if (!financeId) {
+                                valorPayload.address = Address;
+                                valorPayload.userId = userId;
+                                valorPayload.studentId = studentId;
+                                const financeDoc = await createFinanceDoc(valorPayload);
+                                if (financeDoc.success) {
+                                    productData.product_status = "Active";
+                                    memberShipDoc = await createProductDocument(
+                                        productData,
+                                        studentId
+                                    );
+                                    res.send(memberShipDoc);
+                                } else {
+                                    res.send({
+                                        msg: "Finance and product doc not created!",
+                                        success: false,
+                                    });
+                                }
+                            }
+
                             productData.product_status = "Active";
                             memberShipDoc = await createProductDocument(
                                 productData,
                                 studentId
                             );
                             res.send(memberShipDoc);
+
                         }
-                    } else {
+                    }
+                    else {
                         res.send({ msg: resp.data.mesg, success: false });
                     }
-                } else {
+                }
+                else if (ptype === ("cash" || "cheque")) {
+                    if (!financeId) {
+                        valorPayload.address = Address;
+                        valorPayload.userId = userId;
+                        valorPayload.studentId = studentId;
+                        const financeDoc = await createFinanceDoc(valorPayload);
+                        if (financeDoc.success) {
+                            productData.product_status = "Active";
+                            memberShipDoc = await createProductDocument(
+                                productData,
+                                studentId
+                            );
+                            res.send(memberShipDoc);
+                        } else {
+                            res.send({
+                                msg: "Finance and product doc not created!",
+                                success: false,
+                            });
+                        }
+                    }
+
                     productData.product_status = "Active";
                     memberShipDoc = await createProductDocument(
                         productData,
@@ -144,50 +191,77 @@ exports.buy_product = async (req, res) => {
             }
         } else {
             productData.due_status = "paid";
-            if (!productData.isEMI && productData.balance == 0 && ptype === 'credit card') {
-                if (valorPayload.pan) {
-                    const { uid } = getUidAndInvoiceNumber();
-                    valorPayload = { ...valorPayload, uid };
-                    const FormatedPayload = getFormatedPayload(valorPayload);
-                    const resp = await valorTechPaymentGateWay.saleSubscription(
-                        FormatedPayload
-                    );
-                    if (resp.data.error_no === "S00") {
-                        productData.transactionId = {
-                            rrn: resp.data.rrn,
-                            txnid: resp.data.txnid,
-                            token: resp.data.token,
-                        };
-                        // valorPayload.address = Address;
-                        valorPayload.userId = userId;
-                        valorPayload.studentId = studentId;
-                        if (!financeId) {
-                            const financeDoc = await createFinanceDoc(valorPayload);
-                            if (financeDoc.success) {
-                                memberShipDoc = await createProductDocument(
-                                    productData,
-                                    studentId
-                                );
-                                res.send(memberShipDoc);
-                            } else {
-                                res.send({
-                                    msg: "Finace and product doc not created!",
-                                    success: false,
-                                });
+            if (!productData.isEMI && productData.balance == 0 && productData.payment_type != "monthly" || "weekly") {
+                if (ptype === 'credit card') {
+                    if (valorPayload.pan) {
+                        const { uid } = getUidAndInvoiceNumber();
+                        valorPayload = { ...valorPayload, uid };
+                        const FormatedPayload = getFormatedPayload(valorPayload);
+                        const resp = await valorTechPaymentGateWay.saleSubscription(
+                            FormatedPayload
+                        );
+                        if (resp.data.error_no === "S00") {
+                            productData.transactionId = {
+                                rrn: resp.data.rrn,
+                                txnid: resp.data.txnid,
+                                token: resp.data.token,
+                            };
+
+                            if (!financeId) {
+                                valorPayload.address = Address;
+                                valorPayload.userId = userId;
+                                valorPayload.studentId = studentId;
+                                const financeDoc = await createFinanceDoc(valorPayload);
+                                if (financeDoc.success) {
+                                    memberShipDoc = await createProductDocument(
+                                        productData,
+                                        studentId
+                                    );
+                                    res.send(memberShipDoc);
+                                } else {
+                                    res.send({
+                                        msg: "Finace and product doc not created!",
+                                        success: false,
+                                    });
+                                }
                             }
-                        }
-                        else {
                             productData.product_status = "Active";
                             memberShipDoc = await createProductDocument(
                                 productData,
                                 studentId
                             );
                             res.send(memberShipDoc);
+
+                        } else {
+                            res.send({ msg: resp.data.mesg, success: false });
                         }
-                    } else {
-                        res.send({ msg: resp.data.mesg, success: false });
                     }
-                } else {
+                    else {
+                        res.send({
+                            msg: "please provide Card Detatils",
+                            success: false,
+                        });
+                    }
+                }
+                else if (ptype === ('cash' || 'cheque')) {
+                    if (!financeId) {
+                        valorPayload.address = Address;
+                        valorPayload.userId = userId;
+                        valorPayload.studentId = studentId;
+                        const financeDoc = await createFinanceDoc(valorPayload);
+                        if (financeDoc.success) {
+                            memberShipDoc = await createProductDocument(
+                                productData,
+                                studentId
+                            );
+                            res.send(memberShipDoc);
+                        } else {
+                            res.send({
+                                msg: "Finace and product doc not created!",
+                                success: false,
+                            });
+                        }
+                    }
                     memberShipDoc = await createProductDocument(
                         productData,
                         studentId
@@ -195,11 +269,10 @@ exports.buy_product = async (req, res) => {
                     res.send(memberShipDoc);
                 }
             } else {
-                memberShipDoc = await createProductDocument(
-                    productData,
-                    studentId
-                );
-                res.send(memberShipDoc);
+                res.send({
+                    msg: "payment type should be pif",
+                    success: false,
+                });
             }
         }
     } catch (error) {

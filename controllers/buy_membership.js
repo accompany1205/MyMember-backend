@@ -655,7 +655,7 @@ exports.buyMembership = async (req, res) => {
             saleFormatedPayload
           );
           if (resp.data.error_no == 'S00') {
-            if (payLatter === "credit card" && req.body.membership_details.payment_type === "monthly") {
+            if (payLatter === "credit card" && req.body.membership_details.payment_type === ("monthly" || "weekly")) {
               addValorPay = { ...addValorPay, amount: membershipData.payment_money, subscription_starts_from: membershipData.schedulePayments[0].date.split('-').join(''), Subscription_valid_for: membershipData.schedulePayments.length - 1, ...getUidAndInvoiceNumber() };
               const addFormatedPayload = getFormatedPayload(addValorPay);
               const addresp = await valorTechPaymentGateWay.addSubscription(
@@ -663,50 +663,65 @@ exports.buyMembership = async (req, res) => {
               );
               if (addresp.data.error_no === "S00") {
                 membershipData.subscription_id = addresp.data.subscription_id
-              } else {
-                membershipData.subscription_id = "failed"
-                for (let i = 0; i < membershipData.schedulePayments.length; i++) {
-                  membershipData.schedulePayments[i].status = "due";
-                  membershipData.schedulePayments[i].ptype = "cash";
+                membershipData.transactionId = {
+                  rrn: resp.data.rrn,
+                  txnid: resp.data.txnid,
+                  token: resp.data.token,
+                };
+
+                if (!financeId) {
+                  valorPayload.address = Address;
+                  valorPayload.userId = userId;
+                  valorPayload.studentId = studentId;
+                  const financeDoc = await createFinanceDoc(valorPayload);
+                  if (financeDoc.success) {
+                    membershipData.membership_status = "Active";
+                    memberShipDoc = await createMemberShipDocument(
+                      membershipData,
+                      studentId
+                    );
+                    res.send(memberShipDoc);
+
+                  } else {
+                    res.send({
+                      msg: "Finance and membership doc not created!",
+                      success: false,
+                    });
+                  }
                 }
-              }
-            }
-            membershipData.transactionId = {
-              rrn: resp.data.rrn,
-              txnid: resp.data.txnid,
-              token: resp.data.token,
-            };
-            valorPayload.address = Address;
-            valorPayload.userId = userId;
-            valorPayload.studentId = studentId;
-            if (!financeId) {
-              const financeDoc = await createFinanceDoc(valorPayload);
-              if (financeDoc.success) {
+
                 membershipData.membership_status = "Active";
                 memberShipDoc = await createMemberShipDocument(
                   membershipData,
                   studentId
                 );
                 res.send(memberShipDoc);
-              } else {
-                res.send({
-                  msg: "Finance and membership doc not created!",
-                  success: false,
-                });
               }
             }
-            else {
+
+          } else {
+            res.send({ msg: resp.data.mesg, success: false });
+          }
+        } else if (ptype === ("cash" || "cheque")) {
+          if (!financeId) {
+            valorPayload.address = Address;
+            valorPayload.userId = userId;
+            valorPayload.studentId = studentId;
+            const financeDoc = await createFinanceDoc(valorPayload);
+            if (financeDoc.success) {
               membershipData.membership_status = "Active";
               memberShipDoc = await createMemberShipDocument(
                 membershipData,
                 studentId
               );
               res.send(memberShipDoc);
+            } else {
+              res.send({
+                msg: "Finance and membership doc not created!",
+                success: false,
+              });
             }
-          } else {
-            res.send({ msg: resp.data.mesg, success: false });
           }
-        } else {
           membershipData.membership_status = "Active";
           memberShipDoc = await createMemberShipDocument(
             membershipData,
@@ -714,7 +729,8 @@ exports.buyMembership = async (req, res) => {
           );
           res.send(memberShipDoc);
         }
-      } else {
+      }
+      else {
         res.send({
           msg: "payment type should be weekly/monthly",
           success: false,
@@ -738,10 +754,11 @@ exports.buyMembership = async (req, res) => {
               txnid: resp.data.txnid,
               token: resp.data.token,
             };
-            // valorPayload.address = Address;
-            valorPayload.userId = userId;
-            valorPayload.studentId = studentId;
+
             if (!financeId) {
+              valorPayload.address = Address;
+              valorPayload.userId = userId;
+              valorPayload.studentId = studentId;
               const financeDoc = await createFinanceDoc(valorPayload);
               if (financeDoc.success) {
                 memberShipDoc = await createMemberShipDocument(
@@ -756,29 +773,52 @@ exports.buyMembership = async (req, res) => {
                 });
               }
             }
-            else {
-              memberShipDoc = await createMemberShipDocument(
-                membershipData,
-                studentId
-              );
-              res.send(memberShipDoc);
-            }
+            memberShipDoc = await createMemberShipDocument(
+              membershipData,
+              studentId
+            );
+            res.send(memberShipDoc);
           } else {
             res.send({ msg: resp.data.mesg, success: false });
           }
-        } else {
-          memberShipDoc = await createMemberShipDocument(
-            membershipData,
-            studentId
-          );
-          res.send(memberShipDoc);
         }
-      } else {
+        else {
+          res.send({
+            msg: "please provide Card Detatils",
+            success: false,
+          });
+        }
+      }
+      else if (ptype === ('cash' || 'cheque')) {
+        if (!financeId) {
+          valorPayload.address = Address;
+          valorPayload.userId = userId;
+          valorPayload.studentId = studentId;
+          const financeDoc = await createFinanceDoc(valorPayload);
+          if (financeDoc.success) {
+            memberShipDoc = await createMemberShipDocument(
+              membershipData,
+              studentId
+            );
+            res.send(memberShipDoc);
+          } else {
+            res.send({
+              msg: "Finace and membership doc not created!",
+              success: false,
+            });
+          }
+        }
         memberShipDoc = await createMemberShipDocument(
           membershipData,
           studentId
         );
         res.send(memberShipDoc);
+      }
+      else {
+        res.send({
+          msg: "payment type should be pif",
+          success: false,
+        });
       }
     }
   } catch (error) {
@@ -883,21 +923,21 @@ function createFinanceDoc(data) {
     //     resolve({ success: true });
     //   })
     // } else {
-      financeData.save((err, Fdata) => {
-        if (err) {
-          resolve({ success: false, msg: "Finance data is not stored!" });
-        } else {
-          AddMember.findByIdAndUpdate(studentId, {
-            $push: { finance_details: Fdata._id },
-          }).exec((err, data) => {
-            if (data) {
-              resolve({ success: true });
-            } else {
-              resolve({ success: false });
-            }
-          });
-        }
-      });
+    financeData.save((err, Fdata) => {
+      if (err) {
+        resolve({ success: false, msg: "Finance data is not stored!" });
+      } else {
+        AddMember.findByIdAndUpdate(studentId, {
+          $push: { finance_details: Fdata._id },
+        }).exec((err, data) => {
+          if (data) {
+            resolve({ success: true });
+          } else {
+            resolve({ success: false });
+          }
+        });
+      }
+    });
     // }
   });
 }
