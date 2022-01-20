@@ -737,8 +737,9 @@ exports.buyMembership = async (req, res) => {
         });
       }
     } else {
-
       if (!membershipData.isEMI && membershipData.balance == 0 && membershipData.payment_type == "pif") {
+        membershipData.due_status = "paid";
+        membershipData.membership_status = "Active";
         if (valorPayload && ptype === 'credit card') {
           if (valorPayload.pan) {
             const { uid } = getUidAndInvoiceNumber();
@@ -761,8 +762,6 @@ exports.buyMembership = async (req, res) => {
                 valorPayload.studentId = studentId;
                 const financeDoc = await createFinanceDoc(valorPayload);
                 if (financeDoc.success) {
-                  membershipData.due_status = "paid";
-                  membershipData.membership_status = "Active";
                   memberShipDoc = await createMemberShipDocument(
                     membershipData,
                     studentId
@@ -776,8 +775,6 @@ exports.buyMembership = async (req, res) => {
                   });
                 }
               }
-              membershipData.due_status = "paid";
-              membershipData.membership_status = "Active";
               memberShipDoc = await createMemberShipDocument(
                 membershipData,
                 studentId
@@ -812,8 +809,7 @@ exports.buyMembership = async (req, res) => {
               });
             }
           }
-          membershipData.due_status = "paid";
-          membershipData.membership_status = "Active";
+
           memberShipDoc = await createMemberShipDocument(
             membershipData,
             studentId

@@ -191,6 +191,7 @@ exports.buy_product = async (req, res) => {
             }
         } else {
             if (!productData.isEMI && productData.balance == 0 && productData.payment_type == "pif") {
+                productData.due_status = "paid";
                 if (ptype === 'credit card') {
                     if (valorPayload.pan) {
                         const { uid } = getUidAndInvoiceNumber();
@@ -212,7 +213,6 @@ exports.buy_product = async (req, res) => {
                                 valorPayload.studentId = studentId;
                                 const financeDoc = await createFinanceDoc(valorPayload);
                                 if (financeDoc.success) {
-                                    productData.due_status = "paid";
                                     memberShipDoc = await createProductDocument(
                                         productData,
                                         studentId
