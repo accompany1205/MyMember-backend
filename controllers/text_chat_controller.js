@@ -34,19 +34,24 @@ exports.getTextContacts = (req, res) => {
 exports.sendTextMessage = async (req, res) => {
   const accountSid = process.env.aid;
   const authToken = process.env.authkey;
-  let orgPhone = process.env.phone; // TODO: get it from user table
 
   // Please uncomment code below in production once we are setting correct twilio number for user
-  // let {twilio} = await user.findById(req.params.userId);
-  // orgPhone = twilio;
+  let {twilio} = await user.findById(req.params.userId);
 
   let {primaryPhone} = await member.findById(req.body.uid);
+  const twilioFormat = phoneNumber => {
+    if (phoneNumber.charAt(0) !== '+') {
+      return '+' + phoneNumber;
+    } else {
+      return phoneNumber;
+    }
+  }
   const client = await require('twilio')(accountSid, authToken);
   if (primaryPhone) {
     await client.messages.create({
       body: req.body.textContent,
-      to: primaryPhone,
-      from: orgPhone // This is registered number for Twilio
+      to: twilioFormat(primaryPhone),
+      from: twilioFormat(twilio) // This is registered number for Twilio
     }).then((message) => {
       console.log('Text Message sent : ', message);
       let textMsg = new textMessage(req.body);
