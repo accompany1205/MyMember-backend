@@ -183,7 +183,7 @@ exports.appointmentFilter = async (req, res) => {
       let cDate = ("0" + (date.getDate())).slice(-2);
       let cMonth = ("0" + (date.getMonth() + 1)).slice(-2);
       let cYear = date.getFullYear();
-      let currentDate = `${cMonth}-${cDate}-${cYear}`;
+      let currentDate = `${cDate}-${cMonth}-${cYear}`;
       const totalCount = await appoint.find({
         $and: [
           { category: catType },
@@ -209,7 +209,7 @@ exports.appointmentFilter = async (req, res) => {
       let cDate = ("0" + (date.getDate() + 1)).slice(-2);
       let cMonth = ("0" + (date.getMonth() + 1)).slice(-2);
       let cYear = date.getFullYear();
-      let currentDate = `${cMonth}-${cDate}-${cYear}`;
+      let currentDate = `${cDate}-${cMonth}-${cYear}`;
       const totalCount = await appoint.find({
         $and: [
           { category: catType },
@@ -236,10 +236,9 @@ exports.appointmentFilter = async (req, res) => {
       console.log("ddfdfdf--", cDate)
       let cMonth = ("0" + (date.getMonth() + 1)).slice(-2);
       let weekday = ("0" + (date.getDate()) * 7).slice(-2);
-      console.log(weekday)
       let cYear = date.getFullYear();
-      let week = `${cMonth}-${weekday}-${cYear}`;
-      let currentDate = `${cMonth}-${cDate}-${cYear}`;
+      let week = `${weekday}-${cMonth}-${cYear}`;
+      let currentDate = `${cDate}-${cMonth}-${cYear}`;
       const totalCount = await appoint.find({
         $and: [
           { category: catType },
@@ -266,10 +265,9 @@ exports.appointmentFilter = async (req, res) => {
       let cMonth = ("0" + (date.getMonth() + 1)).slice(-2);
       let monthDay = ("0" + (date.getDate())).slice(-2);
       let monthMon = ("0" + (date.getMonth() + 3)).slice(-2);
-      console.log(monthMon)
       let cYear = date.getFullYear();
-      let month = `${monthMon}-${monthDay}-${cYear}`;
-      let currentDate = `${cMonth}-${cDate}-${cYear}`;
+      let month = `${monthDay}-${monthMon}-${cYear}`;
+      let currentDate = `${cDate}-${cMonth}-${cYear}`;
       const totalCount = await appoint.find({
         $and: [
           { category: catType },

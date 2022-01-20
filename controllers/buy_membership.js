@@ -45,7 +45,7 @@ exports.update = async (req, res) => {
     expiry_date = toString(cardDetails.expiry_month) + toString(cardDetails.expiry_year)
     delete cardDetails.expiry_month;
     delete cardDetails.expiry_year;
-    cardDetails.expiry_date = expiry_date; 
+    cardDetails.expiry_date = expiry_date;
   }
   try {
     if (req.body.isTerminate) {
@@ -62,7 +62,7 @@ exports.update = async (req, res) => {
         });
       } else if (type == "freeze") {
         if (subscription_id) {
-          const freezeValorPayload = await valorTechPaymentGateWay.freezeSubscription({subscription_id, freeze_start_date: req.body.freeze_start_date.split('-').join(''), freeze_stop_date: req.body.freeze_stop_date.split('-').join('')});
+          const freezeValorPayload = await valorTechPaymentGateWay.freezeSubscription({ subscription_id, freeze_start_date: req.body.freeze_start_date.split('-').join(''), freeze_stop_date: req.body.freeze_stop_date.split('-').join('') });
           if (freezeValorPayload?.data?.error_no === "S00") {
             const freezeRes = await freezeMembership(membershipId, req.body);
             if (freezeRes) {
@@ -78,7 +78,7 @@ exports.update = async (req, res) => {
             }
           } else {
             res.status(400).send({
-              msg:"Due to the technical issue subscription not freeze please try again or later!",
+              msg: "Due to the technical issue subscription not freeze please try again or later!",
               success: false,
             });
           }
@@ -99,7 +99,7 @@ exports.update = async (req, res) => {
       } else if (type == "unfreeze") {
         let unfreezeRes;
         if (subscription_id) {
-          const valorRes = await valorTechPaymentGateWay.unfreezeSubscription({subscription_id});
+          const valorRes = await valorTechPaymentGateWay.unfreezeSubscription({ subscription_id });
           if (valorRes.data.error_no === "S00") {
             unfreezeRes = await unFreezeMembership(membershipId, req.body);
             if (unfreezeRes) {
@@ -139,8 +139,8 @@ exports.update = async (req, res) => {
         const balance = req.body.balance;
         let forfeit;
         if (subscription_id) {
-          const {uid} = getUidAndInvoiceNumber()
-          let valorRes = await valorTechPaymentGateWay.forfeitSubscription({subscription_id, uid})
+          const { uid } = getUidAndInvoiceNumber()
+          let valorRes = await valorTechPaymentGateWay.forfeitSubscription({ subscription_id, uid })
           if (valorRes.data.error_no == "S00") {
             await paymentProcessing(membershipId, emiId, balance, createdBy, type, req.body.ptype);
             forfeit = await forfeitSubscription(membershipId, req.body.reason)
@@ -167,7 +167,7 @@ exports.update = async (req, res) => {
       } else if (type == "terminate") {
         let terminate;
         if (subscription_id) {
-          const valorDelete = await valorTechPaymentGateWay.deleteSubscription({subscription_id});
+          const valorDelete = await valorTechPaymentGateWay.deleteSubscription({ subscription_id });
           if (valorDelete.data.error_no === "S00") {
             terminate = await terminateMembership(membershipId, req.body.reason)
             if (terminate.success) {
@@ -195,8 +195,8 @@ exports.update = async (req, res) => {
         const emiId = req.body.emiId;
         const createdBy = req.body.createdBy;
         if (cardDetails) {
-          const {uid} = getUidAndInvoiceNumber();
-          const valorRefundRes = await valorTechPaymentGateWay.refundSubscription({...cardDetails, uid, amount: req.body.Amount});
+          const { uid } = getUidAndInvoiceNumber();
+          const valorRefundRes = await valorTechPaymentGateWay.refundSubscription({ ...cardDetails, uid, amount: req.body.Amount });
           if (valorRefundRes.data.error_no === "S00") {
             if (emiId) {
               await paymentProcessing(membershipId, emiId, balance, createdBy, type, req.body.ptype);
@@ -386,8 +386,8 @@ exports.updatePayments = async (req, res) => {
       cardDetails.expiry_date = expiry_date;
     }
     if (ptype == "credit card" && (payment_type == "cash" || payment_type == "cheque")) {
-      const {uid} = getUidAndInvoiceNumber()
-      let valorRes = await valorTechPaymentGateWay.forfeitSubscription({subscription_id, uid})
+      const { uid } = getUidAndInvoiceNumber()
+      let valorRes = await valorTechPaymentGateWay.forfeitSubscription({ subscription_id, uid })
       if (valorRes.data.error_no == "S00") {
         const pay = await paymentProcessing(buy_membershipId, emiId, balance, createdBy, "paid", payment_type, req.body.cheque_number);
         res.send(pay)
@@ -400,7 +400,7 @@ exports.updatePayments = async (req, res) => {
     } else {
       const { uid } = getUidAndInvoiceNumber();
       if (cardDetails) {
-        const valorPayload = { ...cardDetails, uid, amount: req.body.Amount};
+        const valorPayload = { ...cardDetails, uid, amount: req.body.Amount };
         const resp = await valorTechPaymentGateWay.saleSubscription(valorPayload);
         if (resp.data.error_no == "S00") {
           const pay = await paymentProcessing(buy_membershipId, emiId, balance, createdBy, "paid", payment_type, req.body.cheque_number);
@@ -413,7 +413,7 @@ exports.updatePayments = async (req, res) => {
         }
       } else {
         const pay = await paymentProcessing(buy_membershipId, emiId, balance, createdBy, "paid", payment_type, req.body.cheque_number);
-          res.send(pay)
+        res.send(pay)
       }
     }
   } catch (err) {
@@ -421,7 +421,7 @@ exports.updatePayments = async (req, res) => {
   }
 };
 
-function paymentProcessing(buy_membershipId, emiId, balance, createdBy, type, ptype, check_number="") {
+function paymentProcessing(buy_membershipId, emiId, balance, createdBy, type, ptype, check_number = "") {
   return new Promise((resolve, reject) => {
     buyMembership.updateOne(
       {
@@ -625,7 +625,7 @@ exports.buyMembership = async (req, res) => {
   let membershipData = req.body.membership_details;
   const Address = valorPayload ? valorPayload.address : "";
   const payLatter = req.body.membership_details.pay_latter;
-  const financeId = req.body.membership_details.financeId;
+  const financeId = req.body.membership_details.finance_id;
   const ptype = req.body.membership_details.ptype;
   delete req.body.membership_details.valorPayload;
   let memberShipDoc;
@@ -656,16 +656,16 @@ exports.buyMembership = async (req, res) => {
           );
           if (resp.data.error_no == 'S00') {
             if (payLatter === "credit card" && req.body.membership_details.payment_type === "monthly") {
-              addValorPay = { ...addValorPay, amount: membershipData.payment_money, subscription_starts_from: membershipData.schedulePayments[0].date.split('-').join(''), Subscription_valid_for:membershipData.schedulePayments.length - 1, ...getUidAndInvoiceNumber() };
+              addValorPay = { ...addValorPay, amount: membershipData.payment_money, subscription_starts_from: membershipData.schedulePayments[0].date.split('-').join(''), Subscription_valid_for: membershipData.schedulePayments.length - 1, ...getUidAndInvoiceNumber() };
               const addFormatedPayload = getFormatedPayload(addValorPay);
               const addresp = await valorTechPaymentGateWay.addSubscription(
                 addFormatedPayload
               );
-              if (addresp.data.error_no ==="S00"){
-                membershipData.subscription_id =  addresp.data.subscription_id
+              if (addresp.data.error_no === "S00") {
+                membershipData.subscription_id = addresp.data.subscription_id
               } else {
-                membershipData.subscription_id =  "failed"
-                for(let i =0; i < membershipData.schedulePayments.length; i++) {
+                membershipData.subscription_id = "failed"
+                for (let i = 0; i < membershipData.schedulePayments.length; i++) {
                   membershipData.schedulePayments[i].status = "due";
                   membershipData.schedulePayments[i].ptype = "cash";
                 }
@@ -679,19 +679,29 @@ exports.buyMembership = async (req, res) => {
             valorPayload.address = Address;
             valorPayload.userId = userId;
             valorPayload.studentId = studentId;
-            const financeDoc = await createFinanceDoc(valorPayload, financeId);
-            if (financeDoc.success) {
+            if (!financeId) {
+              const financeDoc = await createFinanceDoc(valorPayload);
+              if (financeDoc.success) {
+                membershipData.membership_status = "Active";
+                memberShipDoc = await createMemberShipDocument(
+                  membershipData,
+                  studentId
+                );
+                res.send(memberShipDoc);
+              } else {
+                res.send({
+                  msg: "Finance and membership doc not created!",
+                  success: false,
+                });
+              }
+            }
+            else {
               membershipData.membership_status = "Active";
               memberShipDoc = await createMemberShipDocument(
                 membershipData,
                 studentId
               );
               res.send(memberShipDoc);
-            } else {
-              res.send({
-                msg: "Finance and membership doc not created!",
-                success: false,
-              });
             }
           } else {
             res.send({ msg: resp.data.mesg, success: false });
@@ -728,21 +738,30 @@ exports.buyMembership = async (req, res) => {
               txnid: resp.data.txnid,
               token: resp.data.token,
             };
-            valorPayload.address = Address;
+            // valorPayload.address = Address;
             valorPayload.userId = userId;
             valorPayload.studentId = studentId;
-            const financeDoc = await createFinanceDoc(valorPayload, financeId);
-            if (financeDoc.success) {
+            if (!financeId) {
+              const financeDoc = await createFinanceDoc(valorPayload);
+              if (financeDoc.success) {
+                memberShipDoc = await createMemberShipDocument(
+                  membershipData,
+                  studentId
+                );
+                res.send(memberShipDoc);
+              } else {
+                res.send({
+                  msg: "Finace and membership doc not created!",
+                  success: false,
+                });
+              }
+            }
+            else {
               memberShipDoc = await createMemberShipDocument(
                 membershipData,
                 studentId
               );
               res.send(memberShipDoc);
-            } else {
-              res.send({
-                msg: "Finace and membership doc not created!",
-                success: false,
-              });
             }
           } else {
             res.send({ msg: resp.data.mesg, success: false });
@@ -850,20 +869,20 @@ function createMemberShipDocument(membershipData, studentId) {
   });
 }
 
-function createFinanceDoc(data, financeId) {
+function createFinanceDoc(data) {
   const { studentId } = data;
   return new Promise((resolve, reject) => {
     const financeData = new Finance_infoSchema(data);
-    if (financeId) {
-      Finance_infoSchema.findByIdAndUpdate(financeId, {
-        $set: data
-      }).exec((err, resData) => {
-        if (err) {
-          resolve({ success: false });
-        }
-        resolve({ success: true });
-      })
-    } else {
+    // if (financeId) {
+    //   Finance_infoSchema.findByIdAndUpdate(financeId, {
+    //     $set: data
+    //   }).exec((err, resData) => {
+    //     if (err) {
+    //       resolve({ success: false });
+    //     }
+    //     resolve({ success: true });
+    //   })
+    // } else {
       financeData.save((err, Fdata) => {
         if (err) {
           resolve({ success: false, msg: "Finance data is not stored!" });
@@ -879,7 +898,7 @@ function createFinanceDoc(data, financeId) {
           });
         }
       });
-    }
+    // }
   });
 }
 // async function cronForEmiStatus() {
