@@ -896,7 +896,6 @@ function createMemberShipDocument(membershipData, studentId) {
                   } else {
                     resolve({
                       msg: "membership purchase successfully",
-                      data: result,
                       success: true,
                     });
                   }
