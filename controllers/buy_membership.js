@@ -714,7 +714,7 @@ exports.buyMembership = async (req, res) => {
                 membershipData,
                 studentId
               );
-              res.send(memberShipDoc);
+              return res.send(memberShipDoc);
             } else {
               res.send({
                 msg: "Finance and membership doc not created!",
@@ -727,7 +727,7 @@ exports.buyMembership = async (req, res) => {
             membershipData,
             studentId
           );
-          res.send(memberShipDoc);
+          return res.send(memberShipDoc);
         }
       }
       else {
@@ -737,82 +737,89 @@ exports.buyMembership = async (req, res) => {
         });
       }
     } else {
-      membershipData.due_status = "paid";
-      membershipData.membership_status = "Active";
-      if (!membershipData.isEMI && membershipData.balance == 0 && ptype === 'credit card') {
-        if (valorPayload.pan) {
-          const { uid } = getUidAndInvoiceNumber();
-          valorPayload = { ...valorPayload, uid };
-          const FormatedPayload = getFormatedPayload(valorPayload);
-          const resp = await valorTechPaymentGateWay.saleSubscription(
-            FormatedPayload
-          );
 
-          if (resp.data.error_no === "S00") {
-            membershipData.transactionId = {
-              rrn: resp.data.rrn,
-              txnid: resp.data.txnid,
-              token: resp.data.token,
-            };
+      if (!membershipData.isEMI && membershipData.balance == 0 && membershipData.payment_type == "pif") {
+        if (valorPayload && ptype === 'credit card') {
+          if (valorPayload.pan) {
+            const { uid } = getUidAndInvoiceNumber();
+            valorPayload = { ...valorPayload, uid };
+            const FormatedPayload = getFormatedPayload(valorPayload);
+            const resp = await valorTechPaymentGateWay.saleSubscription(
+              FormatedPayload
+            );
 
-            if (!financeId) {
-              valorPayload.address = Address;
-              valorPayload.userId = userId;
-              valorPayload.studentId = studentId;
-              const financeDoc = await createFinanceDoc(valorPayload);
-              if (financeDoc.success) {
-                memberShipDoc = await createMemberShipDocument(
-                  membershipData,
-                  studentId
-                );
-                res.send(memberShipDoc);
-              } else {
-                res.send({
-                  msg: "Finace and membership doc not created!",
-                  success: false,
-                });
+            if (resp.data.error_no === "S00") {
+              membershipData.transactionId = {
+                rrn: resp.data.rrn,
+                txnid: resp.data.txnid,
+                token: resp.data.token,
+              };
+
+              if (!financeId) {
+                valorPayload.address = Address;
+                valorPayload.userId = userId;
+                valorPayload.studentId = studentId;
+                const financeDoc = await createFinanceDoc(valorPayload);
+                if (financeDoc.success) {
+                  membershipData.due_status = "paid";
+                  membershipData.membership_status = "Active";
+                  memberShipDoc = await createMemberShipDocument(
+                    membershipData,
+                    studentId
+                  );
+
+                  return res.send(memberShipDoc);
+                } else {
+                  res.send({
+                    msg: "Finace and membership doc not created!",
+                    success: false,
+                  });
+                }
               }
+              membershipData.due_status = "paid";
+              membershipData.membership_status = "Active";
+              memberShipDoc = await createMemberShipDocument(
+                membershipData,
+                studentId
+              );
+              return res.send(memberShipDoc);
+            } else {
+              res.send({ msg: resp.data.mesg, success: false });
             }
-            memberShipDoc = await createMemberShipDocument(
-              membershipData,
-              studentId
-            );
-            res.send(memberShipDoc);
-          } else {
-            res.send({ msg: resp.data.mesg, success: false });
           }
-        }
-        else {
-          res.send({
-            msg: "please provide Card Detatils",
-            success: false,
-          });
-        }
-      }
-      else if (ptype === ('cash' || 'cheque')) {
-        if (!financeId) {
-          valorPayload.address = Address;
-          valorPayload.userId = userId;
-          valorPayload.studentId = studentId;
-          const financeDoc = await createFinanceDoc(valorPayload);
-          if (financeDoc.success) {
-            memberShipDoc = await createMemberShipDocument(
-              membershipData,
-              studentId
-            );
-            res.send(memberShipDoc);
-          } else {
+          else {
             res.send({
-              msg: "Finace and membership doc not created!",
+              msg: "please provide Card Detatils",
               success: false,
             });
           }
+        } else if (ptype === ('cash' || 'cheque')) {
+          if (!financeId) {
+            valorPayload.address = Address;
+            valorPayload.userId = userId;
+            valorPayload.studentId = studentId;
+            const financeDoc = await createFinanceDoc(valorPayload);
+            if (financeDoc.success) {
+              memberShipDoc = await createMemberShipDocument(
+                membershipData,
+                studentId
+              );
+              return res.send(memberShipDoc);
+            } else {
+              res.send({
+                msg: "Finace and membership doc not created!",
+                success: false,
+              });
+            }
+          }
+          membershipData.due_status = "paid";
+          membershipData.membership_status = "Active";
+          memberShipDoc = await createMemberShipDocument(
+            membershipData,
+            studentId
+          );
+          return res.send(memberShipDoc);
         }
-        memberShipDoc = await createMemberShipDocument(
-          membershipData,
-          studentId
-        );
-        res.send(memberShipDoc);
       }
       else {
         res.send({

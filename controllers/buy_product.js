@@ -190,8 +190,7 @@ exports.buy_product = async (req, res) => {
                 });
             }
         } else {
-            productData.due_status = "paid";
-            if (!productData.isEMI && productData.balance == 0 && productData.payment_type != "monthly" || "weekly") {
+            if (!productData.isEMI && productData.balance == 0 && productData.payment_type == "pif") {
                 if (ptype === 'credit card') {
                     if (valorPayload.pan) {
                         const { uid } = getUidAndInvoiceNumber();
@@ -213,13 +212,14 @@ exports.buy_product = async (req, res) => {
                                 valorPayload.studentId = studentId;
                                 const financeDoc = await createFinanceDoc(valorPayload);
                                 if (financeDoc.success) {
+                                    productData.due_status = "paid";
                                     memberShipDoc = await createProductDocument(
                                         productData,
                                         studentId
                                     );
-                                    res.send(memberShipDoc);
+                                    return res.send(memberShipDoc);
                                 } else {
-                                    res.send({
+                                    return res.send({
                                         msg: "Finace and product doc not created!",
                                         success: false,
                                     });
@@ -230,14 +230,14 @@ exports.buy_product = async (req, res) => {
                                 productData,
                                 studentId
                             );
-                            res.send(memberShipDoc);
+                            return res.send(memberShipDoc);
 
                         } else {
-                            res.send({ msg: resp.data.mesg, success: false });
+                            return res.send({ msg: resp.data.mesg, success: false });
                         }
                     }
                     else {
-                        res.send({
+                        return res.send({
                             msg: "please provide Card Detatils",
                             success: false,
                         });
@@ -254,7 +254,7 @@ exports.buy_product = async (req, res) => {
                                 productData,
                                 studentId
                             );
-                            res.send(memberShipDoc);
+                            return res.send(memberShipDoc);
                         } else {
                             res.send({
                                 msg: "Finace and product doc not created!",
@@ -266,7 +266,7 @@ exports.buy_product = async (req, res) => {
                         productData,
                         studentId
                     );
-                    res.send(memberShipDoc);
+                    return res.send(memberShipDoc);
                 }
             } else {
                 res.send({
