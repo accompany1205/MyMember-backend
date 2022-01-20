@@ -133,33 +133,35 @@ exports.getTextContactsDetails = (req, res) => {
 exports.listenIncomingSMS = async (req, res) => {
   const msg = req.body.hasOwnProperty('Body') ? req.body.Body : 'Failed to receive sms';
   const from = req.from.hasOwnProperty('From') ? req.from.From : 'Unknown sender';
-  let to =  process.env.phone; // TODO: Use company twilio number
 
   // Pass twilio number as parameter in webhooks
 
   // Uncomment this code in production when web hooks is placed for production twilio number
-  // to = req.params.twilio;
+  let to = req.params.twilio;
 
   const getUid = phoneNumber => {
     return member.findOne({primaryPhone: from}).then(data => {
       return data._id;
+    }).catch(err => {
+      return '';
     });
   };
 
   const getUserId = phoneNumber => {
-    // TODO: Update after twilio number is added
     // Find userid of user with twilio number
 
     // Uncomment this in production once twilio number is added
-    // return user.findOne({twilio: phoneNumber}).then(data => {
-    //   return data._id;
-    // });
+    return user.findOne({twilio: phoneNumber}).then(data => {
+      return data._id;
+    }).catch(err => {
+      return '';
+    });
 
     // Remove below code in production once twilio number is added
     // Below is hardcoded user id should be removed after twilio number per organization logic is added
-    let userId = '606aea95a145ea2d26e0f1ab';
+    // let userId = '606aea95a145ea2d26e0f1ab';
 
-    return userId;
+    // return userId;
   };
 
   const obj = {
@@ -169,12 +171,14 @@ exports.listenIncomingSMS = async (req, res) => {
     isSent: false,
   };
 
-  let text = new textMessage(obj);
-
-  text.save().then(textMessage => {
-    res.send({msg:'text sms sent successfully'})
-  }).catch(error => {
-    res.send({error:'txt msg not send'})
-  });
-
+  if (obj.userId !== '' && obj.uid !== '') {
+    let text = new textMessage(obj);
+    text.save().then(textMessage => {
+      res.send({msg:'text sms sent successfully'})
+    }).catch(error => {
+      res.send({error:'txt msg not send'})
+    });
+  } else {
+    res.send({error:'txt msg not send due to wrong twilio or phone number'});
+  }
 }
