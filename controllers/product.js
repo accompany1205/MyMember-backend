@@ -30,7 +30,7 @@ exports.create = async (req, res) => {
         console.log(productObj)
         productObj.save((err, productData) => {
             if (err) {
-                res.send({ msg: "Product not created!", success: false, err })
+                res.send({ msg: "Product not created!", success: false })
             }
             else {
                 productFolders.findByIdAndUpdate(req.params.folderId, { $push: { products: productData._id } })
