@@ -1,5 +1,4 @@
 // const product = require("../models/product");
-const moment = require("moment");
 const buy_product = require("../models/buy_product");
 const Finance_infoSchema = require("../models/finance_info");
 const AddMember = require("../models/addmember");
@@ -78,7 +77,7 @@ exports.buy_product = async (req, res) => {
                     );
                     if (resp.data.error_no == 'S00') {
                         if (payLatter === "credit card" && req.body.product_details.payment_type === ("monthly" || "weekly")) {
-                            addValorPay = { ...addValorPay, amount: productData.payment_money, subscription_starts_from: productData.schedulePayments[0].date.split('-').join(''), Subscription_valid_for: productData.schedulePayments.length - 1, ...getUidAndInvoiceNumber() };
+                            addValorPay = { ...addValorPay, ...getUidAndInvoiceNumber() };
                             const addFormatedPayload = getFormatedPayload(addValorPay);
                             const addresp = await valorTechPaymentGateWay.addSubscription(
                                 addFormatedPayload
@@ -156,26 +155,6 @@ exports.buy_product = async (req, res) => {
                     }
                 }
                 else if (ptype === ("cash" || "cheque")) {
-                    if (!financeId) {
-                        valorPayload.address = Address;
-                        valorPayload.userId = userId;
-                        valorPayload.studentId = studentId;
-                        const financeDoc = await createFinanceDoc(valorPayload);
-                        if (financeDoc.success) {
-                            productData.product_status = "Active";
-                            memberShipDoc = await createProductDocument(
-                                productData,
-                                studentId
-                            );
-                            res.send(memberShipDoc);
-                        } else {
-                            res.send({
-                                msg: "Finance and product doc not created!",
-                                success: false,
-                            });
-                        }
-                    }
-
                     productData.product_status = "Active";
                     memberShipDoc = await createProductDocument(
                         productData,
@@ -244,24 +223,6 @@ exports.buy_product = async (req, res) => {
                     }
                 }
                 else if (ptype === ('cash' || 'cheque')) {
-                    if (!financeId) {
-                        valorPayload.address = Address;
-                        valorPayload.userId = userId;
-                        valorPayload.studentId = studentId;
-                        const financeDoc = await createFinanceDoc(valorPayload);
-                        if (financeDoc.success) {
-                            memberShipDoc = await createProductDocument(
-                                productData,
-                                studentId
-                            );
-                            return res.send(memberShipDoc);
-                        } else {
-                            res.send({
-                                msg: "Finace and product doc not created!",
-                                success: false,
-                            });
-                        }
-                    }
                     memberShipDoc = await createProductDocument(
                         productData,
                         studentId
@@ -365,19 +326,10 @@ function createFinanceDoc(data) {
     const { studentId } = data;
     return new Promise((resolve, reject) => {
         const financeData = new Finance_infoSchema(data);
-        // if (financeId) {
-        //     Finance_infoSchema.findByIdAndUpdate(financeId, {
-        //         $set: data
-        //     }).exec((err, resData) => {
-        //         if (err) {
-        //             resolve({ success: false });
-        //         }
-        //         resolve({ success: true });
-        //     })
-        // } else {
+
         financeData.save((err, Fdata) => {
             if (err) {
-                resolve({ success: false, msg: "Finance data is not stored!" });
+                reject({ success: false, msg: "Finance data is not stored!" });
             } else {
                 AddMember.findByIdAndUpdate(studentId, {
                     $push: { finance_details: Fdata._id },
@@ -385,12 +337,11 @@ function createFinanceDoc(data) {
                     if (data) {
                         resolve({ success: true });
                     } else {
-                        resolve({ success: false });
+                        reject({ success: false });
                     }
                 });
             }
         });
-        // }
     });
 }
 exports.update = async (req, res) => {
