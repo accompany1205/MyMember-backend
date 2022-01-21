@@ -162,6 +162,12 @@ exports.buy_product = async (req, res) => {
                     );
                     res.send(memberShipDoc);
                 }
+                else {
+                    res.send({
+                        msg: "payment mode should be cash/cheque or credit card",
+                        success: false,
+                    });
+                }
             } else {
                 res.send({
                     msg: "payment type should be weekly/monthly",

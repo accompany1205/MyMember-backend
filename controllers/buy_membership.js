@@ -728,6 +728,11 @@ exports.buyMembership = async (req, res) => {
             studentId
           );
           return res.send(memberShipDoc);
+        } else {
+          res.send({
+            msg: "payment mode should be cash/cheque or credit card",
+            success: false,
+          });
         }
       }
       else {
