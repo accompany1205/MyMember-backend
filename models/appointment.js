@@ -12,11 +12,11 @@ const appointSchema = new schema(
             type: String,
             required: true
         },
-        interval:{
-            type:String
+        interval: {
+            type: String
         },
-        range:{
-            type:String
+        range: {
+            type: String
         },
         appointment_type: {
             type: String,
@@ -59,10 +59,10 @@ const appointSchema = new schema(
             type: Array
         },
         studentInfo: {
-            type:Array
-    },
+            type: Array
+        },
         userId: {
-            type: schema.Types.ObjectId
+            type: String
         }
 
     },
