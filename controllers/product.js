@@ -88,7 +88,7 @@ exports.deleteproduct = (req, res) => {
                 }
                 else {
                     if (!data) {
-                        return res.status(401).send({
+                        return res.send({
                             msg: "This is system generated membership Only admin can delete",
                             success: false,
                         });
@@ -149,7 +149,7 @@ exports.updateproduct = async (req, res) => {
                 }
                 else {
                     if (updateData.n < 1) {
-                        return res.status(401).send({
+                        return res.send({
                             msg: "This is system generated product Only admin can update",
                             success: false,
                         });

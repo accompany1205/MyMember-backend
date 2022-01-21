@@ -95,7 +95,7 @@ exports.remove = (req, res) => {
           res.send({ msg: "membership is not delete", success: false });
         } else {
           if (!data) {
-            return res.status(401).send({
+            return res.send({
               msg: "This is system generated membership Only admin can delete",
               success: false,
             });
@@ -162,7 +162,7 @@ exports.membershipUpdate = async (req, res) => {
           });
         } else {
           if (data.n < 1) {
-            return res.status(401).send({
+            return res.send({
               msg: "This is system generated membership Only admin can update",
               success: false,
             });
