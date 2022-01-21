@@ -655,7 +655,7 @@ exports.buyMembership = async (req, res) => {
             saleFormatedPayload
           );
           if (resp.data.error_no == 'S00') {
-            if (payLatter === "credit card" && req.body.membership_details.payment_type === ("monthly" || "weekly")) {
+            if (payLatter === "credit card" && (req.body.product_details.payment_type === "monthly" || req.body.product_details.payment_type === "weekly")) {
               addValorPay = { ...addValorPay, amount: membershipData.payment_money, subscription_starts_from: membershipData.schedulePayments[0].date.split('-').join(''), Subscription_valid_for: membershipData.schedulePayments.length - 1, ...getUidAndInvoiceNumber() };
               const addFormatedPayload = getFormatedPayload(addValorPay);
               const addresp = await valorTechPaymentGateWay.addSubscription(
@@ -790,7 +790,7 @@ exports.buyMembership = async (req, res) => {
               success: false,
             });
           }
-        } else if (ptype === ('cash' || 'cheque')) {
+        } else if (ptype === ("cash" || "cheque")) {
           if (!financeId) {
             valorPayload.address = Address;
             valorPayload.userId = userId;

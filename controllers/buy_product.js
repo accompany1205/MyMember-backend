@@ -76,7 +76,7 @@ exports.buy_product = async (req, res) => {
                         saleFormatedPayload
                     );
                     if (resp.data.error_no == 'S00') {
-                        if (payLatter === "credit card" && req.body.product_details.payment_type === ("monthly" || "weekly")) {
+                        if (payLatter === "credit card" && (req.body.product_details.payment_type === "monthly" || req.body.product_details.payment_type === "weekly")) {
                             addValorPay = { ...addValorPay, ...getUidAndInvoiceNumber() };
                             const addFormatedPayload = getFormatedPayload(addValorPay);
                             const addresp = await valorTechPaymentGateWay.addSubscription(
@@ -154,7 +154,7 @@ exports.buy_product = async (req, res) => {
                         res.send({ msg: resp.data.mesg, success: false });
                     }
                 }
-                else if (ptype === ("cash" || "cheque")) {
+                else if (ptype === "cash" || ptype === "cheque") {
                     productData.product_status = "Active";
                     memberShipDoc = await createProductDocument(
                         productData,
@@ -222,7 +222,7 @@ exports.buy_product = async (req, res) => {
                         });
                     }
                 }
-                else if (ptype === ('cash' || 'cheque')) {
+                else if (ptype === "cash" || ptype === "cheque") {
                     memberShipDoc = await createProductDocument(
                         productData,
                         studentId
