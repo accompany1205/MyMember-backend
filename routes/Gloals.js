@@ -1,8 +1,10 @@
 const express = require('express')
 const Router = express.Router();
-const fs = require('fs'); 
+const fs = require('fs');
 const model = require("../models/goal_schema");
 const moment = require('moment');
+var mongo = require("mongoose")
+
 
 class Goals {
     constructor() {
@@ -15,7 +17,7 @@ class Goals {
     // Get method
     Get = async (req, res) => {
         try {
-            const {id} = req.params
+            const { id } = req.params
             const input = req.query
             let conditions = {}
             if (id) {
@@ -23,24 +25,39 @@ class Goals {
                     return res.status(200).json({ message: "ok", data: item });
                 });
             } else {
-                const { type = null, name = null, goal_type = null, priority = null, status = null , withStats = null , page = 1 , page_size  = 20 } = req.query;
+                const { type = null, name = null, goal_type = null, priority = null, status = null, withStats = null, page = 1, page_size = 20, parent = null } = req.query;
                 if (type) {
                     conditions.type = type;
                 }
                 if (name) {
                     conditions.name = { $regex: name, $options: 'i' };
                 }
-                model.paginate(conditions , { page, limit: page_size }, async function (err, items) {
-                    if (err) {
 
+                if (parent) {
+                    conditions.parent = mongo.Types.ObjectId(parent);
+                } else {
+                    conditions.parent = { $exists: false };
+                }
+                model.paginate(conditions, { page, limit: page_size }, async function (err, items) {
+                    if (err) {
                         return res.status(400).json({ message: err.message });
                     }
-                    return res.status(200).json({ message: "ok", data: items });
+                    if (!parent) {
+                        items = JSON.parse(JSON.stringify(items));
+                        for (let gl of items.docs) {
+                            const subitems = await model.find({ parent: gl._id }).exec()
+                            gl.sub_goals = subitems
+                            console.log(gl)
+                        }
+                        console.log("items")
+                        return res.status(200).json({ message: "ok", data: items });
+                    } else {
+                        return res.status(200).json({ message: "ok", data: items });
+                    }
                 });
             }
 
         } catch (err) {
-            console.log("sdfds" , err)
             return res.status(400).json({ message: err });
         }
     }
@@ -53,7 +70,7 @@ class Goals {
                 if (err) {
                     return res.status(400).json({ message: err });
                 } else {
-                    return res.status(400).json({ message: "item add successfuly", data: data  }) ;
+                    return res.status(400).json({ message: "item add successfuly", data: data });
                 }
             });
         } catch (err) {
@@ -63,16 +80,16 @@ class Goals {
 
     Put = async (req, res) => {
         try {
-            const {id} = req.params
+            const { id } = req.params
             const input = req.body
             if (id) {
-                model.findByIdAndUpdate(id, input , {} , (err , data)=>{
+                model.findByIdAndUpdate(id, input, {}, (err, data) => {
                     if (err) {
                         return res.status(400).json({ message: err });
                     }
-                    return res.status(200).json({ message: "item updated successfuly"  , data });
+                    return res.status(200).json({ message: "item updated successfuly", data });
                 })
-            }else{
+            } else {
                 return res.status(400).json({ message: "id is required" });
             }
         } catch (err) {
@@ -82,20 +99,20 @@ class Goals {
 
     delete = async (req, res) => {
         try {
-            const {id} = req.params
+            const { id } = req.params
             const input = req.body
             if (id) {
-                model.findOneAndDelete({_id : id}, {} , (err , data)=>{
-                    console.log(err , data)
+                model.findOneAndDelete({ _id: id }, {}, (err, data) => {
+                    console.log(err, data)
                     if (err) {
                         return res.status(400).json({ message: err });
                     }
-                    return res.status(200).json({ message: "item remove successfuly"  , data });
+                    return res.status(200).json({ message: "item remove successfuly", data });
                 })
-            }else{
+            } else {
                 return res.status(400).json({ message: "id is required" });
             }
-        } catch (err)  {
+        } catch (err) {
 
         }
     }

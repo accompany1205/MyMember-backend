@@ -9,7 +9,7 @@ const mongoosePaginate = require("mongoose-paginate-v2");
 //             required: true,
 //             maxlength: 32
 //         },
-       
+
 //         goal_category: {type: String, required: true},
 
 //         compeleting_Date: {
@@ -36,14 +36,8 @@ const mongoosePaginate = require("mongoose-paginate-v2");
 //     { timestamps: true }
 // );
 const goalSchema = new mongoose.Schema(
-        {
-        type: {
-            type: String,
-            trim: true,
-            required: true,
-            maxlength: 32,
-            enum : ['personal','mymember'],
-        },
+    {
+        parent: { type: mongoose.Schema.Types.ObjectId, ref: 'goals' },
         name: {
             type: String,
             trim: true,
@@ -53,13 +47,44 @@ const goalSchema = new mongoose.Schema(
         icon: {
             type: String,
         },
-        color : {
+        color: {
+            type: String,
+        },
+        start_date: {
+            type: Date,
+        },
+        end_date: {
+            type: Date,
+        },
+        type: {
+            type: String,
+            trim: true,
+            enum: ['daily', 'weekly', 'monthly', 'yearly', "fixed"],
+        },
+        current: {
+            type: Number,
+        },
+        goal: {
+            type: Number,
+        },
+        priority: {
+            type: Number,
+        },
+        status: {
+            type: Number,
+            required: true
+        },
+        label: {
+            type: String,
+        },
+        category: {
+            type: String,
+        },
+        userId: {
             type: String,
         }
     },
     { timestamps: true }
 );
 goalSchema.plugin(mongoosePaginate);
-
-
 module.exports = mongoose.model("goals", goalSchema);
