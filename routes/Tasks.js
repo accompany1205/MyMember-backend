@@ -4,6 +4,24 @@ const fs = require('fs');
 const model = require("../models/task_schema");
 const moment = require('moment');
 
+
+
+const STATUS_DICT = {
+    1: "Pending",
+    2: "In Progress",
+    3: "Completed",
+    5: "Not completed",
+}
+
+
+const Priority_DICT = {
+    1: "Low",
+    2: "Normal",
+    3: "Hight",
+    4: "Urgent",
+}
+
+
 class Tasks {
     constructor() {
         Router.get('/tasks/:id?', this.Get);
@@ -15,7 +33,7 @@ class Tasks {
     // Get method
     Get = async (req, res) => {
         try {
-            const {id} = req.params
+            const { id } = req.params
             const input = req.query
             let conditions = {}
             if (id) {
@@ -24,7 +42,7 @@ class Tasks {
                 });
 
             } else {
-                const { type = null, name = null, label = null, time = null, priority = null, status = null , withStats = null , page = 1 , page_size  = 20 } = req.query;
+                const { type = null, name = null, label = null, time = null, priority = null, status = null, withStats = null, page = 1, page_size = 20 } = req.query;
                 if (type) {
                     conditions.type = type;
                 }
@@ -41,50 +59,50 @@ class Tasks {
                 if (status) {
                     conditions.status = status;
                 }
-           
+
                 if (time) {
                     switch (time) {
                         case "today":
-                            conditions.due_date = { "$gte": moment().add("-1", "days").toISOString()};
+                            conditions.due_date = { "$gte": moment().add("-1", "days").toISOString() };
                             break;
                         case "tommorow":
-                            conditions.due_date = { "$gte": moment().add("1", "days").toISOString()};
+                            conditions.due_date = { "$gte": moment().add("1", "days").toISOString() };
                             break;
                         case "upcoming":
-                            conditions.due_date = { "$gte": moment().toISOString()};
+                            conditions.due_date = { "$gte": moment().toISOString() };
                             break;
                         case "week":
-                            conditions.due_date = { "$gte": moment().add("-1", "weeks").toISOString()};
+                            conditions.due_date = { "$gte": moment().add("-1", "weeks").toISOString() };
                             break;
                         case "month":
                             conditions.due_date = { "$gte": moment().add("-1", "months").toISOString() };
                             break;
                         case "year":
-                            conditions.due_date = { "$gte": moment().add("-1", "years").toISOString()};
+                            conditions.due_date = { "$gte": moment().add("-1", "years").toISOString() };
                             break;
                         default:
                             break;
                     }
                 }
-                
-                model.paginate(conditions , { page, limit: page_size }, async function (err, items) {
+
+                model.paginate(conditions, { page, limit: page_size }, async function (err, items) {
                     if (withStats) {
                         let data = items
 
-                        const today_count = await model.countDocuments({due_date: {$gte: moment().add("-1", "days").toISOString()}})
-                        const today_complete = await model.countDocuments({status: 3});
+                        const today_count = await model.countDocuments({ due_date: { $gte: moment().add("-1", "days").toISOString() } })
+                        const today_complete = await model.countDocuments({ status: 3 });
                         const today_total_complete_percent = parseFloat((today_complete / today_count) * 100).toFixed(2);
 
-                        const week_count = await model.countDocuments({due_date: {$gte: moment().add("-1", "weeks").toISOString()}})
-                        const week_complete = await model.countDocuments({status: 3});
+                        const week_count = await model.countDocuments({ due_date: { $gte: moment().add("-1", "weeks").toISOString() } })
+                        const week_complete = await model.countDocuments({ status: 3 });
                         const week_total_complete_percent = parseFloat((week_complete / week_count) * 100).toFixed(2);
 
-                        const month_count = await model.countDocuments({due_date: {$gte: moment().add("-1", "months").toISOString()}})
-                        const month_complete = await model.countDocuments({status: 3});
+                        const month_count = await model.countDocuments({ due_date: { $gte: moment().add("-1", "months").toISOString() } })
+                        const month_complete = await model.countDocuments({ status: 3 });
                         const month_total_complete_percent = parseFloat((month_complete / month_count) * 100).toFixed(2);
 
-                        const year_count = await model.countDocuments({due_date: {$gte: moment().add("-1", "years").toISOString()}})
-                        const year_complete = await model.countDocuments({status: 3});
+                        const year_count = await model.countDocuments({ due_date: { $gte: moment().add("-1", "years").toISOString() } })
+                        const year_complete = await model.countDocuments({ status: 3 });
                         const year_total_complete_percent = parseFloat((year_complete / year_count) * 100).toFixed(2);
                         data.stats = {}
                         data.stats.today_complete = +today_total_complete_percent || 0;
@@ -92,7 +110,7 @@ class Tasks {
                         data.stats.month_complete = +month_total_complete_percent || 0;
                         data.stats.year_complete = +year_total_complete_percent || 0;
                         return res.status(200).json({ message: "ok", data: data });
-                    }else{
+                    } else {
                         return res.status(200).json({ message: "ok", data: items });
                     }
                 });
@@ -111,7 +129,7 @@ class Tasks {
                 if (err) {
                     return res.status(400).json({ message: err });
                 } else {
-                    return res.status(400).json({ message: "item add successfuly", data: data  }) ;
+                    return res.status(400).json({ message: "item add successfuly", data: data });
                 }
             });
         } catch (err) {
@@ -121,16 +139,16 @@ class Tasks {
 
     Put = async (req, res) => {
         try {
-            const {id} = req.params
+            const { id } = req.params
             const input = req.body
             if (id) {
-                model.findByIdAndUpdate(id, input , {} , (err , data)=>{
+                model.findByIdAndUpdate(id, input, {}, (err, data) => {
                     if (err) {
                         return res.status(400).json({ message: err });
                     }
-                    return res.status(200).json({ message: "item updated successfuly"  , data });
+                    return res.status(200).json({ message: "item updated successfuly", data });
                 })
-            }else{
+            } else {
                 return res.status(400).json({ message: "id is required" });
             }
         } catch (err) {
@@ -140,20 +158,20 @@ class Tasks {
 
     delete = async (req, res) => {
         try {
-            const {id} = req.params
+            const { id } = req.params
             const input = req.body
             if (id) {
-                model.findOneAndDelete({_id : id}, {} , (err , data)=>{
-                    console.log(err , data)
+                model.findOneAndDelete({ _id: id }, {}, (err, data) => {
+                    console.log(err, data)
                     if (err) {
                         return res.status(400).json({ message: err });
                     }
-                    return res.status(200).json({ message: "item remove successfuly"  , data });
+                    return res.status(200).json({ message: "item remove successfuly", data });
                 })
-            }else{
+            } else {
                 return res.status(400).json({ message: "id is required" });
             }
-        } catch (err)  {
+        } catch (err) {
 
         }
     }
