@@ -876,6 +876,7 @@ exports.studentinfo = (req, res) => {
   addmemberModal
     .findById(studentinfo)
     .populate({ path: "membership_details", options: { sort: { ['membership_name']: order } } })
+    .populate("product_details")
     .populate("finance_details")
     .populate("myFaimly")
     .exec((err, data) => {
