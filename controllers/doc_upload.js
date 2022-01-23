@@ -7,13 +7,13 @@ const cloudUrl = require("../gcloud/imageUrl");
 
 exports.docupload = async (req, res) => {
   let subFolderId = req.params.subFolderId;
-  let rootFolderId = req.params.rootFolderId;
+  // let rootFolderId = req.params.rootFolderId;
   let userId = req.params.userId;
   let docData = req.body
   try {
 
     const docFileDetails = {
-      document_name: docData,
+      document_name: docData.document_name,
       subFolderId: subFolderId,
       userId: userId
     }
@@ -30,7 +30,7 @@ exports.docupload = async (req, res) => {
     var mydoc = new docfile(docFileDetails);
     mydoc.save((err, docdata) => {
       if (err) {
-        res.send({ msg: 'document is not added ' })
+        res.send({ msg: 'document is not added', success: false })
       }
       else {
         docsubfolder.findByIdAndUpdate(req.params.subFolderId, { $push: { document: docdata._id } },
@@ -39,7 +39,7 @@ exports.docupload = async (req, res) => {
               res.send({ msg: 'File not added', success: false })
             }
             else {
-              res.send({ msg: "Document Uploaded Successfully!" })
+              res.send({ msg: "Document Uploaded Successfully!", success: true })
             }
           })
       }
