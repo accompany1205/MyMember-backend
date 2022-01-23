@@ -19,21 +19,23 @@ exports.create = async (req, res) => {
         productDetails.folderId = req.params.folderId;
         const promises = []
         if (req.files) {
-            (req.files).map(file => {
-                if (file.originalname.split('.')[0] === "thumbnail") {
-                    cloudUrl.imageUrl(file)
-                        .then(data => {
-                            productDetails.productThumbnail = data
-                        })
-                        .catch(err => {
-                            res.send({ msg: "Thumbnail not uploaded!", success: false })
-                        })
-                } else {
-                    promises.push(cloudUrl.imageUrl(file))
-                }
+            Object.entries(req.files).forEach(([key, value]) => {
+                value.map(file => {
+                    if (file.fieldname === "thumbnail") {
+                        cloudUrl.imageUrl(file)
+                            .then(data => {
+                                productDetails.productThumbnail = data
+                            })
+                            .catch(err => {
+                                res.send({ msg: "Thumbnail not uploaded!", success: false })
+                            })
+                    } else {
+                        promises.push(cloudUrl.imageUrl(file))
+                    }
+                })
             });
-            var docs = await Promise.all(promises);
         }
+        var docs = await Promise.all(promises);
         productDetails.productFile = docs;
         var productObj = new product(productDetails);
         productObj.save((err, productData) => {
@@ -196,8 +198,8 @@ async function buffToPdf(file) {
     const ext = '.pdf'
     let pdfBuf = await libre.convertAsync(file, ext, undefined);
     return pdfBuf;
-  }
-  
+}
+
 exports.mergeDoc = async (req, res) => {
     let docBody = req.body.docUrl;
     let studentId = req.params.studentId;

@@ -50,6 +50,15 @@ const productSchema = new schema(
             type: Boolean,
             default: false
         },
+        amount: {
+            type: String,
+        },
+        no_of_payment: {
+            type: String,
+        },
+        isRecurring: {
+            type: Number
+        },
         userId: {
             type: String
         },
