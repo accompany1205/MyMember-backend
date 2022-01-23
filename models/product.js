@@ -53,6 +53,9 @@ const productSchema = new schema(
         amount: {
             type: String,
         },
+        balance: {
+            type: String,
+        },
         no_of_payment: {
             type: String,
         },
