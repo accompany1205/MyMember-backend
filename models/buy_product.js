@@ -100,6 +100,9 @@ const productSchema = new schema(
         student_name: {
             type: String,
         },
+        mergedDoc: {
+            type: String
+        },
         studentInfo: [
             {
                 type: schema.Types.ObjectId,

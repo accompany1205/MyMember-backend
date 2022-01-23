@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 
-
 const {
   update,
   create,
@@ -14,6 +13,7 @@ const {
   expiredMembership,
   thismonthMembership,
   addSubscription,
+  getMergeDoc
 } = require("../controllers/buy_membership");
 const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 
@@ -30,5 +30,6 @@ router.post("/membership/buy_membership/:userId/:studentId", requireSignin, buyM
 router.put("/membership/update_buy_memberships/:userId/:membershipId/:type", requireSignin, update);
 router.delete("/membership/delete_buy_membership/:userId/:membershipId", requireSignin, remove);
 router.put("/membership/update_buy_memberships_Payments/:userId/:membershipId/:emiID", requireSignin, updatePayments);
+router.get("/membership/getMrgeDoc/:userId/:buyMembershipId", requireSignin, getMergeDoc);
 
 module.exports = router;

@@ -9,6 +9,6 @@ router.get('/membership/info_membership/:userId/:membershipId',requireSignin,mem
 router.post('/membership/add_membership/:userId/:folderId',verifySchool,upload.array('docs'),create)
 router.delete('/membership/delete_membership/:userId/:membershipId',requireSignin,remove)
 router.put('/membership/update_membership/:userId/:membershipId',requireSignin,upload.array('docs'),membershipUpdate)
-router.post('/membership/mergeDoc/:userId/:studentId/:membershipId', mergeDoc);
+router.post('/membership/mergeDoc/:userId/:studentId/:membershipId/:buyMembershipId',requireSignin, mergeDoc);
 
 module.exports = router;

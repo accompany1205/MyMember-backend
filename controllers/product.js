@@ -1,6 +1,15 @@
 var product = require('../models/product')
 const cloudUrl = require("../gcloud/imageUrl");
 var productFolders = require('../models/productFolder')
+const BuyProduct = require("../models/buy_product");
+const Student = require("../models/addmember");
+const pizzip = require('pizzip');
+const fetch = require('node-fetch');
+const libre = require('libreoffice-convert');
+const path = require('path');
+const tmp = require('tmp');
+const fs = require('fs');
+const Docxtemplater = require("docxtemplater");
 
 exports.create = async (req, res) => {
     try {
@@ -27,7 +36,6 @@ exports.create = async (req, res) => {
         }
         productDetails.productFile = docs;
         var productObj = new product(productDetails);
-        console.log(productObj)
         productObj.save((err, productData) => {
             if (err) {
                 res.send({ msg: "Product not created!", success: false, err })
@@ -89,7 +97,7 @@ exports.deleteproduct = (req, res) => {
                 else {
                     if (!data) {
                         return res.status(401).send({
-                            msg: "This is system generated membership Only admin can delete",
+                            msg: "This is system generated Product Only admin can delete",
                             success: false,
                         });
                     }
@@ -180,6 +188,56 @@ exports.updateproduct = async (req, res) => {
         res.send({ msg: err.message.replace(/\"/g, ""), success: false })
     }
 
+}
+async function buffToPdf(file) {
+    libre.convertAsync = require('util').promisify(libre.convert)
+    const ext = '.pdf'
+    let pdfBuf = await libre.convertAsync(file, ext, undefined);
+    return pdfBuf;
+  }
+  
+exports.mergeDoc = async (req, res) => {
+    let docBody = req.body.docUrl;
+    let studentId = req.params.studentId;
+    let userId = req.params.userId;
+    let productId = req.params.productId;
+    let buyProductId = req.params.buyProductId;
+    try {
+        let response = await fetch(docBody);
+        const studentInfo = await Student.findOne({ _id: studentId });
+        const productInfo = await product.findOne({ _id: productId });
+        const mergedInfo = { ...studentInfo, ...productInfo };
+        response = await response.buffer();
+        const zip = new pizzip(response);
+        const doc = new Docxtemplater(zip, { linebreaks: true });
+        doc.render(mergedInfo);
+        const buf = doc.getZip().generate({
+            type: "nodebuffer",
+            compression: "DEFLATE",
+        });
+        finalPDF = await buffToPdf(buf);
+        let bufCount = Buffer.byteLength(finalPDF)
+        fileObj = {
+            fieldname: 'attach',
+            originalname: 'final.pdf',
+            encoding: '7bit',
+            mimetype: 'application/pdf',
+            buffer: finalPDF,
+            size: bufCount
+        }
+        //fs.writeFileSync(path.resolve(__dirname, "output.pdf"), finalPDF);
+        cloudUrl.imageUrl(fileObj).then(Docresp => {
+            BuyProduct.updateOne({ _id: buyProductId }, { $set: { mergedDoc: Docresp } }).then(data => {
+                res.send({ msg: "Merged doc added succesfully!", success: true });
+            }).catch(err => {
+                res.send({ msg: "merged doc not added!", success: false })
+            })
+        }).catch(err => {
+            console.log(err)
+        })
+    } catch (err) {
+        throw (err);
+    }
 }
 
 // exports.updateStatus = (req,res)=>{
