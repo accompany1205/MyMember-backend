@@ -133,6 +133,7 @@ exports.membershipUpdate = async (req, res) => {
     const userId = req.params.userId;
     const new_folderId = req.body.folderId;
     const old_folderId = req.body.old_folderId;
+    membershipData.folderId = new_folderId
     const promises = []
     if (req.files) {
       (req.files).map(file => {

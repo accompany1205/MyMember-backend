@@ -2,19 +2,20 @@ const mongoose = require("mongoose");
 const schema = mongoose.Schema
 
 const docFolderSchema = new schema({
-    folderName:{
-        type:String,
-        required:true
+    folderName: {
+        type: String,
+        unique: true,
+        required: true
     },
-    subFolder:[{
-        type:schema.Types.ObjectId,
-        ref:'docsubfolder'
+    subFolder: [{
+        type: schema.Types.ObjectId,
+        ref: 'docsubfolder'
     }],
-    userId:{
-        type:String
+    userId: {
+        type: String
     },
-    createdBy:{
-        type:String
+    createdBy: {
+        type: String
     }
 })
 
