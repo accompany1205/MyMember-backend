@@ -80,17 +80,24 @@ exports.removeSubFolder = async (req, res) => {
                     res.send({ msg: 'sub folder not removed!', success: false })
                 }
                 else {
-                    DocFolder.updateOne({ "subFolder": removeFolder._id }, { $pull: { "subFolder": removeFolder._id } },
-                        function (err, data) {
-                            if (err) {
-                                res.send({ msg: 'subfolder is not remove from folder', success: false })
-                            }
-                            else {
-                                res.send({
-                                    msg: 'subfolder removed successfully', success: true
-                                })
-                            }
+                    if (removeFolder) {
+                        DocFolder.updateOne({ "subFolder": removeFolder._id }, { $pull: { "subFolder": removeFolder._id } },
+                            function (err, data) {
+                                if (err) {
+                                    res.send({ msg: 'subfolder is not remove from folder', success: false })
+                                }
+                                else {
+                                    res.send({
+                                        msg: 'subfolder removed successfully', success: true
+                                    })
+                                }
+                            })
+                    }
+                    else {
+                        res.send({
+                            msg: 'subfolder removed already!', success: true
                         })
+                    }
                 }
             })
     }

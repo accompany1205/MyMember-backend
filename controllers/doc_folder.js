@@ -28,7 +28,13 @@ exports.createfolder = async (req, res) => {
 exports.readfolder = async (req, res) => {
     try {
         await docFolder.find({ userId: req.params.userId })
-            .populate('subFolder')
+            .populate({
+                path: 'subFolder',
+                populate: {
+                    path: 'document',
+                    model: 'uploadDocument'
+                }
+            })
             .exec((err, folderList) => {
                 if (err) {
                     res.send({ success: false, msg: 'document folder is not find' })
@@ -48,10 +54,10 @@ exports.editFolder = async (req, res) => {
         await docFolder.findByIdAndUpdate(req.params.docfolderId, req.body)
             .exec((err, updateFolder) => {
                 if (err) {
-                    res.send({ msg: 'document folder is not update', success: false })
+                    res.send({ msg: 'Document folder not updated!', success: false })
                 }
                 else {
-                    res.send({ msg: 'document folder is update successfully', success: true })
+                    res.send({ msg: 'Document folder update successfully', success: true })
                 }
             })
     }
@@ -65,10 +71,10 @@ exports.removeFolder = async (req, res) => {
         await docFolder.findByIdAndRemove(req.params.docfolderId)
             .exec((err, removeFolder) => {
                 if (err) {
-                    res.send({ success: false, msg: 'document folder is not remove' })
+                    res.send({ success: false, msg: 'Document folder not removed' })
                 }
                 else {
-                    res.send({ msg: 'document folder is remove successfully', success: true })
+                    res.send({ msg: 'Document folder removed successfully', success: true })
                 }
             })
     }
