@@ -100,7 +100,7 @@ exports.remove = (req, res) => {
           res.send({ msg: "membership is not delete", success: false });
         } else {
           if (!data) {
-            return res.status(401).send({
+            return res.send({
               msg: "This is system generated membership Only admin can delete",
               success: false,
             });
@@ -137,6 +137,7 @@ exports.membershipUpdate = async (req, res) => {
     const userId = req.params.userId;
     const new_folderId = req.body.folderId;
     const old_folderId = req.body.old_folderId;
+    membershipData.folderId = new_folderId
     const promises = []
     if (req.files) {
       (req.files).map(file => {
@@ -166,7 +167,7 @@ exports.membershipUpdate = async (req, res) => {
           });
         } else {
           if (data.n < 1) {
-            return res.status(401).send({
+            return res.send({
               msg: "This is system generated membership Only admin can update",
               success: false,
             });

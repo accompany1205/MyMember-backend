@@ -625,7 +625,7 @@ exports.buyMembership = async (req, res) => {
   let membershipData = req.body.membership_details;
   const Address = valorPayload ? valorPayload.address : "";
   const payLatter = req.body.membership_details.pay_latter;
-  const financeId = req.body.membership_details.financeId;
+  const financeId = req.body.membership_details.finance_id;
   const ptype = req.body.membership_details.ptype;
   delete req.body.membership_details.valorPayload;
   let memberShipDoc;
@@ -655,7 +655,7 @@ exports.buyMembership = async (req, res) => {
             saleFormatedPayload
           );
           if (resp.data.error_no == 'S00') {
-            if (payLatter === "credit card" && req.body.membership_details.payment_type === "monthly") {
+            if (payLatter === "credit card" && (membershipData.payment_type === "monthly" || membershipData.payment_type === "weekly")) {
               addValorPay = { ...addValorPay, amount: membershipData.payment_money, subscription_starts_from: membershipData.schedulePayments[0].date.split('-').join(''), Subscription_valid_for: membershipData.schedulePayments.length - 1, ...getUidAndInvoiceNumber() };
               const addFormatedPayload = getFormatedPayload(addValorPay);
               const addresp = await valorTechPaymentGateWay.addSubscription(
@@ -663,103 +663,170 @@ exports.buyMembership = async (req, res) => {
               );
               if (addresp.data.error_no === "S00") {
                 membershipData.subscription_id = addresp.data.subscription_id
-              } else {
-                membershipData.subscription_id = "failed"
-                for (let i = 0; i < membershipData.schedulePayments.length; i++) {
-                  membershipData.schedulePayments[i].status = "due";
-                  membershipData.schedulePayments[i].ptype = "cash";
+                membershipData.transactionId = {
+                  rrn: resp.data.rrn,
+                  txnid: resp.data.txnid,
+                  token: resp.data.token,
+                };
+
+                if (!financeId) {
+                  valorPayload.address = Address;
+                  valorPayload.userId = userId;
+                  valorPayload.studentId = studentId;
+                  const financeDoc = await createFinanceDoc(valorPayload);
+                  if (financeDoc.success) {
+                    membershipData.membership_status = "Active";
+                    memberShipDoc = await createMemberShipDocument(
+                      membershipData,
+                      studentId
+                    );
+                    res.send(memberShipDoc);
+
+                  } else {
+                    res.send({
+                      msg: "Finance and membership doc not created!",
+                      success: false,
+                    });
+                  }
                 }
+
+                membershipData.membership_status = "Active";
+                memberShipDoc = await createMemberShipDocument(
+                  membershipData,
+                  studentId
+                );
+                res.send(memberShipDoc);
               }
             }
-            membershipData.transactionId = {
-              rrn: resp.data.rrn,
-              txnid: resp.data.txnid,
-              token: resp.data.token,
-            };
+
+          } else {
+            res.send({ msg: resp.data.mesg, success: false });
+          }
+        } else if (ptype === ("cash" || "cheque")) {
+          if (!financeId) {
             valorPayload.address = Address;
             valorPayload.userId = userId;
             valorPayload.studentId = studentId;
-            const financeDoc = await createFinanceDoc(valorPayload, financeId);
+            const financeDoc = await createFinanceDoc(valorPayload);
             if (financeDoc.success) {
               membershipData.membership_status = "Active";
               memberShipDoc = await createMemberShipDocument(
                 membershipData,
                 studentId
               );
-              res.send(memberShipDoc);
+              return res.send(memberShipDoc);
             } else {
               res.send({
                 msg: "Finance and membership doc not created!",
                 success: false,
               });
             }
-          } else {
-            res.send({ msg: resp.data.mesg, success: false });
           }
-        } else {
           membershipData.membership_status = "Active";
           memberShipDoc = await createMemberShipDocument(
             membershipData,
             studentId
           );
-          res.send(memberShipDoc);
+          return res.send(memberShipDoc);
+        } else {
+          res.send({
+            msg: "payment mode should be cash/cheque or credit card",
+            success: false,
+          });
         }
-      } else {
+      }
+      else {
         res.send({
           msg: "payment type should be weekly/monthly",
           success: false,
         });
       }
     } else {
-      membershipData.due_status = "paid";
-      membershipData.membership_status = "Active";
-      if (!membershipData.isEMI && membershipData.balance == 0 && ptype === 'credit card') {
-        if (valorPayload.pan) {
-          const { uid } = getUidAndInvoiceNumber();
-          valorPayload = { ...valorPayload, uid };
-          const FormatedPayload = getFormatedPayload(valorPayload);
-          const resp = await valorTechPaymentGateWay.saleSubscription(
-            FormatedPayload
-          );
+      if (!membershipData.isEMI && membershipData.balance == 0 && membershipData.payment_type == "pif") {
+        membershipData.due_status = "paid";
+        membershipData.membership_status = "Active";
+        if (valorPayload && ptype === 'credit card') {
+          if (valorPayload.pan) {
+            const { uid } = getUidAndInvoiceNumber();
+            valorPayload = { ...valorPayload, uid };
+            const FormatedPayload = getFormatedPayload(valorPayload);
+            const resp = await valorTechPaymentGateWay.saleSubscription(
+              FormatedPayload
+            );
 
-          if (resp.data.error_no === "S00") {
-            membershipData.transactionId = {
-              rrn: resp.data.rrn,
-              txnid: resp.data.txnid,
-              token: resp.data.token,
-            };
+            if (resp.data.error_no === "S00") {
+              membershipData.transactionId = {
+                rrn: resp.data.rrn,
+                txnid: resp.data.txnid,
+                token: resp.data.token,
+              };
+
+              if (!financeId) {
+                valorPayload.address = Address;
+                valorPayload.userId = userId;
+                valorPayload.studentId = studentId;
+                const financeDoc = await createFinanceDoc(valorPayload);
+                if (financeDoc.success) {
+                  memberShipDoc = await createMemberShipDocument(
+                    membershipData,
+                    studentId
+                  );
+
+                  return res.send(memberShipDoc);
+                } else {
+                  res.send({
+                    msg: "Finace and membership doc not created!",
+                    success: false,
+                  });
+                }
+              }
+              memberShipDoc = await createMemberShipDocument(
+                membershipData,
+                studentId
+              );
+              return res.send(memberShipDoc);
+            } else {
+              res.send({ msg: resp.data.mesg, success: false });
+            }
+          }
+          else {
+            res.send({
+              msg: "please provide Card Detatils",
+              success: false,
+            });
+          }
+        } else if (ptype === ("cash" || "cheque")) {
+          if (!financeId) {
             valorPayload.address = Address;
             valorPayload.userId = userId;
             valorPayload.studentId = studentId;
-            const financeDoc = await createFinanceDoc(valorPayload, financeId);
+            const financeDoc = await createFinanceDoc(valorPayload);
             if (financeDoc.success) {
               memberShipDoc = await createMemberShipDocument(
                 membershipData,
                 studentId
               );
-              res.send(memberShipDoc);
+              return res.send(memberShipDoc);
             } else {
               res.send({
                 msg: "Finace and membership doc not created!",
                 success: false,
               });
             }
-          } else {
-            res.send({ msg: resp.data.mesg, success: false });
           }
-        } else {
+
           memberShipDoc = await createMemberShipDocument(
             membershipData,
             studentId
           );
-          res.send(memberShipDoc);
+          return res.send(memberShipDoc);
         }
-      } else {
-        memberShipDoc = await createMemberShipDocument(
-          membershipData,
-          studentId
-        );
-        res.send(memberShipDoc);
+      }
+      else {
+        res.send({
+          msg: "payment type should be pif",
+          success: false,
+        });
       }
     }
   } catch (error) {
@@ -837,7 +904,6 @@ function createMemberShipDocument(membershipData, studentId) {
                   } else {
                     resolve({
                       msg: "membership purchase successfully",
-                      data: result,
                       success: true,
                     });
                   }
@@ -850,36 +916,36 @@ function createMemberShipDocument(membershipData, studentId) {
   });
 }
 
-function createFinanceDoc(data, financeId) {
+function createFinanceDoc(data) {
   const { studentId } = data;
   return new Promise((resolve, reject) => {
     const financeData = new Finance_infoSchema(data);
-    if (financeId) {
-      Finance_infoSchema.findByIdAndUpdate(financeId, {
-        $set: data
-      }).exec((err, resData) => {
-        if (err) {
-          resolve({ success: false });
-        }
-        resolve({ success: true });
-      })
-    } else {
-      financeData.save((err, Fdata) => {
-        if (err) {
-          resolve({ success: false, msg: "Finance data is not stored!" });
-        } else {
-          AddMember.findByIdAndUpdate(studentId, {
-            $push: { finance_details: Fdata._id },
-          }).exec((err, data) => {
-            if (data) {
-              resolve({ success: true });
-            } else {
-              resolve({ success: false });
-            }
-          });
-        }
-      });
-    }
+    // if (financeId) {
+    //   Finance_infoSchema.findByIdAndUpdate(financeId, {
+    //     $set: data
+    //   }).exec((err, resData) => {
+    //     if (err) {
+    //       resolve({ success: false });
+    //     }
+    //     resolve({ success: true });
+    //   })
+    // } else {
+    financeData.save((err, Fdata) => {
+      if (err) {
+        resolve({ success: false, msg: "Finance data is not stored!" });
+      } else {
+        AddMember.findByIdAndUpdate(studentId, {
+          $push: { finance_details: Fdata._id },
+        }).exec((err, data) => {
+          if (data) {
+            resolve({ success: true });
+          } else {
+            resolve({ success: false });
+          }
+        });
+      }
+    });
+    // }
   });
 }
 // async function cronForEmiStatus() {

@@ -73,6 +73,9 @@ const membershipSchema = schema({
     no_of_payment: {
         type: String,
     },
+    isRecurring: {
+        type: Number
+    },
     userId: {
         type: String
     },

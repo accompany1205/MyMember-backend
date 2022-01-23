@@ -64,7 +64,6 @@ const productSchema = new schema(
         },
         due_every: {
             type: String,
-            required: true
         },
         schedulePayments: {
             type: Array,

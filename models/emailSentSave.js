@@ -78,10 +78,12 @@ const EmailSchema = schema({
     attachments: {
         type: Array
     },
-    smartLists: [{
-        stdtype: String,
-        smrtList: Array
-    }]
+    days: {
+        type: String
+    },
+    smartLists: {
+        type: Array
+    }
 },
     { timestamps: true }
 )

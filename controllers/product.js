@@ -38,7 +38,7 @@ exports.create = async (req, res) => {
         var productObj = new product(productDetails);
         productObj.save((err, productData) => {
             if (err) {
-                res.send({ msg: "Product not created!", success: false, err })
+                res.send({ msg: "Product not created!", success: false })
             }
             else {
                 productFolders.findByIdAndUpdate(req.params.folderId, { $push: { products: productData._id } })
@@ -131,6 +131,8 @@ exports.updateproduct = async (req, res) => {
         const userId = req.params.userId;
         const new_folderId = req.body.folderId;
         const old_folderId = req.body.old_folderId;
+        productData.folderId = new_folderId
+
         const promises = []
         if (req.files) {
             (req.files).map(file => {
@@ -157,7 +159,7 @@ exports.updateproduct = async (req, res) => {
                 }
                 else {
                     if (updateData.n < 1) {
-                        return res.status(401).send({
+                        return res.send({
                             msg: "This is system generated product Only admin can update",
                             success: false,
                         });

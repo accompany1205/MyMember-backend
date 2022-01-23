@@ -166,120 +166,218 @@ exports.update = (req, res) => {
 };
 
 exports.appointmentFilter = async (req, res) => {
+
+  let catType = req.params.catType;
   var per_page = parseInt(req.params.per_page) || 5;
   var page_no = parseInt(req.params.page_no) || 0;
   var pagination = {
     limit: per_page,
     skip: per_page * page_no,
   };
-  const filter = req.body.filter;
+  const filter = req.query.filter;
   const userId = req.params.userId;
   let date = new Date();
 
-  if (filter === "Today") {
-    let cDate = ("0" + (date.getDate())).slice(-2);
-    let cMonth = ("0" + (date.getMonth() + 1)).slice(-2);
-    let cYear = date.getFullYear();
-    let currentDate = `${cMonth}/${cDate}/${cYear}`;
-    const totalCount = await appoint.find({
-      $and: [
-        { userId: userId },
-        { start: currentDate }
-      ]
-    }).countDocuments();
+  try {
+    if (filter === "Today") {
+      let cDate = ("0" + (date.getDate())).slice(-2);
+      let cMonth = ("0" + (date.getMonth() + 1)).slice(-2);
+      let cYear = date.getFullYear();
+      let currentDate = `${cMonth}-${cDate}-${cYear}`;
+      const totalCount = await appoint.find({
+        $and: [
+          { category: catType },
+          { userId: userId },
+          { start: currentDate }
+        ]
+      }).countDocuments();
 
-    appoint.find({
-      $and: [
-        { userId: userId },
-        { start: currentDate }
-      ]
-    }).limit(pagination.limit)
-      .skip(pagination.skip)
-      .then((result) => {
-        res.send({ success: true, msg: 'filtered Appoitment', result, totalCount: totalCount })
-      }).catch((err) => {
-        res.send(err)
-      })
-  } else if (filter === "Tomorrow") {
-    let cDate = ("0" + (date.getDate() + 1)).slice(-2);
-    let cMonth = ("0" + (date.getMonth() + 1)).slice(-2);
-    let cYear = date.getFullYear();
-    let currentDate = `${cMonth}/${cDate}/${cYear}`;
-    const totalCount = await appoint.find({
-      $and: [
-        { userId: userId },
-        { start: currentDate }
-      ]
-    }).countDocuments();
+      appoint.find({
+        $and: [
+          { category: catType },
+          { userId: userId },
+          { start: currentDate }
+        ]
+      }).limit(pagination.limit)
+        .skip(pagination.skip)
+        .then((result) => {
+          res.send({ success: true, data: result, totalCount: totalCount })
+        }).catch((err) => {
+          res.send(err)
+        })
+    } else if (filter === "Tomorrow") {
+      let cDate = ("0" + (date.getDate() + 1)).slice(-2);
+      let cMonth = ("0" + (date.getMonth() + 1)).slice(-2);
+      let cYear = date.getFullYear();
+      let currentDate = `${cMonth}-${cDate}-${cYear}`;
+      const totalCount = await appoint.find({
+        $and: [
+          { category: catType },
+          { userId: userId },
+          { start: currentDate }
+        ]
+      }).countDocuments();
 
-    appoint.find({
-      $and: [
-        { userId: userId },
-        { start: currentDate }
-      ]
-    }).limit(pagination.limit)
-      .skip(pagination.skip)
-      .then((result) => {
-        res.send({ success: true, msg: 'filtered attendance', result, totalCount: totalCount })
-      }).catch((err) => {
-        res.send(err)
-      })
-  } else if (filter === "This Week") {
-    let cDate = ("0" + (date.getDate())).slice(-2);
-    console.log("ddfdfdf--", cDate)
-    let cMonth = ("0" + (date.getMonth() + 1)).slice(-2);
-    let weekday = ("0" + (date.getDate()) * 7).slice(-2);
-    console.log(weekday)
-    let cYear = date.getFullYear();
-    let week = `${cMonth}/${weekday}/${cYear}`;
-    let currentDate = `${cMonth}/${cDate}/${cYear}`;
-    const totalCount = await appoint.find({
-      $and: [
-        { userId: userId },
-        { start: { $gte: (currentDate), $lt: (week) } }
-      ]
-    }).countDocuments();
+      appoint.find({
+        $and: [
+          { category: catType },
+          { userId: userId },
+          { start: currentDate }
+        ]
+      }).limit(pagination.limit)
+        .skip(pagination.skip)
+        .then((result) => {
+          res.send({ success: true, data: result, totalCount: totalCount })
+        }).catch((err) => {
+          res.send(err)
+        })
+    } else if (filter === "This Week") {
+      appoint
+        .aggregate([
+          {
+            $match: {
+              category: catType,
+              userId: userId
+            }
+          },
+          {
+            $project: {
+              status: 1,
+              repeatedDates: 1,
+              groupInfoList: 1,
+              studentInfo: 1,
+              end_time: 1,
+              start_time: 1,
+              start: 1,
+              app_color: 1,
+              end: 1,
+              repeatedConcurrence: 1,
+              interval: 1,
+              range: 1,
+              appointment_type: 1,
+              title: 1,
+              category: 1,
+              notes: 1,
+              date: {
+                "$dateFromString": {
+                  "dateString": "$start",
+                  "format": "%m-%d-%Y"
+                }
+              }
+            },
+          },
+          {
+            $match: {
+              $expr:
+                { $eq: [{ $week: '$date' }, { $week: "$$NOW" }] }
+            }
+          },
+          {
+            $facet: {
+              paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+              totalCount: [
+                {
+                  $count: 'count'
+                }
+              ]
+            }
+          }
+        ])
+        .exec((err, memberdata) => {
+          if (err) {
+            res.send({
+              error: err,
+            });
+          } else {
+            let data = memberdata[0].paginatedResults
+            if (data.length > 0) {
+              res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
 
-    appoint.find({
-      $and: [
-        { userId: userId },
-        { start: { $gte: (currentDate), $lt: (week) } }
-      ]
-    }).limit(pagination.limit)
-      .skip(pagination.skip)
-      .then((result) => {
-        res.send({ success: true, msg: 'filtered attendance', result, totalCount: totalCount })
-      }).catch((err) => {
-        res.send(err)
-      })
-  } else if (filter === "This Month") {
-    let cDate = ("0" + (date.getDate())).slice(-2);
-    let cMonth = ("0" + (date.getMonth() + 1)).slice(-2);
-    let monthDay = ("0" + (date.getDate())).slice(-2);
-    let monthMon = ("0" + (date.getMonth() + 3)).slice(-2);
-    console.log(monthMon)
-    let cYear = date.getFullYear();
-    let month = `${monthMon}/${monthDay}/${cYear}`;
-    let currentDate = `${cMonth}/${cDate}/${cYear}`;
-    const totalCount = await appoint.find({
-      $and: [
-        { userId: userId },
-        { start: { $gte: (currentDate), $lt: (month) } }
-      ]
-    }).countDocuments();
+            } else {
+              res.send({ msg: 'data not found', success: false });
+            }
+          }
+        })
+    } else if (filter === "This Month") {
+      appoint.
+        aggregate([
+          {
+            $match: {
+              category: catType,
+              userId: userId
+            }
+          },
+          {
+            $project: {
+              status: 1,
+              repeatedDates: 1,
+              groupInfoList: 1,
+              studentInfo: 1,
+              end_time: 1,
+              start_time: 1,
+              app_color: 1,
+              end: 1,
+              repeatedConcurrence: 1,
+              interval: 1,
+              range: 1,
+              appointment_type: 1,
+              title: 1,
+              category: 1,
+              notes: 1,
+              start: 1,
+              date: {
+                "$dateFromString": {
+                  "dateString": "$start",
+                  "format": "%m-%d-%Y"
+                }
+              }
 
-    appoint.find({
-      $and: [
-        { userId: userId },
-        { start: { $gte: (currentDate), $lt: (month) } }
-      ]
-    }).limit(pagination.limit)
-      .skip(pagination.skip)
-      .then((result) => {
-        res.send({ success: true, msg: 'filtered attendance', result, totalCount: totalCount })
-      }).catch((err) => {
-        res.send(err)
-      })
+            },
+          },
+          {
+            $match: {
+              $expr: {
+                $eq: [
+                  {
+                    $month: "$date",
+                  },
+                  {
+                    $month: "$$NOW",
+                  },
+                ]
+              }
+            },
+          },
+          {
+            $facet: {
+              paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+              totalCount: [
+                {
+                  $count: 'count'
+                }
+              ]
+            }
+          }
+        ])
+        .exec((err, memberdata) => {
+          if (err) {
+            res.send({
+              error: err,
+            });
+          } else {
+            let data = memberdata[0].paginatedResults
+            if (data.length > 0) {
+              res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
+
+            } else {
+              res.send({ msg: 'data not found', success: false });
+            }
+          }
+        })
+    }
+  }
+  catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false })
   }
 };
 exports.deleteAll = (req, res) => {

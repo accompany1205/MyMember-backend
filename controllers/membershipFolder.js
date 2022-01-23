@@ -66,7 +66,7 @@ exports.update_folder = async (req, res) => {
         res.send({ msg: "membership folder is not updated", success: false });
       } else {
         if (updateFolder.n < 1) {
-          return res.status(401).send({
+          return res.send({
             msg: "This is system generated folder Only admin can update",
             success: false,
           });
@@ -90,7 +90,7 @@ exports.delete_folder = async (req, res) => {
         res.send({ msg: "Folder is not remove", success: false });
       } else {
         if (!delFolder) {
-          return res.status(401).send({
+          return res.send({
             msg: "This is system generated folder Only admin can delete",
             success: false,
           });

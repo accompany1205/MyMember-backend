@@ -19,6 +19,6 @@ router.post("/text-chat/pin-contact/:contact/:userId", verifySchool, pinContact)
 router.post("/text-chat/contacts-details/:userId", verifySchool, getTextContactsDetails);
 router.get("/text-chat/get-contacts/:userId", verifySchool, getTextContacts);
 router.get("/text-chat/get-messages/:userId", verifySchool, getTextMessages);
-router.post("/text-chat/listen-message", listenIncomingSMS);
+router.post("/text-chat/listen-message/:twilio", listenIncomingSMS);
 
 module.exports = router;
