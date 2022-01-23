@@ -116,20 +116,28 @@ exports.docremove = async (req, res) => {
           res.send({ msg: err, success: false })
         }
         else {
-          docsubfolder.updateOne({ document: data._id }, { $pull: { document: data._id } },
-            function (err, temp) {
-              if (err) {
-                res.send({
-                  msg: "Document not removed",
-                  success: false,
-                });
-              } else {
-                res.send({
-                  msg: "Document removed successfully",
-                  success: true,
-                });
-              }
+          if (data) {
+            docsubfolder.updateOne({ document: data._id }, { $pull: { document: data._id } },
+              function (err, temp) {
+                if (err) {
+                  res.send({
+                    msg: "Document not removed",
+                    success: false,
+                  });
+                } else {
+                  res.send({
+                    msg: "Document removed successfully",
+                    success: true,
+                  });
+                }
+              })
+          }
+          else {
+            res.send({
+              msg: 'document removed already!', success: true
             })
+          }
+
         }
 
       })
