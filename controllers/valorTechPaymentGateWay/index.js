@@ -38,7 +38,7 @@ class PaymentGateWay {
   saleSubscription = async (payload) => {
     try {
       let formData = await this.formData(payload);
-      formData.append("epi", "2129909286");
+      formData.append("epi", "2202017108");
       formData.append("mtype", "0200");
 
       return await axios.post(process.env.VALOR_PAYTECH_URL, formData, this.getHeader(formData));
@@ -60,7 +60,7 @@ class PaymentGateWay {
   deleteSubscription = async () => {
     try {
       let formData = await this.formData(payload);
-      formData.append("epi", "2129909286");
+      formData.append("epi", "2202017108");
       formData.append("mtype", "deletesubscription");
       return await axios.post(process.env.VALOR_PAYTECH_URL, formData, this.getHeader(formData));
     } catch (ex) {
@@ -71,7 +71,7 @@ class PaymentGateWay {
   freezeSubscription = async (payload) => {
     try {
       let formData = await this.formData(payload);
-      formData.append("epi", "2129909286");
+      formData.append("epi", "2202017108");
       formData.append("mtype", "freezesubscription");
       return await axios.post(process.env.VALOR_PAYTECH_URL, formData, this.getHeader(formData));
     } catch (ex) {
@@ -82,7 +82,7 @@ class PaymentGateWay {
   unfreezeSubscription = async (payload) => {
     try {
       let formData = await this.formData(payload);
-      formData.append("epi", "2129909286");
+      formData.append("epi", "2202017108");
       formData.append("mtype", "unfreezesubscription");
       return await axios.post(process.env.VALOR_PAYTECH_URL, formData, this.getHeader(formData));
     } catch (ex) {
@@ -93,7 +93,7 @@ class PaymentGateWay {
   refundSubscription = async (payload) => {
     try {
       let formData = await this.formData(payload);
-      formData.append("epi", "2129909286");
+      formData.append("epi", "2202017108");
       formData.append("mtype", "refund");
       return await axios.post(process.env.VALOR_PAYTECH_URL, formData, this.getHeader(formData));
     } catch (ex) {
@@ -103,7 +103,7 @@ class PaymentGateWay {
   forfeitSubscription = async (payload) => {
     try {
       let formData = await this.formData(payload);
-      formData.append("epi", "2129909286");
+      formData.append("epi", "2202017108");
       formData.append("mtype", "forfeitsubscription");
       formData.append("flag", 1)
       return await axios.post(process.env.VALOR_PAYTECH_URL, formData, this.getHeader(formData));
