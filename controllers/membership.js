@@ -133,19 +133,22 @@ exports.membershipUpdate = async (req, res) => {
     membershipData.folderId = new_folderId
     const promises = []
     if (req.files) {
-      (req.files).map(file => {
-        if (file.originalname.split('.')[0] === "thumbnail") {
-          cloudUrl.imageUrl(file)
-            .then(data => {
-              membershipData.membershipThumbnail = data
-            })
-            .catch(err => {
-              res.send({ msg: "thumbnail not uploaded!", success: false })
-            })
-        } else {
-          promises.push(cloudUrl.imageUrl(file))
-        }
-      });
+      Object.entries(req.files).forEach(([key, value]) => {
+
+        value.map(file => {
+          if (file.fieldname === "thumbnail") {
+            cloudUrl.imageUrl(file)
+              .then(data => {
+                membershipData.membershipThumbnail = data
+              })
+              .catch(err => {
+                res.send({ msg: "thumbnail not uploaded!", success: false })
+              })
+          } else {
+            promises.push(cloudUrl.imageUrl(file))
+          }
+        });
+      })
       var docs = await Promise.all(promises);
       membershipData.membershipDoc = docs;
     }
