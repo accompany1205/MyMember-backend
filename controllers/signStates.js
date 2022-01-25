@@ -58,19 +58,19 @@ exports.setSignItems = async (req, res) => {
     try {
         let docuSignId = req.params.docuSignId;
         let body = req.body;
-        await SignStates.find(docuSignId).then(async data => {
-            if (!data.status) data.status = {}
-            data.status[client] = { ...data.status[client], signed: new Date().getTime() };
-            let items = { ...data.items, ...req.body.items };
-            await SignStates.updateOne({ _id: docuSignId }, { $set: { items: items, status: data.status } }).then(data => {
-                res.send({ msg: "sign Added!", success: true });
+        await SignStates.find({_id:docuSignId}).then(async data => {
+            // if (!data.status) data.status = {}
+            // data.status[invite] = { ...data.status[invite], signed: new Date().getTime() };
+            // let items = { ...data.items, ...req.body.items };
+            await SignStates.updateOne({ _id: docuSignId },{$set:body}).then(data => {
+                res.send({ msg: "Item updated!", success: true });
             }).catch(err => {
-                res.send({ msg: "not added!", success: false, error: err.message.replace(/\"/g, "") });
+                res.send({ msg: "Itme not updated!", success: false, error: err.message.replace(/\"/g, "") });
             })
         }).catch(err => {
-            res.send({ msg: "not added!", success: false, error: err.message.replace(/\"/g, "") });
+            res.send({ msg: "not Updated!", success: false, error: err.message.replace(/\"/g, "") });
         })
     } catch (err) {
-
+        res.send({ msg: "not Updated!", success: false, error: err.message.replace(/\"/g, "") });
     }
 };

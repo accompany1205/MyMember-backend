@@ -3,15 +3,8 @@ const membershipFolder = require("../models/membershipFolder");
 const BuyMembership = require("../models/buy_membership");
 const cloudUrl = require("../gcloud/imageUrl");
 const Student = require("../models/addmember");
-const pizzip = require('pizzip');
-const fetch = require('node-fetch');
-const libre = require('libreoffice-convert');
-const path = require('path');
-//const axios = require('axios');
-const tmp = require('tmp');
-const fs = require('fs')
-
-const Docxtemplater = require("docxtemplater");
+const fs = require('fs');
+const mergeFile = require("../Services/mergeFile")
 
 exports.create = async (req, res) => {
   try {
@@ -199,12 +192,7 @@ exports.membershipUpdate = async (req, res) => {
   }
 };
 
-async function buffToPdf(file) {
-  libre.convertAsync = require('util').promisify(libre.convert)
-  const ext = '.pdf'
-  let pdfBuf = await libre.convertAsync(file, ext, undefined);
-  return pdfBuf;
-}
+
 
 exports.mergeDoc = async (req, res) => {
   let docBody = req.body.docUrl;
@@ -213,28 +201,10 @@ exports.mergeDoc = async (req, res) => {
   let membershipId = req.params.membershipId;
   let buyMembershipId = req.params.buyMembershipId;
   try {
-    let response = await fetch(docBody);
     const studentInfo = await Student.findOne({ _id: studentId });
     const membershipInfo = await membershipModal.findOne({ _id: membershipId });
-    const mergedInfo = { ...studentInfo, ...membershipInfo };
-    response = await response.buffer()
-    const zip = new pizzip(response);
-    const doc = new Docxtemplater(zip, { linebreaks: true });
-    doc.render(mergedInfo);
-    const buf = doc.getZip().generate({
-      type: "nodebuffer",
-      compression: "DEFLATE",
-    });
-    finalPDF = await buffToPdf(buf);
-    let bufCount = Buffer.byteLength(finalPDF)
-    fileObj = {
-      fieldname: 'attach',
-      originalname: 'final.pdf',
-      encoding: '7bit',
-      mimetype: 'application/pdf',
-      buffer: finalPDF,
-      size: bufCount
-    }
+    const mergedInfo = { ...studentInfo.toJSON(), ...membershipInfo.toJSON() };
+    let fileObj = mergeFile(docBody, mergedInfo)
     //fs.writeFileSync(path.resolve(__dirname, "output.pdf"), finalPDF);
     cloudUrl.imageUrl(fileObj).then(Docresp => {
       BuyMembership.updateOne({ _id: buyMembershipId }, { $set: { mergedDoc: Docresp } }).then(datas => {
@@ -247,9 +217,9 @@ exports.mergeDoc = async (req, res) => {
         res.send({ msg: "merged doc not added!", success: false })
       })
     }).catch(err => {
-      console.log(err)
+      res.send({ msg: err.message.replace(/\"/g, ""), success: false })
     })
   } catch (err) {
-    throw (err);
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }
 }
