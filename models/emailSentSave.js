@@ -1,4 +1,3 @@
-const { any } = require('async');
 const mongoose = require('mongoose');
 const schema = mongoose.Schema
 const EmailSchema = schema({
@@ -18,6 +17,12 @@ const EmailSchema = schema({
         require: true
     },
     template: {
+        type: String
+    },
+    design: {
+        type: String
+    },
+    content_type: {
         type: String
     },
     repeat_mail: {

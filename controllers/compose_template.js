@@ -383,6 +383,8 @@ exports.add_template = async (req, res) => {
       sent_time,
       repeat_mail,
       sent_date,
+      design,
+      content_type,
       follow_up,
       smartLists
     } = req.body || {};
@@ -400,6 +402,8 @@ exports.add_template = async (req, res) => {
       title,
       subject,
       template,
+      design,
+      content_type,
       sent_date,
       sent_time,
       DateT: date_iso_follow,
