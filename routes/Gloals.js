@@ -87,7 +87,7 @@ class Goals {
                     if (err) {
                         return res.status(400).json({ message: err });
                     }
-                    return res.status(200).json({ message: "item updated successfuly", data });
+                    return res.status(200).json({ message: "item updated successfuly", data: data.id });
                 })
             } else {
                 return res.status(400).json({ message: "id is required" });

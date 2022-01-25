@@ -90,19 +90,19 @@ class Tasks {
                         let data = items
 
                         const today_count = await model.countDocuments({ due_date: { $gte: moment().add("-1", "days").toISOString() } })
-                        const today_complete = await model.countDocuments({ status: 3 });
+                        const today_complete = await model.countDocuments({ due_date: { $gte: moment().add("-1", "days").toISOString() }, status: 3 });
                         const today_total_complete_percent = parseFloat((today_complete / today_count) * 100).toFixed(2);
 
                         const week_count = await model.countDocuments({ due_date: { $gte: moment().add("-1", "weeks").toISOString() } })
-                        const week_complete = await model.countDocuments({ status: 3 });
+                        const week_complete = await model.countDocuments({ due_date: { $gte: moment().add("-1", "weeks").toISOString() }, status: 3 });
                         const week_total_complete_percent = parseFloat((week_complete / week_count) * 100).toFixed(2);
 
                         const month_count = await model.countDocuments({ due_date: { $gte: moment().add("-1", "months").toISOString() } })
-                        const month_complete = await model.countDocuments({ status: 3 });
+                        const month_complete = await model.countDocuments({ due_date: { $gte: moment().add("-1", "months").toISOString() }, status: 3 });
                         const month_total_complete_percent = parseFloat((month_complete / month_count) * 100).toFixed(2);
 
                         const year_count = await model.countDocuments({ due_date: { $gte: moment().add("-1", "years").toISOString() } })
-                        const year_complete = await model.countDocuments({ status: 3 });
+                        const year_complete = await model.countDocuments({ due_date: { $gte: moment().add("-1", "years").toISOString() }, status: 3 });
                         const year_total_complete_percent = parseFloat((year_complete / year_count) * 100).toFixed(2);
                         data.stats = {}
                         data.stats.today_complete = +today_total_complete_percent || 0;
@@ -146,7 +146,7 @@ class Tasks {
                     if (err) {
                         return res.status(400).json({ message: err });
                     }
-                    return res.status(200).json({ message: "item updated successfuly", data });
+                    return res.status(200).json({ message: "item updated successfuly", data: data.id });
                 })
             } else {
                 return res.status(400).json({ message: "id is required" });
