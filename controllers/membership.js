@@ -1,8 +1,10 @@
 const membershipModal = require("../models/membership");
 const membershipFolder = require("../models/membershipFolder");
-
-// const cloudinary = require("cloudinary").v2
+const BuyMembership = require("../models/buy_membership");
 const cloudUrl = require("../gcloud/imageUrl");
+const Student = require("../models/addmember");
+const fs = require('fs');
+const mergeFile = require("../Services/mergeFile")
 
 exports.create = async (req, res) => {
   try {
@@ -19,7 +21,7 @@ exports.create = async (req, res) => {
               membershipDetails.membershipThumbnail = data
             })
             .catch(err => {
-              res.send({ msg: "thumbnail not uploaded!", success: false })
+              res.send({ msg: "Thumbnail not uploaded!", success: false })
             })
         } else {
           promises.push(cloudUrl.imageUrl(file))
@@ -28,13 +30,10 @@ exports.create = async (req, res) => {
       var docs = await Promise.all(promises);
     }
     membershipDetails.membershipDoc = docs;
-    if (!membershipDetails.membershipDoc) {
-      res.send({ msg: "no file uploaded!", success: false })
-    }
     const membershipObj = new membershipModal(membershipDetails);
     await membershipObj.save((err, data) => {
       if (err) {
-        res.send({ msg: "membership not created", success: false });
+        res.send({ msg: "Membership not created", success: false });
       } else {
         membershipFolder.findByIdAndUpdate(
           req.params.folderId,
@@ -44,7 +43,7 @@ exports.create = async (req, res) => {
           (err, data) => {
             if (err) {
               res.send({
-                msg: "membership not addd in folder",
+                msg: "Membership not added in folder",
                 success: false,
               });
             } else {
@@ -66,13 +65,7 @@ exports.read = (req, res) => {
     if (err) {
       res.send({ error: "membership list is not find" });
     } else {
-      res.send(data);
-      // if(data.length>0){
-      //     res.send(data);
-      // }
-      // else{
-      //     res.send({msg:'membership list is empty'})
-      // }
+      res.send({ data, success: true });
     }
   });
 };
@@ -81,96 +74,155 @@ exports.membershipInfo = (req, res) => {
   var membershipId = req.params.membershipId;
   membershipModal.findById(membershipId).exec((err, data) => {
     if (err) {
-      res.send({ error: "membership data not found" });
+      res.send({ msg: "membership  not found", success: false });
     } else {
-      res.send(data);
+      res.send({ data, success: true });
     }
   });
 };
 
 exports.remove = (req, res) => {
   const membershipId = req.params.membershipId;
+  const adminId = req.params.adminId
+  const userId = req.params.userId;
   try {
-    membershipModal.findByIdAndDelete(membershipId, (err, data) => {
-      if (err) {
-        res.send({ msg: "membership is not delete", success: false });
-      } else {
-        membershipFolder.updateOne(
-          { membership: data._id },
-          { $pull: { membership: data._id } },
-          function (err, temp) {
-            if (err) {
-              res.send({
-                error: "membership is not remove from folder",
-                success: false,
-              });
-            } else {
-              res.send({
-                msg: "membership is remove successfully",
-                success: true,
-              });
-            }
+    membershipModal.findOneAndRemove(
+      { _id: membershipId, $and: [{ userId: userId }, { adminId: adminId }] },
+      (err, data) => {
+        if (err) {
+          res.send({ msg: "membership is not delete", success: false });
+        } else {
+          if (!data) {
+            return res.send({
+              msg: "This is system generated membership Only admin can delete",
+              success: false,
+            });
           }
-        );
-        //   res.send({ error: data });
-      }
-    });
+          membershipFolder.updateOne(
+            { membership: data._id },
+            { $pull: { membership: data._id } },
+            function (err, temp) {
+              if (err) {
+                res.send({
+                  error: "membership not removed",
+                  success: false,
+                });
+              } else {
+                res.send({
+                  msg: "membership removed successfully",
+                  success: true,
+                });
+              }
+            }
+          );
+        }
+      });
   } catch (er) {
-    throw new Error(er);
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
   }
 };
 
 exports.membershipUpdate = async (req, res) => {
-  var membershipData = req.body;
-  const membershipId = req.params.membershipId;
-  const new_folderId = req.body.folderId;
-  const old_folderId = req.body.old_folderId;
-  const promises = []
-  if (req.files) {
-    (req.files).map(file => {
-      if (file.originalname.split('.')[0] === "thumbnail") {
-        cloudUrl.imageUrl(file)
-          .then(data => {
-            membershipData.membershipThumbnail = data
-          })
-          .catch(err => {
-            res.send({ msg: "thumbnail not uploaded!", success: false })
-          })
-      } else {
-        promises.push(cloudUrl.imageUrl(file))
-      }
-    });
-    var docs = await Promise.all(promises);
-    membershipData.membershipDoc = docs;
-  }
-  membershipModal
-    .updateOne({ _id: membershipId }, membershipData)
+  try {
+    var membershipData = req.body;
+    const membershipId = req.params.membershipId;
+    const adminId = req.params.adminId
+    const userId = req.params.userId;
+    const new_folderId = req.body.folderId;
+    const old_folderId = req.body.old_folderId;
+    membershipData.folderId = new_folderId
+    const promises = []
+    if (req.files) {
+      Object.entries(req.files).forEach(([key, value]) => {
 
-    .exec(async (err, data) => {
-      if (err) {
-        res.send(err);
-      } else {
-        await membershipFolder.findByIdAndUpdate(new_folderId, {
-          $addToSet: { membership: membershipId },
+        value.map(file => {
+          if (file.fieldname === "thumbnail") {
+            cloudUrl.imageUrl(file)
+              .then(data => {
+                membershipData.membershipThumbnail = data
+              })
+              .catch(err => {
+                res.send({ msg: "thumbnail not uploaded!", success: false })
+              })
+          } else {
+            promises.push(cloudUrl.imageUrl(file))
+          }
         });
-        await membershipFolder
-          .findByIdAndUpdate(old_folderId, {
-            $pull: { membership: membershipId },
-          })
-          .exec((err, temp) => {
-            if (err) {
-              res.send({
-                error: "membership is not update from folder",
-                success: false,
-              });
-            } else {
-              res.send({
-                msg: "membership is updated successfully",
-                success: true,
-              });
-            }
+      })
+      var docs = await Promise.all(promises);
+      membershipData.membershipDoc = docs;
+    }
+    membershipModal
+      .updateOne({ _id: membershipId, $and: [{ userId: userId }, { adminId: adminId }] }, { $set: membershipData })
+
+      .exec(async (err, data) => {
+        if (err) {
+          res.send({
+            msg: err,
+            success: false,
           });
-        // res.send({ message: "membership updated successfully", success: dat });
-      }
-    });
+        } else {
+          if (data.n < 1) {
+            return res.send({
+              msg: "This is system generated membership Only admin can update",
+              success: false,
+            });
+          }
+          await membershipFolder.findByIdAndUpdate(new_folderId, {
+            $addToSet: { membership: membershipId },
+          });
+          await membershipFolder
+            .findByIdAndUpdate(old_folderId, {
+              $pull: { membership: membershipId },
+            })
+            .exec((err, temp) => {
+              if (err) {
+                res.send({
+                  msg: "membership not updated",
+                  success: false,
+                });
+              } else {
+                res.send({
+                  msg: "membership updated successfully",
+                  success: true,
+                });
+              }
+            });
+        }
+      });
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
 };
+
+
+
+exports.mergeDoc = async (req, res) => {
+  let docBody = req.body.docUrl;
+  let studentId = req.params.studentId;
+  //let userId = req.params.userId;
+  let membershipId = req.params.membershipId;
+  let buyMembershipId = req.params.buyMembershipId;
+  try {
+    const studentInfo = await Student.findOne({ _id: studentId });
+    const membershipInfo = await membershipModal.findOne({ _id: membershipId });
+    const mergedInfo = { ...studentInfo.toJSON(), ...membershipInfo.toJSON() };
+    let fileObj = mergeFile(docBody, mergedInfo)
+    //fs.writeFileSync(path.resolve(__dirname, "output.pdf"), finalPDF);
+    cloudUrl.imageUrl(fileObj).then(Docresp => {
+      BuyMembership.updateOne({ _id: buyMembershipId }, { $set: { mergedDoc: Docresp } }).then(datas => {
+        BuyMembership.findOne({ _id: buyMembershipId }).then(data => {
+          res.send({ msg: "get merged doc", success: true, data: data.mergedDoc })
+        }).catch(err => {
+          res.send({ msg: "data not found", success: false });
+        })
+      }).catch(err => {
+        res.send({ msg: "merged doc not added!", success: false })
+      })
+    }).catch(err => {
+      res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+    })
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+  }
+}

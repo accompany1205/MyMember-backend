@@ -2,21 +2,22 @@ const mongoose = require("mongoose");
 const schema = mongoose.Schema
 
 const documentSchema = new schema({
-    document:{
-        type:String,
-        require:true
+    document: {
+        type: String,
+        required: true
     },
-    document_name:{
-        type:String,
-        require:true
+    document_name: {
+        type: String,
+        required: true
     },
-    subFolderId:{
-        type:String,
-        require:true
+    subFolderId: {
+        type: String,
     },
-    rootFolderId:{
-        type:String,
-        require:true
+    rootFolderId: {
+        type: String,
+    },
+    userId: {
+        type: String
     }
 })
 

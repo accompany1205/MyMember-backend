@@ -6,6 +6,7 @@ const rank_change = require("../models/change_rank");
 const change_rank = require("../models/change_rank");
 const sentEmail = require("../models/emailSentSave");
 const sgmail = require("sendgrid-v3-node");
+var mongo = require("mongoose")
 const User = require("../models/user");
 const buymembershipModal = require("../models/buy_membership");
 
@@ -875,6 +876,7 @@ exports.studentinfo = (req, res) => {
   addmemberModal
     .findById(studentinfo)
     .populate({ path: "membership_details", options: { sort: { ['membership_name']: order } } })
+    .populate("product_details")
     .populate("finance_details")
     .populate("myFaimly")
     .exec((err, data) => {
@@ -1214,32 +1216,36 @@ exports.trial_this_month = (req, res) => {
 //need to cha
 exports.collectionModify = async (req, res) => {
   let LittleTiger = [];
+  // var mongo.Types.ObjectId = mongo.Types.mongo.Types.ObjectId()
 
   // membership Scrip
   try {
-    let users = await addmemberModal.aggregate([
+    let users = await program.insertMany(
       {
-        $match: { userId: "606aea95a145ea2d26e0f1ab" }
-      },
-
-      {
-        $group: {
-          _id: "$_id"
-          , totalclass: { $sum: 1 }
-        }
-      },
-      // {
-      //   $facet: {
-      //     totalCount: [
-      //       {
-      //         $count: 'count'
-      //       }
-      //     ]
-      //   }
-      // }
-
-
-    ])
+        "program_category": [],
+        "program_rank": [
+            "61926ee2e953ff693a3f72fc",
+            "61926f46e953ff693a3f7338",
+            "61926f61e953ff693a3f7342",
+            "61926fc8e953ff693a3f7382",
+            "61926fe5e953ff693a3f73b7",
+            "61926ffde953ff693a3f73dd",
+            "61927016e953ff693a3f73fe",
+            "61927031e953ff693a3f743b",
+            "6192704ce953ff693a3f7440",
+            "61927068e953ff693a3f7461",
+            "61927082e953ff693a3f7466"
+        ],
+        "programName": "Little Tiger",
+        "color": "#88d317",
+        "lable": 2,
+        "total_rank": 11,
+        "progression": "by time & attendance",
+        "type": "By Stripe",
+        "requirement": "bottel",
+        "adminId": "6138893333c9482cb41d88d5"
+    }
+    )
     //   let users = await User.find();
     //   users.forEach(async element => {
     //     if(element._id !== "619155201e2a465ca222dfe0"){

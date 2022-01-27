@@ -1,108 +1,136 @@
 const pcategory = require("../models/pcategory");
 const program = require("../models/program");
 
-exports.read = (req,res)=>{
+exports.read = (req, res) => {
     var categoryId = req.params.categoryId;
     pcategory.findById(categoryId)
-             .populate('program_subcategory')
-             .exec((err,data)=>{
-                if(err){
-                    res.send({error:'subcategory is not populate'})
-                }
-                else{
-                    res.send(data)
-                }
-            })
+        .populate('program_subcategory')
+        .exec((err, data) => {
+            if (err) {
+                res.send({ error: 'subcategory is not populate' })
+            }
+            else {
+                res.send(data)
+            }
+        })
 }
 
-exports.catList = (req,res)=>{
+exports.catList = (req, res) => {
     // {userId:req.params.userId}
     pcategory.find()
-    .populate('program_subcategory')
-    .exec((err,catlist)=>{
-        if(err){
-            res.send({error:'program category list not found'})
-        }
-        else{
-            res.send(catlist)
-        }
-    })
-}
-
-exports.create = (req,res)=>{
-    var category = req.body.category;
-    var programName = req.body.programName;
-   
-    var categoryDetails={}
-    categoryDetails.category = category;
-    categoryDetails.programName = programName;
-    categoryDetails.userId = req.params.userId;
-
-                var categoryObj = new pcategory(categoryDetails)
-                categoryObj.save((err,categoryData)=>{
-                    if(err){
-                        res.send(err)
-                    }   
-                    else{
-                        program.updateOne({programName:programName},{$push:{ program_category : categoryData._id }})
-                            .exec((err,data)=>{
-                                if(err){
-                                    res.send({error:'category is not added'})
-                                }
-                                else{
-                                  res.send({msg:'category added successfully',category:categoryData})
-                                }
-                            })
-                    }
-                })        
+        .populate('program_subcategory')
+        .exec((err, catlist) => {
+            if (err) {
+                res.send({ error: 'program category list not found' })
             }
-    
-
-
-exports.update = (req,res)=>{
-    var categoryId = req.params.categoryID;
-    // var programID = req.params.programID;
-    var category_name = req.body.category;
-    pcategory.updateOne({ _id: categoryId }, req.body)
-    .then((result) => {
-        
-            pcategory.findByIdAndUpdate(categoryId,{$set:{category:category_name}})
-            .then((response) => {
-                res.json(response)
-                res.send({msg:'category added successfully',result})
-                
-            }).catch((err) => {
-                res.send(err);
-            })
-            
-        
-    })
-    .catch((err) => {
-        res.send(err);
-    })
-    
-   
+            else {
+                res.send(catlist)
+            }
+        })
 }
 
-exports.remove = (req,res)=>{
-    var categoryId = req.params.categoryId;
-          pcategory.findOneAndRemove({_id:categoryId},(err,data)=>{
-                if(err){
-                    res.send({error:'category is not delete'})
+exports.create = async (req, res) => {
+    try {
+        const categoryDetails = req.body
+        categoryDetails.userId = req.params.userId;
+        categoryDetails.adminId = req.params.adminId;
+        let isExist = await program.find({ programName: categoryDetails.programName })
+        if (isExist.length) {
+            var categoryObj = new pcategory(categoryDetails)
+            categoryObj.save((err, categoryData) => {
+                if (err) {
+                    res.send({ msg: err, success: false })
                 }
-                else{
-                  program.update({"program_category":categoryId},{$pull:{"program_category":categoryId}},
-                    function(err,data){
-                        if(err){
-                            res.send({error:'category is not delete from program'})
-                        }
-                        else{
-                            res.send({error:'category is delete from program'})
-                        }
-                    })
+                else {
+                    program.updateOne({ programName: categoryDetails.programName }, { $push: { program_category: categoryData._id } })
+                        .exec((err, data) => {
+                            if (err) {
+                                res.send({ msg: err, success: false })
+                            }
+                            else {
+                                res.send({ msg: 'Category added successfully', success: true })
+                            }
+                        })
                 }
             })
-    }   
+        }
+        else {
+            res.send({ msg: "Program does not exist!", success: false })
+        }
+    }
+    catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+    }
+}
+
+
+
+exports.update = async (req, res) => {
+    const categoryDetails = req.body
+    var categoryId = req.params.categoryId
+    const adminId = req.params.adminId
+    const userId = req.params.userId;
+    try {
+        let isExist = await program.find({ programName: categoryDetails.programName })
+        if (isExist.length) {
+            await pcategory.updateOne({ _id: categoryId, $and: [{ userId: userId }, { adminId: adminId }] }, { $set: categoryDetails })
+                .exec((err, data) => {
+                    if (err) {
+                        res.send({ msg: err, success: false })
+                    }
+                    else {
+                        if (data.n < 1) {
+                            return res.send({
+                                msg: "This is system generated Category Only admin can update",
+                                success: false,
+                            });
+                        }
+                        res.send({ msg: 'Category updated successfully', success: true })
+                    }
+                })
+        }
+        else {
+            res.send({ msg: "Program does not exist!", success: false })
+        }
+    }
+    catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+    }
+}
+
+exports.remove = async (req, res) => {
+    var categoryId = req.params.categoryId;
+    const adminId = req.params.adminId
+    const userId = req.params.userId;
+    try {
+        pcategory.remove({ _id: categoryId, $and: [{ userId: userId }, { adminId: adminId }] },
+            (err, data) => {
+                if (err) {
+                    res.send({ msg: err, success: false })
+                }
+                else {
+                    if (!data) {
+                        return res.send({
+                            msg: "This is system generated Category Only admin can delete",
+                            success: false,
+                        });
+                    }
+                    program.updateOne({ "program_category": categoryId }, { $pull: { "program_category": categoryId } },
+                        function (err, data) {
+                            if (err) {
+                                res.send({ msg: 'Category  removed successfully', success: false })
+                            }
+                            else {
+                                res.send({ msg: "Category removed successfully", success: true })
+                            }
+                        })
+                }
+            })
+    }
+    catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+    }
+}
 
 
 

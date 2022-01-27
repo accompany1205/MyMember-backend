@@ -8,13 +8,16 @@ const userSchema = new schema(
         firstname: {
             type: String,
             trim: true,
-
             maxlength: 100
         },
         lastname: {
             type: String,
             trim: true,
             maxlength: 100
+        },
+        twilio: {
+          type: String,
+          unique: true,
         },
         isverify: {
             type: Boolean,

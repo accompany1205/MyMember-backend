@@ -12,6 +12,12 @@ const appointSchema = new schema(
             type: String,
             required: true
         },
+        interval: {
+            type: String
+        },
+        range: {
+            type: String
+        },
         appointment_type: {
             type: String,
             required: true
@@ -40,27 +46,23 @@ const appointSchema = new schema(
             required: true
         },
         status: {
-            type: String,
-            default: 'not completed'
+            type: Boolean,
+            default: false
         },
         repeatedDates: {
-            type:Array
+            type: Array
         },
-        repeatedConcurrence:{
-            type:String
+        repeatedConcurrence: {
+            type: String
         },
         groupInfoList: {
-            type:Array
-    },
-        studentInfo: [
-            {
-                type: schema.Types.ObjectId,
-                ref: "member",
-                required: true,
-            },
-        ],
+            type: Array
+        },
+        studentInfo: {
+            type: Array
+        },
         userId: {
-            type: schema.Types.ObjectId
+            type: String
         }
 
     },

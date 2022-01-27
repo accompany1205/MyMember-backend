@@ -44,17 +44,6 @@ const membershipSchema = schema({
         type: Number,
         required: true
     },
-    // payment_time:{
-    //     type:String,
-    //     required:true
-    // },
-    // payments_types:{
-    //     type:String,
-    //     required:true
-    // },
-    payment_Date: {
-        type: Date
-    },
     due_every: {
         type: String,
         required: true
@@ -66,6 +55,15 @@ const membershipSchema = schema({
     isSignatured: {
         type: Boolean,
         default: false
+    },
+    amount: {
+        type: String,
+    },
+    no_of_payment: {
+        type: String,
+    },
+    isRecurring: {
+        type: Number
     },
     userId: {
         type: String

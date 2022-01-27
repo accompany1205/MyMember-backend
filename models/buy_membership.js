@@ -152,6 +152,9 @@ const Membershipschema = new schema(
     cheque_no: {
       type: String
     },
+    mergedDoc: {
+      type:String
+    },
     membershipIds: [
       {
         type: schema.Types.ObjectId,

@@ -2,97 +2,85 @@ const program = require("../models/program");
 
 
 exports.create = async (req, res) => {
-    const Id = req.params.userId;
-    const programName = req.body.programName;
-    const programeName = await program.find({$and: [
-        { $or: [ { userId: Id } ] },
-        { $or: [ { programName: programName } ] }
-    ]})
-    if(!programeName[0]){
-        var prog = new program({
-            "programName":req.body.programName,
-            "color":req.body.color,
-            "lable":req.body.lable,
-            "total_rank":req.body.total_rank,
-            "progression":req.body.progression,
-            "type":req.body.type,
-            "requirement":req.body.requirement
-        })
-        prog.save((err, data) => {
-            if (err) {
-                res.send({ error: 'program is not create' })
-            }
-            else {
-                if (req.file) {
-                    const cloudenary = require("cloudinary").v2
-                    cloudenary.config({
-                        cloud_name: process.env.cloud_name,
-                        api_key: process.env.cloud_api_key,
-                        api_secret: process.env.cloud_api_secret
-                    });
-    
-                    var filename = req.file.originalname;
-                    var path = req.file.path;
-                    var uniquefilename = filename + (Date.now())
-    
-                    cloudenary.uploader.upload(
-                        path,
-                        { public_id: `program/${uniquefilename}`, tags: `program` }, // directory and tags are optional
-                        function (err, image) {
-                            if (err) return res.send(err)
-                            const fs = require('fs')
-                            fs.unlinkSync(path)
-                            program.findByIdAndUpdate({ _id: data._id }, { $set: { program_image: image.url, userId: Id } })
-                                .then((response) => {
-                                    res.send(response)
-                                }).catch((error) => {
-                                    res.send({msg:"image not add in program", error})
-                                });
-                        }
-                    );
-                } else {
-                    program.findByIdAndUpdate({ _id: data._id }, { $set: { userId: Id } })
-                        .exec((err, programData) => {
-                            if (err) {
-                                res.send({ error: 'user id is not add in program' })
-                            }
-                            else {
-                                res.send({msg:'Program updated successfully ',programData:programData})
-                            }
-                        })
+    try {
+        const programBody = req.body
+        programBody.userId = req.params.userId;
+        programBody.adminId = req.params.adminId;
+        let isExist = await program.find({ programName: programBody.programName })
+        if (!isExist.length) {
+            var prog = new program(programBody)
+            prog.save((err, data) => {
+                if (err) {
+                    res.send({ msg: 'program not created', success: false })
                 }
-            }
-        });
-    }else {
-        res.json({
-            msg:"Program Alredy exist for the school",
-            success:false
-        })
+                else {
+                    res.send({ msg: 'Program created successfully ', success: true })
+                }
+            })
+        }
+        else {
+            res.send({ msg: "Program alredy exist!", success: false })
+        }
+
     }
-    
+    catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+    }
 };
 
 exports.read = (req, res) => {
-    program.find({ $or: [{ status: 'Admin' },{ userId: req.params.userId }] })
-        .populate({
-            path: 'program_category',
-            populate: {
-                path: 'program_subcategory',
-                model: 'psubcategory'
-            }
-        })
-        .populate('program_rank')
-        .exec((err, programdata) => {
-            if (err) {
-                res.send({ error: 'program is not found' })
-            }
-            else {
-                res.send(programdata)
-            }
-        })
-
+    const adminId = process.env.ADMINID
+    const userId = req.params.userId
+    try {
+        program.find({ $or: [{ userId: userId }, { adminId: adminId }] })
+            .populate({
+                path: 'program_category',
+                populate: {
+                    path: 'program_subcategory',
+                    model: 'psubcategory'
+                }
+            })
+            .populate('program_rank')
+            .exec((err, programdata) => {
+                if (err) {
+                    res.send({ error: 'program is not found' })
+                }
+                else {
+                    res.send({ data: programdata, success: true })
+                }
+            })
+    }
+    catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+    }
 };
 
+
+exports.readAdmin = (req, res) => {
+    const adminId = req.params.adminId
+    try {
+        program.find({ adminId: adminId })
+            .populate({
+                path: 'program_category',
+                populate: {
+                    path: 'program_subcategory',
+                    model: 'psubcategory'
+                }
+            })
+            .populate('program_rank')
+            .exec((err, programdata) => {
+                if (err) {
+                    res.send({ error: 'program is not found' })
+                }
+                else {
+                    res.send({ data: programdata, success: true })
+                }
+            })
+    }
+    catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+    }
+};
 exports.programs_detail = (req, res) => {
     var id = req.params.proId
     program.findById(id)
@@ -106,6 +94,7 @@ exports.programs_detail = (req, res) => {
                 res.send(data)
             }
         })
+
 };
 
 exports.program_rank = (req, res) => {
@@ -124,66 +113,70 @@ exports.program_rank = (req, res) => {
 };
 
 exports.update = async (req, res) => {
-    const uid = req.params.proId;
+    const programBody = req.body
+    const programId = req.params.proId;
+    const adminId = req.params.adminId
     const userId = req.params.userId;
-    const programeName = await program.find({$and: [
-        { $or: [ { userId: userId } ] },
-        { $or: [ { programName: req.body.programName } ] }
-    ]});
-    if(!programeName[0]){
-        program.updateOne({ _id: uid }, req.body)
-        .then((result) => {
-            if (req.file) {
-                const cloudenary = require("cloudinary").v2
-                cloudenary.config({
-                    cloud_name: process.env.cloud_name,
-                    api_key: process.env.cloud_api_key,
-                    api_secret: process.env.cloud_api_secret
-                });
-                var filename = req.file.originalname;
-                var path = req.file.path;
-                var uniquefilename = filename + (Date.now())
-
-                cloudenary.uploader.upload(
-                    path,
-                    { public_id: `program/${uniquefilename}`, tags: `program` }, // directory and tags are optional
-                    function (err, image) {
-                        if (err) return res.send(err)
-                        const fs = require('fs')
-                        fs.unlinkSync(path)
-
-                        program.findByIdAndUpdate(uid, { $set: { program_image: image.url } })
-                            .then((response) => {
-                                res.json(response)
-                            });
+    try {
+        let isExist = await program.find({ programName: programBody.programName })
+        if (!isExist.length) {
+            program.updateOne({ _id: programId, $and: [{ userId: userId }, { adminId: adminId }] }, { $set: programBody })
+                .exec(async (err, updateData) => {
+                    if (err) {
+                        res.send({ msg: err, success: false })
                     }
-                );
-            } else {
-                res.send({msg: "programm updated succesfully",success:true});
-    
-            }
-        }).catch((err) => {
-            res.send({message:err.message.replace(/\"/g, ""),success:false} );
-        })
-    }else{
-        res.json({
-            msg:"Update not Allowed for alredy existed programm name!",
-            success:false,
-            successCode:204
-        })
+                    else {
+                        if (updateData.n < 1) {
+                            return res.send({
+                                msg: "This is system generated program Only admin can update",
+                                success: false,
+                            });
+                        }
+                        res.send({ msg: "programm updated succesfully", success: true });
+
+                    }
+                })
+        }
+        else {
+            res.send({ msg: "Program alredy exist!", success: false })
+        }
     }
-    
+    catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+    }
 }
 
 
 exports.remove = (req, res) => {
-    const uid = req.params.proId;
-    program.remove({ _id: uid })
-        .then((resp) => {
-            res.json({ data: resp, message: "program deleted succesfuly" });
-        }).catch((err) => {
-            res.send(err)
-        })
+    const programId = req.params.proId;
+    const adminId = req.params.adminId
+    const userId = req.params.userId;
+    try {
+        program.findOneAndRemove
+            ({ _id: programId, $and: [{ userId: userId }, { adminId: adminId }] })
+            .exec((err, data) => {
+                if (err) {
+                    res.send({ msg: 'product  not removed', success: false })
+                }
+                else {
+                    if (!data) {
+                        return res.send({
+                            msg: "This is system generated membership Only admin can delete",
+                            success: false,
+                        });
+                    }
+                    res.send({
+                        msg: "product removed  successfully",
+                        success: true,
+                    });
+
+                }
+            })
+
+    }
+    catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+    }
 };
 
 

@@ -3,51 +3,53 @@ const manage_rank = require("../models/program_rank");
 const user = require("../models/user")
 const cloudUrl = require("../gcloud/imageUrl")
 
-exports.create = (req, res) => {
-    const prog = new manage_rank(req.body)
-    prog.save((err, data) => {
-        if (err) {
-            res.send({ error: 'manage rank is not add' })
-        }
-        else {
+exports.create = async (req, res) => {
+    const rankBody = req.body
+    rankBody.userId = req.params.userId;
+    rankBody.adminId = req.params.adminId;
+    let isExist = await program.find({ programName: rankBody.programName })
+    try {
+        if (isExist.length) {
             if (req.file) {
-                cloudUrl.imageUrl(req.file).then((result) => {
-                    manage_rank.findByIdAndUpdate(data._id, { $set: { rank_image: result } })
-                        .exec((err, rankdata) => {
+                await cloudUrl.imageUrl(req.file)
+                    .then((result) => {
+                        rankBody.rank_image = result
+
+                    })
+                    .catch((err) => {
+                        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+
+                    })
+            }
+            let prog = new manage_rank(rankBody)
+            prog.save((err, data) => {
+                if (err) {
+                    res.send({ msg: err, success: false })
+                }
+                else {
+                    program.updateOne({ programName: req.body.programName }, { $push: { program_rank: data._id } })
+                        .exec((err, programdata) => {
                             if (err) {
-                                res.send({ error: 'image is not add in rank' })
+                                res.send({ msg: err, success: false })
                             }
                             else {
-                                program.updateOne({ programName: req.body.programName }, { $push: { program_rank: data._id } })
-                                    .exec((err, data) => {
-                                        if (err) {
-                                            res.send({ error: 'rank is not add in program' })
-                                        }
-                                        else {
-                                            res.send({ msg: 'rank added successfully', rankData: rankdata })
-                                        }
-                                    })
+                                res.send({ msg: 'rank added successfully', success: true })
                             }
                         })
 
-                }).catch((error) => {
-                    res.send({ error: 'image url is not create' })
-                })
-            }
-            else {
-                program.updateOne({ programName: req.body.programName }, { $push: { program_rank: data._id } })
-                    .exec((err, programdata) => {
-                        if (err) {
-                            res.send({ error: 'rank is not add in program' })
-                        }
-                        else {
-                            res.send({ msg: 'rank added successfully', rankData: data })
-                        }
-                    })
-            }
+                }
+            })
         }
-    });
-};
+        else {
+            res.send({ msg: "Program does not exist!", success: false })
+        }
+    }
+
+
+    catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+    }
+}
 
 
 exports.read = (req, res) => {
@@ -69,74 +71,81 @@ exports.program_Info = async (req, res) => {
             res.send(err)
         });
 };
-exports.update = (req, res) => {
+exports.update = async (req, res) => {
     const program_rank_id = req.params.program_rank_id;
-    manage_rank.findByIdAndUpdate({ _id: program_rank_id },
-        req.body)
-        .exec((err, data) => {
-            if (err) {
-                res.send({
-                    success: false,
-                    error: "rank is not update"
-                });
-            } else {
-                if (req.file) {
-                    cloudUrl
-                        .imageUrl(req.file)
-                        .then((stdimagUrl) => {
-                            manage_rank.
-                                findByIdAndUpdate(program_rank_id, {
-                                    $set:{
-                                         rank_image: stdimagUrl }
-                                })
-                                .then((response) => {
-                                    res.send({
-                                        msg: " program rank and profile is update",
-                                        success: true
-                                    });
-                                })
-                                .catch((error) => {
-                                    res.send({
-                                        error: "program rank image is not update",
-                                        success: false
-                                    });
-                                });
-                        })
-                        .catch((error) => {
-                            res.send({
-                                success: error  ,
-                                error: "image url is not create"
-                            });
-                        });
-                } else {
-                    res.send({
-                        success: true,
-                        msg: "member is update successfully"
-                    });
-                }
+    const adminId = req.params.adminId
+    const userId = req.params.userId;
+
+    const rankBody = req.body
+    let isExist = await program.find({ programName: rankBody.programName })
+    try {
+        if (isExist.length) {
+            if (req.file) {
+                await cloudUrl.imageUrl(req.file)
+                    .then((result) => {
+                        rankBody.rank_image = result
+                    })
+                    .catch((err) => {
+                        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+                    })
             }
-        });
-}
-
-
-exports.remove = (req, res) => {
-    const program_rank_id = req.params.program_rank_id;
-    manage_rank.remove({ _id: program_rank_id }, (err, data) => {
-        if (err) {
-            res.send({ error: 'program rank is not delete' })
-        }
-        else {
-            program.update({ "program_rank": program_rank_id }, { $pull: { "program_rank": program_rank_id } },
-                function (err, data) {
+            await manage_rank.updateOne({ _id: program_rank_id, $and: [{ userId: userId }, { adminId: adminId }] }, { $set: rankBody })
+                .exec((err, data) => {
                     if (err) {
-                        res.send({ error: 'program rank is not delete from program' })
+                        res.send({ msg: err, success: false })
                     }
                     else {
-                        res.send({ msg: 'program rank is delete from program' })
+                        if (data.n < 1) {
+                            return res.send({
+                                msg: "This is system generated Rank Only admin can update",
+                                success: false,
+                            });
+                        }
+                        res.send({ msg: 'rank updated successfully', success: true })
                     }
                 })
         }
-    })
+        else {
+            res.send({ msg: "Program does not exist!", success: false })
+        }
+    }
+    catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+    }
+}
+
+
+exports.remove = async (req, res) => {
+    try {
+        const program_rank_id = req.params.program_rank_id;
+        const adminId = req.params.adminId
+        const userId = req.params.userId;
+        manage_rank.remove({ _id: program_rank_id, $and: [{ userId: userId }, { adminId: adminId }] }, async (err, data) => {
+            if (err) {
+                res.send({ msg: 'Rank not removed', success: false })
+            }
+            else {
+                if (!data) {
+                    return res.send({
+                        msg: "This is system generated Rank Only admin can delete",
+                        success: false,
+                    });
+                }
+                await program.updateOne({ "program_rank": program_rank_id }, { $pull: { "program_rank": program_rank_id } },
+                    function (err, data) {
+                        if (err) {
+                            res.send({ msg: 'Rank not removed', success: false })
+                        }
+                        else {
+                            res.send({ msg: 'Rank removed successfully', success: true })
+                        }
+                    })
+            }
+        })
+    }
+    catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+    }
 };
 
 

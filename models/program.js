@@ -4,48 +4,53 @@ const mongoose = require("mongoose");
 const schema = mongoose.Schema;
 const programSchema = new schema(
     {
-        programName:{
+        programName: {
             type: String,
+            required: true,
+            unique: true,
             maxlength: 32
         },
-        color:{
+        color: {
             type: String,
-          
+
         },
         lable: {
             type: Number,
-           },
-        total_rank:{
+        },
+        total_rank: {
             type: Number,
-            
+
         },
         progression: {
             type: String,
-            
+
         },
         type: {
             type: String,
-            
+
         },
-        program_image:{
+        program_image: {
             type: String
         },
         requirement: {
             type: String
         },
-        program_category:[{
+        program_category: [{
             type: schema.Types.ObjectId,
-            ref:"pcategory"
+            ref: "pcategory"
         }],
-        program_rank:[{
-            type:schema.Types.ObjectId,
-            ref:"Program_rank"
+        program_rank: [{
+            type: schema.Types.ObjectId,
+            ref: "Program_rank"
         }],
-        userId:{
-            type:String,
+        userId: {
+            type: String,
         },
-        status:{
-            type:String
+        adminId: {
+            type: String,
+        },
+        status: {
+            type: String
         }
     },
     { timestamps: true }

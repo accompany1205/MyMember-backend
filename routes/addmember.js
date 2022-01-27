@@ -107,7 +107,7 @@ router.get('/member/camp_student/:userId/:page_no/:per_page', verifySchool, camp
 router.get('/member/after_school_student/:userId/:page_no/:per_page', verifySchool, after_school_Std);
 
 // email and text sms send perticular student
-router.post('/member/email_send_student', send_mail_std)
+router.post('/member/email_send_student/:userId', verifySchool, send_mail_std)
 router.post('/member/text_sms_send', send_sms_std)
 
 //filter member by category, subcategory , program

@@ -1,6 +1,7 @@
 const textMessage = require("../models/text_message");
 const textContact = require("../models/text_contact");
 const member = require("../models/addmember");
+const user = require("../models/user");
 const mongoose = require("mongoose");
 
 // Adding member in text contact list
@@ -33,14 +34,24 @@ exports.getTextContacts = (req, res) => {
 exports.sendTextMessage = async (req, res) => {
   const accountSid = process.env.aid;
   const authToken = process.env.authkey;
-  const orgPhone = process.env.phone; // TODO: get it from user table
+
+  // Please uncomment code below in production once we are setting correct twilio number for user
+  let {twilio} = await user.findById(req.params.userId);
+
   let {primaryPhone} = await member.findById(req.body.uid);
+  const twilioFormat = phoneNumber => {
+    if (phoneNumber.charAt(0) !== '+') {
+      return '+' + phoneNumber;
+    } else {
+      return phoneNumber;
+    }
+  }
   const client = await require('twilio')(accountSid, authToken);
   if (primaryPhone) {
     await client.messages.create({
       body: req.body.textContent,
-      to: primaryPhone,
-      from: orgPhone // This is registered number for Twilio
+      to: twilioFormat(primaryPhone),
+      from: twilioFormat(twilio) // This is registered number for Twilio
     }).then((message) => {
       console.log('Text Message sent : ', message);
       let textMsg = new textMessage(req.body);
@@ -110,7 +121,7 @@ exports.getTextContactsDetails = (req, res) => {
       ids.push(mongoose.Types.ObjectId(id));
     });
   }
-  member.find({'_id': {$in: [ids]}})
+  member.find({'_id': {$in: ids}})
     .populate('textContacts')
     .exec((err,textContactList)=>{
     if(err){
@@ -127,22 +138,35 @@ exports.getTextContactsDetails = (req, res) => {
 exports.listenIncomingSMS = async (req, res) => {
   const msg = req.body.hasOwnProperty('Body') ? req.body.Body : 'Failed to receive sms';
   const from = req.from.hasOwnProperty('From') ? req.from.From : 'Unknown sender';
-  const to =  process.env.phone; // TODO: Use company twilio number
+
+  // Pass twilio number as parameter in webhooks
+
+  // Uncomment this code in production when web hooks is placed for production twilio number
+  let to = req.params.twilio;
 
   const getUid = phoneNumber => {
-    return member.findOne({primaryPhone: from}).then(data => {
+    return member.findOne({primaryPhone: phoneNumber}).then(data => {
       return data._id;
+    }).catch(err => {
+      return '';
     });
   };
 
   const getUserId = phoneNumber => {
-    // TODO: Update after twilio number is added
-    // Find userid of user matching phoneNumber with twilio number
+    // Find userid of user with twilio number
 
+    // Uncomment this in production once twilio number is added
+    return user.findOne({twilio: phoneNumber}).then(data => {
+      return data._id;
+    }).catch(err => {
+      return '';
+    });
+
+    // Remove below code in production once twilio number is added
     // Below is hardcoded user id should be removed after twilio number per organization logic is added
-    let userId = '606aea95a145ea2d26e0f1ab';
+    // let userId = '606aea95a145ea2d26e0f1ab';
 
-    return userId;
+    // return userId;
   };
 
   const obj = {
@@ -152,12 +176,14 @@ exports.listenIncomingSMS = async (req, res) => {
     isSent: false,
   };
 
-  let text = new textMessage(obj);
-
-  text.save().then(textMessage => {
-    res.send({msg:'text sms sent successfully'})
-  }).catch(error => {
-    res.send({error:'txt msg not send'})
-  });
-
+  if (obj.userId !== '' && obj.uid !== '') {
+    let text = new textMessage(obj);
+    text.save().then(textMessage => {
+      res.send({msg:'text sms sent successfully'})
+    }).catch(error => {
+      res.send({error:'txt msg not send'})
+    });
+  } else {
+    res.send({error:'txt msg not send due to wrong twilio or phone number'});
+  }
 }

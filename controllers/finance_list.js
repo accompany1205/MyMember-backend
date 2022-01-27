@@ -3,7 +3,6 @@ const Member = require("../models/addmember")
 const exp = require("../models/expenses")
 const financeDetail = require("../models/finance_info")
 var mongo = require("mongoose")
-const { find } = require("../models/addmember")
 
 exports.income_break = (req, res) => {
     Member.find({ userId: req.params.userId })
@@ -60,21 +59,21 @@ exports.income_break = (req, res) => {
             }
         })
 }
-exports.membership =(req,res)=>{
-    Member.find({userId:req.params.userId})
-    .select('firstName')
-    .select('lastName')
-    .select('status')
-    .select('rating')
-    .populate('membership_details','expiry_date due_every membership_name due_every_month')
-    .exec((err,memberShip)=>{
-        if(err){
-            res.send(err)
-        }
-        else{
-            res.send(memberShip)
-        }
-    })
+exports.membership = (req, res) => {
+    Member.find({ userId: req.params.userId })
+        .select('firstName')
+        .select('lastName')
+        .select('status')
+        .select('rating')
+        .populate('membership_details', 'expiry_date due_every membership_name due_every_month')
+        .exec((err, memberShip) => {
+            if (err) {
+                res.send(err)
+            }
+            else {
+                res.send(memberShip)
+            }
+        })
 }
 
 // exports.membership_status =(req, res)=>{
@@ -155,37 +154,97 @@ exports.exp_break = (req, res) => {
 }
 
 exports.cc_expire = (req, res) => {
-    var curDate=new Date()
+    var curDate = new Date()
     financeDetail.aggregate([
-        {$match:{
-            $and:[{userId:req.params.userId},
-                 {$expr:{$gt:[{ $month: '$cardExpiry' },{ $month: curDate }]}},
-                 {$expr:{$lte:[{ $year: '$cardExpiry' },{ $year: curDate }]}}]
-       }},
-       {
-           $project:{
-            memberInfo:1,
-            cardExpiry:1
-           }
-       }
-    ],function(err, docs){
-        if (err){
-            res.send({error:'card expire list not found'})
+        {
+            $match: {
+                $and: [{ userId: req.params.userId },
+                { $expr: { $gt: [{ $month: '$cardExpiry' }, { $month: curDate }] } },
+                { $expr: { $lte: [{ $year: '$cardExpiry' }, { $year: curDate }] } }]
+            }
+        },
+        {
+            $project: {
+                memberInfo: 1,
+                cardExpiry: 1
+            }
         }
-        else{
+    ], function (err, docs) {
+        if (err) {
+            res.send({ error: 'card expire list not found' })
+        }
+        else {
             var options = {
                 path: 'memberInfo', //array name in addmember modal
                 model: 'member', //collection name
                 select: 'firstName lastName primaryPhone'  // show specific field only
-           };
-           Member.populate(docs,options,function(err,expList){
-            if(err){
-                res.send({error:'memberinfo not populate'})
-            }
-            else{
-                res.send(expList)
-            }
-           })
+            };
+            Member.populate(docs, options, function (err, expList) {
+                if (err) {
+                    res.send({ error: 'memberinfo not populate' })
+                }
+                else {
+                    res.send(expList)
+                }
+            })
         }
     })
+}
+
+
+exports.this_month = async (req, res) => {
+    const userId = req.params.userId
+    let totalexp = await bymember.aggregate([
+        { "$match": { userId: userId } },
+        {
+            $group: {
+                _id: null,
+                "totalexp": {
+                    $sum: {
+                        $sum: "$schedulePayments.Amount"
+                    }
+
+                }
+            }
+        }
+    ])
+    let paid = await bymember.aggregate([
+        {
+            "$match": {
+                userId: userId,
+            }
+        },
+        {
+            $project: {
+                _id: 1,
+                "schedulePayments": {
+
+
+                    $filter: { input: "$schedulePayments", cond: { $eq: ["$$this.status", "paid"] } }
+
+                }
+            }
+        },
+        {
+            $group: {
+                _id: null,
+                "paid": {
+                    $sum: {
+                        $sum: "$schedulePayments.Amount"
+                    }
+
+                }
+            }
+        }
+    ])
+    res.send({ totalexp, paid, success: true })
+
+    //    .exec((err, expBreak) => {
+    //         if (err) {
+    //             res.send({ msg: 'expense breakdown list not found', success: false })
+    //         }
+    //         else {
+    //             res.send({ data: expBreak, success: true })
+    //         }
+    //     })
 }
