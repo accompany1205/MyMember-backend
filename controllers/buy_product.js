@@ -106,9 +106,9 @@ exports.buy_product = async (req, res) => {
                                             productData,
                                             studentId
                                         );
-                                        res.send(memberShipDoc);
+                                        return res.send(memberShipDoc);
                                     } else {
-                                        res.send({
+                                        return res.send({
                                             msg: "Finance and product doc not created!",
                                             success: false,
                                         });
@@ -120,7 +120,7 @@ exports.buy_product = async (req, res) => {
                                     productData,
                                     studentId
                                 );
-                                res.send(memberShipDoc);
+                                return res.send(memberShipDoc);
 
                             } else {
                                 res.send({ msg: addresp.data.mesg, success: false });
@@ -138,7 +138,7 @@ exports.buy_product = async (req, res) => {
                                         productData,
                                         studentId
                                     );
-                                    res.send(memberShipDoc);
+                                    return   res.send(memberShipDoc);
                                 } else {
                                     res.send({
                                         msg: "Finance and product doc not created!",
@@ -152,7 +152,7 @@ exports.buy_product = async (req, res) => {
                                 productData,
                                 studentId
                             );
-                            res.send(memberShipDoc);
+                            return   res.send(memberShipDoc);
 
                         }
                     }
@@ -166,7 +166,7 @@ exports.buy_product = async (req, res) => {
                         productData,
                         studentId
                     );
-                    res.send(memberShipDoc);
+                    return   res.send(memberShipDoc);
                 }
                 else {
                     res.send({
@@ -225,7 +225,7 @@ exports.buy_product = async (req, res) => {
                             return res.send(memberShipDoc);
 
                         } else {
-                            return res.send({ msg: resp.data.mesg, success: false });
+                             res.send({ msg: resp.data.mesg, success: false });
                         }
                     }
                     else {
@@ -462,7 +462,7 @@ exports.update = async (req, res) => {
                 let forfeit;
                 if (subscription_id) {
                     const { uid } = getUidAndInvoiceNumber()
-                    let valorRes = await valorTechPaymentGateWay.forfeitSubscription({app_id : req.valorCredentials.app_id,auth_key :req.valorCredentials.auth_key,epi: req.valorCredentials.epi, subscription_id, uid })
+                    let valorRes = await valorTechPaymentGateWay.forfeitSubscription({ app_id: req.valorCredentials.app_id, auth_key: req.valorCredentials.auth_key, epi: req.valorCredentials.epi, subscription_id, uid })
                     if (valorRes.data.error_no == "S00") {
                         await paymentProcessing(productId, emiId, balance, createdBy, type, req.body.ptype);
                         forfeit = await forfeitSubscription(productId, req.body.reason)
@@ -489,7 +489,7 @@ exports.update = async (req, res) => {
             } else if (type == "terminate") {
                 let terminate;
                 if (subscription_id) {
-                    const valorDelete = await valorTechPaymentGateWay.deleteSubscription({app_id : req.valorCredentials.app_id,auth_key :req.valorCredentials.auth_key,epi: req.valorCredentials.epi, subscription_id });
+                    const valorDelete = await valorTechPaymentGateWay.deleteSubscription({ app_id: req.valorCredentials.app_id, auth_key: req.valorCredentials.auth_key, epi: req.valorCredentials.epi, subscription_id });
                     if (valorDelete.data.error_no === "S00") {
                         terminate = await terminateMembership(productId, req.body.reason)
                         if (terminate.success) {
@@ -518,7 +518,7 @@ exports.update = async (req, res) => {
                 const createdBy = req.body.createdBy;
                 if (cardDetails) {
                     const { uid } = getUidAndInvoiceNumber();
-                    const valorRefundRes = await valorTechPaymentGateWay.refundSubscription({app_id : req.valorCredentials.app_id,auth_key :req.valorCredentials.auth_key,epi: req.valorCredentials.epi, ...cardDetails, uid, amount: req.body.Amount });
+                    const valorRefundRes = await valorTechPaymentGateWay.refundSubscription({ app_id: req.valorCredentials.app_id, auth_key: req.valorCredentials.auth_key, epi: req.valorCredentials.epi, ...cardDetails, uid, amount: req.body.Amount });
                     if (valorRefundRes.data.error_no === "S00") {
                         if (emiId) {
                             await paymentProcessing(productId, emiId, balance, createdBy, type, req.body.ptype);

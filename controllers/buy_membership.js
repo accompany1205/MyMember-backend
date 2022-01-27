@@ -61,7 +61,7 @@ exports.update = async (req, res) => {
         });
       } else if (type == "freeze") {
         if (subscription_id) {
-          const freezeValorPayload = await valorTechPaymentGateWay.freezeSubscription({app_id : req.valorCredentials.app_id,auth_key :req.valorCredentials.auth_key,epi: req.valorCredentials.epi, subscription_id, freeze_start_date: req.body.freeze_start_date.split('-').join(''), freeze_stop_date: req.body.freeze_stop_date.split('-').join('') });
+          const freezeValorPayload = await valorTechPaymentGateWay.freezeSubscription({ app_id: req.valorCredentials.app_id, auth_key: req.valorCredentials.auth_key, epi: req.valorCredentials.epi, subscription_id, freeze_start_date: req.body.freeze_start_date.split('-').join(''), freeze_stop_date: req.body.freeze_stop_date.split('-').join('') });
           if (freezeValorPayload?.data?.error_no === "S00") {
             const freezeRes = await freezeMembership(membershipId, req.body);
             if (freezeRes) {
@@ -98,7 +98,7 @@ exports.update = async (req, res) => {
       } else if (type == "unfreeze") {
         let unfreezeRes;
         if (subscription_id) {
-          const valorRes = await valorTechPaymentGateWay.unfreezeSubscription({app_id : req.valorCredentials.app_id,auth_key :req.valorCredentials.auth_key,epi: req.valorCredentials.epi,subscription_id });
+          const valorRes = await valorTechPaymentGateWay.unfreezeSubscription({ app_id: req.valorCredentials.app_id, auth_key: req.valorCredentials.auth_key, epi: req.valorCredentials.epi, subscription_id });
           if (valorRes.data.error_no === "S00") {
             unfreezeRes = await unFreezeMembership(membershipId, req.body);
             if (unfreezeRes) {
@@ -139,7 +139,7 @@ exports.update = async (req, res) => {
         let forfeit;
         if (subscription_id) {
           const { uid } = getUidAndInvoiceNumber()
-          let valorRes = await valorTechPaymentGateWay.forfeitSubscription({ app_id : req.valorCredentials.app_id,auth_key :req.valorCredentials.auth_key,epi: req.valorCredentials.epi,subscription_id, uid })
+          let valorRes = await valorTechPaymentGateWay.forfeitSubscription({ app_id: req.valorCredentials.app_id, auth_key: req.valorCredentials.auth_key, epi: req.valorCredentials.epi, subscription_id, uid })
           if (valorRes.data.error_no == "S00") {
             await paymentProcessing(membershipId, emiId, balance, createdBy, type, req.body.ptype);
             forfeit = await forfeitSubscription(membershipId, req.body.reason)
@@ -166,7 +166,7 @@ exports.update = async (req, res) => {
       } else if (type == "terminate") {
         let terminate;
         if (subscription_id) {
-          const valorDelete = await valorTechPaymentGateWay.deleteSubscription({app_id : req.valorCredentials.app_id,auth_key :req.valorCredentials.auth_key,epi: req.valorCredentials.epi, subscription_id });
+          const valorDelete = await valorTechPaymentGateWay.deleteSubscription({ app_id: req.valorCredentials.app_id, auth_key: req.valorCredentials.auth_key, epi: req.valorCredentials.epi, subscription_id });
           if (valorDelete.data.error_no === "S00") {
             terminate = await terminateMembership(membershipId, req.body.reason)
             if (terminate.success) {
@@ -195,7 +195,7 @@ exports.update = async (req, res) => {
         const createdBy = req.body.createdBy;
         if (cardDetails) {
           const { uid } = getUidAndInvoiceNumber();
-          const valorRefundRes = await valorTechPaymentGateWay.refundSubscription({ app_id : req.valorCredentials.app_id,auth_key :req.valorCredentials.auth_key,epi: req.valorCredentials.epi,...cardDetails, uid, amount: req.body.Amount });
+          const valorRefundRes = await valorTechPaymentGateWay.refundSubscription({ app_id: req.valorCredentials.app_id, auth_key: req.valorCredentials.auth_key, epi: req.valorCredentials.epi, ...cardDetails, uid, amount: req.body.Amount });
           if (valorRefundRes.data.error_no === "S00") {
             if (emiId) {
               await paymentProcessing(membershipId, emiId, balance, createdBy, type, req.body.ptype);
@@ -386,7 +386,7 @@ exports.updatePayments = async (req, res) => {
     }
     if (ptype == "credit card" && (payment_type == "cash" || payment_type == "cheque")) {
       const { uid } = getUidAndInvoiceNumber()
-      let valorRes = await valorTechPaymentGateWay.forfeitSubscription({app_id : req.valorCredentials.app_id,auth_key :req.valorCredentials.auth_key,epi: req.valorCredentials.epi, subscription_id, uid })
+      let valorRes = await valorTechPaymentGateWay.forfeitSubscription({ app_id: req.valorCredentials.app_id, auth_key: req.valorCredentials.auth_key, epi: req.valorCredentials.epi, subscription_id, uid })
       if (valorRes.data.error_no == "S00") {
         const pay = await paymentProcessing(buy_membershipId, emiId, balance, createdBy, "paid", payment_type, req.body.cheque_number);
         res.send(pay)
@@ -542,7 +542,7 @@ exports.buyMembership = async (req, res) => {
                       membershipData,
                       studentId
                     );
-                    res.send(memberShipDoc);
+                    return res.send(memberShipDoc);
 
                   } else {
                     res.send({
@@ -559,6 +559,8 @@ exports.buyMembership = async (req, res) => {
                 );
                 res.send(memberShipDoc);
               }
+            } else {
+
             }
 
           } else {
