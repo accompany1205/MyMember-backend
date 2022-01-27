@@ -8,7 +8,7 @@ class PaymentGateWay {
     formData.append("auth_token", process.env.AUTH_TOKEN);
     formData.append("app_id", "NTuVeaULDFcLoBezpLcL4QInMqTWO91t");
     formData.append("auth_key", "TRqSYY5iewRddEfOKijeVrOCOPivgJmb");
-    formData.append("surchargeIndicator", 1)
+    formData.append("surchargeIndicator", 0)
     formData.append("avs", 1)
     return formData;
   };
