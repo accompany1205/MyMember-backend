@@ -192,17 +192,59 @@ exports.cc_expire = (req, res) => {
 }
 
 
-exports.this_month = (req, res) => {
+exports.this_month = async (req, res) => {
     const userId = req.params.userId
-    exp.aggregate([
+    let totalexp = await bymember.aggregate([
         { "$match": { userId: userId } },
-        
-    ]).exec((err, expBreak) => {
-        if (err) {
-            res.send({ msg: 'expense breakdown list not found', success: false })
+        {
+            $group: {
+                _id: null,
+                "totalexp": {
+                    $sum: {
+                        $sum: "$schedulePayments.Amount"
+                    }
+
+                }
+            }
         }
-        else {
-            res.send({ data: expBreak, success: true })
+    ])
+    let paid = await bymember.aggregate([
+        {
+            "$match": {
+                userId: userId,
+            }
+        },
+        {
+            $project: {
+                _id: 1,
+                "schedulePayments": {
+
+
+                    $filter: { input: "$schedulePayments", cond: { $eq: ["$$this.status", "paid"] } }
+
+                }
+            }
+        },
+        {
+            $group: {
+                _id: null,
+                "paid": {
+                    $sum: {
+                        $sum: "$schedulePayments.Amount"
+                    }
+
+                }
+            }
         }
-    })
+    ])
+    res.send({ totalexp, paid, success: true })
+
+    //    .exec((err, expBreak) => {
+    //         if (err) {
+    //             res.send({ msg: 'expense breakdown list not found', success: false })
+    //         }
+    //         else {
+    //             res.send({ data: expBreak, success: true })
+    //         }
+    //     })
 }
