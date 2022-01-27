@@ -558,6 +558,7 @@ exports.verifySchool = (req, res, next) => {
             return res.status(403).send({ success: false, msg: "Access denied" });
           } else {
             if (authData.id == req.params.userId) {
+              req.valorCredentials = authData
               next();
             } else {
               return res.status(403).send({ success: false, msg: "Access denied" });
