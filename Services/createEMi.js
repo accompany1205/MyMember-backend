@@ -19,7 +19,7 @@ function createEMIRecord(noOfEMi, Balance, activationDate, createdBy, payMode, p
       obj.date = moment(activationDate).add(i, "M").format("YYYY-MM-DD");
       obj.Id = uuidv4();
       obj.Amount = Balance;
-      obj.status = i == 1 && payLatter === "credit card" ? "paid" : "due";
+      obj.status = "due";
       obj.ptype = payLatter;
       obj.createdBy = createdBy;
     } else {

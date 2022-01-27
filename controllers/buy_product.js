@@ -49,7 +49,7 @@ exports.buy_product = async (req, res) => {
     let productData = req.body.product_details;
     const Address = valorPayload ? valorPayload.address : "";
     const payLatter = req.body.product_details.pay_latter;
-    const financeId = req.body.product_details.finance_id;
+    const financeId = req.body.product_details.financeId;
     const ptype = req.body.product_details.ptype;
     delete req.body.product_details.valorPayload;
     let memberShipDoc;
@@ -123,10 +123,11 @@ exports.buy_product = async (req, res) => {
                                 return res.send(memberShipDoc);
 
                             } else {
-                                res.send({ msg: addresp.data.mesg, success: false });
+                                res.send({ msg: (addresp.data.mesg ? addresp.data.mesg : addresp.data.msg), success: false });
                             }
                         }
                         else {
+                            // paylater with cash
                             if (!financeId) {
                                 valorPayload.address = Address;
                                 valorPayload.userId = userId;
@@ -138,7 +139,7 @@ exports.buy_product = async (req, res) => {
                                         productData,
                                         studentId
                                     );
-                                    return   res.send(memberShipDoc);
+                                    return res.send(memberShipDoc);
                                 } else {
                                     res.send({
                                         msg: "Finance and product doc not created!",
@@ -152,7 +153,7 @@ exports.buy_product = async (req, res) => {
                                 productData,
                                 studentId
                             );
-                            return   res.send(memberShipDoc);
+                            return res.send(memberShipDoc);
 
                         }
                     }
@@ -166,7 +167,7 @@ exports.buy_product = async (req, res) => {
                         productData,
                         studentId
                     );
-                    return   res.send(memberShipDoc);
+                    return res.send(memberShipDoc);
                 }
                 else {
                     res.send({
@@ -225,7 +226,7 @@ exports.buy_product = async (req, res) => {
                             return res.send(memberShipDoc);
 
                         } else {
-                             res.send({ msg: resp.data.mesg, success: false });
+                            res.send({ msg: resp.data.mesg, success: false });
                         }
                     }
                     else {
@@ -244,7 +245,7 @@ exports.buy_product = async (req, res) => {
                 }
             } else {
                 res.send({
-                    msg: "payment type should be pif",
+                    msg: "payment type should be Pif or Monthly/Weekly",
                     success: false,
                 });
             }
