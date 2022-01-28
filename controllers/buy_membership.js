@@ -595,7 +595,7 @@ exports.buyMembership = async (req, res) => {
           } else {
             res.send({ msg: resp.data.mesg, success: false });
           }
-        } else if (ptype === ("cash" || "cheque")) {
+        } else if (ptype === "cash" || ptype === "cheque") {
           if (payLatter === "credit card" && (membershipData.payment_type === "monthly" || membershipData.payment_type === "weekly")) {
             valorPayload.descriptor = "BETA TESTING";
             valorPayload.product_description = "Mymember brand Product";
