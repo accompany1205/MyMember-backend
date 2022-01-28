@@ -353,7 +353,6 @@ exports.update_template = async (req, res) => {
     var allAttachments = await Promise.all(promises);
     updateTemplate.attachments = allAttachments;
   }
-  console.log("-->", updateTemplate)
   all_temp.updateOne(
     { _id: req.params.templateId },
     req.body,
