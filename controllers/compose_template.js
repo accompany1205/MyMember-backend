@@ -345,6 +345,8 @@ exports.update_template = async (req, res) => {
       smartList = []
     }
   }
+  updateTemplate.to = to;
+  updateTemplate.smartLists = smartList;
   const promises = []
   if (req.files) {
     (req.files).map(file => {
@@ -353,7 +355,6 @@ exports.update_template = async (req, res) => {
     var allAttachments = await Promise.all(promises);
     updateTemplate.attachments = allAttachments;
   }
-  console.log("-->", updateTemplate)
   all_temp.updateOne(
     { _id: req.params.templateId },
     req.body,
@@ -383,10 +384,13 @@ exports.add_template = async (req, res) => {
       sent_time,
       repeat_mail,
       sent_date,
+      follow_up,
+      smartLists,
       design,
       content_type,
-      follow_up,
-      smartLists
+      immediately,
+      days,
+      days_type,
     } = req.body || {};
     to = to ? JSON.parse(to) : [];
     smartLists = smartLists ? JSON.parse(smartLists) : [];
@@ -402,8 +406,6 @@ exports.add_template = async (req, res) => {
       title,
       subject,
       template,
-      design,
-      content_type,
       sent_date,
       sent_time,
       DateT: date_iso_follow,
@@ -416,7 +418,12 @@ exports.add_template = async (req, res) => {
       folderId,
       templete_Id,
       attachments,
-      smartLists
+      smartLists,
+      design,
+      content_type,
+      immediately,
+      days,
+      days_type,
     };
     const promises = []
     if (req.files) {

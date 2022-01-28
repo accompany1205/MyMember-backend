@@ -129,7 +129,7 @@ class Tasks {
                 if (err) {
                     return res.status(400).json({ message: err });
                 } else {
-                    return res.status(400).json({ message: "item add successfuly", data: data });
+                    return res.status(200).json({ message: "item add successfuly", data: data });
                 }
             });
         } catch (err) {

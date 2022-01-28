@@ -22,6 +22,15 @@ const EmailSchema = schema({
     design: {
         type: String
     },
+    days: {
+        type: Number
+    },
+    days_type: {
+        type: String
+    },
+    immediately: {
+        type: Boolean
+    },
     content_type: {
         type: String
     },

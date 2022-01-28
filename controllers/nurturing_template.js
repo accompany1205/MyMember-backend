@@ -129,9 +129,13 @@ exports.add_template = async (req, res) => {
       sent_date,
       follow_up,
       smartLists,
+      design,
+      immediately,
+      days,
+      days_type,
     } = req.body || {};
     to = to ? JSON.parse(to) : [];
-    smartLists = smartLists ? JSON.parse(smartLists): [];
+    smartLists = smartLists ? JSON.parse(smartLists) : [];
     let { userId, folderId } = req.params || {};
     // if (!to && !smartLists) {
     //   throw new Error("Select atleat send-to or smart-List")
@@ -163,7 +167,11 @@ exports.add_template = async (req, res) => {
       folderId,
       templete_Id,
       attachments,
-      smartLists
+      smartLists,
+      design,
+      immediately,
+      days,
+      days_type,
     };
     const promises = []
     if (req.files) {
@@ -376,6 +384,8 @@ exports.update_template = async (req, res) => {
       smartList = []
     }
   }
+  updateTemplate.to = to
+  updateTemplate.smartList = smartList
   const promises = []
   if (req.files) {
     (req.files).map(file => {
