@@ -40,7 +40,6 @@ exports.listingVerifications = async (req, res) => {
   let userId = req.params.userId;
   try {
     await User.findById(userId, { sendgridVerification: 1, _id: 0 }).then(resp => {
-      console.log(resp)
       res.send({ msg: "data!", resp, success: true })
     }).catch(err => {
       res.send({ msg: "not Data!", success: false, err })

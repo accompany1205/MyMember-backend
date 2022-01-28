@@ -7,7 +7,7 @@ const { add_template,list_template,remove_template,status_update_template,update
 router.get("/email_nurturing/list_template/:userId/:folderId",verifySchool,list_template)
 router.get("/email_nurturing/Alltemplate/:userId",verifySchool,all_email_list)
 router.post("/email_nurturing/add_template/:userId/:folderId",verifySchool,upload.array('attachments'),add_template) //add Templete
-router.put("/email_nurturing/drag_drop_templete/:userId",requireSignin,swapAndUpdate_template)
+router.put("/email_nurturing/swap_templete/:userId",requireSignin,swapAndUpdate_template)
 router.put("/email_nurturing/update_template/:userId/:templateId",verifySchool,upload.array('attachments'),update_template) //update Templete
 router.put("/email_nurturing/single_template_status_change/:userId/:tempId",verifySchool,single_tem_update_status) //single template status update
 router.put("/email_nurturing/update_template_status/:userId/:folderId",verifySchool,status_update_template)// all template status change
