@@ -6,7 +6,7 @@ class PaymentGateWay {
     const formData = new FormData();
     Object.keys(payload).forEach((key) => formData.append(key, payload[key]));
     formData.append("auth_token", process.env.AUTH_TOKEN);
-    formData.append("surchargeIndicator", 0)
+    formData.append("surchargeIndicator", 1)
     formData.append("avs", 1)
     return formData;
   };
