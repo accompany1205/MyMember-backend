@@ -478,7 +478,7 @@ exports.remove = (req, res) => {
 exports.buyMembership = async (req, res) => {
   const userId = req.params.userId;
   const studentId = req.params.studentId;
-  let valorPayload = req.body.membership_details.valorPayload;
+  let valorPayload = req.body.membership_details.valorPayload?req.body.membership_details.valorPayload:{};
   valorPayload.app_id = req.valorCredentials.app_id
   valorPayload.auth_key = req.valorCredentials.auth_key
   valorPayload.epi = req.valorCredentials.epi
@@ -614,6 +614,7 @@ exports.buyMembership = async (req, res) => {
               membershipData.transactionId = {
                 payment_type: "cash",
               };
+              console.log('isdnjv')
 
               if (!financeId) {
                 valorPayload.address = Address;
@@ -647,6 +648,7 @@ exports.buyMembership = async (req, res) => {
 
             }
           }
+          
           if (!financeId) {
             valorPayload.address = Address;
             valorPayload.userId = userId;
