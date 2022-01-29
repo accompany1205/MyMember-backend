@@ -162,7 +162,6 @@ class Tasks {
             const input = req.body
             if (id) {
                 model.findOneAndDelete({ _id: id }, {}, (err, data) => {
-                    console.log(err, data)
                     if (err) {
                         return res.status(400).json({ message: err });
                     }

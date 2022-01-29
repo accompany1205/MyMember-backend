@@ -384,8 +384,8 @@ exports.update_template = async (req, res) => {
       smartList = []
     }
   }
-  updateTemplate.to = to
-  updateTemplate.smartList = smartList
+  updateTemplate.to = to;
+  updateTemplate.smartLists = smartList;
   const promises = []
   if (req.files) {
     (req.files).map(file => {

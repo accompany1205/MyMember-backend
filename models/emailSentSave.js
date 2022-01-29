@@ -97,6 +97,7 @@ const EmailSchema = schema({
     },
     smartLists: [{
         stdtype: String,
+        smId: String,
         smrtList: Array
     }]
 },
