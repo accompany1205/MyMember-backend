@@ -59,6 +59,12 @@ const productSchema = new schema(
         no_of_payment: {
             type: String,
         },
+        duration_type: {
+            type: String,
+        },
+        duration_time: {
+            type: String
+        },
         isRecurring: {
             type: Number
         },
