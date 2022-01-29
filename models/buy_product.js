@@ -22,6 +22,9 @@ const productSchema = new schema(
         next_payment_date: {
             type: String,
         },
+        start_payment_date: {
+            type: String,
+        },
         expiry_date: {
             type: String,
         },
