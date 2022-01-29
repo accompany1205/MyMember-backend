@@ -1,12 +1,10 @@
 const membershipModal = require("../models/membership");
 const membershipFolder = require("../models/membershipFolder");
+const BuyMembership = require("../models/buy_membership");
 const cloudUrl = require("../gcloud/imageUrl");
 const Student = require("../models/addmember");
-const jszip = require('jszip');
-const axios = require('axios');
-let fs = require('fs')
-
-const Docxtemplater = require("docxtemplater");
+const fs = require('fs');
+const mergeFile = require("../Services/mergeFile")
 
 exports.create = async (req, res) => {
   try {
@@ -95,7 +93,7 @@ exports.remove = (req, res) => {
           res.send({ msg: "membership is not delete", success: false });
         } else {
           if (!data) {
-            return res.status(401).send({
+            return res.send({
               msg: "This is system generated membership Only admin can delete",
               success: false,
             });
@@ -126,28 +124,31 @@ exports.remove = (req, res) => {
 
 exports.membershipUpdate = async (req, res) => {
   try {
-
     var membershipData = req.body;
     const membershipId = req.params.membershipId;
     const adminId = req.params.adminId
     const userId = req.params.userId;
     const new_folderId = req.body.folderId;
     const old_folderId = req.body.old_folderId;
+    membershipData.folderId = new_folderId
     const promises = []
     if (req.files) {
-      (req.files).map(file => {
-        if (file.originalname.split('.')[0] === "thumbnail") {
-          cloudUrl.imageUrl(file)
-            .then(data => {
-              membershipData.membershipThumbnail = data
-            })
-            .catch(err => {
-              res.send({ msg: "thumbnail not uploaded!", success: false })
-            })
-        } else {
-          promises.push(cloudUrl.imageUrl(file))
-        }
-      });
+      Object.entries(req.files).forEach(([key, value]) => {
+
+        value.map(file => {
+          if (file.fieldname === "thumbnail") {
+            cloudUrl.imageUrl(file)
+              .then(data => {
+                membershipData.membershipThumbnail = data
+              })
+              .catch(err => {
+                res.send({ msg: "thumbnail not uploaded!", success: false })
+              })
+          } else {
+            promises.push(cloudUrl.imageUrl(file))
+          }
+        });
+      })
       var docs = await Promise.all(promises);
       membershipData.membershipDoc = docs;
     }
@@ -162,7 +163,7 @@ exports.membershipUpdate = async (req, res) => {
           });
         } else {
           if (data.n < 1) {
-            return res.status(401).send({
+            return res.send({
               msg: "This is system generated membership Only admin can update",
               success: false,
             });
@@ -194,49 +195,34 @@ exports.membershipUpdate = async (req, res) => {
   }
 };
 
+
+
 exports.mergeDoc = async (req, res) => {
   let docBody = req.body.docUrl;
   let studentId = req.params.studentId;
-  let userId = req.params.userId;
+  //let userId = req.params.userId;
   let membershipId = req.params.membershipId;
+  let buyMembershipId = req.params.buyMembershipId;
   try {
     const studentInfo = await Student.findOne({ _id: studentId });
-    // const membershitInfo = await membershipModal.findOne({ _id: membershipId });
-    const mergedInfo = { ...studentInfo };
-    // var archive = new zip();
-    // let data = await dataFromUrl()
-    // let resp = await writeFile(docBody)
-    await axios.get(docBody, {
-      responseType: 'arraybuffer',
-    }).then(respon => {
-      let buffers = respon.data
-      var zip = new jszip;
-      zip.file('simple.doc', buffers, { binary: true })
-      zip.generateAsync({ type: "nodebuffer", compression: 'DEFLATE' })
-        .then(function callback(buffer) {
-          saveAs(buffer, "main.zip");
-          const doc = new Docxtemplater("main.zip", {
-            paragraphLoop: true,
-            linebreaks: true,
-          })
-          doc.render(mergedInfo, function (err, resp) {
-            if (err) {
-              res.send({ msg: "PDF not created", success: false })
-            } else {
-              console.log(resp);
-              //const buf = doc.getZip().generate({ type: "nodebuffer" });
-              res.send({ msg: resp, success: true })
-            }
-          })
+    const membershipInfo = await membershipModal.findOne({ _id: membershipId });
+    const mergedInfo = { ...studentInfo.toJSON(), ...membershipInfo.toJSON() };
+    let fileObj = mergeFile(docBody, mergedInfo)
+    //fs.writeFileSync(path.resolve(__dirname, "output.pdf"), finalPDF);
+    cloudUrl.imageUrl(fileObj).then(Docresp => {
+      BuyMembership.updateOne({ _id: buyMembershipId }, { $set: { mergedDoc: Docresp } }).then(datas => {
+        BuyMembership.findOne({ _id: buyMembershipId }).then(data => {
+          res.send({ msg: "get merged doc", success: true, data: data.mergedDoc })
         }).catch(err => {
-          console.log(err)
+          res.send({ msg: "data not found", success: false });
         })
+      }).catch(err => {
+        res.send({ msg: "merged doc not added!", success: false })
+      })
     }).catch(err => {
-      console.log(err)
+      res.send({ msg: err.message.replace(/\"/g, ""), success: false })
     })
-
-
   } catch (err) {
-    throw (err);
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }
 }

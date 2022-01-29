@@ -1,6 +1,10 @@
 var product = require('../models/product')
 const cloudUrl = require("../gcloud/imageUrl");
 var productFolders = require('../models/productFolder')
+const BuyProduct = require("../models/buy_product");
+const Student = require("../models/addmember");
+const mergeFile = require("../Services/mergeFile")
+
 
 exports.create = async (req, res) => {
     try {
@@ -10,27 +14,28 @@ exports.create = async (req, res) => {
         productDetails.folderId = req.params.folderId;
         const promises = []
         if (req.files) {
-            (req.files).map(file => {
-                if (file.originalname.split('.')[0] === "thumbnail") {
-                    cloudUrl.imageUrl(file)
-                        .then(data => {
-                            productDetails.productThumbnail = data
-                        })
-                        .catch(err => {
-                            res.send({ msg: "Thumbnail not uploaded!", success: false })
-                        })
-                } else {
-                    promises.push(cloudUrl.imageUrl(file))
-                }
+            Object.entries(req.files).forEach(([key, value]) => {
+                value.map(file => {
+                    if (file.fieldname === "thumbnail") {
+                        cloudUrl.imageUrl(file)
+                            .then(data => {
+                                productDetails.productThumbnail = data
+                            })
+                            .catch(err => {
+                                res.send({ msg: "Thumbnail not uploaded!", success: false })
+                            })
+                    } else {
+                        promises.push(cloudUrl.imageUrl(file))
+                    }
+                })
             });
-            var docs = await Promise.all(promises);
         }
+        var docs = await Promise.all(promises);
         productDetails.productFile = docs;
         var productObj = new product(productDetails);
-        console.log(productObj)
         productObj.save((err, productData) => {
             if (err) {
-                res.send({ msg: "Product not created!", success: false, err })
+                res.send({ msg: "Product not created!", success: false })
             }
             else {
                 productFolders.findByIdAndUpdate(req.params.folderId, { $push: { products: productData._id } })
@@ -89,7 +94,7 @@ exports.deleteproduct = (req, res) => {
                 else {
                     if (!data) {
                         return res.status(401).send({
-                            msg: "This is system generated membership Only admin can delete",
+                            msg: "This is system generated Product Only admin can delete",
                             success: false,
                         });
                     }
@@ -123,6 +128,8 @@ exports.updateproduct = async (req, res) => {
         const userId = req.params.userId;
         const new_folderId = req.body.folderId;
         const old_folderId = req.body.old_folderId;
+        productData.folderId = new_folderId
+
         const promises = []
         if (req.files) {
             (req.files).map(file => {
@@ -149,7 +156,7 @@ exports.updateproduct = async (req, res) => {
                 }
                 else {
                     if (updateData.n < 1) {
-                        return res.status(401).send({
+                        return res.send({
                             msg: "This is system generated product Only admin can update",
                             success: false,
                         });
@@ -180,6 +187,33 @@ exports.updateproduct = async (req, res) => {
         res.send({ msg: err.message.replace(/\"/g, ""), success: false })
     }
 
+}
+
+
+exports.mergeDoc = async (req, res) => {
+    let docBody = req.body.docUrl;
+    let studentId = req.params.studentId;
+    let userId = req.params.userId;
+    let productId = req.params.productId;
+    let buyProductId = req.params.buyProductId;
+    try {
+        const studentInfo = await Student.findOne({ _id: studentId });
+        const productInfo = await product.findOne({ _id: productId });
+        const mergedInfo = { ...studentInfo, ...productInfo };
+        let fileObj = mergeFile(docBody, mergedInfo)
+        //fs.writeFileSync(path.resolve(__dirname, "output.pdf"), finalPDF);
+        cloudUrl.imageUrl(fileObj).then(Docresp => {
+            BuyProduct.updateOne({ _id: buyProductId }, { $set: { mergedDoc: Docresp } }).then(data => {
+                res.send({ msg: "Merged doc added succesfully!", success: true });
+            }).catch(err => {
+                res.send({ msg: "merged doc not added!", success: false })
+            })
+        }).catch(err => {
+            res.send({ msg: "merged doc not added!", success: false })
+        })
+    } catch (err) {
+        res.send({ msg: "merged doc not added!", success: false })
+    }
 }
 
 // exports.updateStatus = (req,res)=>{

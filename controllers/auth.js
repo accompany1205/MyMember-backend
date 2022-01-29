@@ -251,7 +251,7 @@ exports.approvesendgridverification = (req, res) => {
   try {
     User.updateOne({ _id: userId, "sendgridVerification.email": email },
       { $set: { "sendgridVerification.$.isVerified": true } }).then(resp => {
-        User.updateOne({_id:userId}, { $push: { bussinessEmail: email } }).then(rep => {
+        User.updateOne({ _id: userId }, { $push: { bussinessEmail: email } }).then(rep => {
           res.send({ msg: "Email succesfuly verified!", success: true })
         }).catch(err => {
           res.send({ error: err.message.replace(/\"/g, ""), success: false })
@@ -558,6 +558,7 @@ exports.verifySchool = (req, res, next) => {
             return res.status(403).send({ success: false, msg: "Access denied" });
           } else {
             if (authData.id == req.params.userId) {
+              req.valorCredentials = authData
               next();
             } else {
               return res.status(403).send({ success: false, msg: "Access denied" });

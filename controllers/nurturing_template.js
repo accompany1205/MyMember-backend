@@ -114,10 +114,10 @@ exports.list_template = (req, res) => {
 
 exports.add_template = async (req, res) => {
   try {
-    const counts = await all_temp
-      .find({ folderId: req.params.folderId })
-      .countDocuments();
-    let templete_Id = counts + 1;
+    const [counts] = await nurturingFolderModal
+      .find({ _id: req.params.folderId }, { template: 1, _id: 0 })
+    let templete_Id = counts.template.length + 1
+
     let {
       to,
       from,
@@ -127,7 +127,6 @@ exports.add_template = async (req, res) => {
       sent_time,
       repeat_mail,
       sent_date,
-      follow_up,
       smartLists,
       design,
       immediately,
@@ -157,9 +156,6 @@ exports.add_template = async (req, res) => {
       template,
       sent_date,
       sent_time,
-      DateT: date_iso_follow,
-      repeat_mail,
-      follow_up,
       email_type: "schedule",
       email_status: true,
       category: "nurturing",
@@ -182,43 +178,30 @@ exports.add_template = async (req, res) => {
     }
     obj.attachments = attachments
     sent_date = moment(sent_date).format("YYYY-MM-DD");
-    // let scheduleDateOfMonth = moment(sent_date).format('DD')
-    // let scheduleMonth = moment(sent_date).format('MM')
-    // let scheduleDay = moment(sent_date).format('dddd')
-    if (req.body.follow_up === 0) {
-      var date_iso = timefun(req.body.sent_date, req.body.sent_time);
-      obj.DateT = date_iso;
-    } else if (req.body.follow_up < 0) {
-      res.send({ code: 400, msg: "follow up not set less then 0" });
-    } else {
-      var date_iso_follow = timefun(req.body.sent_date, req.body.sent_time);
-      date_iso_follow.setDate(date_iso_follow.getDate() + req.body.follow_up);
-      var nD = moment(date_iso_follow).format("MM/DD/YYYY");
-
-      saveEmailTemplate(obj)
-        .then((data) => {
-          nurturingFolderModal
-            .findByIdAndUpdate(folderId, { $push: { template: data._id } })
-            .then((data) => {
-              res.send({
-                msg: `Email scheduled  Successfully on ${sent_date}`,
-                success: true,
-              });
-            })
-            .catch((er) => {
-              res.send({
-                error: "compose template details is not add in folder",
-                success: false,
-              });
+    saveEmailTemplate(obj)
+      .then((data) => {
+        nurturingFolderModal
+          .findByIdAndUpdate(folderId, { $push: { template: data._id } })
+          .then((data) => {
+            res.send({
+              msg: `Email scheduled  Successfully on ${sent_date}`,
+              success: true,
             });
-        })
-        .catch((ex) => {
-          res.send({
-            success: false,
-            msg: ex.message,
+          })
+          .catch((er) => {
+            res.send({
+              error: "compose template details is not add in folder",
+              success: false,
+            });
           });
+      })
+      .catch((ex) => {
+        res.send({
+          success: false,
+          msg: ex.message,
         });
-    }
+      });
+
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false })
   }
@@ -361,7 +344,7 @@ exports.swapAndUpdate_template = async (req, res) => {
         } else {
           res.send({
             code: 200,
-            msg: "drag and droped successfully",
+            msg: "template swapped successfully",
             success: true,
           });
         }

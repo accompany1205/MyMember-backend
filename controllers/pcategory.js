@@ -80,7 +80,7 @@ exports.update = async (req, res) => {
                     }
                     else {
                         if (data.n < 1) {
-                            return res.status(401).send({
+                            return res.send({
                                 msg: "This is system generated Category Only admin can update",
                                 success: false,
                             });
@@ -110,7 +110,7 @@ exports.remove = async (req, res) => {
                 }
                 else {
                     if (!data) {
-                        return res.status(401).send({
+                        return res.send({
                             msg: "This is system generated Category Only admin can delete",
                             success: false,
                         });

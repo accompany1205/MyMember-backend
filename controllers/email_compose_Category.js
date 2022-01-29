@@ -65,7 +65,13 @@ exports.smartList = (req, res) => {
 
 exports.category_list = (req, res) => {
     emailCompose.find({ userId: req.params.userId })
-        .populate('folder')
+    .populate({
+        path: 'folder',
+        populate: {
+            path: 'template',
+            model: 'sentOrscheduleEmail'
+        }
+    })
         .exec((err, categoryList) => {
             if (err) {
                 res.send({ error: 'compose category is not found' })

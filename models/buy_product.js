@@ -64,7 +64,6 @@ const productSchema = new schema(
         },
         due_every: {
             type: String,
-            required: true
         },
         schedulePayments: {
             type: Array,
@@ -99,6 +98,9 @@ const productSchema = new schema(
         },
         student_name: {
             type: String,
+        },
+        mergedDoc: {
+            type: String
         },
         studentInfo: [
             {

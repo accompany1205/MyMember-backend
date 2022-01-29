@@ -67,7 +67,7 @@ exports.updateproductFolder = async (req, res) => {
                 res.send({ msg: "Product folder is not updated", success: false });
             } else {
                 if (updateFolder.n < 1) {
-                    return res.status(401).send({
+                    return res.send({
                         msg: "This is system generated folder Only admin can update",
                         success: false,
                     });
@@ -92,7 +92,7 @@ exports.deleteproductFolder = async (req, res) => {
             }
             else {
                 if (!delFolder) {
-                    return res.status(401).send({
+                    return res.send({
                         msg: "This is system generated folder Only admin can delete",
                         success: false,
                     });

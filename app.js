@@ -111,6 +111,9 @@ const finance_list = require("./routes/finance_list");
 const student_email = require("./routes/std_temp_list");
 const student_text = require("./routes/std_text_list");
 
+//docuSign
+const signStates = require("./routes/signStates");
+
 //admin routes
 const manage_user = require("./routes/admin/manage_user");
 const email_system = require("./routes/admin/email_system_Category");
@@ -251,6 +254,8 @@ app.use("/api", speciality_program2);
 app.use("/api", productFolder);
 app.use("/api", smartlists);
 app.use("/api", buy_product)
+// Docu Sign
+app.use("/api", signStates)
 // Appointment Event
 app.use("/api", appointmentEvent)
 // app.use('/api',emailSystem)

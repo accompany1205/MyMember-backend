@@ -614,6 +614,7 @@ exports.criteria_met = async (req, res) => {
       category: "nurturing",
       userId,
       folderId,
+      smartLists,
       days
     }
     saveEmailTemplate(obj)
@@ -636,10 +637,10 @@ exports.criteria_met = async (req, res) => {
             });
           });
       })
-      .catch((ex) => {
+      .catch((er) => {
         res.send({
           success: false,
-          msg: ex.message,
+          msg: er
         });
       });
     // let dayofMonth = parseInt(moment(new Date()).add(days, "days").format('DD'))
@@ -707,28 +708,51 @@ var emailCronFucntionalityfor30DaysBirthday = async () => {
 
   let scheduledListing = await all_temp.find({ category: "nurturing", is_Sent: false });
 
+
   scheduledListing.forEach(async (ele) => {
-    let sentDate = ele.sent_date;
     let days = ele.days;
-    let mailId = ele._id;
-    let TargetdayofMonth = 17 || parseInt(moment(new Date()).add(days, "days").format('DD'));
-    let TargetMonth = 1 || parseInt(moment(new Date()).add(days, "days").format('MM'));
-    let currentdayofMonth = parseInt(moment().format("DD"));
-    let currentMonth = parseInt(moment().format("MM"));
-    if (TargetdayofMonth === currentdayofMonth && TargetMonth === currentMonth) {
-      const emailData = {
-        sendgrid_key: process.env.SENDGRID_API_KEY,
-        to: ele.to,
-        from_email: process.env.from_email,
-        subject: ele.subject,
-        content: ele.template,
-      };
-      if (ele.is_Sent === false) {
+    let dayofMonth = parseInt(moment(new Date()).add(days, "days").format('DD'))
+    let Month = parseInt(moment(new Date()).add(days, "days").format('MM'))
+    let objectIdArray = ele.smartLists.map(s => mongoose.Types.ObjectId(s));
+    let scheduleData = await students.aggregate([
+      {
+        $match: {
+          _id: { $in: objectIdArray }
+        }
+      },
+      {
+        $project: {
+          email: 1,
+          dob: 1,
+        }
+      },
+      {
+        $match: {
+          $expr: {
+            $and: [
+              { $eq: [{ $month: "$dob" }, Month] },
+              { $eq: [{ $dayOfMonth: "$dob" }, dayofMonth], }
+            ]
+          },
+        },
+      }
+    ]
+    )
+    if (scheduleData.length) {
+      scheduleData.map(i => {
+
+        const emailData = {
+          sendgrid_key: process.env.SENDGRID_API_KEY,
+          to: i.email,
+          from_email: ele.from,
+          subject: ele.subject,
+          content: ele.template,
+        };
         sgMail
           .send_via_sendgrid(emailData)
-          .then(resp => {
+          .then(async (resp) => {
             try {
-              all_temp.findByIdAndUpdate(mailId, { is_Sent: true });
+              await all_temp.findOneAndUpdate({ _id: ele._id }, { $set: { is_Sent: true } });
             } catch (err) {
               throw new Error("Mail status not updated", err)
             }
@@ -736,9 +760,12 @@ var emailCronFucntionalityfor30DaysBirthday = async () => {
           .catch((err) => {
             throw new Error(err)
           });
-      } else {
-        new Error("No email Scheduled for this Email");
-      }
+      })
+
+
+    }
+    {
+      console.warn("no Email scheduled for this crone !")
     }
   })
   await Promise.all(promises);
