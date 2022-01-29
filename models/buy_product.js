@@ -17,11 +17,12 @@ const productSchema = new schema(
         },
         event_date: {
             type: String,
-        },
-        start_payment_date: {
-            type: String,
+            required: true,
         },
         next_payment_date: {
+            type: String,
+        },
+        expiry_date: {
             type: String,
         },
         // programName: {
@@ -52,8 +53,9 @@ const productSchema = new schema(
             type: String,
             required: true,
         },
-        no_of_payment: { //number of EMIs
-            type: Number
+        payment_time: { //number of EMIs
+            type: Number,
+            required: true
         },
         due_status: {
             type: String,
