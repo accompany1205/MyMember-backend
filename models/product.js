@@ -5,6 +5,7 @@ const productSchema = new schema(
     {
         product_name: {
             type: String,
+            unique: true,
             required: true
         },
         productThumbnail: {
@@ -32,10 +33,9 @@ const productSchema = new schema(
         event_date: {
             type: String,
         },
-        programName: {
-            type: String,
-            required: true
-        },
+        // programName: {
+        //     type: String,
+        // },
         total_price: {
             type: Number,
             required: true
