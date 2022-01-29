@@ -8,7 +8,7 @@ router.get("/birthday/fifteen_to_thirty/:userId/:page_no/:per_page", verifySchoo
 router.get("/birthday/more_than_thirty/:userId/:page_no/:per_page", verifySchool, moreThirty)
 router.get("/dashboard/birthday_this_month/:userId/:page_no/:per_page", verifySchool, this_month)
 router.get("/dashboard/birthday_next_month/:userId/:page_no/:per_page", verifySchool, next_month)
-router.get("/birthday_this_week/:userId/:page_no/:per_page", verifySchool, birth_this_week)
+router.get("/birthday/birthday_this_week/:userId/:page_no/:per_page", verifySchool, birth_this_week)
 
 
 

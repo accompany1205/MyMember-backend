@@ -509,6 +509,7 @@ exports.addmember = async (req, res) => {
                               res.send({
                                 msg: "Student created successfully",
                                 success: true,
+                                data: data._id
                               });
                             }
                           }
@@ -566,7 +567,8 @@ exports.addmember = async (req, res) => {
                     } else {
                       res.send({
                         msg: "Student created successfully",
-                        success: true
+                        success: true,
+                        data: data._id
                       });
                     }
                   }
@@ -1224,17 +1226,17 @@ exports.collectionModify = async (req, res) => {
       {
         "program_category": [],
         "program_rank": [
-            "61926ee2e953ff693a3f72fc",
-            "61926f46e953ff693a3f7338",
-            "61926f61e953ff693a3f7342",
-            "61926fc8e953ff693a3f7382",
-            "61926fe5e953ff693a3f73b7",
-            "61926ffde953ff693a3f73dd",
-            "61927016e953ff693a3f73fe",
-            "61927031e953ff693a3f743b",
-            "6192704ce953ff693a3f7440",
-            "61927068e953ff693a3f7461",
-            "61927082e953ff693a3f7466"
+          "61926ee2e953ff693a3f72fc",
+          "61926f46e953ff693a3f7338",
+          "61926f61e953ff693a3f7342",
+          "61926fc8e953ff693a3f7382",
+          "61926fe5e953ff693a3f73b7",
+          "61926ffde953ff693a3f73dd",
+          "61927016e953ff693a3f73fe",
+          "61927031e953ff693a3f743b",
+          "6192704ce953ff693a3f7440",
+          "61927068e953ff693a3f7461",
+          "61927082e953ff693a3f7466"
         ],
         "programName": "Little Tiger",
         "color": "#88d317",
@@ -1244,7 +1246,7 @@ exports.collectionModify = async (req, res) => {
         "type": "By Stripe",
         "requirement": "bottel",
         "adminId": "6138893333c9482cb41d88d5"
-    }
+      }
     )
     //   let users = await User.find();
     //   users.forEach(async element => {
