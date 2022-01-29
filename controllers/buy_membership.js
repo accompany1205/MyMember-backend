@@ -478,14 +478,14 @@ exports.remove = (req, res) => {
 exports.buyMembership = async (req, res) => {
   const userId = req.params.userId;
   const studentId = req.params.studentId;
-  let valorPayload = req.body.membership_details.valorPayload?req.body.membership_details.valorPayload:{};
+  let valorPayload = req.body.membership_details.valorPayload ? req.body.membership_details.valorPayload : {};
   valorPayload.app_id = req.valorCredentials.app_id
   valorPayload.auth_key = req.valorCredentials.auth_key
   valorPayload.epi = req.valorCredentials.epi
   let membershipData = req.body.membership_details;
   const Address = valorPayload ? valorPayload.address : "";
   const payLatter = req.body.membership_details.pay_latter;
-  const financeId = req.body.membership_details.financeId;
+  const financeId = req.body.membership_details.financeId ? req.body.membership_details.financeId : 1;
   const ptype = req.body.membership_details.ptype;
   delete req.body.membership_details.valorPayload;
   let memberShipDoc;
@@ -648,7 +648,7 @@ exports.buyMembership = async (req, res) => {
 
             }
           }
-          
+
           if (!financeId) {
             valorPayload.address = Address;
             valorPayload.userId = userId;
@@ -848,7 +848,7 @@ function createMemberShipDocument(membershipData, studentId) {
                     });
                   } else {
                     resolve({
-                      data:data._id,
+                      data: data._id,
                       msg: "membership purchase successfully",
                       success: true,
                     });
