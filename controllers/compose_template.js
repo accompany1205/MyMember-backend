@@ -469,7 +469,7 @@ exports.add_template = async (req, res) => {
 
 };
 
-function saveEmailTemplate(obj) {
+exports.saveEmailTemplate = (obj) => {
   return new Promise((resolve, reject) => {
     let emailDetail = new all_temp(obj);
     emailDetail.save((err, data) => {

@@ -31,7 +31,7 @@ exports.save_sms =(req,res)=>{
                 folderId:req.params.folderId,
                 userId:req.params.userId,
                 ACCOUNT_SID:txtData.ACCOUNT_SID,
-                AUTH_TOKEN:txtData.AUTH_TOKEN,
+                AUTH_TOKEN:txtData.AUTH_TOKENS,
                 MSG_SERVICE_SID:txtData.MSG_SERVICE_SID,
                 twillo_no:txtData.twillo_no,
             }
