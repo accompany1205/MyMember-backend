@@ -1494,59 +1494,38 @@ exports.delete_multipal_member = (req, res) => {
     });
 };
 
-exports.updatemember = (req, res) => {
+exports.updatemember = async (req, res) => {
   var memberID = req.params.memberID;
-  addmemberModal
-    .findByIdAndUpdate(
-      {
-        _id: memberID,
-      },
-      req.body
-    )
-    .exec((err, data) => {
-      if (err) {
+  let memberData = req.body
+  if (req.file) {
+    await cloudUrl
+      .imageUrl(req.file)
+      .then((stdimagUrl) => {
+        memberData.memberprofileImage = stdimagUrl
+      })
+      .catch((msg) => {
         res.send({
           success: false,
-          msg: "member is not update",
+          msg: "Profile image url not created",
         });
-      } else {
-        if (req.file) {
-          cloudUrl
-            .imageUrl(req.file)
-            .then((stdimagUrl) => {
-              addmemberModal
-                .findByIdAndUpdate(data._id, {
-                  $set: {
-                    memberprofileImage: stdimagUrl,
-                  },
-                })
-                .then((response) => {
-                  res.send({
-                    msg: "member details and profile is update",
-                    success: true,
-                  });
-                })
-                .catch((msg) => {
-                  res.send({
-                    msg: "student image is not update",
-                    success: false,
-                  });
-                });
-            })
-            .catch((msg) => {
-              res.send({
-                success: false,
-                msg: "image url is not create",
-              });
-            });
+      });
+  }
+  await addmemberModal.findOneAndUpdate({ _id: memberID }, { $set: memberData })
+      .exec((err, data) => {
+        if (err) {
+          res.send({
+            success: false,
+            msg: "Member not updated",
+          });
         } else {
+          console.log(data)
           res.send({
             success: true,
-            msg: "member is update successfully",
+            msg: "Member is update successfully",
           });
+
         }
-      }
-    });
+      });
 };
 
 function TimeZone() {
