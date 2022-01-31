@@ -128,27 +128,60 @@ exports.deleteAll = async (req, res) => {
         await RegisterdForTest.updateOne({ _id: registeredIds[id] }, { $set: { isDeleted: true } }).then(async data => {
             let { studentId } = await RegisterdForTest.findById(registeredIds[id]);
             await Member.updateOne({ _id: studentId }, { $set: { isRecommended: false } }, function (err, data) {
-                if (err) { res.send({ msg: "registered student Not deleted", success: false }) }
+                if (err) { res.send({ msg: "Registered Student Not Deleted!", success: false }) }
                 promise.push(data);
             })
         })
     }
     Promise.all(promise);
-    res.send({ msg: "all students deleted succesfully!", success: true })
+    res.send({ msg: "Selected Students Deleted Succesfully!", success: true })
 }
 
 exports.mergedDocForTest = async (req, res) => {
     let studentId = req.params.studentId;
     let recommendedId = req.params.recommendedId;
-    let testRegisteredId = req.params.testRegisteredId;
+    let registeredId = req.params.testRegisteredId;
     const docBody = req.body.docBody;
     //console.log(req.socket.remoteAddress);
     //console.log(req.ip);
     try {
-        await Member.findOne({ _id: studentId }).then(async data => {
-            let studentData = data
-            await RegisterdForTest.findOne({ studentId: studentId }).then(async resp => {
-                let mergedInfo = { ...studentData.toJSON(), ...resp.toJSON() }
+        if (studentId && registeredId) {
+            await Member.findOne({ _id: studentId }).then(async data => {
+                let studentData = data
+                await RegisterdForTest.findOne({ _id: registeredId }).then(async resp => {
+                    let mergedInfo = { ...studentData.toJSON(), ...resp.toJSON() }
+                    let fileObj = await mergeFile(docBody, mergedInfo);
+                    await cloudUrl.imageUrl(fileObj).then(data => {
+                        res.send({ success: true, data: data })
+                    }).catch(err => {
+                        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+                    })
+                }).catch(err => {
+                    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+                })
+            }).catch(err => {
+                res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+            })
+        } else if (studentId && recommendedId) {
+            await Member.findOne({ _id: studentId }).then(async data => {
+                let studentData = data
+                await RecommendedForTest.findOne({ _id: recommendedId }).then(async resp => {
+                    let mergedInfo = { ...studentData.toJSON(), ...resp.toJSON() }
+                    let fileObj = await mergeFile(docBody, mergedInfo);
+                    await cloudUrl.imageUrl(fileObj).then(data => {
+                        res.send({ success: true, data: data })
+                    }).catch(err => {
+                        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+                    })
+                }).catch(err => {
+                    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+                })
+            }).catch(err => {
+                res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+            })
+        } else {
+            await Member.findOne({ _id: studentId }).then(async data => {
+                let mergedInfo = { ...data.toJSON() }
                 let fileObj = await mergeFile(docBody, mergedInfo);
                 await cloudUrl.imageUrl(fileObj).then(data => {
                     res.send({ success: true, data: data })
@@ -158,10 +191,7 @@ exports.mergedDocForTest = async (req, res) => {
             }).catch(err => {
                 res.send({ msg: err.message.replace(/\"/g, ""), success: false })
             })
-        }).catch(err => {
-            res.send({ msg: err.message.replace(/\"/g, ""), success: false })
-        })
-
+        }
     } catch (err) {
         res.send({ msg: err.message.replace(/\"/g, ""), success: false })
     }

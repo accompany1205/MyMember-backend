@@ -373,6 +373,24 @@ function createFinanceDoc(data, financeId) {
     });
 }
 
+exports.deleteAll = async (req, res) => {
+    let recommendIds = req.body.recommendIds;
+    let promise = [];
+    for (let id in recommendIds) {
+        let { studentId } = RecommendedForTest.findById(recommendIds[id]);
+        await Member.updateOne({ _id: studentId }, { $set: { isRecommended: false } }).then(async data => {
+            await findByIdAndDelete(recommendIds[id], function (err, datas) {
+                if (err) { res.send({ msg: "Recommended Student Not Deleted!", success: false }) }
+                promise.push(datas)
+            })
+        }).catch(err => {
+            res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+        })
+    }
+    Promise.all(promise);
+    res.send({ msg: "Selected Students Deleted Succesfully!", success: true })
+}
+
 exports.removeFromRecomended = async (req, res) => {
     let recommededId = req.params.recommendedId;
     if (!recommededId) {
