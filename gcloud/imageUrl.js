@@ -22,7 +22,7 @@ function clourUrl() {
                 },
             ]);
 
-            console.log(`Bucket ${bucketName} was updated with a CORS config
+            console.log(`Bucket updated with a CORS config
                 to allow ${method} requests from ${origin} sharing 
                 ${responseHeader} responses across origins`);
         }

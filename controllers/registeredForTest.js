@@ -121,6 +121,22 @@ exports.removeFromRegisterd = async (req, res) => {
 
 }
 
+exports.deleteAll = async (req, res) => {
+    let registeredIds = req.body.registeredIds;
+    let promise = [];
+    for (let id in registeredIds) {
+        await RegisterdForTest.updateOne({ _id: registeredIds[id] }, { $set: { isDeleted: true } }).then(async data => {
+            let { studentId } = await RegisterdForTest.findById(registeredIds[id]);
+            await Member.updateOne({ _id: studentId }, { $set: { isRecommended: false } }, function (err, data) {
+                if (err) { res.send({ msg: "registered student Not deleted", success: false }) }
+                promise.push(data);
+            })
+        })
+    }
+    Promise.all(promise);
+    res.send({ msg: "all students deleted succesfully!", success: true })
+}
+
 exports.mergedDocForTest = async (req, res) => {
     let studentId = req.params.studentId;
     let recommendedId = req.params.recommendedId;
