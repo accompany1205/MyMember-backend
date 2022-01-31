@@ -80,7 +80,7 @@ exports.inviteeMailSent = async (req, res) => {
     try {
         emailList = req.body.emails;
         docLink = req.body.docLink;
-        ownerEmail = req.params.ownerEmail
+        ownerEmail = req.body.ownerEmail
         const emailData = {
             sendgrid_key: process.env.SENDGRID_API_KEY,
             to: emailList,
@@ -89,11 +89,12 @@ exports.inviteeMailSent = async (req, res) => {
             content: `<h2>Below is the PDF for your signature</h2>
                         <p>${docLink}</p>`,
         };
+        console.log(emailData);
         sgMail
             .send_via_sendgrid(emailData).then(resp => {
-                res.send({msg:"mail sent!", success:true})
+                res.send({ msg: "mail sent!", success: true })
             }).catch(err => {
-                console.log(err)
+                res.send({ msg: err.message.replace(/\"/g, ""), sucess: false });
             })
     } catch (err) {
         res.send({ msg: err.message.replace(/\"/g, ""), sucess: false });
