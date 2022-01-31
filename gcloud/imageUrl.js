@@ -15,16 +15,16 @@ function clourUrl() {
         async function configureBucketCors() {
             await bucket.setCorsConfiguration([
                 {
-                    maxAgeSeconds,
-                    method: ["GET","POST","HEAD"],
-                    origin: ["https://mymember.com", "localhost"],
-                    responseHeader: ["*"],
+
+                    "method": ["GET", "POST", "HEAD"],
+                    "origin": ["https://mymember.com", "localhost"],
+                    "responseHeader": ["*"],
                 },
             ]);
 
-            console.log(`Bucket updated with a CORS config
-                to allow ${method} requests from ${origin} sharing 
-                ${responseHeader} responses across origins`);
+            // console.log(`Bucket updated with a CORS config
+            //     to allow ${method} requests from ${origin} sharing 
+            //     ${responseHeader} responses across origins`);
         }
 
         configureBucketCors().catch(console.error);
