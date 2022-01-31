@@ -1530,7 +1530,7 @@ exports.updatemember = async (req, res) => {
               sentEmail.findByIdAndUpdate(emailSave._id, { userId: userId, email_type: 'sent', is_Sent: true, category: 'system' })
                 .exec((err, emailUpdate) => {
                   if (err) {
-                    console.log({ msg: 'emil not sent ' })
+                    console.log({ msg: 'emil not sent' ,err})
                   }
                   else {
                     // res.send({ message: "Email Sent Successfully", success: true, emailUpdate })
@@ -1540,7 +1540,7 @@ exports.updatemember = async (req, res) => {
           })
         })
         .catch(err => {
-          res.send({ error: 'email not send', error: err })
+          console.log({ msg: 'email not send', error: err })
         })
     } else {
       let sent_date = moment(Email.toJSON().sent_date).add(Email.toJSON().days, 'days').format("YYYY-MM-DD");
