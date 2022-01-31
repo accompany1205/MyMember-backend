@@ -19,16 +19,19 @@ const productSchema = new schema(
             type: String,
             required: true,
         },
+        next_payment_date: {
+            type: String,
+        },
         start_payment_date: {
             type: String,
         },
         expiry_date: {
             type: String,
         },
-        programName: {
-            type: String,
-            required: true
-        },
+        // programName: {
+        //     type: String,
+        //     required: true
+        // },
         total_price: {
             type: Number,
             required: true
