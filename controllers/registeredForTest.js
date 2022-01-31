@@ -123,9 +123,11 @@ exports.removeFromRegisterd = async (req, res) => {
 
 exports.mergedDocForTest = async (req, res) => {
     let studentId = req.params.studentId;
+    let recommendedId = req.params.recommendedId;
+    let testRegisteredId = req.params.testRegisteredId;
     const docBody = req.body.docBody;
-    console.log(req.socket.remoteAddress);
-    console.log(req.ip);
+    //console.log(req.socket.remoteAddress);
+    //console.log(req.ip);
     try {
         await Member.findOne({ _id: studentId }).then(async data => {
             let studentData = data
