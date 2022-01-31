@@ -12,7 +12,22 @@ function clourUrl() {
         const doc = bucket.file('All-Images/' + newFileName);
 
         const blogStream = doc.createWriteStream({ resumable: false });
+        async function configureBucketCors() {
+            await bucket.setCorsConfiguration([
+                {
+                    maxAgeSeconds,
+                    method: ["GET","POST","HEAD"],
+                    origin: ["https://mymember.com", "localhost"],
+                    responseHeader: ["*"],
+                },
+            ]);
 
+            console.log(`Bucket ${bucketName} was updated with a CORS config
+                to allow ${method} requests from ${origin} sharing 
+                ${responseHeader} responses across origins`);
+        }
+
+        configureBucketCors().catch(console.error);
 
         return new Promise((resolve, reject) => {
             blogStream.on("error", err => reject(err));
