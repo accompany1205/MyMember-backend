@@ -102,16 +102,16 @@ exports.list_template = (req, res) => {
 
 exports.add_template = async (req, res) => {
   try {
-    const counts = await addTemp
-      .find({ folderId: req.params.folderId })
-      .countDocuments();
-    let templete_Id = counts + 1;
+    // const counts = await addTemp
+    //   .find({ folderId: req.params.folderId })
+    //   .countDocuments();
+    // let templete_Id = counts + 1;
     let {
       to,
       from,
       title,
       subject,
-      template,
+      // template,
       sent_time,
       repeat_mail,
       sent_date,
@@ -119,7 +119,7 @@ exports.add_template = async (req, res) => {
       smartLists,
     } = req.body || {};
     to = to ? JSON.parse(to) : [];
-    smartLists = smartLists ? JSON.parse(smartLists): [];
+    // smartLists = smartLists ? JSON.parse(smartLists) : [];
     let { userId, folderId } = req.params || {};
     // if (!to && !smartLists) {
     //   throw new Error("Select atleat send-to or smart-List")
@@ -128,20 +128,20 @@ exports.add_template = async (req, res) => {
     //   throw new Error("select either send-To or smart-list ")
     // }
 
-    if (!to.lenght) {
-      smartLists.map(lists => {
-        to = [...to, ...lists.smrtList]
-      });
-    }
+    // if (!to.lenght) {
+    //   smartLists.map(lists => {
+    //     to = [...to, ...lists.smrtList]
+    //   });
+    // }
     const obj = {
       to,
       from,
       title,
       subject,
-      template,
+      // template,
       sent_date,
       sent_time,
-      DateT: date_iso_follow,
+      // DateT: date_iso_follow,
       repeat_mail,
       follow_up,
       email_type: "schedule",
@@ -149,10 +149,11 @@ exports.add_template = async (req, res) => {
       category: "system",
       userId,
       folderId,
-      templete_Id,
+      // templete_Id,
       attachments,
-      smartLists
+        
     };
+    console.log(obj)
     const promises = []
     if (req.files) {
       (req.files).map(file => {
@@ -162,43 +163,33 @@ exports.add_template = async (req, res) => {
     }
     obj.attachments = attachments
     sent_date = moment(sent_date).format("YYYY-MM-DD");
-    // let scheduleDateOfMonth = moment(sent_date).format('DD')
-    // let scheduleMonth = moment(sent_date).format('MM')
-    // let scheduleDay = moment(sent_date).format('dddd')
-    if (req.body.follow_up === 0) {
-      var date_iso = timefun(req.body.sent_date, req.body.sent_time);
-      obj.DateT = date_iso;
-    } else if (req.body.follow_up < 0) {
-      res.send({ code: 400, msg: "follow up not set less then 0" });
-    } else {
-      var date_iso_follow = timefun(req.body.sent_date, req.body.sent_time);
-      date_iso_follow.setDate(date_iso_follow.getDate() + req.body.follow_up);
-      var nD = moment(date_iso_follow).format("MM/DD/YYYY");
+    var date_iso_follow = timefun(req.body.sent_date, req.body.sent_time);
+    date_iso_follow.setDate(date_iso_follow.getDate() + req.body.follow_up);
 
-      saveEmailTemplate(obj)
-        .then((data) => {
-          systemFolder
-            .findByIdAndUpdate(folderId, { $push: { template: data._id } })
-            .then((data) => {
-              res.send({
-                msg: `Email scheduled  Successfully on ${sent_date}`,
-                success: true,
-              });
-            })
-            .catch((er) => {
-              res.send({
-                error: "compose template details is not add in folder",
-                success: false,
-              });
+    saveEmailTemplate(obj)
+      .then((data) => {
+        systemFolder
+          .findByIdAndUpdate(folderId, { $push: { template: data._id } })
+          .then((data) => {
+            res.send({
+              msg: `Email scheduled  Successfully on ${sent_date}`,
+              success: true,
             });
-        })
-        .catch((ex) => {
-          res.send({
-            success: false,
-            msg: ex.message,
+          })
+          .catch((er) => {
+            res.send({
+              error: "compose template details is not add in folder",
+              success: false,
+            });
           });
+      })
+      .catch((ex) => {
+        res.send({
+          success: false,
+          msg: ex.message,
         });
-    }
+      });
+
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false })
   }
