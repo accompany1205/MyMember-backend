@@ -15,7 +15,6 @@ function clourUrl() {
         async function configureBucketCors() {
             await bucket.setCorsConfiguration([
                 {
-                    maxAgeSeconds,
                     method: ["GET","POST","HEAD"],
                     origin: ["https://mymember.com", "localhost"],
                     responseHeader: ["*"],
