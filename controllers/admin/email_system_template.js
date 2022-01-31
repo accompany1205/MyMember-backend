@@ -153,7 +153,6 @@ exports.add_template = async (req, res) => {
       attachments,
         
     };
-    console.log(obj)
     const promises = []
     if (req.files) {
       (req.files).map(file => {

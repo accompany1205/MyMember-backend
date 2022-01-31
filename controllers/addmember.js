@@ -1505,10 +1505,10 @@ exports.updatemember = async (req, res) => {
   var memberID = req.params.memberID;
   let userId = req.params.userId
   let memberData = req.body
-  if (memberData.studentType) {
+  let [data] = await smartList.find({ "criteria.studentType": memberData.studentType });
+  if (data) {
     let [data] = await smartList.find({ "criteria.studentType": memberData.studentType });
     let [Email] = await sentEmail.find({ smartLists: data._id });
-console.log(req.ip)
     if (Email.toJSON().immediately) {
       const emailData = {
         sendgrid_key: process.env.SENDGRID_API_KEY,
