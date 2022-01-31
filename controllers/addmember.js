@@ -1,5 +1,7 @@
 const { functions, add } = require("lodash");
 var addmemberModal = require("../models/addmember");
+const ObjectId = require('mongodb').ObjectId;
+const smartList = require("../models/smartlists");
 const cloudUrl = require("../gcloud/imageUrl");
 const program = require("../models/program");
 const rank_change = require("../models/change_rank");
@@ -1497,6 +1499,12 @@ exports.delete_multipal_member = (req, res) => {
 exports.updatemember = async (req, res) => {
   var memberID = req.params.memberID;
   let memberData = req.body
+  if (memberData.studentType) {
+    let [data] = await smartList.find({ "criteria.studentType": memberData.studentType })
+    console.log(data._id)
+    let [Email] = await sentEmail.find({ smartLists: data._id })
+    res.send(Email)
+  }
   if (req.file) {
     await cloudUrl
       .imageUrl(req.file)
@@ -1511,21 +1519,20 @@ exports.updatemember = async (req, res) => {
       });
   }
   await addmemberModal.findOneAndUpdate({ _id: memberID }, { $set: memberData })
-      .exec((err, data) => {
-        if (err) {
-          res.send({
-            success: false,
-            msg: "Member not updated",
-          });
-        } else {
-          console.log(data)
-          res.send({
-            success: true,
-            msg: "Member is update successfully",
-          });
+    .exec((err, data) => {
+      if (err) {
+        res.send({
+          success: false,
+          msg: "Member not updated",
+        });
+      } else {
+        res.send({
+          success: true,
+          msg: "Member is update successfully",
+        });
 
-        }
-      });
+      }
+    })
 };
 
 function TimeZone() {
