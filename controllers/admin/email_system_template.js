@@ -129,6 +129,7 @@ exports.add_template = async (req, res) => {
     } = req.body || {};
 
     if (!to) {
+
       smartLists = smartLists ? JSON.parse(smartLists) : []
       smartLists = smartLists.map(s => ObjectId(s));
 
@@ -158,8 +159,16 @@ exports.add_template = async (req, res) => {
             _id: "",
             emails: { $addToSet: "$data" }
           }
+        },
+        {
+          $project: {
+            _id: 0
+          }
+
         }
       ])
+
+      smartlists = smartlists ? smartlists : []
       to = smartlists.emails
 
     }
