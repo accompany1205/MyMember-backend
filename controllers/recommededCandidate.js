@@ -209,7 +209,7 @@ exports.getRecommendedCandidateStudents = async (req, res) => {
         if (!students.length) {
             return res.json({ success: false, msg: "There no data available for this query!!" })
         }
-        res.json({ success: true, data: students })
+        res.json({ success: true, data: students, totalCount:totalCount })
     } catch (err) {
         res.send({ error: err.message.replace(/\"/g, ""), success: false });
 
