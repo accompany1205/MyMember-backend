@@ -82,7 +82,7 @@ const EmailSchema = schema({
         type: String
     },
     smartLists: {
-        type: String
+        type: Array
     }
 },
     { timestamps: true }
