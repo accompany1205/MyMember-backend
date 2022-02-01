@@ -1505,10 +1505,10 @@ exports.updatemember = async (req, res) => {
   var memberID = req.params.memberID;
   let userId = req.params.userId
   let memberData = req.body
-  if (memberData.studentType) {
+  let [data] = await smartList.find({ "criteria.studentType": memberData.studentType });
+  if (data) {
     let [data] = await smartList.find({ "criteria.studentType": memberData.studentType });
     let [Email] = await sentEmail.find({ smartLists: data._id });
-console.log(req.ip)
     if (Email.toJSON().immediately) {
       const emailData = {
         sendgrid_key: process.env.SENDGRID_API_KEY,
@@ -1530,7 +1530,7 @@ console.log(req.ip)
               sentEmail.findByIdAndUpdate(emailSave._id, { userId: userId, email_type: 'sent', is_Sent: true, category: 'system' })
                 .exec((err, emailUpdate) => {
                   if (err) {
-                    console.log({ msg: 'emil not sent ' })
+                    console.log({ msg: 'emil not sent' ,err})
                   }
                   else {
                     // res.send({ message: "Email Sent Successfully", success: true, emailUpdate })
@@ -1540,7 +1540,7 @@ console.log(req.ip)
           })
         })
         .catch(err => {
-          res.send({ error: 'email not send', error: err })
+          console.log({ msg: 'email not send', error: err })
         })
     } else {
       let sent_date = moment(Email.toJSON().sent_date).add(Email.toJSON().days, 'days').format("YYYY-MM-DD");

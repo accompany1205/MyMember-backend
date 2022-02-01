@@ -125,6 +125,11 @@ exports.add_template = async (req, res) => {
       subject,
       template,
       sent_time,
+      design,
+      days,
+      days_type,
+      immediately,
+      content_type,
       repeat_mail,
       sent_date,
       smartLists,
@@ -152,6 +157,11 @@ exports.add_template = async (req, res) => {
       template,
       sent_date,
       sent_time,
+      design,
+      days,
+      days_type,
+      immediately,
+      content_type,
       email_type: "schedule",
       email_status: true,
       category: "nurturing",
@@ -170,7 +180,7 @@ exports.add_template = async (req, res) => {
     }
     obj.attachments = attachments
     sent_date = moment(sent_date).format("YYYY-MM-DD");
-     saveEmailTemplate(obj)
+    saveEmailTemplate(obj)
       .then((data) => {
         nurturingFolderModal
           .findByIdAndUpdate(folderId, { $push: { template: data._id } })
