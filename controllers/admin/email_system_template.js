@@ -169,6 +169,12 @@ exports.add_template = async (req, res) => {
       ])
 
       smartlists = smartlists ? smartlists : []
+      if (!smartlists.length) {
+        return res.send({
+          msg: `No Smartlist exist!`,
+          success: false,
+        });
+      }
       to = smartlists.emails
 
     }
