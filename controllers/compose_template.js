@@ -353,7 +353,6 @@ exports.update_template = async (req, res) => {
     var allAttachments = await Promise.all(promises);
     updateTemplate.attachments = allAttachments;
   }
-  console.log("-->", updateTemplate)
   all_temp.updateOne(
     { _id: req.params.templateId },
     req.body,
@@ -470,7 +469,7 @@ exports.add_template = async (req, res) => {
 
 };
 
-function saveEmailTemplate(obj) {
+exports.saveEmailTemplate = (obj) => {
   return new Promise((resolve, reject) => {
     let emailDetail = new all_temp(obj);
     emailDetail.save((err, data) => {

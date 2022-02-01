@@ -151,37 +151,37 @@ exports.read = (req, res) => {
 
 
 
-exports.update = (req, res) => {
-  var userId = req.params.userId;
-  User.findByIdAndUpdate(userId, req.body)
-    .exec((err, data) => {
-      if (err) {
-        res.send({
-          success: false,
-          error: "member is not update"
-        });
-      }
-      else {
-        if (req.file) {
-          cloudUrl.imageUrl(req.file).then((subuserImgUrl) => {
-            User.findByIdAndUpdate(userId, { $set: { profile_image: subuserImgUrl } })
-              .then((response) => {
-                res.json({ message: "your profile image updated successfully", success: true })
-              }).catch((error) => {
-                res.send({ error: 'sub user image is not update' })
-              })
-          }).catch((error) => {
-            res.send({ error: 'image url is not create' })
-          })
-        }
-        else {
+exports.update = async (req, res) => {
+  let userId = req.params.userId;
+  let body = req.body
+  try {
+    if (req.file) {
+      await cloudUrl.imageUrl(req.file)
+        .then((subuserImgUrl) => {
+          body.profile_image = subuserImgUrl
+
+        }).catch((error) => {
+          res.send({ msg: 'image url nor created', success: false })
+        })
+    }
+    User.findByIdAndUpdate(userId, { $set: body })
+      .exec((err, data) => {
+        if (err) {
           res.send({
-            succe: true,
-            msg: "profile is update successfully"
+            msg: err,
+            success: false,
           });
-        }
-      }
-    });
+        } else {
+          res.send({
+            success: true,
+            msg: "User updated successfully!"
+          });
+        };
+      })
+  }
+  catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
 };
 
 

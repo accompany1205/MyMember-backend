@@ -3,6 +3,9 @@ const schema = mongoose.Schema;
 
 const valueSchema = schema(
     {
+        ipAdderss:{
+            type:String
+        },
         signer: {
             type: String
         },

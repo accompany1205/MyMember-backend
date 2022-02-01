@@ -1,4 +1,5 @@
 const SignStates = require("../models/signStates");
+const sgMail = require("sendgrid-v3-node");
 
 
 exports.addRequestSign = async (req, res) => {
@@ -58,11 +59,11 @@ exports.setSignItems = async (req, res) => {
     try {
         let docuSignId = req.params.docuSignId;
         let body = req.body;
-        await SignStates.find({_id:docuSignId}).then(async data => {
+        await SignStates.find({ _id: docuSignId }).then(async data => {
             // if (!data.status) data.status = {}
             // data.status[invite] = { ...data.status[invite], signed: new Date().getTime() };
             // let items = { ...data.items, ...req.body.items };
-            await SignStates.updateOne({ _id: docuSignId },{$set:body}).then(data => {
+            await SignStates.updateOne({ _id: docuSignId }, { $set: body }).then(data => {
                 res.send({ msg: "Item updated!", success: true });
             }).catch(err => {
                 res.send({ msg: "Itme not updated!", success: false, error: err.message.replace(/\"/g, "") });
@@ -74,3 +75,28 @@ exports.setSignItems = async (req, res) => {
         res.send({ msg: "not Updated!", success: false, error: err.message.replace(/\"/g, "") });
     }
 };
+
+exports.inviteeMailSent = async (req, res) => {
+    try {
+        emailList = req.body.emails;
+        docLink = req.body.docLink;
+        ownerEmail = req.body.ownerEmail
+        const emailData = {
+            sendgrid_key: process.env.SENDGRID_API_KEY,
+            to: emailList,
+            from_email: ownerEmail,
+            subject: "Document Signature Process",
+            content: `<h2>Below is the PDF for your signature</h2>
+                        <p>${docLink}</p>`,
+        };
+        console.log(emailData);
+        sgMail
+            .send_via_sendgrid(emailData).then(resp => {
+                res.send({ msg: "mail sent!", success: true })
+            }).catch(err => {
+                res.send({ msg: err.message.replace(/\"/g, ""), sucess: false });
+            })
+    } catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), sucess: false });
+    }
+}
