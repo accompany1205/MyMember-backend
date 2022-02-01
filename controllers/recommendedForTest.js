@@ -77,39 +77,15 @@ exports.getRegisteredForTest = async (req, res) => {
 
     var per_page = parseInt(req.params.per_page) || 10;
     var page_no = parseInt(req.params.page_no) || 0;
-    var pagination = {
-        limit: per_page,
-        skip: per_page * page_no,
-    };
-    if (!userId) {
-        res.json({
-            status: false,
-            msg: "Please give userId into the params!!"
-        })
-    }
+    var pagination = { limit: per_page, skip: per_page * page_no, };
+    if (!userId) { res.json({ status: false, msg: "Please give userId into the params!!" }) }
 
-    let students = await RegisterdForTest
-        .find({
-            "userId": userId,
-            "isDeleted": false
-        })
+    let students = await RegisterdForTest.find({ "userId": userId, "isDeleted": false })
         .skip(pagination.skip)
         .limit(pagination.limit)
         .sort({ [sortBy]: order });
-    if (!students.length) {
-        res.json({
-            status: false,
-            msg: "There no data available for this query!!",
-            data: students
-        })
-    }
-    res.json({
-        status: true,
-        msg: "Please find the data!!",
-        data: students,
-        totalCount: totalCount
-
-    })
+    if (!students.length) { res.json({ status: false, msg: "There no data available for this query!!", data: students }) }
+    res.json({ status: true, msg: "Please find the data!!", data: students, totalCount: totalCount })
 
 }
 
