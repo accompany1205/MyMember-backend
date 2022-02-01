@@ -53,7 +53,7 @@ class PaymentGateWay {
     }
   };
 
-  deleteSubscription = async () => {
+  deleteSubscription = async (payload) => {
     try {
       let formData = await this.formData(payload);
       formData.append("mtype", "deletesubscription");
