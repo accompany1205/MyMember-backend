@@ -254,6 +254,10 @@ const addmemberSchema = new schema(
     rank_update_test_history: {
       type: Array,
     },
+    isRecomCandidate: {
+      default: false,
+      type: Boolean,
+    },
     isRecommended: {
       default: false,
       type: Boolean,

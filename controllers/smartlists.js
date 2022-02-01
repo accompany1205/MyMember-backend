@@ -82,7 +82,7 @@ exports.create_smart_list = async (req, res) => {
             },
             {
                 $project: {
-                   data : "$data._id",
+                    data: "$data._id",
                     _id: 0,
 
                 }
@@ -156,8 +156,7 @@ exports.create_smart_list = async (req, res) => {
                     },
                     {
                         $project: {
-                            "data._id": 1,
-                            "data.email": 1,
+                            data: "$data._id",
                             _id: 0,
 
                         }
@@ -177,8 +176,7 @@ exports.create_smart_list = async (req, res) => {
                     },
                     ]
                 )
-                // financeData = financeData[0].data
-                console.log(financeData)
+                financeData = financeData.data ? financeData.data : []
             }
             if (finance.includes('not_expired')) {
                 let not_expiredFinance = await financeInfo.aggregate(
@@ -221,9 +219,8 @@ exports.create_smart_list = async (req, res) => {
                     },
                     {
                         $project: {
-                            "data._id": 1,
-                            "data.email": 1,
-                            _id: 0,
+                            data: "$data._id",
+                            _id: 0
 
                         }
                     },
@@ -248,107 +245,102 @@ exports.create_smart_list = async (req, res) => {
                     financeData = [...not_expiredFinance[0].data]
                 }
             }
-            
-            // if (leadData.length) {
-            //     leadData = leadData.filter(e => {
-            //         return financeData.some(item => String(item._id) === String(e._id));
-            //     })
-            // } else {
-            //     leadData = []
-            // }
+            if (leadData.length) {
+                leadData = leadData.filter(e => {
+                    return financeData.some(item => String(item) === String(e));
+                })
+            } else {
+                leadData = []
+            }
         }
 
-        // if (renewal) {
-        //     var renewalData = await buymembership
-        //         .aggregate([
-        //             { $match: { userId: userId } },
-        //             {
-        //                 $project: {
-        //                     membership_type: 1,
-        //                     membership_name: 1,
-        //                     membership_status: 1,
-        //                     expiry_date: { $toDate: "$expiry_date" },
-        //                     studentInfo: 1,
-        //                 }
-        //             },
-        //             {
-        //                 $lookup: {
-        //                     from: "members",
-        //                     localField: "studentInfo",
-        //                     foreignField: "_id",
-        //                     as: 'data'
-        //                 }
-        //             },
-        //             {
-        //                 $project: {
-        //                     membership_name: 1,
-        //                     membership_type: 1,
-        //                     membership_status: 1,
-        //                     data: 1,
-        //                     expiry_date: 1,
-        //                     days_till_Expire: {
-        //                         $multiply: [{
-        //                             $floor: {
-        //                                 $divide: [{ $subtract: [new Date(), '$expiry_date'] }, 1000 * 60 * 60 * 24]
-        //                             }
-        //                         }, -1]
+        if (renewal) {
+            var renewalData = await buymembership
+                .aggregate([
+                    { $match: { userId: userId } },
+                    {
+                        $project: {
+                            membership_type: 1,
+                            membership_name: 1,
+                            membership_status: 1,
+                            expiry_date: { $toDate: "$expiry_date" },
+                            studentInfo: 1,
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: "members",
+                            localField: "studentInfo",
+                            foreignField: "_id",
+                            as: 'data'
+                        }
+                    },
+                    {
+                        $project: {
+                            membership_name: 1,
+                            membership_type: 1,
+                            membership_status: 1,
+                            data: 1,
+                            expiry_date: 1,
+                            days_till_Expire: {
+                                $multiply: [{
+                                    $floor: {
+                                        $divide: [{ $subtract: [new Date(), '$expiry_date'] }, 1000 * 60 * 60 * 24]
+                                    }
+                                }, -1]
 
-        //                     },
-        //                 }
-        //             },
+                            },
+                        }
+                    },
 
-        //             { $match: { days_till_Expire: { $lte: renewal[0], $gt: 0 } } },
-        //             {
-        //                 $project: {
-        //                     "data._id": 1,
-        //                     "data.email": 1,
-        //                     _id: 0,
+                    { $match: { days_till_Expire: { $lte: renewal[0], $gt: 0 } } },
+                    {
+                        $project: {
+                            data: "$data._id",
+                            _id: 0
 
-        //                 }
-        //             },
+                        }
+                    },
 
-        //             { $unwind: "$data" },
-        //             {
-        //                 "$group": {
-        //                     "_id": "",
-        //                     "data": { "$addToSet": "$data" }
-        //                 }
-        //             },
-        //             {
-        //                 $project: {
-        //                     _id: 0,
-        //                 }
-        //             },
-        //         ])
-        //     if (renewalData.length) {
-        //         renewalData = renewalData[0].data
+                    { $unwind: "$data" },
+                    {
+                        "$group": {
+                            "_id": "",
+                            "data": { "$addToSet": "$data" }
+                        }
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                        }
+                    },
+                ])
+            if (renewalData.length) {
+                renewalData = renewalData[0].data
+                if (leadData.length) {
+                    leadData = leadData.filter(e => {
+                        return renewalData.some(item => String(item) === String(e));
+                    })
+                } else {
+                    leadData = []
+                }
+            }
+        }
+        let sldata = smartlist({
+            smartlistname: req.body.smartlistname,
+            smartlists: leadData,
+            criteria: req.body.criteria,
+            userId: userId
+        })
+        sldata.save((err, sldata) => {
+            if (err) {
+                res.send({ error: err.message.replace(/\"/g, ""), success: false });
 
+            } else {
+                return res.send({ msg: sldata, success: true });
 
-        //         if (leadData.length) {
-        //             leadData = leadData.filter(e => {
-        //                 return renewalData.some(item => String(item._id) === String(e._id));
-        //             })
-        //         } else {
-        //             leadData = []
-        //         }
-        //     }
-
-        // }
-        // let sldata = smartlist({
-        //     smartlistname: req.body.smartlistname,
-        //     smartlists: leadData,
-        //     criteria: req.body.criteria,
-        //     userId: userId
-        // })
-        // sldata.save((err, sldata) => {
-        //     if (err) {
-        //         res.send({ error: err.message.replace(/\"/g, ""), success: false });
-
-        //     } else {
-        //         return res.send({ msg: sldata, success: true });
-
-        //     }
-        // })
+            }
+        })
     } catch (err) {
         res.send({ error: err.message.replace(/\"/g, ""), success: false });
 
@@ -375,15 +367,33 @@ exports.update_smart_list = async (req, res) => {
         }
         Promise.all(promises);
         if (promises.length) {
-            var leadData = await member.find({
-                userId: userId,
-                $and: promises
-            }, { email: 1 })
+            var [leadData] = await member.aggregate([{
+                $match: {
+                    userId: userId,
+                    $and: promises
+                }
+            },
+            {
+                $project: { _id: 1 }
+            },
+
+            {
+                $group: {
+                    _id: "",
+                    ids: { $addToSet: "$_id" }
+                }
+            },
+            {
+                $project: { _id: 0 }
+            },
+
+            ])
+            leadData = leadData.ids
         } else {
             leadData = []
         }
         if (membership_status) {
-            var membershipData = await membership.aggregate([{
+            var [membershipData] = await membership.aggregate([{
                 $match: { userId: userId, membership_status: { $in: membership_status } }
             }, {
                 $project: {
@@ -401,9 +411,7 @@ exports.update_smart_list = async (req, res) => {
             },
             {
                 $project: {
-                    membership_status: 1,
-                    "data._id": 1,
-                    "data.email": 1,
+                    data: "$data._id",
                     _id: 0,
 
                 }
@@ -412,7 +420,7 @@ exports.update_smart_list = async (req, res) => {
             {
                 "$group": {
                     "_id": "",
-                    "data": { "$addToSet": "$data" }
+                    "ids": { "$addToSet": "$data" }
                 }
             },
             {
@@ -421,11 +429,12 @@ exports.update_smart_list = async (req, res) => {
                 }
             },
             ])
-            if (membershipData.length) {
-                membershipData = membershipData[0].data
+
+            if (membershipData.ids.length) {
+                membershipData = membershipData.ids
                 if (leadData.length) {
                     leadData = leadData.filter(e => {
-                        return membershipData.some(item => String(item._id) === String(e._id));
+                        return membershipData.some(item => String(item) === String(e));
                     })
                 } else {
                     leadData = []
@@ -476,8 +485,7 @@ exports.update_smart_list = async (req, res) => {
                     },
                     {
                         $project: {
-                            "data._id": 1,
-                            "data.email": 1,
+                            data: "$data._id",
                             _id: 0,
 
                         }
@@ -497,7 +505,7 @@ exports.update_smart_list = async (req, res) => {
                     },
                     ]
                 )
-                financeData = financeData[0].data
+                financeData = financeData.data ? financeData.data : []
             }
             if (finance.includes('not_expired')) {
                 let not_expiredFinance = await financeInfo.aggregate(
@@ -540,9 +548,8 @@ exports.update_smart_list = async (req, res) => {
                     },
                     {
                         $project: {
-                            "data._id": 1,
-                            "data.email": 1,
-                            _id: 0,
+                            data: "$data._id",
+                            _id: 0
 
                         }
                     },
@@ -569,7 +576,7 @@ exports.update_smart_list = async (req, res) => {
             }
             if (leadData.length) {
                 leadData = leadData.filter(e => {
-                    return financeData.some(item => String(item._id) === String(e._id));
+                    return financeData.some(item => String(item) === String(e));
                 })
             } else {
                 leadData = []
@@ -618,9 +625,8 @@ exports.update_smart_list = async (req, res) => {
                     { $match: { days_till_Expire: { $lte: renewal[0], $gt: 0 } } },
                     {
                         $project: {
-                            "data._id": 1,
-                            "data.email": 1,
-                            _id: 0,
+                            data: "$data._id",
+                            _id: 0
 
                         }
                     },
@@ -640,17 +646,14 @@ exports.update_smart_list = async (req, res) => {
                 ])
             if (renewalData.length) {
                 renewalData = renewalData[0].data
-
-
                 if (leadData.length) {
                     leadData = leadData.filter(e => {
-                        return renewalData.some(item => String(item._id) === String(e._id));
+                        return renewalData.some(item => String(item) === String(e));
                     })
                 } else {
                     leadData = []
                 }
             }
-
         }
         await smartlist.findByIdAndUpdate(slId, {
             smartlistname: req.body.smartlistname,

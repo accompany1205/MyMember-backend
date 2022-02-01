@@ -214,6 +214,28 @@ exports.getRecommendedCandidateStudents = async (req, res) => {
 
 }
 
+exports.removeAll = async (req, res) => {
+    let recommendIds = req.body.recommendIds;
+    let promise = [];
+    try {
+        for (let id in recommendIds) {
+            let { studentId } = RecommendedCandidateModel.findById(recommendIds[id]);
+            await Member.updateOne({ _id: studentId }, { $set: { isRecomCandidate: false } }).then(async resp => {
+                await RecommendedCandidateModel.findByIdAndDelete(recommendIds[id], function (err, data) {
+                    if (err) { res.send({ msg: "Recommended Candidate Student Not Deleted!", success: false }) }
+                    promise.push(data)
+                })
+            }).catch(err => {
+                res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+            })
+        }
+        Promise.all(promise);
+        res.send({ msg: "Selected Students Deleted Succesfully!", success: true })
+    } catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+    }
+}
+
 exports.removeFromRecomended = async (req, res) => {
     try {
         let recommededId = req.params.recommededCandidateId;
