@@ -102,10 +102,14 @@ exports.list_template = (req, res) => {
 
 exports.add_template = async (req, res) => {
   try {
-    // const counts = await addTemp
-    //   .find({ folderId: req.params.folderId })
-    //   .countDocuments();
-    // let templete_Id = counts + 1;
+    const [counts] = await systemFolder
+      .find({ _id: req.params.folderId }, { template: 1, _id: 0 })
+    let templete_Id = counts.template.length + 1
+
+
+
+
+
     let {
       to,
       from,
@@ -113,8 +117,12 @@ exports.add_template = async (req, res) => {
       subject,
       template,
       sent_time,
-      repeat_mail,
       sent_date,
+      design,
+      days,
+      days_type,
+      immediately,
+      content_type,
       follow_up,
       smartLists,
     } = req.body || {};
@@ -141,17 +149,21 @@ exports.add_template = async (req, res) => {
       template,
       sent_date,
       sent_time,
-      // DateT: date_iso_follow,
-      repeat_mail,
+      design,
+      days,
+      days_type,
+      immediately,
+      content_type,
       follow_up,
       email_type: "schedule",
       email_status: true,
       category: "system",
       userId,
       folderId,
-      // templete_Id,
+      templete_Id,
       attachments,
-        
+      smartLists
+
     };
     const promises = []
     if (req.files) {
@@ -162,9 +174,7 @@ exports.add_template = async (req, res) => {
     }
     obj.attachments = attachments
     sent_date = moment(sent_date).format("YYYY-MM-DD");
-    var date_iso_follow = timefun(req.body.sent_date, req.body.sent_time);
-    date_iso_follow.setDate(date_iso_follow.getDate() + req.body.follow_up);
-
+console.log(obj)
     saveEmailTemplate(obj)
       .then((data) => {
         systemFolder
@@ -185,7 +195,7 @@ exports.add_template = async (req, res) => {
       .catch((ex) => {
         res.send({
           success: false,
-          msg: ex.message,
+          msg: ex
         });
       });
 
@@ -200,7 +210,7 @@ function saveEmailTemplate(obj) {
     let emailDetail = new addTemp(obj);
     emailDetail.save((err, data) => {
       if (err) {
-        reject({ data: "Data not save in Database!", success: false });
+        reject({ data: "Data not save in Database!", success: err });
       } else {
         resolve(data);
       }
