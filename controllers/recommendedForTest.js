@@ -6,6 +6,9 @@ const AddMember = require("../models/addmember");
 const RegisterdForTest = require('../models/registerdForTest');
 const Joi = require('@hapi/joi');
 const { valorTechPaymentGateWay } = require("./valorTechPaymentGateWay");
+const mergeFile = require("../Services/mergeFile")
+const cloudUrl = require("../gcloud/imageUrl");
+
 
 
 const randomNumber = (length, addNumber) => {
@@ -349,6 +352,27 @@ function createFinanceDoc(data, financeId) {
     });
 }
 
+exports.multipleDocMerge = async (req, res) => {
+    let recommendedId = req.body.recommendedId;
+    let docBody = req.body.docBody;
+    try {
+        let promises = [];
+        for (let id in recommendedId) {
+            let data = await RegisterdForTest.findOne({ _id: recommendedId[id] });
+            let studentId = data.studentId;
+            let resp = await Member.findOne({ _id: studentId });
+            let mergedInfo = { ...data.toJSON(), ...resp.toJSON() }
+            let fileObj = await mergeFile(docBody, mergedInfo);
+            await (cloudUrl.imageUrl(fileObj)).then(data => {
+                promises.push(data)
+            })
+        }
+        await Promise.all(promises);
+        res.send({ msg: "data!", data: promises })
+    } catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+    }
+}
 
 exports.deleteAll = async (req, res) => {
     let recommendIds = req.body.recommendIds;
