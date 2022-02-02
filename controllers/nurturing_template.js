@@ -453,7 +453,7 @@ exports.swap_template = async (req, res) => {
               });
             }
             else {
-              res.send({ msg: 'template updated ', success: true });
+              res.send({ msg: 'template swapped successfully! ', success: true });
 
             }
           })
