@@ -353,7 +353,6 @@ exports.swapAndUpdate_template = async (req, res) => {
       });
   }
 };
-
 exports.update_template = async (req, res) => {
   let updateTemplate = req.body;
   let smartList = updateTemplate.smartLists;
@@ -388,6 +387,78 @@ exports.update_template = async (req, res) => {
       }
     }
   );
+}
+
+exports.swap_template = async (req, res) => {
+  let templateId = req.params.templateId
+  let FirstSelectedOid = req.body.FirstSelectedOid
+  let newPositionOfFirstSelected = req.body.newPositionOfFirstSelected
+  let DateOfFirstSelectedOid = req.body.DateOfFirstSelectedOid
+  let SecondSelectedOid = req.body.SecondSelectedOid
+  let newPositionOfSecondSelected = req.body.newPositionOfSecondSelected
+  let DateOfSecondSelectedOid = req.body.DateOfSecondSelectedOid
+
+  await nurturingFolderModal.updateOne(
+    { _id: req.params.templateId },
+
+    {
+      $pull: {
+        template:
+        {
+          $in:
+            [FirstSelectedOid,
+              SecondSelectedOid
+            ]
+        }
+      }
+    }
+  )
+  await nurturingFolderModal.updateOne(
+    { _id: templateId },
+    {
+      $push: {
+        template: {
+          $each: [FirstSelectedOid],
+          $position: newPositionOfFirstSelected
+        }
+      }
+    }
+  )
+  await nurturingFolderModal.updateOne(
+    { _id: req.params.templateId },
+
+    {
+      $push: {
+        template: {
+          $each: [SecondSelectedOid],
+          $position: newPositionOfSecondSelected
+        }
+      }
+    }
+  )
+    .exec(async (err, data) => {
+      if (err) {
+        res.send({
+          msg: "not update template",
+          success: false
+        });
+      } else {
+        await all_temp.findByIdAndUpdate(FirstSelectedOid, { $set: { sent_date: DateOfFirstSelectedOid } })
+        await all_temp.findByIdAndUpdate(SecondSelectedOid, { $set: { sent_date: DateOfSecondSelectedOid } })
+          .exec(async (err, data) => {
+            if (err) {
+              res.send({
+                msg: "Template not updated!",
+                success: false
+              });
+            }
+            else {
+              res.send({ msg: 'template updated ', success: true });
+
+            }
+          })
+      }
+    });
 };
 
 //single temp update status
