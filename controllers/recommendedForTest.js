@@ -358,8 +358,10 @@ exports.multipleDocMerge = async (req, res) => {
     try {
         let promises = [];
         for (let id in recommendedId) {
-            let data = await RegisterdForTest.findOne({ _id: recommendedId[id] });
+            let data = await RecommendedForTest.findOne({ _id: recommendedId[id] });
+            console.log("--->",data)
             let studentId = data.studentId;
+            console.log("--->",studentId);
             let resp = await Member.findOne({ _id: studentId });
             let mergedInfo = { ...data.toJSON(), ...resp.toJSON() }
             let fileObj = await mergeFile(docBody, mergedInfo);
