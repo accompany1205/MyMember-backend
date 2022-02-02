@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { getRecommededForTest, recomendStudent, removeFromRecomended, payAndPromoteTheStudent, getRegisteredForTest, deleteAll } = require("../controllers/recommendedForTest");
+const { getRecommededForTest, recomendStudent, removeFromRecomended, payAndPromoteTheStudent, getRegisteredForTest, deleteAll, multipleDocMerge } = require("../controllers/recommendedForTest");
 const { mergedDocForTest } = require("../controllers/registeredForTest");
 
 const { requireSignin, isAuth, isAdmin } = require("../controllers/auth");
@@ -13,6 +13,8 @@ router.post("/recomend_students/pay_and_regiter/:userId", requireSignin, payAndP
 router.delete("/recomend_students/remove_student/:userId/:recommendedId", requireSignin, removeFromRecomended);
 router.delete("/recommend/removeAll/:userId", requireSignin, deleteAll);
 router.post("/recommended/mergeDocs/:userId/:studentId/:recommendedId", requireSignin, mergedDocForTest);
+router.post("/recommended/mergeDocs/:userId",requireSignin, multipleDocMerge);
+
 
 
 

@@ -16,6 +16,7 @@ const User = require("../models/user");
 const buymembershipModal = require("../models/buy_membership");
 let { saveEmailTemplate } = require('../controllers/compose_template')
 const system_folder = require("../models/email_system_folder");
+const mergeFile = require("../Services/mergeFile")
 
 // const ManyStudents = require('../std.js');
 // const students = require('../std.js');
@@ -1222,6 +1223,26 @@ exports.trial_this_month = (req, res) => {
   );
 };
 
+exports.mergeMultipleDoc = async (req, res) => {
+  let studentsIds = req.body.studentsIds;
+  let docBody = req.body.docBody;
+  try {
+    let promises = [];
+    for (let id in studentsIds) {
+      let data = await addmemberModal.findOne({ _id: studentsIds[id] });
+      let mergedInfo = { ...data.toJSON() }
+      let fileObj = await mergeFile(docBody, mergedInfo);
+      await (cloudUrl.imageUrl(fileObj)).then(data => {
+        promises.push(data)
+      })
+    }
+    await Promise.all(promises);
+    res.send({ msg: "data!", data: promises })
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
+}
+
 //need to cha
 exports.collectionModify = async (req, res) => {
   let LittleTiger = [];
@@ -1530,7 +1551,7 @@ exports.updatemember = async (req, res) => {
               sentEmail.findByIdAndUpdate(emailSave._id, { userId: userId, email_type: 'sent', is_Sent: true, category: 'system' })
                 .exec((err, emailUpdate) => {
                   if (err) {
-                    console.log({ msg: 'emil not sent' ,err})
+                    console.log({ msg: 'emil not sent', err })
                   }
                   else {
                     // res.send({ message: "Email Sent Successfully", success: true, emailUpdate })
