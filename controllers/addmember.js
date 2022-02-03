@@ -1237,7 +1237,7 @@ exports.mergeMultipleDoc = async (req, res) => {
       })
     }
     await Promise.all(promises);
-    res.send({ msg: "data!", data: promises })
+    res.send({ msg: "data!", data: promises, success:true })
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false })
   }
