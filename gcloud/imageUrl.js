@@ -17,7 +17,8 @@ function clourUrl() {
                 {
 
                     "method": ["GET", "POST", "HEAD"],
-                    "origin": ["https://mymember.com","https://staging.mymember.com", "127.0.0.1:3000"],
+                    // "origin": ["https://mymember.com","https://staging.mymember.com", "127.0.0.1:3000"],
+                    "origin": ["*"],
                     "responseHeader": ["*"],
                 },
             ]);

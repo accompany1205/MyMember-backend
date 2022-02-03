@@ -76,6 +76,10 @@ exports.setSignItems = async (req, res) => {
     }
 };
 
+exports.getMailSentHistory = async (req, res) => {
+  
+}
+
 exports.inviteeMailSent = async (req, res) => {
     try {
         emailList = req.body.emails;
