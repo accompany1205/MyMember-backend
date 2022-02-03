@@ -63,7 +63,8 @@ const membershipSchema = schema({
         type: String,
     },
     isRecurring: {
-        type: Number
+        type: Number,
+        default:1
     },
     userId: {
         type: String

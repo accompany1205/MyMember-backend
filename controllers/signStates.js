@@ -76,15 +76,16 @@ exports.setSignItems = async (req, res) => {
     }
 };
 
-exports.getMailSentHistory = async (req, res) => {
-  
-}
+// exports.getMailSentHistory = async (req, res) => {
+
+// }
 
 exports.inviteeMailSent = async (req, res) => {
     try {
-        emailList = req.body.emails;
-        docLink = req.body.docLink;
-        ownerEmail = req.body.ownerEmail
+        let emailList = req.body.emails;
+        let docLink = req.body.docLink;
+        let ownerEmail = req.body.ownerEmail
+        console.log(req.body)
         const emailData = {
             sendgrid_key: process.env.SENDGRID_API_KEY,
             to: emailList,
@@ -98,7 +99,7 @@ exports.inviteeMailSent = async (req, res) => {
             .send_via_sendgrid(emailData).then(resp => {
                 res.send({ msg: "mail sent!", success: true })
             }).catch(err => {
-                res.send({ msg: err.message.replace(/\"/g, ""), sucess: false });
+                res.send({ msg: "Reaching here!",err, sucess: false });
             })
     } catch (err) {
         res.send({ msg: err.message.replace(/\"/g, ""), sucess: false });
