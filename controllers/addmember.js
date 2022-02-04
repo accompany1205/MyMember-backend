@@ -1237,7 +1237,20 @@ exports.mergeMultipleDoc = async (req, res) => {
       })
     }
     await Promise.all(promises);
-    res.send({ msg: "data!", data: promises, success:true })
+    res.send({ msg: "data!", data: promises, success: true })
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
+}
+
+exports.multipleFilter = async (req, res) => {
+  let filter = req.body;
+  try {
+    await addmemberModal.find({ userId: req.params.userId }).then(resp => {
+      resp.filter(obj => {
+        if (obj.firstName === filter.member && obj.program === filter.program);
+      })
+    })
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false })
   }

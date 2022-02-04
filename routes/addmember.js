@@ -49,7 +49,8 @@ const { addmember,
     leads_this_month,
     leads_past3_month,
     collectionModify,
-    mergeMultipleDoc
+    mergeMultipleDoc,
+    multipleFilter
 
 } = require("../controllers/addmember")
 
@@ -58,6 +59,7 @@ const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 const upload = require('../handler/multer');
 
 
+router.post('/addMember/multiFilter/:userId', requireSignin, multipleFilter);
 router.post('/bluck_student_add/:userId', bluckStd)
 
 // router.post("/member/next_std_find/:stdId",next_std_find)

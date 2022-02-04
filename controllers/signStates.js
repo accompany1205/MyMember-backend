@@ -169,14 +169,16 @@ exports.getAllStudentDocs = async (req, res) => {
             for (let id in datas) {
                 let ne = await SignStates.findOne({ signDocForId: datas[id]._id });
                 if (ne && ne !== null) {
-                    let data = { ...ne.toJSON(), ...datas[id].toJSON() }
+                    let data = { ...ne.toJSON(), ...datas[id] }
                     promise.push(data);
                 }
             }
             await Promise.all(promise)
-            res.send({msg:"data", data:promise, success:true})
+            res.send({ msg: "data", data: promise, success: true })
+        }).catch(err => {
+            res.send({ msg: err.message.replace(/\"/g, ""), sucess: false });
         })
     } catch (err) {
-        console.log(err)
+        res.send({ msg: err.message.replace(/\"/g, ""), sucess: false });
     }
 }
