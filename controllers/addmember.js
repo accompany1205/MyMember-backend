@@ -1539,80 +1539,80 @@ exports.updatemember = async (req, res) => {
   var memberID = req.params.memberID;
   let userId = req.params.userId
   let memberData = req.body
-  let [data] = await smartList.find({ "criteria.studentType": memberData.studentType });
-  if (data) {
-    let [data] = await smartList.find({ "criteria.studentType": memberData.studentType });
-    let [Email] = await sentEmail.find({ smartLists: data._id });
-    if (Email.toJSON().immediately) {
-      const emailData = {
-        sendgrid_key: process.env.SENDGRID_API_KEY,
-        to: memberData.email,
-        from: Email.toJSON().from,
-        from_name: 'noreply@gmail.com',
-        subject: Email.toJSON().subject,
-        html: Email.toJSON().template,
-        attachments: Email.toJSON().attachments
-      };
-      sgMail.send(emailData)
-        .then(resp => {
-          var emailDetail = new sentEmail(req.body)
-          emailDetail.save((err, emailSave) => {
-            if (err) {
-              res.send({ error: 'email details is not save' })
-            }
-            else {
-              sentEmail.findByIdAndUpdate(emailSave._id, { userId: userId, email_type: 'sent', is_Sent: true, category: 'system' })
-                .exec((err, emailUpdate) => {
-                  if (err) {
-                    console.log({ msg: 'emil not sent', err })
-                  }
-                  else {
-                    // res.send({ message: "Email Sent Successfully", success: true, emailUpdate })
-                  }
-                })
-            }
-          })
-        })
-        .catch(err => {
-          console.log({ msg: 'email not send', error: err })
-        })
-    } else {
-      let sent_date = moment(Email.toJSON().sent_date).add(Email.toJSON().days, 'days').format("YYYY-MM-DD");
-      const obj = {
-        to: memberData.email,
-        from: memberData.email,
-        subject: Email.toJSON().subject,
-        template: Email.toJSON().template,
-        sent_date: sent_date,
-        sent_time: Email.toJSON().sent_time,
-        email_type: "schedule",
-        email_status: true,
-        category: "system",
-        userId: userId,
-        folderId: Email.toJSON().folderId,
-        days: Email.toJSON().days,
-      }
-      console.log(obj)
-      saveEmailTemplate(obj)
-        .then((data) => {
-          system_folder
-            .findOneAndUpdate(
-              { _id: obj.folderId },
-              { $push: { template: data._id } }
-            )
-            .then((data) => {
-              console.log(`Email scheduled  Successfully on ${sent_date}`)
-            })
-            .catch((er) => {
-              res.send({
-                msg: "compose template details is not add in folder",
-                success: er,
-              });
-            });
-        })
-    }
+  // let [data] = await smartList.find({ "criteria.studentType": memberData.studentType });
+  // if (data) {
+  // let [data] = await smartList.find({ "criteria.studentType": memberData.studentType });
+  // let [Email] = await sentEmail.find({ smartLists: data._id });
+  //   if (Email.toJSON().immediately) {
+  //     const emailData = {
+  //       sendgrid_key: process.env.SENDGRID_API_KEY,
+  //       to: memberData.email,
+  //       from: Email.toJSON().from,
+  //       from_name: 'noreply@gmail.com',
+  //       subject: Email.toJSON().subject,
+  //       html: Email.toJSON().template,
+  //       attachments: Email.toJSON().attachments
+  //     };
+  //     sgMail.send(emailData)
+  //       .then(resp => {
+  //         var emailDetail = new sentEmail(req.body)
+  //         emailDetail.save((err, emailSave) => {
+  //           if (err) {
+  //             res.send({ error: 'email details is not save' })
+  //           }
+  //           else {
+  //             sentEmail.findByIdAndUpdate(emailSave._id, { userId: userId, email_type: 'sent', is_Sent: true, category: 'system' })
+  //               .exec((err, emailUpdate) => {
+  //                 if (err) {
+  //                   console.log({ msg: 'emil not sent', err })
+  //                 }
+  //                 else {
+  //                   // res.send({ message: "Email Sent Successfully", success: true, emailUpdate })
+  //                 }
+  //               })
+  //           }
+  //         })
+  //       })
+  //       .catch(err => {
+  //         console.log({ msg: 'email not send', error: err })
+  //       })
+  //   } else {
+  //     let sent_date = moment(Email.toJSON().sent_date).add(Email.toJSON().days, 'days').format("YYYY-MM-DD");
+  //     const obj = {
+  //       to: memberData.email,
+  //       from: memberData.email,
+  //       subject: Email.toJSON().subject,
+  //       template: Email.toJSON().template,
+  //       sent_date: sent_date,
+  //       sent_time: Email.toJSON().sent_time,
+  //       email_type: "schedule",
+  //       email_status: true,
+  //       category: "system",
+  //       userId: userId,
+  //       folderId: Email.toJSON().folderId,
+  //       days: Email.toJSON().days,
+  //     }
+  //     console.log(obj)
+  //     saveEmailTemplate(obj)
+  //       .then((data) => {
+  //         system_folder
+  //           .findOneAndUpdate(
+  //             { _id: obj.folderId },
+  //             { $push: { template: data._id } }
+  //           )
+  //           .then((data) => {
+  //             console.log(`Email scheduled  Successfully on ${sent_date}`)
+  //           })
+  //           .catch((er) => {
+  //             res.send({
+  //               msg: "compose template details is not add in folder",
+  //               success: er,
+  //             });
+  //           });
+  //       })
+  //   }
 
-  }
+  // }
   if (req.file) {
     await cloudUrl
       .imageUrl(req.file)
