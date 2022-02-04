@@ -12,8 +12,13 @@ function TimeZone() {
 }
 exports.category_list = (req, res) => {
     emailSystem.find({ adminId: req.params.userId })
-        .populate('folder')
-        .exec((err, categoryList) => {
+        .populate({
+            path: 'folder',
+            populate: {
+                path: 'template',
+                model: 'sentOrscheduleEmail'
+            }
+        }).exec((err, categoryList) => {
             if (err) {
                 res.send({ error: 'system category is not found' })
             }
@@ -107,7 +112,7 @@ exports.sendEmail = (req, res) => {
                                     res.send({ error: 'user id is not update in sent email' })
                                 }
                                 else {
-                                    res.send({ message: "Email Sent Successfully", success: true ,emailUpdate})
+                                    res.send({ message: "Email Sent Successfully", success: true, emailUpdate })
                                 }
                             })
                     }

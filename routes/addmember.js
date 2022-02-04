@@ -48,17 +48,25 @@ const { addmember,
     active_trial_past3_month,
     leads_this_month,
     leads_past3_month,
-    collectionModify
+    collectionModify,
+    mergeMultipleDoc
 
 } = require("../controllers/addmember")
+
+const { mergedDocForTest } = require("../controllers/registeredForTest");
 const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 const upload = require('../handler/multer');
+
 
 router.post('/bluck_student_add/:userId', bluckStd)
 
 // router.post("/member/next_std_find/:stdId",next_std_find)
 // perticular std count
 router.get('/memeber/std_count/:userId', verifySchool, std_count)
+
+router.post("/student/mergeDocs/:userId/:studentId", requireSignin, mergedDocForTest);
+router.post("/student/mergeDocs/:userId", requireSignin, mergeMultipleDoc);
+
 
 //dashboard routes
 router.get("/member/searchstudent_by_type/:userId/:studentType", searchStudentbyType)

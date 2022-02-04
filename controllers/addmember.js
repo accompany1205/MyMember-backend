@@ -1,14 +1,22 @@
 const { functions, add } = require("lodash");
 var addmemberModal = require("../models/addmember");
+const moment = require("moment");
+const ObjectId = require('mongodb').ObjectId;
+const smartList = require("../models/smartlists");
 const cloudUrl = require("../gcloud/imageUrl");
 const program = require("../models/program");
 const rank_change = require("../models/change_rank");
 const change_rank = require("../models/change_rank");
 const sentEmail = require("../models/emailSentSave");
 const sgmail = require("sendgrid-v3-node");
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 var mongo = require("mongoose")
 const User = require("../models/user");
 const buymembershipModal = require("../models/buy_membership");
+let { saveEmailTemplate } = require('../controllers/compose_template')
+const system_folder = require("../models/email_system_folder");
+const mergeFile = require("../Services/mergeFile")
 
 // const ManyStudents = require('../std.js');
 // const students = require('../std.js');
@@ -1215,6 +1223,26 @@ exports.trial_this_month = (req, res) => {
   );
 };
 
+exports.mergeMultipleDoc = async (req, res) => {
+  let studentsIds = req.body.studentsIds;
+  let docBody = req.body.docBody;
+  try {
+    let promises = [];
+    for (let id in studentsIds) {
+      let data = await addmemberModal.findOne({ _id: studentsIds[id] });
+      let mergedInfo = { ...data.toJSON() }
+      let fileObj = await mergeFile(docBody, mergedInfo);
+      await (cloudUrl.imageUrl(fileObj)).then(data => {
+        promises.push(data)
+      })
+    }
+    await Promise.all(promises);
+    res.send({ msg: "data!", data: promises, success:true })
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
+}
+
 //need to cha
 exports.collectionModify = async (req, res) => {
   let LittleTiger = [];
@@ -1494,59 +1522,112 @@ exports.delete_multipal_member = (req, res) => {
     });
 };
 
-exports.updatemember = (req, res) => {
+exports.updatemember = async (req, res) => {
   var memberID = req.params.memberID;
-  addmemberModal
-    .findByIdAndUpdate(
-      {
-        _id: memberID,
-      },
-      req.body
-    )
+  let userId = req.params.userId
+  let memberData = req.body
+  let [data] = await smartList.find({ "criteria.studentType": memberData.studentType });
+  if (data) {
+    let [data] = await smartList.find({ "criteria.studentType": memberData.studentType });
+    let [Email] = await sentEmail.find({ smartLists: data._id });
+    if (Email.toJSON().immediately) {
+      const emailData = {
+        sendgrid_key: process.env.SENDGRID_API_KEY,
+        to: memberData.email,
+        from: Email.toJSON().from,
+        from_name: 'noreply@gmail.com',
+        subject: Email.toJSON().subject,
+        html: Email.toJSON().template,
+        attachments: Email.toJSON().attachments
+      };
+      sgMail.send(emailData)
+        .then(resp => {
+          var emailDetail = new sentEmail(req.body)
+          emailDetail.save((err, emailSave) => {
+            if (err) {
+              res.send({ error: 'email details is not save' })
+            }
+            else {
+              sentEmail.findByIdAndUpdate(emailSave._id, { userId: userId, email_type: 'sent', is_Sent: true, category: 'system' })
+                .exec((err, emailUpdate) => {
+                  if (err) {
+                    console.log({ msg: 'emil not sent', err })
+                  }
+                  else {
+                    // res.send({ message: "Email Sent Successfully", success: true, emailUpdate })
+                  }
+                })
+            }
+          })
+        })
+        .catch(err => {
+          console.log({ msg: 'email not send', error: err })
+        })
+    } else {
+      let sent_date = moment(Email.toJSON().sent_date).add(Email.toJSON().days, 'days').format("YYYY-MM-DD");
+      const obj = {
+        to: memberData.email,
+        from: memberData.email,
+        subject: Email.toJSON().subject,
+        template: Email.toJSON().template,
+        sent_date: sent_date,
+        sent_time: Email.toJSON().sent_time,
+        email_type: "schedule",
+        email_status: true,
+        category: "system",
+        userId: userId,
+        folderId: Email.toJSON().folderId,
+        days: Email.toJSON().days,
+      }
+      console.log(obj)
+      saveEmailTemplate(obj)
+        .then((data) => {
+          system_folder
+            .findOneAndUpdate(
+              { _id: obj.folderId },
+              { $push: { template: data._id } }
+            )
+            .then((data) => {
+              console.log(`Email scheduled  Successfully on ${sent_date}`)
+            })
+            .catch((er) => {
+              res.send({
+                msg: "compose template details is not add in folder",
+                success: er,
+              });
+            });
+        })
+    }
+
+  }
+  if (req.file) {
+    await cloudUrl
+      .imageUrl(req.file)
+      .then((stdimagUrl) => {
+        memberData.memberprofileImage = stdimagUrl
+      })
+      .catch((msg) => {
+        res.send({
+          success: false,
+          msg: "Profile image url not created",
+        });
+      });
+  }
+  await addmemberModal.findOneAndUpdate({ _id: memberID }, { $set: memberData })
     .exec((err, data) => {
       if (err) {
         res.send({
           success: false,
-          msg: "member is not update",
+          msg: "Member not updated",
         });
       } else {
-        if (req.file) {
-          cloudUrl
-            .imageUrl(req.file)
-            .then((stdimagUrl) => {
-              addmemberModal
-                .findByIdAndUpdate(data._id, {
-                  $set: {
-                    memberprofileImage: stdimagUrl,
-                  },
-                })
-                .then((response) => {
-                  res.send({
-                    msg: "member details and profile is update",
-                    success: true,
-                  });
-                })
-                .catch((msg) => {
-                  res.send({
-                    msg: "student image is not update",
-                    success: false,
-                  });
-                });
-            })
-            .catch((msg) => {
-              res.send({
-                success: false,
-                msg: "image url is not create",
-              });
-            });
-        } else {
-          res.send({
-            success: true,
-            msg: "member is update successfully",
-          });
-        }
+        res.send({
+          success: true,
+          msg: "Member is update successfully",
+        });
+
       }
-    });
+    })
 };
 
 function TimeZone() {

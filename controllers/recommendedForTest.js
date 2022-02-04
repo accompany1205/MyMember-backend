@@ -1,13 +1,14 @@
 require('dotenv').config();
-const User = require('../models/user');
 const Member = require('../models/addmember');
 const RecommendedForTest = require('../models/recommendedForTest');
 const Finance_infoSchema = require("../models/finance_info");
 const AddMember = require("../models/addmember");
 const RegisterdForTest = require('../models/registerdForTest');
-const program_rank = require("../models/program_rank");
 const Joi = require('@hapi/joi');
 const { valorTechPaymentGateWay } = require("./valorTechPaymentGateWay");
+const mergeFile = require("../Services/mergeFile")
+const cloudUrl = require("../gcloud/imageUrl");
+
 
 
 const randomNumber = (length, addNumber) => {
@@ -26,9 +27,22 @@ exports.getRecommededForTest = async (req, res) => {
     let userId = req.params.userId;
     var order = req.query.order || 1
     let sortBy = req.query.sortBy || "firstName"
+    var totalCount = await RecommendedForTest
+        .find({
+            "userId": userId,
+            "isDeleted": false
+        })
+        .countDocuments();
+
+    var per_page = parseInt(req.params.per_page) || 10;
+    var page_no = parseInt(req.params.page_no) || 0;
+    var pagination = {
+        limit: per_page,
+        skip: per_page * page_no,
+    };
     if (!userId) {
         res.json({
-            status: false,
+            success: false,
             msg: "Please give userId into the params!!"
         })
     }
@@ -37,47 +51,44 @@ exports.getRecommededForTest = async (req, res) => {
         "userId": userId,
         "isDeleted": false
     })
+        .skip(pagination.skip)
+        .limit(pagination.limit)
         .sort({ [sortBy]: order });
     if (!students.length) {
         res.json({
-            status: false,
-            msg: "There no data available for this query!!"
+            success: false,
+            msg: "data not available!"
         })
     }
     res.json({
-        status: true,
-        msg: "Please find the data!!",
-        data: students
+        success: true,
+        data: students,
+        totalCount: totalCount
     })
 }
 
 exports.getRegisteredForTest = async (req, res) => {
+    let userId = req.params.userId;
     let sortBy = req.query.sortBy || "fistName"
     var order = req.query.order || 1
-    let userId = req.params.userId;
-    if (!userId) {
-        res.json({
-            status: false,
-            msg: "Please give userId into the params!!"
+    var totalCount = await RegisterdForTest
+        .find({
+            "userId": userId,
+            "isDeleted": false
         })
-    }
+        .countDocuments();
 
-    let students = await RegisterdForTest.find({
-        "isDeleted": false
-    })
+    var per_page = parseInt(req.params.per_page) || 10;
+    var page_no = parseInt(req.params.page_no) || 0;
+    var pagination = { limit: per_page, skip: per_page * page_no, };
+    if (!userId) { res.json({ status: false, msg: "Please give userId into the params!!" }) }
+
+    let students = await RegisterdForTest.find({ "userId": userId, "isDeleted": false })
+        .skip(pagination.skip)
+        .limit(pagination.limit)
         .sort({ [sortBy]: order });
-    if (!students.length) {
-        res.json({
-            status: false,
-            msg: "There no data available for this query!!",
-            data: students
-        })
-    }
-    res.json({
-        status: true,
-        msg: "Please find the data!!",
-        data: students
-    })
+    if (!students.length) { res.json({ status: false, msg: "There no data available for this query!!", data: students }) }
+    res.json({ status: true, msg: "Please find the data!!", data: students, totalCount: totalCount })
 
 }
 
@@ -340,6 +351,49 @@ function createFinanceDoc(data, financeId) {
         }
     });
 }
+
+exports.multipleDocMerge = async (req, res) => {
+    let recommendedId = req.body.recommendedId;
+    let docBody = req.body.docBody;
+    try {
+        let promises = [];
+        for (let id in recommendedId) {
+            let data = await RecommendedForTest.findOne({ _id: recommendedId[id] });
+            console.log("--->",data)
+            let studentId = data.studentId;
+            console.log("--->",studentId);
+            let resp = await Member.findOne({ _id: studentId });
+            let mergedInfo = { ...data.toJSON(), ...resp.toJSON() }
+            let fileObj = await mergeFile(docBody, mergedInfo);
+            await (cloudUrl.imageUrl(fileObj)).then(data => {
+                promises.push(data)
+            })
+        }
+        await Promise.all(promises);
+        res.send({ msg: "data!", data: promises, succes:true })
+    } catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+    }
+}
+
+exports.deleteAll = async (req, res) => {
+    let recommendIds = req.body.recommendIds;
+    let promise = [];
+    for (let id in recommendIds) {
+        let { studentId } = RecommendedForTest.findById(recommendIds[id]);
+        await Member.updateOne({ _id: studentId }, { $set: { isRecommended: false } }).then(async data => {
+            await RecommendedForTest.deleteOne({ _id: recommendIds[id] }, function (err, datas) {
+                if (err) { res.send({ msg: "Recommended Student Not Deleted!", success: false }) }
+                promise.push(datas)
+            })
+        }).catch(err => {
+            res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+        })
+    }
+    Promise.all(promise);
+    res.send({ msg: "Selected Students Deleted Succesfully!", success: true })
+}
+
 
 exports.removeFromRecomended = async (req, res) => {
     let recommededId = req.params.recommendedId;

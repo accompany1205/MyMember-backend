@@ -1,10 +1,13 @@
 const addTemp = require("../../models/emailSentSave");
+const students = require("../../models/addmember");
+const smartlist = require("../../models/smartlists");
 const systemFolder = require("../../models/email_system_folder");
 const user = require("../../models/user");
 const async = require("async");
 moment = require("moment");
 const cron = require("node-cron");
-const sgMail = require("sendgrid-v3-node");
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const cloudUrl = require("../../gcloud/imageUrl");
 const ObjectId = require("mongodb").ObjectId;
 
@@ -102,10 +105,12 @@ exports.list_template = (req, res) => {
 
 exports.add_template = async (req, res) => {
   try {
-    const counts = await addTemp
-      .find({ folderId: req.params.folderId })
-      .countDocuments();
-    let templete_Id = counts + 1;
+    const [counts] = await systemFolder
+      .find({ _id: req.params.folderId }, { template: 1, _id: 0 })
+    let templete_Id = counts.template.length + 1
+
+    let { userId, folderId } = req.params || {};
+
     let {
       to,
       from,
@@ -113,31 +118,67 @@ exports.add_template = async (req, res) => {
       subject,
       template,
       sent_time,
-      repeat_mail,
       sent_date,
-      follow_up,
-      smartLists,
       design,
-      content_type,
-      immediately,
       days,
       days_type,
+      immediately,
+      content_type,
+      follow_up,
+      smartLists,
     } = req.body || {};
-    to = to ? JSON.parse(to) : [];
-    smartLists = smartLists ? JSON.parse(smartLists) : [];
-    let { userId, folderId } = req.params || {};
-    // if (!to && !smartLists) {
-    //   throw new Error("Select atleat send-to or smart-List")
-    // }
-    // if (to && smartLists) {
-    //   throw new Error("select either send-To or smart-list ")
-    // }
 
-    if (!to.lenght) {
-      smartLists.map(lists => {
-        to = [...to, ...lists.smrtList]
-      });
+    if (!to) {
+
+      smartLists = smartLists ? JSON.parse(smartLists) : []
+      smartLists = smartLists.map(s => ObjectId(s));
+
+      let [smartlists] = await smartlist.aggregate([
+        {
+          $match: {
+            _id: { $in: smartLists }
+          }
+        },
+        {
+          $lookup: {
+            from: "members",
+            localField: "smartlists",
+            foreignField: "_id",
+            as: "data"
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            data: "$data.email"
+          }
+        },
+        { $unwind: "$data" },
+        {
+          $group: {
+            _id: "",
+            emails: { $addToSet: "$data" }
+          }
+        },
+        {
+          $project: {
+            _id: 0
+          }
+
+        }
+      ])
+
+      smartlists = smartlists ? smartlists : []
+      if (!smartlists.length) {
+        return res.send({
+          msg: `No Smartlist exist!`,
+          success: false,
+        });
+      }
+      to = smartlists.emails
+
     }
+
     const obj = {
       to,
       from,
@@ -146,8 +187,11 @@ exports.add_template = async (req, res) => {
       template,
       sent_date,
       sent_time,
-      DateT: date_iso_follow,
-      repeat_mail,
+      design,
+      days,
+      days_type,
+      immediately,
+      content_type,
       follow_up,
       email_type: "schedule",
       email_status: true,
@@ -156,13 +200,10 @@ exports.add_template = async (req, res) => {
       folderId,
       templete_Id,
       attachments,
-      smartLists,
-      design,
-      content_type,
-      immediately,
-      days,
-      days_type,
+      smartLists
+
     };
+
     const promises = []
     if (req.files) {
       (req.files).map(file => {
@@ -172,19 +213,44 @@ exports.add_template = async (req, res) => {
     }
     obj.attachments = attachments
     sent_date = moment(sent_date).format("YYYY-MM-DD");
-    // let scheduleDateOfMonth = moment(sent_date).format('DD')
-    // let scheduleMonth = moment(sent_date).format('MM')
-    // let scheduleDay = moment(sent_date).format('dddd')
-    if (req.body.follow_up === 0) {
-      var date_iso = timefun(req.body.sent_date, req.body.sent_time);
-      obj.DateT = date_iso;
-    } else if (req.body.follow_up < 0) {
-      res.send({ code: 400, msg: "follow up not set less then 0" });
-    } else {
-      var date_iso_follow = timefun(req.body.sent_date, req.body.sent_time);
-      date_iso_follow.setDate(date_iso_follow.getDate() + req.body.follow_up);
-      var nD = moment(date_iso_follow).format("MM/DD/YYYY");
+    if (immediately && !days) {
+      const emailData = {
+        sendgrid_key: process.env.SENDGRID_API_KEY,
+        to,
+        from,
+        from_name: 'noreply@gmail.com',
+        subject,
+        html: template,
+        attachments
+      };
+      sgMail.send(emailData)
+        .then(resp => {
+          obj.email_type = 'sent'
+          obj.is_Sent = true
+          saveEmailTemplate(obj)
+            .then((data) => {
+              systemFolder
+                .findByIdAndUpdate(folderId, { $push: { template: data._id } }, (err, data) => {
+                  if (err) {
+                    res.send({ msg: err, success: false })
+                  }
+                  res.send({ msg: "Email send Successfully!", success: true })
 
+                })
+            })
+            .catch((ex) => {
+              res.send({
+                success: false,
+                msg: ex
+              });
+            });
+        })
+        .catch(err => {
+          res.send({ error: err.message.replace(/\"/g, ""), success: false })
+        })
+
+    } else if (!JSON.parse(immediately) && days) {
+      sent_date = moment().add(days, 'days').format("YYYY-MM-DD");
       saveEmailTemplate(obj)
         .then((data) => {
           systemFolder
@@ -205,9 +271,13 @@ exports.add_template = async (req, res) => {
         .catch((ex) => {
           res.send({
             success: false,
-            msg: ex.message,
+            msg: ex
           });
         });
+    }
+    else {
+      res.send({ msg: 'something went wrong', success: false })
+
     }
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false })
@@ -220,7 +290,7 @@ function saveEmailTemplate(obj) {
     let emailDetail = new addTemp(obj);
     emailDetail.save((err, data) => {
       if (err) {
-        reject({ data: "Data not save in Database!", success: false });
+        reject({ data: "Data not save in Database!", success: err });
       } else {
         resolve(data);
       }
