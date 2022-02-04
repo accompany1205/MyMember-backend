@@ -7,11 +7,20 @@ const docFolderSchema = new schema({
         unique: true,
         required: true
     },
+    document: [
+        {
+            type: schema.Types.ObjectId,
+            ref: "uploadDocument",
+        },
+    ],
     subFolder: [{
         type: schema.Types.ObjectId,
         ref: 'docsubfolder'
     }],
     userId: {
+        type: String
+    },
+    adminId: {
         type: String
     },
     createdBy: {

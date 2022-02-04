@@ -126,6 +126,9 @@ const user_programCategory = require("./routes/admin/program_manage/admin_progra
 const user_programRanks = require("./routes/admin/program_manage/admin_programRanks");
 const user_candidate = require("./routes/admin/candidate_manage/admin_candidate");
 const user_candidateStripes = require("./routes/admin/candidate_manage/admin_candidatesStripes");
+const user_document_folder = require("./routes/admin/document_manage/admin_doc_folder");
+const user_document_subFolder = require("./routes/admin/document_manage/admin_doc_subfolder");
+const user_upload_doc = require("./routes/admin/document_manage/admin_doc_upload");
 //menu routes
 const student_menu = require("./routes/menu/std_menu/all_student_menu");
 
@@ -287,6 +290,9 @@ app.use("/api", user_candidate);
 app.use("/api", user_candidateStripes);
 app.use("/api", purchaseMembership);
 app.use("/api", sample_doc);
+app.use("/api", user_document_folder);
+app.use("/api", user_document_subFolder);
+app.use("/api", user_upload_doc);
 // school auth key middleware
 app.use("/api", emailKey);
 app.use("/api", textkey);
