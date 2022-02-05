@@ -1243,6 +1243,19 @@ exports.mergeMultipleDoc = async (req, res) => {
   }
 }
 
+exports.multipleFilter = async (req, res) => {
+  let filter = req.body;
+  try {
+    await addmemberModal.find({ userId: req.params.userId }).then(resp => {
+      resp.filter(obj => {
+        if (obj.firstName === filter.member && obj.program === filter.program);
+      })
+    })
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
+}
+
 //need to cha
 exports.collectionModify = async (req, res) => {
   let LittleTiger = [];
