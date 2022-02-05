@@ -97,7 +97,6 @@ exports.inviteeMailSent = async (req, res) => {
             html: `<h2>Below is the PDF for your signature</h2>
                         <p>${docLink}</p>`,
         };
-        console.log(emailData);
         sgMail
             .send(emailData, (err, resp) => {
                 if (err) {
@@ -169,7 +168,9 @@ exports.getAllStudentDocs = async (req, res) => {
             for (let id in datas) {
                 let ne = await SignStates.findOne({ signDocForId: datas[id]._id });
                 if (ne && ne !== null) {
-                    let data = { ...ne.toJSON(), ...datas[id] }
+                    let obj = {};
+                    obj.mergedDoc = datas[id].mergedDoc;
+                    let data = { ...ne.toJSON(), ...obj }
                     promise.push(data);
                 }
             }
