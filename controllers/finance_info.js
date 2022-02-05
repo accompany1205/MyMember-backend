@@ -164,6 +164,7 @@ exports.expenseStateByCategory = async (req, res) => {
 				amount: { $sum: '$amount' },
 			},
 		},
+		{ $sort: { amount: -1 } },
 	]);
 	expenses = expenses.map((x) => {
 		let percentage = parseFloat((x.amount / totalExpense) * 100).toFixed(2);
@@ -218,6 +219,7 @@ exports.expenseMonthlyCompare = async (req, res) => {
 				amount: { $sum: '$amount' },
 			},
 		},
+		{ $sort: { _id: 1 } },
 	]);
 
 	const categories = [...new Set(expenses.map((x) => x._id.category))];
@@ -392,4 +394,85 @@ exports.thisYearExpense = async (req, res) => {
 	}
 
 	return res.send(expense + '');
+};
+
+exports.expenseReportWithFilter = async (req, res) => {
+	let { paymentSystem, month, year, page } = req.query;
+
+	month = parseInt(month) + 1;
+	year = parseInt(year);
+	page = parseInt(page);
+
+	let list = await Expense.aggregate([
+		{ $match: { userId: mongoose.Types.ObjectId(req.params.userId) } },
+		{
+			$project: {
+				category: 1,
+				amount: 1,
+				expenses: 1,
+				month: { $month: '$date' },
+				year: { $year: '$date' },
+				description: 1,
+				date: 1,
+				expense_image: 1,
+				subject: 1,
+			},
+		},
+		{ $match: { year, month, expenses: paymentSystem } },
+	]);
+
+	let totalCount = await Expense.aggregate([
+		{ $match: { userId: mongoose.Types.ObjectId(req.params.userId) } },
+		{
+			$project: {
+				category: 1,
+				amount: 1,
+				expenses: 1,
+				month: { $month: '$date' },
+				year: { $year: '$date' },
+				description: 1,
+				date: 1,
+				expense_image: 1,
+				subject: 1,
+			},
+		},
+		{ $match: { year, month, expenses: paymentSystem } },
+		{ $count: 'totalDoc' },
+	]);
+
+	let totalExpenseAmt = await Expense.aggregate([
+		{ $match: { userId: mongoose.Types.ObjectId(req.params.userId) } },
+		{
+			$project: {
+				category: 1,
+				amount: 1,
+				expenses: 1,
+				month: { $month: '$date' },
+				year: { $year: '$date' },
+				description: 1,
+				date: 1,
+				expense_image: 1,
+				subject: 1,
+			},
+		},
+		{ $match: { year, month, expenses: paymentSystem } },
+		{
+			$group: {
+				_id: 'totalAmount',
+				amount: { $sum: '$amount' },
+			},
+		},
+	]);
+
+	let totalDocument = 0;
+	if (totalCount && totalCount.length > 0) {
+		totalDocument = totalCount[0].totalDoc;
+	}
+
+	let totalExpense = 0;
+	if (totalExpenseAmt && totalExpenseAmt.length > 0) {
+		totalExpense = totalExpenseAmt[0].amount;
+	}
+
+	return res.json({ list, total: totalDocument, totalExpense });
 };

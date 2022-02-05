@@ -8,6 +8,7 @@ const {
 	weeklyExpense,
 	MonthlyExpense,
 	thisYearExpense,
+	expenseReportWithFilter,
 } = require('../controllers/finance_info');
 const { requireSignin, isAuth, verifySchool } = require('../controllers/auth');
 
@@ -28,5 +29,10 @@ router.get('/finance/expense-today/:userId', requireSignin, todaysExpense);
 router.get('/finance/expense-weekly/:userId', requireSignin, weeklyExpense);
 router.get('/finance/expense-monthly/:userId', requireSignin, MonthlyExpense);
 router.get('/finance/expense-yearly/:userId', requireSignin, thisYearExpense);
+router.get(
+	'/finance/expense-report/:userId',
+	requireSignin,
+	expenseReportWithFilter
+);
 
 module.exports = router;
