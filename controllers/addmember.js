@@ -17,6 +17,8 @@ const buymembershipModal = require("../models/buy_membership");
 let { saveEmailTemplate } = require('../controllers/compose_template')
 const system_folder = require("../models/email_system_folder");
 const mergeFile = require("../Services/mergeFile")
+const manage_rank = require("../models/program_rank");
+
 
 // const ManyStudents = require('../std.js');
 // const students = require('../std.js');
@@ -1243,13 +1245,16 @@ exports.mergeMultipleDoc = async (req, res) => {
   }
 }
 
+
 exports.multipleFilter = async (req, res) => {
-  let filter = req.body;
+  let userId = req.params;
+  let filters = req.body.filter;
   try {
-    await addmemberModal.find({ userId: req.params.userId }).then(resp => {
-      resp.filter(obj => {
-        if (obj.firstName === filter.member && obj.program === filter.program);
-      })
+    filters.push(userId);
+    await addmemberModal.find({ $and: filters }).then(resp => {
+      res.send({ msg: "Data!", succes: true, data: resp })
+    }).catch(err => {
+      res.send({ msg: err.message.replace(/\"/g, ""), success: false, err })
     })
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false })
