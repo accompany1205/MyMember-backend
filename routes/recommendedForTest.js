@@ -6,7 +6,7 @@ const { mergedDocForTest } = require("../controllers/registeredForTest");
 
 const { requireSignin, isAuth, isAdmin } = require("../controllers/auth");
 
-router.get("/recomend_students/get_by_user_id/:userId/:page_no/:per_page", requireSignin, getRecommededForTest);
+router.get("/recomend_students/get_by_user_id/:userId", requireSignin, getRecommededForTest);
 router.get("/recomend_students/getRegisteredForTest/:userId", requireSignin, getRegisteredForTest)
 router.post("/recomend_students/:userId", requireSignin, recomendStudent);
 router.post("/recomend_students/pay_and_regiter/:userId", requireSignin, payAndPromoteTheStudent);

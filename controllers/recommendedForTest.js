@@ -25,21 +25,21 @@ const getUidAndInvoiceNumber = () => {
 
 exports.getRecommededForTest = async (req, res) => {
     let userId = req.params.userId;
-    var order = req.query.order || 1
-    let sortBy = req.query.sortBy || "firstName"
-    var totalCount = await RecommendedForTest
-        .find({
-            "userId": userId,
-            "isDeleted": false
-        })
-        .countDocuments();
+    // var order = req.query.order || 1
+    // let sortBy = req.query.sortBy || "firstName"
+    // var totalCount = await RecommendedForTest
+    //     .find({
+    //         "userId": userId,
+    //         "isDeleted": false
+    //     })
+    //     .countDocuments();
 
-    var per_page = parseInt(req.params.per_page) || 10;
-    var page_no = parseInt(req.params.page_no) || 0;
-    var pagination = {
-        limit: per_page,
-        skip: per_page * page_no,
-    };
+    // var per_page = parseInt(req.params.per_page) || 10;
+    // var page_no = parseInt(req.params.page_no) || 0;
+    // var pagination = {
+    //     limit: per_page,
+    //     skip: per_page * page_no,
+    // };
     if (!userId) {
         res.json({
             success: false,
@@ -51,9 +51,9 @@ exports.getRecommededForTest = async (req, res) => {
         "userId": userId,
         "isDeleted": false
     })
-        .skip(pagination.skip)
-        .limit(pagination.limit)
-        .sort({ [sortBy]: order });
+    // .skip(pagination.skip)
+    // .limit(pagination.limit)
+    // .sort({ [sortBy]: order });
     if (!students.length) {
         res.json({
             success: false,
@@ -63,7 +63,6 @@ exports.getRecommededForTest = async (req, res) => {
     res.json({
         success: true,
         data: students,
-        totalCount: totalCount
     })
 }
 
