@@ -133,10 +133,6 @@ exports.add_template = async (req, res) => {
       repeat_mail,
       sent_date,
       smartLists,
-      design,
-      immediately,
-      days,
-      days_type,
     } = req.body || {};
     to = to ? JSON.parse(to) : [];
     smartLists = smartLists ? JSON.parse(smartLists) : [];

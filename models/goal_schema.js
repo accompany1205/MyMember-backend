@@ -50,16 +50,26 @@ const goalSchema = new mongoose.Schema(
         color: {
             type: String,
         },
+        type: {
+            type: String,
+            trim: true,
+            enum : ['personal','mymember'],
+        },
+        goal_type : {
+            type: {
+                type: String,
+                trim: true,
+                enum : ['daily','fixed'],
+            },
+        },
         start_date: {
             type: Date,
         },
         end_date: {
             type: Date,
         },
-        type: {
-            type: String,
-            trim: true,
-            enum: ['daily', 'weekly', 'monthly', 'yearly', "fixed"],
+        complete_days: {
+           type : Array,
         },
         current: {
             type: Number,

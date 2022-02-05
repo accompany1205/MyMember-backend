@@ -6,6 +6,19 @@ const moment = require('moment');
 var mongo = require("mongoose")
 
 
+const STATUS_DICT = {
+    1: "In Progress",
+    2: "Completed",
+}
+
+const Priority_DICT = {
+    1: "Low",
+    2: "Normal",
+    3: "Hight",
+    4: "Urgent",
+}
+
+
 class Goals {
     constructor() {
         Router.get('/goals/:id?', this.Get);
