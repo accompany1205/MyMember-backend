@@ -183,20 +183,20 @@ exports.getRecommendedCandidateStudents = async (req, res) => {
     try {
 
         let userId = req.params.userId;
-        // let sortBy = req.query.sortBy || "firstName"
-        // let order = req.query.order || 1
-        // var totalCount = await RecommendedCandidateModel
-        // .find({
-        //     "userId": userId,
-        //     "isDeleted": false
-        // })
-        // .countDocuments();
-        // var per_page = parseInt(req.params.per_page) || 10;
-        // var page_no = parseInt(req.params.page_no) || 0;
-        // var pagination = {
-        //     limit: per_page,
-        //     skip: per_page * page_no,
-        // };
+        let sortBy = req.query.sortBy || "firstName"
+        let order = req.query.order || 1
+        var totalCount = await RecommendedCandidateModel
+        .find({
+            "userId": userId,
+            "isDeleted": false
+        })
+        .countDocuments();
+        var per_page = parseInt(req.params.per_page) || 10;
+        var page_no = parseInt(req.params.page_no) || 0;
+        var pagination = {
+            limit: per_page,
+            skip: per_page * page_no,
+        };
         if (!userId) {
             res.json({
                 success: false, msg: "Please give userId into the params!!"
@@ -205,9 +205,9 @@ exports.getRecommendedCandidateStudents = async (req, res) => {
 
         let students = await RecommendedCandidateModel
             .find({ "userId": userId, "isDeleted": false })
-        // .skip(pagination.skip)
-        // .limit(pagination.limit)
-        // .sort({ [sortBy]: order });
+        .skip(pagination.skip)
+        .limit(pagination.limit)
+        .sort({ [sortBy]: order });
         if (!students.length) {
             return res.json({ success: false, msg: "There no data available for this query!!" })
         }
