@@ -214,13 +214,15 @@ exports.mergeDoc = async (req, res) => {
 	try {
 		const studentInfo = await Student.findOne({ _id: studentId });
 		const membershipInfo = await membershipModal.findOne({ _id: membershipId });
+		let ipAddress =
+			req.header('x-forwarded-for') || req.connection.remoteAddress;
+		console.log(ipAddress);
 		const mergedInfo = { ...studentInfo.toJSON(), ...membershipInfo.toJSON() };
 		let fileObj = await mergeFile(docBody, mergedInfo);
 		//fs.writeFileSync(path.resolve(__dirname, "output.pdf"), finalPDF);
 		cloudUrl
 			.imageUrl(fileObj)
 			.then((Docresp) => {
-				let ipAddress = req.socket.remoteAddress;
 				BuyMembership.updateOne(
 					{ _id: buyMembershipId },
 					{ $set: { mergedDoc: Docresp } }

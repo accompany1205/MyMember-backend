@@ -137,6 +137,28 @@ exports.deleteAll = async (req, res) => {
     res.send({ msg: "Selected Students Deleted Succesfully!", success: true })
 }
 
+exports.multipleDocMerge = async (req, res) => {
+    let registeredIds = req.body.registeredIds;
+    let docBody = req.body.docBody;
+    try {
+        let promises = [];
+        for (let id in registeredIds) {
+            let data = await RegisterdForTest.findOne({ _id: registeredIds[id] });
+            let studentId = data.studentId;
+            let resp = await Member.findOne({ _id: studentId });
+            let mergedInfo = { ...data.toJSON(), ...resp.toJSON() }
+            let fileObj = await mergeFile(docBody, mergedInfo);
+            await (cloudUrl.imageUrl(fileObj)).then(data => {
+                promises.push(data)
+            })
+        }
+        await Promise.all(promises);
+        res.send({msg:"data!",data:promises, success:true})
+    } catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+    }
+}
+
 exports.mergedDocForTest = async (req, res) => {
     let studentId = req.params.studentId;
     let recommendedId = req.params.recommendedId;

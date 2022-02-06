@@ -1,5 +1,9 @@
 const SignStates = require("../models/signStates");
-const sgMail = require("sendgrid-v3-node");
+const sgMail = require("@sendgrid/mail");
+const buyMembership = require("../models/buy_membership");
+const buy_product = require("../models/buy_product");
+const mongo = require('mongoose')
+
 
 
 exports.addRequestSign = async (req, res) => {
@@ -76,26 +80,105 @@ exports.setSignItems = async (req, res) => {
     }
 };
 
+// exports.getMailSentHistory = async (req, res) => {
+
+// }
+
 exports.inviteeMailSent = async (req, res) => {
     try {
-        emailList = req.body.emails;
-        docLink = req.body.docLink;
-        ownerEmail = req.body.ownerEmail
+        let emailList = req.body.emailList;
+        let docLink = req.body.docLink;
+        let ownerEmail = req.body.ownerEmail
+        sgMail.setApiKey(process.env.SENDGRID_API_KEY);
         const emailData = {
-            sendgrid_key: process.env.SENDGRID_API_KEY,
             to: emailList,
-            from_email: ownerEmail,
+            from: ownerEmail,
             subject: "Document Signature Process",
-            content: `<h2>Below is the PDF for your signature</h2>
+            html: `<h2>Below is the PDF for your signature</h2>
                         <p>${docLink}</p>`,
         };
-        console.log(emailData);
         sgMail
-            .send_via_sendgrid(emailData).then(resp => {
-                res.send({ msg: "mail sent!", success: true })
-            }).catch(err => {
-                res.send({ msg: err.message.replace(/\"/g, ""), sucess: false });
+            .send(emailData, (err, resp) => {
+                if (err) {
+                    res.send(err)
+                } else {
+                    res.send(resp)
+                }
             })
+
+        // .then(resp => {
+        //     res.send({ msg: "mail sent!", success: true })
+        // }).catch(err => {
+        //     res.send({ msg: err.message.replace(/\"/g, ""), error:err.stack , sucess: false });
+        // })
+    } catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), sucess: false });
+    }
+}
+
+exports.getAllStudentDocs = async (req, res) => {
+    let userId = req.params.userId;
+    let studentId = req.params.studentId;
+    let objId = mongo.Types.ObjectId(studentId)
+    try {
+        await buyMembership.aggregate([
+            {
+                $match: {
+                    $and: [
+                        { userId: userId },
+                        {
+                            studentInfo: {
+                                $in:
+                                    [objId]
+                            }
+                        }
+                    ]
+
+                }
+            },
+            {
+                $project: {
+                    mergedDoc: 1
+                }
+            }
+        ]).then(async resp => {
+            let data = await buy_product.aggregate([
+                {
+                    $match: {
+                        $and: [
+                            { userId: userId },
+                            {
+                                studentInfo: {
+                                    $in:
+                                        [objId]
+                                }
+                            }
+                        ]
+
+                    }
+                },
+                {
+                    $project: {
+                        mergedDoc: 1
+                    }
+                }
+            ])
+            let datas = [...resp, ...data];
+            let promise = [];
+            for (let id in datas) {
+                let ne = await SignStates.findOne({ signDocForId: datas[id]._id });
+                if (ne && ne !== null) {
+                    let obj = {};
+                    obj.mergedDoc = datas[id].mergedDoc;
+                    let data = { ...ne.toJSON(), ...obj }
+                    promise.push(data);
+                }
+            }
+            await Promise.all(promise)
+            res.send({ msg: "data", data: promise, success: true })
+        }).catch(err => {
+            res.send({ msg: err.message.replace(/\"/g, ""), sucess: false });
+        })
     } catch (err) {
         res.send({ msg: err.message.replace(/\"/g, ""), sucess: false });
     }

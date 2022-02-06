@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
-const { addRequestSign, getRequestSignParam, getRequestSign, setSignItems, inviteeMailSent} = require("../controllers/signStates");
+const { addRequestSign, getRequestSignParam, getRequestSign, setSignItems, inviteeMailSent, getAllStudentDocs} = require("../controllers/signStates");
 const upload = require('../handler/multer');
 
 router.post("/docusign/addSignerInfo/:userId", requireSignin, addRequestSign);
@@ -10,5 +10,6 @@ router.get("/docusign/setSignerStatusAndViewed/:userId/:docuSignId", requireSign
 router.get("/docusign/getStatus/:userId/:docuSignId", requireSignin, getRequestSign);
 router.post("/docusign/setSignItems/:userId/:docuSignId", requireSignin, setSignItems);
 router.post("/docusign/inviteeEmail/:userId", requireSignin, inviteeMailSent);
+router.get("/docusign/getAllDocs/:userId/:studentId", requireSignin, getAllStudentDocs);
 
 module.exports = router;

@@ -6,6 +6,9 @@ const AddMember = require("../models/addmember");
 const RegisterdForTest = require('../models/registerdForTest');
 const Joi = require('@hapi/joi');
 const { valorTechPaymentGateWay } = require("./valorTechPaymentGateWay");
+const mergeFile = require("../Services/mergeFile")
+const cloudUrl = require("../gcloud/imageUrl");
+
 
 
 const randomNumber = (length, addNumber) => {
@@ -22,21 +25,21 @@ const getUidAndInvoiceNumber = () => {
 
 exports.getRecommededForTest = async (req, res) => {
     let userId = req.params.userId;
-    var order = req.query.order || 1
-    let sortBy = req.query.sortBy || "firstName"
-    var totalCount = await RecommendedForTest
-        .find({
-            "userId": userId,
-            "isDeleted": false
-        })
-        .countDocuments();
+    // var order = req.query.order || 1
+    // let sortBy = req.query.sortBy || "firstName"
+    // var totalCount = await RecommendedForTest
+    //     .find({
+    //         "userId": userId,
+    //         "isDeleted": false
+    //     })
+    //     .countDocuments();
 
-    var per_page = parseInt(req.params.per_page) || 10;
-    var page_no = parseInt(req.params.page_no) || 0;
-    var pagination = {
-        limit: per_page,
-        skip: per_page * page_no,
-    };
+    // var per_page = parseInt(req.params.per_page) || 10;
+    // var page_no = parseInt(req.params.page_no) || 0;
+    // var pagination = {
+    //     limit: per_page,
+    //     skip: per_page * page_no,
+    // };
     if (!userId) {
         res.json({
             success: false,
@@ -48,9 +51,9 @@ exports.getRecommededForTest = async (req, res) => {
         "userId": userId,
         "isDeleted": false
     })
-        .skip(pagination.skip)
-        .limit(pagination.limit)
-        .sort({ [sortBy]: order });
+    // .skip(pagination.skip)
+    // .limit(pagination.limit)
+    // .sort({ [sortBy]: order });
     if (!students.length) {
         res.json({
             success: false,
@@ -60,32 +63,31 @@ exports.getRecommededForTest = async (req, res) => {
     res.json({
         success: true,
         data: students,
-        totalCount: totalCount
     })
 }
 
 exports.getRegisteredForTest = async (req, res) => {
     let userId = req.params.userId;
-    let sortBy = req.query.sortBy || "fistName"
-    var order = req.query.order || 1
-    var totalCount = await RegisterdForTest
-        .find({
-            "userId": userId,
-            "isDeleted": false
-        })
-        .countDocuments();
+    // let sortBy = req.query.sortBy || "fistName"
+    // var order = req.query.order || 1
+    // var totalCount = await RegisterdForTest
+    //     .find({
+    //         "userId": userId,
+    //         "isDeleted": false
+    //     })
+    //     .countDocuments();
 
-    var per_page = parseInt(req.params.per_page) || 10;
-    var page_no = parseInt(req.params.page_no) || 0;
-    var pagination = { limit: per_page, skip: per_page * page_no, };
+    // var per_page = parseInt(req.params.per_page) || 10;
+    // var page_no = parseInt(req.params.page_no) || 0;
+    // var pagination = { limit: per_page, skip: per_page * page_no, };
     if (!userId) { res.json({ status: false, msg: "Please give userId into the params!!" }) }
 
     let students = await RegisterdForTest.find({ "userId": userId, "isDeleted": false })
-        .skip(pagination.skip)
-        .limit(pagination.limit)
-        .sort({ [sortBy]: order });
+    // .skip(pagination.skip)
+    // .limit(pagination.limit)
+    // .sort({ [sortBy]: order });
     if (!students.length) { res.json({ status: false, msg: "There no data available for this query!!", data: students }) }
-    res.json({ status: true, msg: "Please find the data!!", data: students, totalCount: totalCount })
+    res.json({ success: true, data: students })
 
 }
 
@@ -349,6 +351,29 @@ function createFinanceDoc(data, financeId) {
     });
 }
 
+exports.multipleDocMerge = async (req, res) => {
+    let recommendedId = req.body.recommendedId;
+    let docBody = req.body.docBody;
+    try {
+        let promises = [];
+        for (let id in recommendedId) {
+            let data = await RecommendedForTest.findOne({ _id: recommendedId[id] });
+            console.log("--->", data)
+            let studentId = data.studentId;
+            console.log("--->", studentId);
+            let resp = await Member.findOne({ _id: studentId });
+            let mergedInfo = { ...data.toJSON(), ...resp.toJSON() }
+            let fileObj = await mergeFile(docBody, mergedInfo);
+            await (cloudUrl.imageUrl(fileObj)).then(data => {
+                promises.push(data)
+            })
+        }
+        await Promise.all(promises);
+        res.send({ msg: "data!", data: promises, succes: true })
+    } catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+    }
+}
 
 exports.deleteAll = async (req, res) => {
     let recommendIds = req.body.recommendIds;
