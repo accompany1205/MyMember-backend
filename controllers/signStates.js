@@ -49,7 +49,11 @@ exports.getRequestSign = async (req, res) => {
     try {
         let docuSignId = req.params.docuSignId;
         await SignStates.find({ _id: docuSignId }).then(data => {
-            res.send({ msg: "data!", success: true, data: data })
+            let datas = {}
+            let ipAddress = req.header('x-forwarded-for') || req.connection.remoteAddress;
+            datas.ipAddress = ipAddress;
+            datas = {...datas, ...data};
+            res.send({ msg: "data!", success: true, data: datas })
         }).catch(err => {
             res.send({ msg: "no Data!", success: false, error: err.message.replace(/\"/g, "") })
         })
