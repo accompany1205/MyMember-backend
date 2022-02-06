@@ -56,11 +56,9 @@ const goalSchema = new mongoose.Schema(
             enum : ['personal','mymember'],
         },
         goal_type : {
-            type: {
-                type: String,
-                trim: true,
-                enum : ['daily','fixed'],
-            },
+            type: String,
+            trim: true,
+            enum : ['daily','fixed'],
         },
         start_date: {
             type: Date,
@@ -82,7 +80,8 @@ const goalSchema = new mongoose.Schema(
         },
         status: {
             type: Number,
-            required: true
+            required: true,
+            default : 1
         },
         label: {
             type: String,
