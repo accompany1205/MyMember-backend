@@ -1,10 +1,12 @@
 const finance_info = require('../models/finance_info');
 const Expense = require('../models/expenses');
+const ExpenseCategory = require('../models/expenses_category');
 const bcrypt = require('bcryptjs');
 const addmemberModal = require('../models/addmember');
 const _ = require('lodash');
 const mongoose = require('mongoose');
 const moment = require('moment');
+const cloudUrl = require('../gcloud/imageUrl');
 exports.create = async (req, res) => {
 	try {
 		const { studentId, userId } = req.params;
@@ -475,4 +477,64 @@ exports.expenseReportWithFilter = async (req, res) => {
 	}
 
 	return res.json({ list, total: totalDocument, totalExpense });
+};
+
+exports.expenseCategoryAdd = async (req, res) => {
+	try {
+		var userId = req.params.userId;
+		const { expense_category_type, color } = req.body;
+		if (!expense_category_type || expense_category_type === '')
+			throw Error('category is required');
+		// check existing
+		const exist = await ExpenseCategory.findOne({
+			expense_category_type,
+			userId,
+		});
+		if (exist) throw Error('Category Alreay Exist');
+
+		var newCategory = await new ExpenseCategory({
+			userId,
+			expense_category_type,
+			color,
+			expenses: [],
+		}).save();
+		res.json(newCategory);
+	} catch (err) {
+		throw Error(err);
+	}
+};
+
+// Expense Add
+exports.expenseAdd = async (req, res) => {
+	try {
+		var userId = req.params.userId;
+		const { amount, category, description, expenses, date, subject } = req.body;
+
+		console.log();
+
+		var imageUrl = '';
+		if (req.file !== undefined) {
+			imageUrl = await cloudUrl.imageUrl(req.file);
+		}
+
+		var expense = await new Expense({
+			userId,
+			amount,
+			category,
+			description,
+			expenses,
+			date,
+			subject,
+			expense_image: imageUrl,
+		}).save();
+
+		await ExpenseCategory.findOneAndUpdate(
+			{ expense_category_type: category },
+			{ $push: { expenses: expense } }
+		);
+
+		res.json(expense);
+	} catch (err) {
+		throw Error(err);
+	}
 };

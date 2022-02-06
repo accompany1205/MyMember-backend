@@ -9,7 +9,11 @@ const {
 	MonthlyExpense,
 	thisYearExpense,
 	expenseReportWithFilter,
+	expenseCategoryAdd,
+	expenseAdd,
 } = require('../controllers/finance_info');
+const upload = require('../handler/multer');
+
 const { requireSignin, isAuth, verifySchool } = require('../controllers/auth');
 
 router.get('/finance/fetch-all-cc/:userId', requireSignin, fetchAllCC);
@@ -33,6 +37,21 @@ router.get(
 	'/finance/expense-report/:userId',
 	requireSignin,
 	expenseReportWithFilter
+);
+
+// add category
+router.get(
+	'/finance/expense-category-add/:userId',
+	requireSignin,
+	expenseCategoryAdd
+);
+// Add Expense
+
+router.post(
+	'/finance/expense-category-add/:userId',
+	requireSignin,
+	upload.single('expense_image'),
+	expenseAdd
 );
 
 module.exports = router;
