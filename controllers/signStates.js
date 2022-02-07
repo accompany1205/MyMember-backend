@@ -1,6 +1,5 @@
 const SignStates = require("../models/signStates");
-// const sgMail = require("@sendgrid/mail");
-const Mailer = require("../helpers/Mailer");
+const sgMail = require("@sendgrid/mail");
 const buyMembership = require("../models/buy_membership");
 const buy_product = require("../models/buy_product");
 const buffToPdf = require("../Services/pdfConvertor");
@@ -133,8 +132,10 @@ async function signPdf(file, items) {
 exports.setSignItems = async (req, res) => {
     try {
         let docuSignId = req.params.docuSignId;
+        console.log("rs", docuSignId)
         let userId = req.params.userid;
-        await SignStates.findOne({ _id: docuSignId }).then(async resp => {
+        await SignStates.findOne({ _id: docuSignId.trim() }).then(async resp => {
+            console.log("--->",resp)
             let datas =resp.items;
             if (resp.signDocFor === 'membership') {
                 try {
@@ -183,19 +184,21 @@ exports.inviteeMailSent = async (req, res) => {
         let emailList = req.body.emailList;
         let docLink = req.body.docLink;
         let ownerEmail = req.body.ownerEmail
-        // sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-        const emailData = new Mailer({
+        sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+        const emailData = {
             to: emailList,
             from: ownerEmail,
             subject: "Document Signature Process",
             html: `<h2>Below is the PDF for your signature</h2>
                         <p>${docLink}</p>`,
-        })
-        emailData.sendMail()
-            .then(resp => {
-                res.send({ msg: "Email Sent Successfully", success: true })
-            }).catch(err => {
-                res.send({ error: 'email not send', error: err })
+        };
+        sgMail
+            .send(emailData, (err, resp) => {
+                if (err) {
+                    res.send(err)
+                } else {
+                    res.send(resp)
+                }
             })
 
         // .then(resp => {
