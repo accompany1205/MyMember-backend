@@ -2,10 +2,11 @@ const user = require('../models/user')
 const emailCompose = require('../models/email_compose_Category')
 const emailSent = require('../models/emailSentSave')
 const Member = require('../models/addmember')
-const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-// const sgMail = require('sendgrid-v3-node');
-const AuthKey = require('../models/email_key')
+const Mailer = require("../helpers/Mailer");
+// const sgMail = require('@sendgrid/mail');
+// sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+// // const sgMail = require('sendgrid-v3-node');
+// const AuthKey = require('../models/email_key')
 // sgMail.setApiKey(process.env.email);
 function TimeZone() {
     const str = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
@@ -50,28 +51,28 @@ exports.smartList = (req, res) => {
             $group: {
                 _id: "$studentType",
                 "count": { "$sum": 1 },
-                list: { $push: { firstName: "$firstName", lastName: "$lastName", primaryPhone: "$primaryPhone", email: "$email", status: "$status", _id:"$_id" } },
+                list: { $push: { firstName: "$firstName", lastName: "$lastName", primaryPhone: "$primaryPhone", email: "$email", status: "$status", _id: "$_id" } },
             }
         }
     ]).exec((err, sList) => {
         if (err) {
-            res.send({ code: 400, msg: 'smart list not found', success:false })
+            res.send({ code: 400, msg: 'smart list not found', success: false })
         }
         else {
-            res.send({ code: 200, msg: sList, success:true })
+            res.send({ code: 200, msg: sList, success: true })
         }
     })
 }
 
 exports.category_list = (req, res) => {
     emailCompose.find({ userId: req.params.userId })
-    .populate({
-        path: 'folder',
-        populate: {
-            path: 'template',
-            model: 'sentOrscheduleEmail'
-        }
-    })
+        .populate({
+            path: 'folder',
+            populate: {
+                path: 'template',
+                model: 'sentOrscheduleEmail'
+            }
+        })
         .exec((err, categoryList) => {
             if (err) {
                 res.send({ error: 'compose category is not found' })
@@ -88,14 +89,16 @@ exports.sendEmail = async (req, res) => {
     try {
         if (!req.body.subject || !req.body.template) {
             res.send({ error: "invalid input", success: false })
-        } else {
-            to = to ? JSON.parse(to): [];
-            smartLists = smartLists ? JSON.parse(smartLists): [];
+        }
+        else {
+            to = to ? JSON.parse(to) : [];
+            smartLists = smartLists ? JSON.parse(smartLists) : [];
             if (!to.lenght) {
                 smartLists.map(lists => {
                     to = [...to, ...lists.smrtList]
                 });
             }
+
             let attachment = req.files;
             const attachments = attachment.map((file) => {
                 let content = Buffer.from(file.buffer).toString("base64")
@@ -107,16 +110,15 @@ exports.sendEmail = async (req, res) => {
                 }
             });
 
-            const emailData = {
-                sendgrid_key: process.env.SENDGRID_API_KEY,
-                to: to,
+            const emailData = new Mailer({
                 from: req.body.from,
-                // from_name: 'noreply@gmail.com',
+                to: to,
                 subject: req.body.subject,
-                html: req.body.template,
+                text: req.body.template,
+                html: req.body.html,
                 attachments: attachments
-            };
-            sgMail.send(emailData)
+            })
+            emailData.sendMail()
                 .then(resp => {
                     var DT = TimeZone()
                     var emailDetail = new emailSent(req.body)
@@ -128,7 +130,7 @@ exports.sendEmail = async (req, res) => {
                             res.send({ error: 'email details is not save' })
                         }
                         else {
-                            emailSent.findByIdAndUpdate(emailSave._id, { userId: req.params.userId, email_type: 'sent',is_Sent: true, category: 'compose' })
+                            emailSent.findByIdAndUpdate(emailSave._id, { userId: req.params.userId, email_type: 'sent', is_Sent: true, category: 'compose' })
                                 .exec((err, emailUpdate) => {
                                     if (err) {
                                         res.send({ error: 'user id is not update in sent email' })

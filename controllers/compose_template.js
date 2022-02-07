@@ -3,7 +3,8 @@ const students = require("../models/addmember");
 const compose_folder = require("../models/email_compose_folder");
 const authKey = require("../models/email_key");
 const async = require("async");
-const sgMail = require("sendgrid-v3-node");
+const Mailer = require("../helpers/Mailer");
+// const sgMail = require("sendgrid-v3-node");
 const moment = require("moment");
 const mongoose = require("mongoose")
 var request = require("request");
@@ -503,7 +504,7 @@ var emailCronFucntionality = async () => {
     let mailId = ele._id;
     let currentDate = moment().format("YYYY-MM-DD");
     if (sentDate === currentDate && !ele.is_Sent) {
-      const emailData = {
+      const emailData = new Mailer({
         sendgrid_key: process.env.SENDGRID_API_KEY,
         to: ele.to,
         from_email: process.env.from_email,
@@ -511,10 +512,9 @@ var emailCronFucntionality = async () => {
         subject: ele.subject,
         content: ele.template,
         //attachments:ele.attachments
-      };
+      })
       if (ele.is_Sent === false) {
-        sgMail
-          .send_via_sendgrid(emailData)
+        emailData.sendMail()
           .then(resp => {
             try {
               all_temp.findByIdAndUpdate(mailId, { is_Sent: true });
@@ -741,15 +741,14 @@ var emailCronFucntionalityfor30DaysBirthday = async () => {
     if (scheduleData.length) {
       scheduleData.map(i => {
 
-        const emailData = {
+        const emailData = new Mailer({
           sendgrid_key: process.env.SENDGRID_API_KEY,
           to: i.email,
-          from_email: ele.from,
+          from: ele.from,
           subject: ele.subject,
           content: ele.template,
-        };
-        sgMail
-          .send_via_sendgrid(emailData)
+        })
+        emailData.sendMail()
           .then(async (resp) => {
             try {
               await all_temp.findOneAndUpdate({ _id: ele._id }, { $set: { is_Sent: true } });
