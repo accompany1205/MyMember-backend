@@ -181,9 +181,10 @@ exports.promoteTheStudentStripe = async (req, res) => {
 
 exports.getRecommendedCandidateStudents = async (req, res) => {
     try {
+
+        let userId = req.params.userId;
         let sortBy = req.query.sortBy || "firstName"
         let order = req.query.order || 1
-        let userId = req.params.userId;
         var totalCount = await RecommendedCandidateModel
         .find({
             "userId": userId,
@@ -201,15 +202,16 @@ exports.getRecommendedCandidateStudents = async (req, res) => {
                 success: false, msg: "Please give userId into the params!!"
             })
         }
-        
-        let students = await RecommendedCandidateModel.find({ "userId": userId,"isDeleted": false })
+
+        let students = await RecommendedCandidateModel
+            .find({ "userId": userId, "isDeleted": false })
         .skip(pagination.skip)
         .limit(pagination.limit)
         .sort({ [sortBy]: order });
         if (!students.length) {
             return res.json({ success: false, msg: "There no data available for this query!!" })
         }
-        res.json({ success: true, data: students, totalCount:totalCount })
+        res.json({ success: true, data: students, totalCount: totalCount })
     } catch (err) {
         res.send({ error: err.message.replace(/\"/g, ""), success: false });
 
