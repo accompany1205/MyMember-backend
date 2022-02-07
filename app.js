@@ -43,6 +43,9 @@ const studentINfoRank = require('./routes/student_info_Rank')
 const candidateStripe = require("./routes/candidate_stripe");
 const manage_stripe = require("./routes/stripe");
 const todo_api = require("./routes/todo_apis");
+const Tasks = require("./routes/Tasks");
+const Goals = require("./routes/Gloals");
+
 const adminstrate = require("./routes/administrater_user");
 const goal_settings = require("./routes/goal_setting");
 const goals_api = require("./routes/goals_api");
@@ -194,6 +197,8 @@ app.use("/api", studentINfoRank);
 app.use("/api", candidateStripe);
 app.use("/api", adminstrate);
 app.use("/api", todo_api);
+app.use("/api", Tasks);
+app.use("/api", Goals);
 app.use("/api", goals_api);
 app.use("/api", class_schedule);
 app.use("/api", attendence);

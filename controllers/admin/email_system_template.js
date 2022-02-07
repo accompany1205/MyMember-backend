@@ -6,8 +6,9 @@ const user = require("../../models/user");
 const async = require("async");
 moment = require("moment");
 const cron = require("node-cron");
-const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const Mailer = require("../../helpers/Mailer");
+// const sgMail = require('@sendgrid/mail');
+// sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const cloudUrl = require("../../gcloud/imageUrl");
 const ObjectId = require("mongodb").ObjectId;
 
@@ -214,7 +215,7 @@ exports.add_template = async (req, res) => {
     obj.attachments = attachments
     sent_date = moment(sent_date).format("YYYY-MM-DD");
     if (immediately && !days) {
-      const emailData = {
+      const emailData = new Mailer({
         sendgrid_key: process.env.SENDGRID_API_KEY,
         to,
         from,
@@ -222,8 +223,8 @@ exports.add_template = async (req, res) => {
         subject,
         html: template,
         attachments
-      };
-      sgMail.send(emailData)
+      })
+      emailData.sendMail()
         .then(resp => {
           obj.email_type = 'sent'
           obj.is_Sent = true
@@ -313,6 +314,8 @@ exports.update_template = async (req, res) => {
       smartList = []
     }
   }
+  updateTemplate.to = to
+  updateTemplate.smartList = smartList
   const promises = []
   if (req.files) {
     (req.files).map(file => {
