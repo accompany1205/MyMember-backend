@@ -43,7 +43,7 @@ exports.getRecommededForTest = async (req, res) => {
     if (!userId) {
         res.json({
             success: false,
-            msg: "Please give userId into the params!!"
+            msg: "Please include the userId in the parameters!"
         })
     }
 
@@ -57,7 +57,7 @@ exports.getRecommededForTest = async (req, res) => {
     if (!students.length) {
         res.json({
             success: false,
-            msg: "data not available!"
+            msg: "There was no data found!"
         })
     }
     res.json({
@@ -80,13 +80,13 @@ exports.getRegisteredForTest = async (req, res) => {
     // var per_page = parseInt(req.params.per_page) || 10;
     // var page_no = parseInt(req.params.page_no) || 0;
     // var pagination = { limit: per_page, skip: per_page * page_no, };
-    if (!userId) { res.json({ status: false, msg: "Please give userId into the params!!" }) }
+    if (!userId) { res.json({ success: false, msg: "Please include the userId in the parameters!" }) }
 
     let students = await RegisterdForTest.find({ "userId": userId, "isDeleted": false })
     // .skip(pagination.skip)
     // .limit(pagination.limit)
     // .sort({ [sortBy]: order });
-    if (!students.length) { res.json({ status: false, msg: "There no data available for this query!!", data: students }) }
+    if (!students.length) { res.json({ success: false, msg: "There was no data found!", data: students }) }
     res.json({ success: true, data: students })
 
 }
@@ -117,7 +117,7 @@ exports.recomendStudent = async (req, res) => {
     try {
         if (!students.length) {
             res.json({
-                status: false,
+                success: false,
                 msg: "You haven't selected any student!"
             })
         }
@@ -141,13 +141,12 @@ exports.recomendStudent = async (req, res) => {
             res.send({
                 recommendedStudentsForTest,
                 success: false,
-                msg: `${alredyRecomend},  either these students are alredy in recommended list or program is not selected`
+                msg: `${alredyRecomend} These students are already on the recommended list!`
             })
         }
         res.send({
-            recommendedStudentsForTest,
             success: true,
-            msg: "Selected students got recomended successfully.",
+            msg: "Selected students got recommended successfully!"
         })
 
     } catch (error) {
@@ -204,7 +203,7 @@ exports.payAndPromoteTheStudent = async (req, res) => {
     //     });
     //     if (!removedFromRecommended) {
     //         res.json({
-    //             status: false,
+    //             success: false,
     //             msg: "Having issue while removing form recommeded list!!"
     //         })
     //     }
@@ -219,12 +218,12 @@ exports.payAndPromoteTheStudent = async (req, res) => {
     //     });
     //     if (!updateIsDeleted) {
     //         res.json({
-    //             status: false,
+    //             success: false,
     //             msg: "Unable to reflect into the registerd again!!"
     //         })
     //     }
     //     res.json({
-    //         status: true,
+    //         success: true,
     //         msg: "Student successfully promoted to registerd list!!",
     //         data: updateIsDeleted
     //     })
@@ -271,8 +270,8 @@ const addTestPayment = async (payload, userId) => {
     });
     if (registerd === null) {
         return {
-            status: false,
-            msg: "Having some issue while register!!!!!!!"
+            success: false,
+            msg: "Having some issue while register!"
         }
     }
     let date = new Date();
@@ -293,7 +292,7 @@ const addTestPayment = async (payload, userId) => {
     })
     if (updatedTestPurchasing === null) {
         return {
-            status: false,
+            success: false,
             msg: "Having some issue while register!!"
         }
     }
@@ -306,14 +305,14 @@ const addTestPayment = async (payload, userId) => {
     });
     if (!removedFromRecommended) {
         return {
-            status: false,
+            success: false,
             msg: "Having issue while removing form recommeded list!!"
         }
     }
 
     return {
-        status: true,
-        msg: "Student successfully promoted to registerd list!!",
+        success: true,
+        msg: "Student has been promoted to the register list!",
         data: registerd
     }
 }
@@ -382,7 +381,7 @@ exports.deleteAll = async (req, res) => {
         let { studentId } = RecommendedForTest.findById(recommendIds[id]);
         await Member.updateOne({ _id: studentId }, { $set: { isRecommended: false } }).then(async data => {
             await RecommendedForTest.deleteOne({ _id: recommendIds[id] }, function (err, datas) {
-                if (err) { res.send({ msg: "Recommended Student Not Deleted!", success: false }) }
+                if (err) { res.send({ msg: "The recommended student was not removed!", success: false }) }
                 promise.push(datas)
             })
         }).catch(err => {
@@ -390,7 +389,7 @@ exports.deleteAll = async (req, res) => {
         })
     }
     Promise.all(promise);
-    res.send({ msg: "Selected Students Deleted Succesfully!", success: true })
+    res.send({ msg: "Selected Students Have Been Successfully Deleted!", success: true })
 }
 
 
@@ -398,7 +397,7 @@ exports.removeFromRecomended = async (req, res) => {
     let recommededId = req.params.recommendedId;
     if (!recommededId) {
         res.json({
-            status: false,
+            success: false,
             msg: "Please give the recomended id in params!"
         })
     }
@@ -407,20 +406,20 @@ exports.removeFromRecomended = async (req, res) => {
     let deleteRecommended = await Member.findOneAndUpdate(studentId, { isRecommended: false })
     if (!deleteRecommended) {
         res.json({
-            status: false,
-            msg: "Unable to remove the student!!"
+            success: false,
+            msg: "The student cannot be removed!"
         })
     }
     let isDeleted = await RecommendedForTest.findByIdAndDelete(recommededId);
     if (!isDeleted) {
         res.json({
-            status: false,
-            msg: "Unable to remove the student!!"
+            success: false,
+            msg: "The student cannot be removed!"
         })
     } else {
         res.json({
-            status: true,
-            msg: "The recommeded student successfully removed from the list!!"
+            success: true,
+            msg: "The recommended student was successfully removed from the list!"
         })
 
     }
