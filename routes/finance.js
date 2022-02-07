@@ -11,6 +11,13 @@ const {
 	expenseReportWithFilter,
 	expenseCategoryAdd,
 	expenseAdd,
+	// Income
+	todaysIncome,
+	weeklyIncome,
+	MonthlyIncome,
+	thisYearIncome,
+	IncomeReportWithFilters,
+	PnlReportGenerate,
 } = require('../controllers/finance_info');
 const upload = require('../handler/multer');
 
@@ -53,5 +60,20 @@ router.post(
 	upload.single('expense_image'),
 	expenseAdd
 );
+
+//////////////////////////////////////////////////////////
+/////////////////////// Income ///////////////////////////
+
+router.get('/finance/income-today/:userId', requireSignin, todaysIncome);
+router.get('/finance/income-weekly/:userId', requireSignin, weeklyIncome);
+router.get('/finance/income-monthly/:userId', requireSignin, MonthlyIncome);
+router.get('/finance/income-yearly/:userId', requireSignin, thisYearIncome);
+router.get(
+	'/finance/income-report/:userId',
+	requireSignin,
+	IncomeReportWithFilters
+);
+
+router.get('/finance/pnl-report/:userId', requireSignin, PnlReportGenerate);
 
 module.exports = router;
