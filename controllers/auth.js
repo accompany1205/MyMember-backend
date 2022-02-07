@@ -6,9 +6,10 @@ const expressJwt = require("express-jwt"); // for authorization check
 const {
   errorHandler
 } = require("../helpers/dbErrorHandler");
-const sgMail = require("@sendgrid/mail");
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+// const sgMail = require("@sendgrid/mail");
+// sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const from_email = process.env.from_email;
+const Mailer = require("../helpers/Mailer");
 const navbar = require("../models/navbar.js");
 const {
   map
@@ -23,7 +24,7 @@ const { errorMonitor } = require('events');
 
 //Signup stsrting.....
 exports.signup = async (req, res) => {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  // sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   const user = new User(req.body);
   const admins = await User.find({
     "role": 1
@@ -43,13 +44,13 @@ exports.signup = async (req, res) => {
   let sendingMailToUser = req.body.email;
 
   //todo Pavan - Need to restructure the mail body as per the requirement
-  let msg = {
+  let msg = new Mailer({
     to: sendingMailToUser, // Change to your recipient
     from: from_email, // Change to your verified sender
     subject: 'Varification Email For User',
     text: 'Thanks for signing-up in ',
     html: `<h2>Worth the wait! Soon you will get login credentials once the admin approves your request :)</h2>`,
-  }
+  })
   user.save((err, user) => {
     if (err) {
       return res.status(400).json({
@@ -61,8 +62,7 @@ exports.signup = async (req, res) => {
     user.salt = undefined;
     //user.hashed_password = undefined;
     navbar_custom(user.id);
-    sgMail
-      .send(msg)
+    msg.sendMail()
       .then(() => {
       })
       .catch((error) => {
@@ -124,7 +124,7 @@ exports.adminApproval = async (req, res) => {
 }
 
 exports.approveUserRequestByAdmin = async (req, res) => {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  // sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   let data = req.body;
   let query = req.params;
   let filter = {
@@ -151,18 +151,30 @@ exports.approveUserRequestByAdmin = async (req, res) => {
       })
     }
     console.log(updatedUser.username)
-    let msg = {
-      to: updatedUser.email, // Change to your recipient
-      from: from_email, // Change to your verified sender
+    let msg = new Mailer({
+      from: from_email,
+      to: updatedUser.email,
       subject: 'Registration process with My_Member',
       text: 'Congratulation, your request has been accepted.',
       html: `<h2>congratulation, your registration with My Member is completed.</h2>
-                          <p>Your username is ${updatedUser.username},  Login using this passward - ${password} </p> 
-                          <p>You can login here - ${process.env.RESET_URL}</p>
-                          `,
-    }
-    sgMail
-      .send(msg)
+      <p>Your username is ${updatedUser.username},  Login using this passward - ${password} </p> 
+      <p>You can login here - ${process.env.RESET_URL}</p>
+      `,
+      attachments: attachments
+    })
+
+    // let msg = {
+    //   to: updatedUser.email, // Change to your recipient
+    //   from: from_email, // Change to your verified sender
+    //   subject: 'Registration process with My_Member',
+    //   text: 'Congratulation, your request has been accepted.',
+    //   html: `<h2>congratulation, your registration with My Member is completed.</h2>
+    //                       <p>Your username is ${updatedUser.username},  Login using this passward - ${password} </p> 
+    //                       <p>You can login here - ${process.env.RESET_URL}</p>
+    //                       `,
+    // }
+    msg.sendMail()
+
       .then(() => {
       })
       .catch((error) => {
@@ -226,18 +238,15 @@ exports.forgetpasaword = (req, res) => {
               error: "reset token is not add"
             });
           } else {
-            sgMail.send(resetPassData, function (err, data) {
-              if (err) {
-                res.send({
-                  error: "email not sent"
-                });
-                res.send(err);
-              } else {
+            resetPassData.sendMail()
+
+              .then((data) => {
                 res.send({
                   msg: "email send successfully reset link sent your email",
-                });
-              }
-            });
+                })
+              }).catch(err => {
+                res.send({ error: 'email not sent', error: err })
+              })
           }
         }
       );

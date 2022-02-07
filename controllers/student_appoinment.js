@@ -3,8 +3,9 @@ const student = require("../models/addmember")
 const user = require("../models/user")
 const _ = require('lodash')
 require("dotenv").config();
-const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey(process.env.email);
+const Mailer = require("../helpers/Mailer");
+// const sgMail = require('@sendgrid/mail');
+// sgMail.setApiKey(process.env.email);
 const client = require('twilio')(process.env.aid, process.env.authkey);
 // const VoiceResponse = require('twilio').twiml
 // const accountSid = process.env.TWILIO_ACCOUNT_SID;
@@ -12,14 +13,14 @@ const client = require('twilio')(process.env.aid, process.env.authkey);
 // const client = require('twilio')(accountSid, authToken);
 
 
-exports.voiceCall = (req, res) =>{
+exports.voiceCall = (req, res) => {
     client.calls
-      .create({
-         twiml: '<Response><Say>hy kaushal and mohit how are you</Say></Response>',
-         to: req.body.to,
-         from: '+12192445425'
-       })
-      .then(call => res.send(call)).catch(error=> res.send(error))
+        .create({
+            twiml: '<Response><Say>hy kaushal and mohit how are you</Say></Response>',
+            to: req.body.to,
+            from: '+12192445425'
+        })
+        .then(call => res.send(call)).catch(error => res.send(error))
 }
 
 exports.create = (req, res) => {
@@ -48,7 +49,7 @@ exports.create = (req, res) => {
                             else {
                                 res.send({ msg: 'student appoinment create successfully', appoinment: appoinmentData })
                             }
-                    })
+                        })
                 }
             })
         }
@@ -92,20 +93,23 @@ exports.send_email = (req, res) => {
     var To = req.body.To
     var From = req.body.From
     var Sub = req.body.Sub
-    const emailData = {
+    const emailData = new Mailer({
         to: To,
         from: From,
         subject: Sub,
         html: `<p>my mail</p>`
-    };
-    sgMail.send(emailData, function (err, data) {
-        if (err) {
-            res.send({ error: 'email not sent' })
-        }
-        else {
-            res.send({ msg: 'email send successfully',data:data })
-        }
     })
+    emailData.sendMail()
+        .then(data => {
+            res.send({ msg: "Email Sent Successfully", success: true })
+
+        })
+        .catch(err => {
+            res.send({ msg: "Email notSent ", success: false })
+
+        })
+
+
 }
 
 exports.send_sms = (req, res) => {

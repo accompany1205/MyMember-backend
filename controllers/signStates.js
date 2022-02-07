@@ -1,5 +1,6 @@
 const SignStates = require("../models/signStates");
-const sgMail = require("@sendgrid/mail");
+// const sgMail = require("@sendgrid/mail");
+const Mailer = require("../helpers/Mailer");
 const buyMembership = require("../models/buy_membership");
 const buy_product = require("../models/buy_product");
 const buffToPdf = require("../Services/pdfConvertor");
@@ -182,21 +183,19 @@ exports.inviteeMailSent = async (req, res) => {
         let emailList = req.body.emailList;
         let docLink = req.body.docLink;
         let ownerEmail = req.body.ownerEmail
-        sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-        const emailData = {
+        // sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+        const emailData = new Mailer({
             to: emailList,
             from: ownerEmail,
             subject: "Document Signature Process",
             html: `<h2>Below is the PDF for your signature</h2>
                         <p>${docLink}</p>`,
-        };
-        sgMail
-            .send(emailData, (err, resp) => {
-                if (err) {
-                    res.send(err)
-                } else {
-                    res.send(resp)
-                }
+        })
+        emailData.sendMail()
+            .then(resp => {
+                res.send({ msg: "Email Sent Successfully", success: true })
+            }).catch(err => {
+                res.send({ error: 'email not send', error: err })
             })
 
         // .then(resp => {

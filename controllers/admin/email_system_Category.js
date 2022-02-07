@@ -1,8 +1,9 @@
 const emailSystem = require("../../models/email_system_Category")
 const user = require('../../models/user')
 const emailSent = require('../../models/emailSentSave')
-const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const Mailer = require("../../helpers/Mailer");
+// const sgMail = require('@sendgrid/mail');
+// sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 function TimeZone() {
     const str = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
     const date_time = str.split(',')
@@ -84,7 +85,7 @@ exports.sendEmail = (req, res) => {
                     disposition: "attachment"
                 }
             });
-            const emailData = {
+            const emailData = new Mailer({
                 sendgrid_key: process.env.SENDGRID_API_KEY,
                 to: req.body.to,
                 from: process.env.from_email,
@@ -92,32 +93,33 @@ exports.sendEmail = (req, res) => {
                 subject: req.body.subject,
                 html: req.body.template,
                 attachments: attachments
-            };
-
-            sgMail.send(emailData).then(resp => {
-                var DT = TimeZone()
-                var emailDetail = new emailSent(req.body)
-                emailDetail.sent_date = DT.Date
-                emailDetail.sent_time = DT.Time
-
-
-                emailDetail.save((err, emailSave) => {
-                    if (err) {
-                        res.send({ error: 'email details is not save' })
-                    }
-                    else {
-                        emailSent.findByIdAndUpdate(emailSave._id, { userId: req.params.userId, email_type: 'sent', category: 'system' })
-                            .exec((err, emailUpdate) => {
-                                if (err) {
-                                    res.send({ error: 'user id is not update in sent email' })
-                                }
-                                else {
-                                    res.send({ message: "Email Sent Successfully", success: true, emailUpdate })
-                                }
-                            })
-                    }
-                })
             })
+
+            emailData.sendMail()
+                .then(resp => {
+                    var DT = TimeZone()
+                    var emailDetail = new emailSent(req.body)
+                    emailDetail.sent_date = DT.Date
+                    emailDetail.sent_time = DT.Time
+
+
+                    emailDetail.save((err, emailSave) => {
+                        if (err) {
+                            res.send({ error: 'email details is not save' })
+                        }
+                        else {
+                            emailSent.findByIdAndUpdate(emailSave._id, { userId: req.params.userId, email_type: 'sent', category: 'system' })
+                                .exec((err, emailUpdate) => {
+                                    if (err) {
+                                        res.send({ error: 'user id is not update in sent email' })
+                                    }
+                                    else {
+                                        res.send({ message: "Email Sent Successfully", success: true, emailUpdate })
+                                    }
+                                })
+                        }
+                    })
+                })
 
         }
     }
