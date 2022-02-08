@@ -47,9 +47,9 @@ module.exports = class Mailer {
                     attachments: attachments,
                 }, (error, info) => {
                     if (error) {
-                        reject(error);
+                        reject({ msg: 'Email not sent', success: false });
                     } else {
-                        resolve('Email sent: ' + info.response);
+                        resolve({ msg: 'Email sent: ' + info.response, success: true });
                     }
                 });
             }
