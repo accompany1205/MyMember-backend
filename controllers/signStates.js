@@ -199,9 +199,9 @@ exports.getSignItems = async (req, res) => {
 
 exports.inviteeMailSent = async (req, res) => {
     try {
-        let emailList = ["diwakar17@navgurukul.org"]
+        let emailList = req.body.emailList;
         let docLink = req.body.docLink;
-        let ownerEmail = "monu17@navgurukul.org"
+        //let ownerEmail = "monu17@navgurukul.org"
         const emailData = new Mailer({
             to: emailList,
             // from: ownerEmail,
