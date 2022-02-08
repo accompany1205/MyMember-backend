@@ -120,7 +120,7 @@ async function signPdf(file, items) {
             }
         }
         const pdfBytes = await pdfDoc.save()
-        // return fs.writeFileSync('./output.pdf', pdfBytes)
+        //fs.writeFileSync('./output.pdf', pdfBytes)
         return pdfBytes
     } catch (error) {
         console.log(error)
@@ -177,19 +177,6 @@ exports.getSignItems = async (req, res) => {
                 }
             }
         })
-        // let body = req.body;
-        // await SignStates.find({ _id: docuSignId }).then(async data => {
-        //      if (!data.status) data.status = {}
-        //      data.status[invite] = { ...data.status[invite], signed: new Date().getTime() };
-        //      let items = { ...data.items, ...req.body.items };
-        //     await SignStates.updateOne({ _id: docuSignId }, { $set: body }).then(data => {
-        //         res.send({ msg: "Item updated!", success: true });
-        //     }).catch(err => {
-        //         res.send({ msg: "Itme not updated!", success: false, error: err.message.replace(/\"/g, "") });
-        //     })
-        // }).catch(err => {
-        //     res.send({ msg: "not Updated!", success: false, error: err.message.replace(/\"/g, "") });
-        // })
     } catch (err) {
         res.send({ msg: "not Updated!", success: false, error: err.message.replace(/\"/g, "") });
     }
