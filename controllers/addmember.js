@@ -730,7 +730,7 @@ exports.Former_Std = async (req, res) => {
           success: false
         });
       } else {
-        res.send({ former, totalCount: totalCount, success: true });
+        res.send({ former, success: true });
       }
     });
 };
@@ -846,29 +846,29 @@ exports.camp_Std = async (req, res) => {
 };
 
 exports.after_school_Std = async (req, res) => {
-  var order = req.query.order || 1
-  let sortBy = req.query.sortBy || "firstName"
-  var totalCount = await addmemberModal
-    .find({
-      userId: req.params.userId,
-      intrested: "After School",
-    })
-    .countDocuments();
-  var per_page = parseInt(req.params.per_page) || 10;
-  var page_no = parseInt(req.params.page_no) || 0;
-  var pagination = {
-    limit: per_page,
-    skip: per_page * page_no,
-  };
+  // var order = req.query.order || 1
+  // let sortBy = req.query.sortBy || "firstName"
+  // var totalCount = await addmemberModal
+  //   .find({
+  //     userId: req.params.userId,
+  //     intrested: "After School",
+  //   })
+  //   .countDocuments();
+  // var per_page = parseInt(req.params.per_page) || 10;
+  // var page_no = parseInt(req.params.page_no) || 0;
+  // var pagination = {
+  //   limit: per_page,
+  //   skip: per_page * page_no,
+  // };
   addmemberModal
     .find({
       userId: req.params.userId,
       intrested: "After School",
     })
     .populate("membership_details")
-    .limit(pagination.limit)
-    .skip(pagination.skip)
-    .sort({ [sortBy]: order })
+    // .limit(pagination.limit)
+    // .skip(pagination.skip)
+    // .sort({ [sortBy]: order })
     .exec((err, after_school) => {
       if (err) {
         res.send({
@@ -876,7 +876,7 @@ exports.after_school_Std = async (req, res) => {
           success: false
         });
       } else {
-        res.send({ after_school, totalCount: totalCount, success: true });
+        res.send({ after_school, success: true });
       }
     });
 };

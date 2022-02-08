@@ -161,36 +161,36 @@ const updateStudentsById = async (studentId) => {
 
 exports.payAndPromoteTheStudent = async (req, res) => {
     let userId = req.params.userId;
-    let { cardDetails, paidAmount, studentId, financeId } = req.body;
-    let updatePayment;
-    if (cardDetails) {
-        const { uid } = getUidAndInvoiceNumber();
-        const expiry_date = cardDetails?.expiry_month + cardDetails?.expiry_year;
-        cardDetails.expiry_date = expiry_date;
-        delete cardDetails.expiry_month;
-        delete cardDetails.expiry_year
-        const valorPayload = { ...cardDetails, amount: paidAmount, uid }
-        const resp = await valorTechPaymentGateWay.saleSubscription(valorPayload);
-        if (resp.data.error_no == "S00") {
-            const address = {
-                address: cardDetails?.address,
-                zip: cardDetails?.zip,
-                street_no: cardDetails?.street_no,
-            }
-            cardDetails.address = address;
-            await createFinanceDoc({ ...cardDetails, studentId: studentId, userId: userId }, financeId)
-            updatePayment = await addTestPayment(req.body, userId)
-            res.send(updatePayment)
-        } else {
-            res.send({
-                success: false,
-                msg: "Payment is not completed due to technical reason please try again!"
-            })
-        }
-    } else {
+    // let { cardDetails, paidAmount, studentId, financeId } = req.body;
+    // let updatePayment;
+    // if (cardDetails) {
+    //     const { uid } = getUidAndInvoiceNumber();
+    //     const expiry_date = cardDetails?.expiry_month + cardDetails?.expiry_year;
+    //     cardDetails.expiry_date = expiry_date;
+    //     delete cardDetails.expiry_month;
+    //     delete cardDetails.expiry_year
+    //     const valorPayload = { ...cardDetails, amount: paidAmount, uid }
+    //     const resp = await valorTechPaymentGateWay.saleSubscription(valorPayload);
+    //     if (resp.data.error_no == "S00") {
+    //         const address = {
+    //             address: cardDetails?.address,
+    //             zip: cardDetails?.zip,
+    //             street_no: cardDetails?.street_no,
+    //         }
+    //         cardDetails.address = address;
+    //         await createFinanceDoc({ ...cardDetails, studentId: studentId, userId: userId }, financeId)
+    //         updatePayment = await addTestPayment(req.body, userId)
+    //         res.send(updatePayment)
+    //     } else {
+    //         res.send({
+    //             success: false,
+    //             msg: "Payment is not completed due to technical reason please try again!"
+    //         })
+    //     }
+    // } else {
         updatePayment = await addTestPayment(req.body, userId)
         res.send(updatePayment)
-    }
+    // }    
     //If student removed by mistake and adding again to the registerd list...
     // let isStudentRegisterd = await RegisterdForTest.findOne({
     //     "studentId": studentId
