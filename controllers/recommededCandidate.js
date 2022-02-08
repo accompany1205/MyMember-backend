@@ -66,14 +66,14 @@ exports.recomendStudent = async (req, res) => {
             return res.send({
                 recommendedCandidates,
                 success: false,
-                msg: `${alredyRecomend},  either these students are alredy in Candidate list or program is not selected`
+                msg: `${alredyRecomend} These students are already on the recommended list!`
             })
         }
 
 
         res.json({
             status: true,
-            msg: "Selected students got recomended successfully.",
+            msg: "Selected students got recommended successfully!",
             data: recommendedCandidates
         })
 
@@ -186,11 +186,11 @@ exports.getRecommendedCandidateStudents = async (req, res) => {
         let sortBy = req.query.sortBy || "firstName"
         let order = req.query.order || 1
         var totalCount = await RecommendedCandidateModel
-        .find({
-            "userId": userId,
-            "isDeleted": false
-        })
-        .countDocuments();
+            .find({
+                "userId": userId,
+                "isDeleted": false
+            })
+            .countDocuments();
         var per_page = parseInt(req.params.per_page) || 10;
         var page_no = parseInt(req.params.page_no) || 0;
         var pagination = {
@@ -205,9 +205,9 @@ exports.getRecommendedCandidateStudents = async (req, res) => {
 
         let students = await RecommendedCandidateModel
             .find({ "userId": userId, "isDeleted": false })
-        .skip(pagination.skip)
-        .limit(pagination.limit)
-        .sort({ [sortBy]: order });
+            .skip(pagination.skip)
+            .limit(pagination.limit)
+            .sort({ [sortBy]: order });
         if (!students.length) {
             return res.json({ success: false, msg: "There no data available for this query!!" })
         }
