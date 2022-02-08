@@ -161,8 +161,7 @@ exports.getSignItems = async (req, res) => {
                     let pdfBuff = await buffToPdf(data.mergedDoc);
                     const pdfs = await signPdf(pdfBuff, datas.toJSON());
                     let buffer = Buffer.from(pdfs).toString('base64');
-                    console.log(buffer);
-                    res.send({ msg: "pdf buffer!", data: pdfs, success:true });
+                    res.send({ msg: "pdf buffer!", data: buffer, success:true });
                 } catch (err) {
                     res.send({ msg: err.message.replace(/\"/g, ""), sucess: false });
                 }
@@ -171,7 +170,8 @@ exports.getSignItems = async (req, res) => {
                     const data = await buy_product.findOne({ _id: resp.signDocForId })
                     let pdfBuff = await buffToPdf(data.mergedDoc);
                     const pdfs = await signPdf(pdfBuff, datas.toJSON());
-                    res.send({ msg: "pdf buffer!", data: pdfs, success:true });
+                    let buffer = Buffer.from(pdfs).toString('base64');
+                    res.send({ msg: "pdf buffer!", data: buffer, success:true });
                 } catch (err) {
                     res.send({ msg: err.message.replace(/\"/g, ""), sucess: false });
                 }
