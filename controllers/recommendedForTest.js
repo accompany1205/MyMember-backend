@@ -188,8 +188,100 @@ exports.payAndPromoteTheStudent = async (req, res) => {
     //         })
     //     }
     // } else {
-        updatePayment = await addTestPayment(req.body, userId)
-        res.send(updatePayment)
+    // updatePayment = await addTestPayment(req.body, userId)
+    // res.send(updatePayment)
+    let {
+        testId,
+        studentId,
+        rating,
+        current_rank_name,
+        next_rank_name,
+        current_rank_img,
+        next_rank_img,
+        method,
+        phone,
+        firstName,
+        lastName,
+        memberprofileImage,
+        program,
+        cheque_no
+    } = req.body;
+
+    let registerd = new RegisterdForTest({
+        "studentId": studentId,
+        "firstName": firstName,
+        "testId": testId,
+        "lastName": lastName,
+        "rating": rating,
+        "current_rank_name": current_rank_name,
+        "next_rank_name": next_rank_name,
+        "userId": userId,
+        "current_rank_img": current_rank_img,
+        "method": method,
+        "memberprofileImage": memberprofileImage,
+        "next_rank_img": next_rank_img,
+        "phone": phone,
+        "program": program,
+        "cheque_no": cheque_no
+    });
+    registerd.save((err, data) => {
+        if (err) {
+            return res.send({
+                success: false,
+                msg: "Having some issue while register!"
+            })
+        } else {
+            console.log('1')
+            let history = {
+                "current_rank_name": current_rank_name,
+                "program": program,
+                "current_rank_img": current_rank_img,
+                "testPaid": new Date(),
+                "promoted": new Date()
+            }
+            Member.findOneAndUpdate({ _id: studentId },
+                {
+                    $push: {
+                        test_purchasing: testId,
+                        rank_update_test_history: history
+                    }
+                },
+                (err, data) => {
+                    if (err) {
+                        return res.send({
+                            success: false,
+                            msg: "Having some issue while register!!"
+                        })
+
+                    } else {
+                        console.log('2')
+
+                        RecommendedForTest.updateMany({
+                            "studentId": studentId
+                        }, {
+                            "isDeleted": true
+                        }, (err, data) => {
+
+                            if (err) {
+                                return res.send({
+                                    success: false,
+                                    msg: "Having issue while removing form recommeded list!!"
+                                })
+                            }
+                            else {
+
+                                return res.send({
+                                    success: true,
+                                    msg: "Student has been promoted to the register list!",
+                                })
+                            }
+                        })
+                    }
+                })
+
+        }
+
+    })
     // }    
     //If student removed by mistake and adding again to the registerd list...
     // let isStudentRegisterd = await RegisterdForTest.findOne({
@@ -235,86 +327,8 @@ exports.payAndPromoteTheStudent = async (req, res) => {
 }
 
 const addTestPayment = async (payload, userId) => {
-    let {
-        testId,
-        studentId,
-        rating,
-        current_rank_name,
-        next_rank_name,
-        current_rank_img,
-        next_rank_img,
-        method,
-        phone,
-        firstName,
-        lastName,
-        memberprofileImage,
-        program,
-        cheque_no
-    } = payload;
-    let registerd = await RegisterdForTest.create({
-        "studentId": studentId,
-        "firstName": firstName,
-        "testId": testId,
-        "lastName": lastName,
-        "rating": rating,
-        "current_rank_name": current_rank_name,
-        "next_rank_name": next_rank_name,
-        "userId": userId,
-        "current_rank_img": current_rank_img,
-        "method": method,
-        "memberprofileImage": memberprofileImage,
-        "next_rank_img": next_rank_img,
-        "phone": phone,
-        "program": program,
-        "cheque_no": cheque_no
-    });
-    if (registerd === null) {
-        return {
-            success: false,
-            msg: "Having some issue while register!"
-        }
-    }
-    let date = new Date();
-    let history = {
-        "current_rank_name": current_rank_name,
-        "program": program,
-        "current_rank_img": current_rank_img,
-        "testPaid": date,
-        "promoted": date
-    }
-    let updatedTestPurchasing = await Member.findOneAndUpdate(studentId, {
-        $push: {
-            test_purchasing: testId,
-            rank_update_test_history: history
-        }
-    }, {
-        new: true
-    })
-    if (updatedTestPurchasing === null) {
-        return {
-            success: false,
-            msg: "Having some issue while register!!"
-        }
-    }
-    let removedFromRecommended = await RecommendedForTest.updateMany({
-        "studentId": studentId
-    }, {
-        "isDeleted": true
-    }, {
-        new: true
-    });
-    if (!removedFromRecommended) {
-        return {
-            success: false,
-            msg: "Having issue while removing form recommeded list!!"
-        }
-    }
 
-    return {
-        success: true,
-        msg: "Student has been promoted to the register list!",
-        data: registerd
-    }
+
 }
 
 function createFinanceDoc(data, financeId) {
