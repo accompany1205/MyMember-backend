@@ -621,37 +621,37 @@ exports.read = (req, res) => {
 };
 
 exports.active_trial_Std = async (req, res) => {
-  var order = req.query.order || 1
-  let sortBy = req.query.sortBy || "firstName"
-  var totalCount = await addmemberModal
-    .find({
-      userId: req.params.userId,
-      studentType: "Active Trial",
-    })
-    .countDocuments();
+  // var order = req.query.order || 1
+  // let sortBy = req.query.sortBy || "firstName"
+  // var totalCount = await addmemberModal
+  //   .find({
+  //     userId: req.params.userId,
+  //     studentType: "Active Trial",
+  //   })
+  //   .countDocuments();
 
-  var per_page = parseInt(req.params.per_page) || 10;
-  var page_no = parseInt(req.params.page_no) || 0;
-  var pagination = {
-    limit: per_page,
-    skip: per_page * page_no,
-  };
+  // var per_page = parseInt(req.params.per_page) || 10;
+  // var page_no = parseInt(req.params.page_no) || 0;
+  // var pagination = {
+  //   limit: per_page,
+  //   skip: per_page * page_no,
+  // };
   addmemberModal
     .find({
       userId: req.params.userId,
       studentType: "Active Trial"
     })
     .populate("membership_details")
-    .skip(pagination.skip)
-    .limit(pagination.limit)
-    .sort({ [sortBy]: order })
+    // .skip(pagination.skip)
+    // .limit(pagination.limit)
+    // .sort({ [sortBy]: order })
     .exec((err, active_trial) => {
       if (err) {
         res.send({
           msg: "active trial student is not found",
         });
       } else {
-        res.send({ active_trial, totalCount: totalCount, success: true });
+        res.send({ active_trial, success: true });
       }
     });
 };
@@ -659,30 +659,30 @@ exports.active_trial_Std = async (req, res) => {
 exports.leads_Std = async (req, res) => {
   try {
 
-    var order = req.query.order || 1
-    let sortBy = req.query.sortBy || "firstName"
-    var totalCount = await addmemberModal
-      .find({
-        userId: req.params.userId,
-        studentType: "Leads",
-      })
-      .countDocuments();
+    // var order = req.query.order || 1
+    // let sortBy = req.query.sortBy || "firstName"
+    // var totalCount = await addmemberModal
+    //   .find({
+    //     userId: req.params.userId,
+    //     studentType: "Leads",
+    //   })
+    //   .countDocuments();
 
-    var per_page = parseInt(req.params.per_page) || 10;
-    var page_no = parseInt(req.params.page_no) || 0;
-    var pagination = {
-      limit: per_page,
-      skip: per_page * page_no,
-    };
+    // var per_page = parseInt(req.params.per_page) || 10;
+    // var page_no = parseInt(req.params.page_no) || 0;
+    // var pagination = {
+    //   limit: per_page,
+    //   skip: per_page * page_no,
+    // };
     addmemberModal
       .find({
         userId: req.params.userId,
         studentType: "Leads",
       })
       .populate("membership_details")
-      .limit(pagination.limit)
-      .skip(pagination.skip)
-      .sort({ [sortBy]: order })
+      // .limit(pagination.limit)
+      // .skip(pagination.skip)
+      // .sort({ [sortBy]: order })
       .exec((err, lead) => {
         if (err) {
           res.send({
@@ -690,7 +690,7 @@ exports.leads_Std = async (req, res) => {
             success: false
           });
         } else {
-          res.send({ lead, totalCount: totalCount, success: true });
+          res.send({ lead, success: true });
         }
       });
   } catch (err) {
@@ -699,30 +699,30 @@ exports.leads_Std = async (req, res) => {
 };
 
 exports.Former_Std = async (req, res) => {
-  var order = req.query.order || 1
-  let sortBy = req.query.sortBy || "firstName"
-  var totalCount = await addmemberModal
-    .find({
-      userId: req.params.userId,
-      studentType: "Former Student",
-    })
-    .countDocuments();
+  // var order = req.query.order || 1
+  // let sortBy = req.query.sortBy || "firstName"
+  // var totalCount = await addmemberModal
+  //   .find({
+  //     userId: req.params.userId,
+  //     studentType: "Former Student",
+  //   })
+  //   .countDocuments();
 
-  var per_page = parseInt(req.params.per_page) || 10;
-  var page_no = parseInt(req.params.page_no) || 0;
-  var pagination = {
-    limit: per_page,
-    skip: per_page * page_no,
-  };
+  // var per_page = parseInt(req.params.per_page) || 10;
+  // var page_no = parseInt(req.params.page_no) || 0;
+  // var pagination = {
+  //   limit: per_page,
+  //   skip: per_page * page_no,
+  // };
   addmemberModal
     .find({
       userId: req.params.userId,
       studentType: "Former Student",
     })
     .populate("membership_details")
-    .limit(pagination.limit)
-    .skip(pagination.skip)
-    .sort({ [sortBy]: order })
+    // .limit(pagination.limit)
+    // .skip(pagination.skip)
+    // .sort({ [sortBy]: order })
     .exec((err, former) => {
       if (err) {
         res.send({
@@ -736,30 +736,30 @@ exports.Former_Std = async (req, res) => {
 };
 
 exports.active_Std = async (req, res) => {
-  var order = req.query.order || 1
-  let sortBy = req.query.sortBy || "firstName"
-  var totalCount = await addmemberModal
-    .find({
-      userId: req.params.userId,
-      studentType: "Active Student",
-    })
-    .countDocuments();
+  // var order = req.query.order || 1
+  // let sortBy = req.query.sortBy || "firstName"
+  // var totalCount = await addmemberModal
+  //   .find({
+  //     userId: req.params.userId,
+  //     studentType: "Active Student",
+  //   })
+  //   .countDocuments();
 
-  var per_page = parseInt(req.params.per_page) || 10;
-  var page_no = parseInt(req.params.page_no) || 0;
-  var pagination = {
-    limit: per_page,
-    skip: per_page * page_no,
-  };
+  // var per_page = parseInt(req.params.per_page) || 10;
+  // var page_no = parseInt(req.params.page_no) || 0;
+  // var pagination = {
+  //   limit: per_page,
+  //   skip: per_page * page_no,
+  // };
   addmemberModal
     .find({
       userId: req.params.userId,
       studentType: "Active Student",
     })
     .populate("membership_details")
-    .limit(pagination.limit)
-    .skip(pagination.skip)
-    .sort({ [sortBy]: order })
+    // .limit(pagination.limit)
+    // .skip(pagination.skip)
+    // .sort({ [sortBy]: order })
     .exec((err, active_std) => {
       if (err) {
         res.send({
@@ -767,36 +767,36 @@ exports.active_Std = async (req, res) => {
           success: false
         });
       } else {
-        res.send({ active_std, totalCount: totalCount, success: true });
+        res.send({ active_std, success: true });
       }
     });
 };
 
 exports.Former_trial_Std = async (req, res) => {
-  var order = req.query.order || 1
-  let sortBy = req.query.sortBy || "firstName"
-  var totalCount = await addmemberModal
-    .find({
-      userId: req.params.userId,
-      studentType: "Former Trial",
-    })
-    .countDocuments();
+  // var order = req.query.order || 1
+  // let sortBy = req.query.sortBy || "firstName"
+  // var totalCount = await addmemberModal
+  //   .find({
+  //     userId: req.params.userId,
+  //     studentType: "Former Trial",
+  //   })
+  //   .countDocuments();
 
-  var per_page = parseInt(req.params.per_page) || 10;
-  var page_no = parseInt(req.params.page_no) || 0;
-  var pagination = {
-    limit: per_page,
-    skip: per_page * page_no,
-  };
+  // var per_page = parseInt(req.params.per_page) || 10;
+  // var page_no = parseInt(req.params.page_no) || 0;
+  // var pagination = {
+  //   limit: per_page,
+  //   skip: per_page * page_no,
+  // };
   addmemberModal
     .find({
       userId: req.params.userId,
       studentType: "Former Trial",
     })
     .populate("membership_details")
-    .limit(pagination.limit)
-    .skip(pagination.skip)
-    .sort({ [sortBy]: order })
+    // .limit(pagination.limit)
+    // .skip(pagination.skip)
+    // .sort({ [sortBy]: order })
     .exec((err, former_trial) => {
       if (err) {
         res.send({
@@ -804,7 +804,7 @@ exports.Former_trial_Std = async (req, res) => {
           success: false
         });
       } else {
-        res.send({ former_trial, totalCount: totalCount, success: true });
+        res.send({ former_trial, success: true });
       }
     });
 };
