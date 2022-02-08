@@ -250,8 +250,8 @@ exports.buy_product = async (req, res) => {
                 });
             }
         }
-    } catch (error) {
-        res.send({ msg: error.message.replace(/\"/g, ""), success: false });
+    } catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false });
     }
 };
 
@@ -290,7 +290,7 @@ function createProductDocument(productData, studentId) {
         let product = new buy_product(productData);
         product.save((err, data) => {
             if (err) {
-                resolve({ msg: "product not buy", success: false });
+                reject({ msg: "product not buy", success: err });
             } else {
                 update = {
                     $push: { product_details: data._id },
