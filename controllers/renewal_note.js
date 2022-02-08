@@ -463,7 +463,8 @@ exports.frozenmembership = async (req, res) => {
                         membership_status: 1,
                         expiry_date: { $toDate: "$expiry_date" },
                         studentInfo: 1,
-                        whenFreeze: 1
+                        whenFreeze: 1,
+                        isFreeze: 1
                     }
                 },
                 {
@@ -481,6 +482,7 @@ exports.frozenmembership = async (req, res) => {
                         membership_type: 1,
                         data: 1,
                         whenFreeze: 1,
+                        isFreeze: 1,
                         expiry_date: 1,
                         days_till_Expire: {
                             $multiply: [{
@@ -497,7 +499,7 @@ exports.frozenmembership = async (req, res) => {
                         "memberships": 1
                     }
                 },
-                { $match: { membership_status: "freeze" } },
+                { $match: { $or: [{ membership_status: "freeze" }, { isFreeze: true }] } },
                 {
                     "$group": {
                         _id: "$data._id",
@@ -516,7 +518,7 @@ exports.frozenmembership = async (req, res) => {
                         memberships: {
                             "$push":
                             {
-                                membership_name: "$membership_name", membership_status: "$membership_status", membership_type: "$membership_type", expiry_date: "$expiry_date", days_till_Expire: "$days_till_Expire", whenFreeze: "$whenFreeze"
+                                isFreeze: "$isFreeze", membership_name: "$membership_name", membership_status: "$membership_status", membership_type: "$membership_type", expiry_date: "$expiry_date", days_till_Expire: "$days_till_Expire", whenFreeze: "$whenFreeze"
                             }
                         }
                     }
@@ -550,6 +552,7 @@ exports.frozenmembership = async (req, res) => {
                         error: err,
                     });
                 } else {
+                    console.log(memberdata)
                     let data = memberdata[0].paginatedResults
                     if (data.length > 0) {
                         res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });

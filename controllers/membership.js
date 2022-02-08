@@ -207,12 +207,13 @@ exports.mergeDoc = async (req, res) => {
     const studentInfo = await Student.findOne({ _id: studentId });
     const membershipInfo = await membershipModal.findOne({ _id: membershipId });
     const mergedInfo = { ...studentInfo.toJSON(), ...membershipInfo.toJSON() };
-    let fileObj = mergeFile(docBody, mergedInfo)
+    let fileObj = await mergeFile(docBody, mergedInfo)
     //fs.writeFileSync(path.resolve(__dirname, "output.pdf"), finalPDF);
     cloudUrl.imageUrl(fileObj).then(Docresp => {
+      let ipAddress = req.socket.remoteAddress
       BuyMembership.updateOne({ _id: buyMembershipId }, { $set: { mergedDoc: Docresp } }).then(datas => {
         BuyMembership.findOne({ _id: buyMembershipId }).then(data => {
-          res.send({ msg: "get merged doc", success: true, data: data.mergedDoc })
+          res.send({ msg: "get merged doc", success: true, data: data.mergedDoc, ipAddress:ipAddress})
         }).catch(err => {
           res.send({ msg: "data not found", success: false });
         })

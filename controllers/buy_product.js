@@ -42,14 +42,14 @@ exports.product_InfoById = async (req, res) => {
 exports.buy_product = async (req, res) => {
     const userId = req.params.userId;
     const studentId = req.params.studentId;
-    let valorPayload = req.body.product_details.valorPayload;
+    let valorPayload = req.body.product_details.valorPayload? req.body.product_details.valorPayload : {};
     valorPayload.app_id = req.valorCredentials.app_id
     valorPayload.auth_key = req.valorCredentials.auth_key
     valorPayload.epi = req.valorCredentials.epi
     let productData = req.body.product_details;
     const Address = valorPayload ? valorPayload.address : "";
     const payLatter = req.body.product_details.pay_latter;
-    const financeId = req.body.product_details.financeId;
+    const financeId = req.body.product_details.financeId? req.body.product_details.financeId : 1;
     const ptype = req.body.product_details.ptype;
     delete req.body.product_details.valorPayload;
     let memberShipDoc;
