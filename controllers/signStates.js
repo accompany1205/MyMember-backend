@@ -160,7 +160,7 @@ exports.getSignItems = async (req, res) => {
                     const data = await buyMembership.findOne({ _id: resp.signDocForId })
                     let pdfBuff = await buffToPdf(data.mergedDoc);
                     const pdfs = await signPdf(pdfBuff, datas.toJSON());
-                    res.send({ msg: "pdf buffer!", data: pdfs });
+                    res.send({ msg: "pdf buffer!", data: pdfs, success:true });
                 } catch (err) {
                     res.send({ msg: err.message.replace(/\"/g, ""), sucess: false });
                 }
@@ -169,7 +169,7 @@ exports.getSignItems = async (req, res) => {
                     const data = await buy_product.findOne({ _id: resp.signDocForId })
                     let pdfBuff = await buffToPdf(data.mergedDoc);
                     const pdfs = await signPdf(pdfBuff, datas.toJSON());
-                    res.send({ msg: "pdf buffer!", data: pdfs });
+                    res.send({ msg: "pdf buffer!", data: pdfs, success:true });
                 } catch (err) {
                     res.send({ msg: err.message.replace(/\"/g, ""), sucess: false });
                 }
