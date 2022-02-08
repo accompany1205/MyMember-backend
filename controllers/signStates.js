@@ -77,7 +77,6 @@ async function signPdf(file, items) {
         const pdfDoc = await PDFDocument.load(file)
         for (let [owner, val] of Object.entries(items)) {
             for (let [_page, value] of Object.entries(val)) {
-                console.log("=============>", val)
                 const page = pdfDoc.getPages()[_page - 1]
                 //console.log(value)
                 for (let itm of value) {
@@ -128,22 +127,40 @@ async function signPdf(file, items) {
     }
 }
 
-
 exports.setSignItems = async (req, res) => {
     try {
         let docuSignId = req.params.docuSignId;
-        console.log("rs", docuSignId)
+        let body = req.body;
+        await SignStates.find({ _id: docuSignId }).then(async data => {
+            // if (!data.status) data.status = {}
+            // data.status[invite] = { ...data.status[invite], signed: new Date().getTime() };
+            // let items = { ...data.items, ...req.body.items };
+            await SignStates.updateOne({ _id: docuSignId }, { $set: body }).then(data => {
+                res.send({ msg: "Item updated!", success: true });
+            }).catch(err => {
+                res.send({ msg: "Itme not updated!", success: false, error: err.message.replace(/\"/g, "") });
+            })
+        }).catch(err => {
+            res.send({ msg: "not Updated!", success: false, error: err.message.replace(/\"/g, "") });
+        })
+    } catch (err) {
+        res.send({ msg: "not Updated!", success: false, error: err.message.replace(/\"/g, "") });
+    }
+};
+
+exports.getSignItems = async (req, res) => {
+    try {
+        let docuSignId = req.params.docuSignId;
         let userId = req.params.userid;
         await SignStates.findOne({ _id: docuSignId.trim() }).then(async resp => {
-            console.log("--->",resp)
-            let datas =resp.items;
+            let datas = resp.items;
             if (resp.signDocFor === 'membership') {
                 try {
                     const data = await buyMembership.findOne({ _id: resp.signDocForId })
                     let pdfBuff = await buffToPdf(data.mergedDoc);
                     const pdfs = await signPdf(pdfBuff, datas.toJSON());
-                    res.send({msg:"pdf buffer!", data:pdfs});
-                } catch(err) {
+                    res.send({ msg: "pdf buffer!", data: pdfs });
+                } catch (err) {
                     res.send({ msg: err.message.replace(/\"/g, ""), sucess: false });
                 }
             } else {
@@ -151,8 +168,8 @@ exports.setSignItems = async (req, res) => {
                     const data = await buy_product.findOne({ _id: resp.signDocForId })
                     let pdfBuff = await buffToPdf(data.mergedDoc);
                     const pdfs = await signPdf(pdfBuff, datas.toJSON());
-                    res.send({msg:"pdf buffer!", data:pdfs});
-                } catch(err) {
+                    res.send({ msg: "pdf buffer!", data: pdfs });
+                } catch (err) {
                     res.send({ msg: err.message.replace(/\"/g, ""), sucess: false });
                 }
             }
