@@ -188,12 +188,12 @@ exports.getSignItems = async (req, res) => {
 
 exports.inviteeMailSent = async (req, res) => {
     try {
-        let emailList = req.body.emailList;
+        let emailList = req.body.emails;
         let docLink = req.body.docLink;
-        //let ownerEmail = "monu17@navgurukul.org"
+        let ownerEmail = req.body.ownerEmail;
         const emailData = new Mailer({
             to: emailList,
-            // from: ownerEmail,
+            from: ownerEmail,
             subject: "Document Signature Process",
             html: `<h2>Below is the PDF for your signature</h2>
                         <p>${docLink}</p>`,
