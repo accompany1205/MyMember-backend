@@ -196,6 +196,17 @@ exports.membershipUpdate = async (req, res) => {
 };
 
 
+function makeid(length) {
+  var result = '';
+  var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  var charactersLength = characters.length;
+  for (var i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() *
+      charactersLength));
+  }
+  return result;
+}
+
 
 exports.mergeDoc = async (req, res) => {
   let docBody = req.body.docUrl;
@@ -206,15 +217,15 @@ exports.mergeDoc = async (req, res) => {
   try {
     const studentInfo = await Student.findOne({ _id: studentId });
     const membershipInfo = await membershipModal.findOne({ _id: membershipId });
-    let ipAddress = req.header('x-forwarded-for') || req.connection.remoteAddress
-    console.log(ipAddress)
+    let ipAddress = req.header('x-forwarded-for') || req.connection.remoteAddress;
+    let emailToken = makeid(20);
     const mergedInfo = { ...studentInfo.toJSON(), ...membershipInfo.toJSON() };
     let fileObj = await mergeFile(docBody, mergedInfo)
     //fs.writeFileSync(path.resolve(__dirname, "output.pdf"), finalPDF);
     cloudUrl.imageUrl(fileObj).then(Docresp => {
-      BuyMembership.updateOne({ _id: buyMembershipId }, { $set: { mergedDoc: Docresp } }).then(datas => {
+      BuyMembership.updateOne({ _id: buyMembershipId }, { $set: { mergedDoc: Docresp, emailToken:emailToken } }).then(datas => {
         BuyMembership.findOne({ _id: buyMembershipId }).then(data => {
-          res.send({ msg: "get merged doc", success: true, data: data.mergedDoc, ipAddress: ipAddress })
+          res.send({ msg: "get merged doc", success: true, data: data.mergedDoc, ipAddress: ipAddress, emailTokn:data.emailToken })
         }).catch(err => {
           res.send({ msg: "data not found", success: false });
         })

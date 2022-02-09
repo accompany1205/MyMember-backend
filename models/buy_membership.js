@@ -155,6 +155,9 @@ const Membershipschema = new schema(
     mergedDoc: {
       type:String
     },
+    emailToken: {
+      type:String
+    },
     membershipIds: [
       {
         type: schema.Types.ObjectId,
