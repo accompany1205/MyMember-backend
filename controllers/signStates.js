@@ -9,17 +9,29 @@ const pixelWidth = require('string-pixel-width');
 
 
 
+function makeid(length) {
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for (var i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() *
+            charactersLength));
+    }
+    return result;
+}
 
 exports.addRequestSign = async (req, res) => {
     let userId = req.params.userId;
     try {
+        let emailToken = makeid(20);
+        await buyMembership.updateOne({ _id: req.body.signDocForId }, { $set: { emailToken:emailToken} });
         let datas = { ...req.body, userId: userId }
         const signStat = new SignStates(datas)
         await signStat.save(function (err, data) {
             if (err) {
                 res.send({ success: false, msg: "Info not added!!", error: err.message.replace(/\"/g, "") })
             } else {
-                res.send({ data, success: true });
+                res.send({ data, success: true, emailToken:emailToken });
             }
         })
     } catch (err) {
@@ -134,11 +146,10 @@ exports.setSignItems = async (req, res) => {
         let emailTokens = req.params.emailToken;
         let body = req.body;
         await SignStates.findOne({ _id: docuSignId }).then(async data => {
-            console.log(data)
             // if (!data.status) data.status = {}
             // data.status[invite] = { ...data.status[invite], signed: new Date().getTime() };
             // let items = { ...data.items, ...req.body.items };
-            let  emailToken  = await buyMembership.findOne({ _id: data.signDocForId });
+            let emailToken = await buyMembership.findOne({ _id: data.signDocForId });
             if (emailToken.emailToken === emailTokens) {
                 await SignStates.updateOne({ _id: docuSignId }, { $set: body }).then(data => {
                     res.send({ msg: "Item updated!", success: true });
