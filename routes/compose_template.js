@@ -8,6 +8,7 @@ router.get("/all_sent/:userId", verifySchool, allSent)
 router.get("/all_email_list/:userId", verifySchool, all_email_list)
 router.get("/all_email_list_of_Favorite/:userId", verifySchool, isFavorite)
 router.get("/scheduleListing/:userId", verifySchool, allScheduledListing)
+
 router.get("/email_compose/list_template/:userId/:folderId", verifySchool, list_template)
 router.post("/email_compose/add_template/:userId/:folderId", verifySchool, upload.array('attachments'), add_template)
 router.post("/criteria_met/email_compose/add_template/:userId/:folderId", verifySchool, upload.array('attachments'), criteria_met)
