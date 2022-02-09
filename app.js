@@ -211,6 +211,7 @@ app.use('/api', pcategory);
 app.use('/api', psubcategory);
 app.use('/api', add_membership);
 app.use('/api', finance_info);
+app.use('/api', finance);
 app.use('/api', bymember_ship);
 app.use('/api', manage_stripe);
 app.use('/api', candidates);
@@ -303,7 +304,6 @@ app.use(middleware.errorHandler);
 app.use(middleware.unknownEndpoint);
 // menu middle
 app.use('/api', student_menu);
-app.use('/api', finance);
 
 // const privateKey1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/privkey.pem', 'utf8');
 // const certificate1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/cert.pem', 'utf8');

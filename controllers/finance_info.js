@@ -1580,7 +1580,7 @@ exports.PnlReportGenerateMembership = async (req, res) => {
 		}
 	}
 	if (YearlyDownPaymentNRegistration.length > 0) {
-		for (let each of yearlyEMI) {
+		for (let each of YearlyDownPaymentNRegistration) {
 			membershipNames.push(each._id);
 		}
 	}
@@ -1661,22 +1661,6 @@ exports.PnlReportGenerateMembership = async (req, res) => {
 		yearlyTotal,
 	});
 };
-
-///////////////////////////
-///////////////////////////
-///////////////////////////
-///////////////////////////
-///////////////////////////
-///////////////////////////
-///////////////////////////
-///////////////////////////
-///////////////////////////
-///////////////////////////
-///////////////////////////
-///////////////////////////
-///////////////////////////
-///////////////////////////
-///////////////////////////
 
 exports.PnlReportGenerateProductSale = async (req, res) => {
 	let { firstMonth, firstYear, secondMonth, secondYear, ytd } = req.query;
@@ -1887,7 +1871,7 @@ exports.PnlReportGenerateProductSale = async (req, res) => {
 	}
 
 	if (YearlyDownPaymentNRegistration.length > 0) {
-		for (let each of yearlyEMI) {
+		for (let each of YearlyDownPaymentNRegistration) {
 			productNames.push(each._id);
 		}
 	}
@@ -1952,6 +1936,167 @@ exports.PnlReportGenerateProductSale = async (req, res) => {
 	const yearlyTotal = data.reduce((a, x) => a + x.incomeInYear, 0);
 
 	return res.json({
+		data,
+		firstMonthTotal,
+		secondMonthTotal,
+		yearlyTotal,
+	});
+};
+
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+/////////////
+
+exports.PnlReportGenerateRefund = async (req, res) => {
+	let { firstMonth, firstYear, secondMonth, secondYear, ytd } = req.query;
+	firstMonth = parseInt(firstMonth) + 1;
+	firstYear = parseInt(firstYear);
+	secondMonth = parseInt(secondMonth) + 1;
+	secondYear = parseInt(secondYear);
+	ytd = parseInt(ytd);
+
+	// payload for first month installment
+	var firstDayOfMonth = new Date(`${firstYear}-${firstMonth}-01`);
+	var lastDayOfMonth = new Date(firstYear, firstMonth, 0);
+	let firstMonthDates = [];
+	for (
+		firstDayOfMonth;
+		firstDayOfMonth <= lastDayOfMonth;
+		firstDayOfMonth.setDate(firstDayOfMonth.getDate() + 1)
+	) {
+		firstMonthDates.push(moment(firstDayOfMonth).format('YYYY-MM-DD'));
+	}
+
+	// payload for first month installment
+	var firstDayOfSecondMonth = new Date(`${secondYear}-${secondMonth}-01`);
+	var lastDayOfSecondMonth = new Date(secondYear, secondMonth, 0);
+	let secondMonthDates = [];
+	for (
+		firstDayOfSecondMonth;
+		firstDayOfSecondMonth <= lastDayOfSecondMonth;
+		firstDayOfSecondMonth.setDate(firstDayOfSecondMonth.getDate() + 1)
+	) {
+		secondMonthDates.push(moment(firstDayOfSecondMonth).format('YYYY-MM-DD'));
+	}
+
+	/// First Month DownPayment + Registration Fee
+	const FirstMonthDownPaymentNRegistration = await BuyProduct.aggregate([
+		{ $match: { isRefund: true } },
+		// {
+		// 	$project: {
+		// 		refund: 1,
+		// 	},
+		// },
+	]);
+
+	///////
+	///////
+	///////
+	///////
+	///////
+	///////
+	///////
+	///////
+	///////
+	///////
+	///////
+
+	/// Second Month DownPayment + Registration Fee
+	const secondMonthDownPaymentNRegistration = await BuyProduct.aggregate([
+		{ $match: { userId: req.params.userId } },
+		{
+			$project: {
+				deposite: '$deposite',
+				month: { $month: '$createdAt' },
+				year: { $year: '$createdAt' },
+				productType: '$product_type',
+			},
+		},
+		{
+			$match: { month: secondMonth, year: secondYear },
+		},
+		{
+			$group: {
+				_id: '$productType',
+				balance: { $sum: '$deposite' },
+			},
+		},
+	]);
+
+	// yearly data fetching
+	// @Yearly dates
+	const _d = new Date();
+	var firstDayOfMonth = new Date(`${_d.getFullYear()}-${1}-01`);
+	var lastDayOfMonth = new Date(_d.getFullYear(), 12, 0);
+
+	let dates = [];
+	for (
+		firstDayOfMonth;
+		firstDayOfMonth <= lastDayOfMonth;
+		firstDayOfMonth.setDate(firstDayOfMonth.getDate() + 1)
+	) {
+		dates.push(moment(firstDayOfMonth).format('YYYY-MM-DD'));
+	}
+
+	/// Second Month DownPayment + Registration Fee
+	const YearlyDownPaymentNRegistration = await BuyProduct.aggregate([
+		{ $match: { userId: req.params.userId } },
+		{
+			$project: {
+				deposite: '$deposite',
+				month: { $month: '$createdAt' },
+				year: { $year: '$createdAt' },
+				productType: '$product_type',
+			},
+		},
+		{
+			$match: { year: ytd },
+		},
+		{
+			$group: {
+				_id: '$productType',
+				balance: { $sum: '$deposite' },
+			},
+		},
+	]);
+
+	const data = [];
+
+	const firstMonthTotal = data.reduce((a, x) => a + x.firstMonthIncome, 0);
+	const secondMonthTotal = data.reduce((a, x) => a + x.secondMonthIncome, 0);
+	const yearlyTotal = data.reduce((a, x) => a + x.incomeInYear, 0);
+
+	return res.json({
+		FirstMonthDownPaymentNRegistration,
 		data,
 		firstMonthTotal,
 		secondMonthTotal,

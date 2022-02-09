@@ -20,6 +20,7 @@ const {
 	PnlReportGenerateExpense,
 	PnlReportGenerateMembership,
 	PnlReportGenerateProductSale,
+	PnlReportGenerateRefund,
 } = require('../controllers/finance_info');
 const upload = require('../handler/multer');
 
@@ -92,6 +93,12 @@ router.get(
 	'/finance/pnl-product-sale-report/:userId',
 	requireSignin,
 	PnlReportGenerateProductSale
+);
+
+router.get(
+	'/finance/pnl-refund-membership-report/:userId',
+	requireSignin,
+	PnlReportGenerateRefund
 );
 
 module.exports = router;
