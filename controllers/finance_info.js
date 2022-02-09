@@ -320,30 +320,23 @@ exports.weeklyExpense = async (req, res) => {
 
 exports.MonthlyExpense = async (req, res) => {
 	// Current Month
-	const currentDate = new Date();
-	const _local_String_current = currentDate
-		.toLocaleDateString(`fr-CA`)
-		.split('/')
-		.join('-');
-
-	currentDate.setDate(1);
-	const firstDateOfMonth = new Date(currentDate);
-	const _local_String_firstDateofMonth = firstDateOfMonth
-		.toLocaleDateString(`fr-CA`)
-		.split('/')
-		.join('-');
-
-	const start = `${_local_String_firstDateofMonth}T00:00:00.00Z`;
-	const end = `${_local_String_current}T23:59:59.999Z`;
+	const thisMonth = new Date().getMonth() + 1;
+	const thisYear = new Date().getFullYear();
 
 	let expenseData = await Expense.aggregate([
+		{ $match: { userId: mongoose.Types.ObjectId(req.params.userId) } },
+		{
+			$project: {
+				amount: 1,
+				month: { $month: '$date' },
+				year: { $year: '$date' },
+			},
+		},
+
 		{
 			$match: {
-				userId: mongoose.Types.ObjectId(req.params.userId),
-				date: {
-					$gte: new Date(start),
-					$lt: new Date(end),
-				},
+				month: thisMonth,
+				year: thisYear,
 			},
 		},
 		{
@@ -534,8 +527,7 @@ exports.todaysIncome = async (req, res) => {
 		{ $match: { userId: req.params.userId } },
 		{
 			$project: {
-				total_price: 1,
-				balance: 1,
+				deposite: 1,
 				month: { $month: '$createdAt' },
 				year: { $year: '$createdAt' },
 				day: { $dayOfMonth: '$createdAt' },
@@ -545,16 +537,14 @@ exports.todaysIncome = async (req, res) => {
 		{
 			$group: {
 				_id: '-',
-				balance: { $sum: '$balance' },
-				total_price: { $sum: '$total_price' },
+				balance: { $sum: '$deposite' },
 			},
 		},
 	]);
 
 	let incomeFromProduct = 0;
 	if (incomeByProductArray && incomeByProductArray.length > 0) {
-		incomeFromProduct =
-			incomeByProductArray[0].total_price - incomeByProductArray[0].balance;
+		incomeFromProduct = incomeByProductArray[0].balance;
 	}
 
 	// [+] buy membership income ***====================================
@@ -577,8 +567,7 @@ exports.todaysIncome = async (req, res) => {
 		{
 			$group: {
 				_id: '-',
-				balance: { $sum: '$balance' },
-				totalp: { $sum: '$totalp' },
+				dpayment: { $sum: '$dpayment' },
 				register_fees: { $sum: '$register_fees' },
 			},
 		},
@@ -587,8 +576,7 @@ exports.todaysIncome = async (req, res) => {
 	let incomeFromMembership = 0;
 	if (incomeByMembershipArray && incomeByMembershipArray.length > 0) {
 		incomeFromMembership =
-			incomeByMembershipArray[0].totalp -
-			incomeByMembershipArray[0].balance +
+			incomeByMembershipArray[0].dpayment +
 			incomeByMembershipArray[0].register_fees;
 	}
 	const date = moment(new Date()).format('YYYY-MM-DD');
@@ -672,46 +660,54 @@ exports.weeklyIncome = async (req, res) => {
 	const start = `${_local_String_sevenDaysAgo}T00:00:00.00Z`;
 	const end = `${_local_String_current}T23:59:59.999Z`;
 
-	// Income From Product
 	const incomeByProductArray = await BuyProduct.aggregate([
+		{ $match: { userId: req.params.userId } },
 		{
 			$project: {
-				total_price: 1,
-				balance: 1,
-				userId: 1,
+				deposite: '$deposite',
+				month: { $month: '$createdAt' },
+				year: { $year: '$createdAt' },
+				productType: '$product_type',
 				createdAt: 1,
 			},
 		},
 		{
 			$match: {
-				userId: req.params.userId,
 				createdAt: {
 					$gte: new Date(start),
 					$lt: new Date(end),
 				},
 			},
 		},
-
 		{
 			$group: {
-				_id: '-',
-				balance: { $sum: '$balance' },
-				total_price: { $sum: '$total_price' },
+				_id: null,
+				balance: { $sum: '$deposite' },
 			},
 		},
 	]);
 
 	let incomeFromProduct = 0;
+
 	if (incomeByProductArray && incomeByProductArray.length > 0) {
-		incomeFromProduct =
-			incomeByProductArray[0].total_price - incomeByProductArray[0].balance;
+		incomeFromProduct = incomeByProductArray[0].balance;
 	}
 
 	// [+] buy membership income ***====================================
+
 	const incomeByMembershipArray = await BuyMembership.aggregate([
+		{ $match: { userId: req.params.userId } },
+		{
+			$project: {
+				dpayment: '$dpayment',
+				register_fees: '$register_fees',
+				month: { $month: '$createdAt' },
+				year: { $year: '$createdAt' },
+				createdAt: 1,
+			},
+		},
 		{
 			$match: {
-				userId: req.params.userId,
 				createdAt: {
 					$gte: new Date(start),
 					$lt: new Date(end),
@@ -719,19 +715,9 @@ exports.weeklyIncome = async (req, res) => {
 			},
 		},
 		{
-			$project: {
-				totalp: 1,
-				balance: 1,
-				dpayment: 1,
-				createdAt: 1,
-				register_fees: 1,
-			},
-		},
-		{
 			$group: {
-				_id: '-',
-				balance: { $sum: '$balance' },
-				totalp: { $sum: '$totalp' },
+				_id: null,
+				dpayment: { $sum: '$dpayment' },
 				register_fees: { $sum: '$register_fees' },
 			},
 		},
@@ -740,8 +726,7 @@ exports.weeklyIncome = async (req, res) => {
 	let incomeFromMembership = 0;
 	if (incomeByMembershipArray && incomeByMembershipArray.length > 0) {
 		incomeFromMembership =
-			incomeByMembershipArray[0].totalp -
-			incomeByMembershipArray[0].balance +
+			incomeByMembershipArray[0].dpayment +
 			incomeByMembershipArray[0].register_fees;
 	}
 
@@ -835,46 +820,54 @@ exports.MonthlyIncome = async (req, res) => {
 	const start = `${_local_String_firstDateofMonth}T00:00:00.00Z`;
 	const end = `${_local_String_current}T23:59:59.999Z`;
 
-	// Income From Product
 	const incomeByProductArray = await BuyProduct.aggregate([
+		{ $match: { userId: req.params.userId } },
 		{
 			$project: {
-				total_price: 1,
-				balance: 1,
-				userId: 1,
+				deposite: '$deposite',
+				month: { $month: '$createdAt' },
+				year: { $year: '$createdAt' },
+				productType: '$product_type',
 				createdAt: 1,
 			},
 		},
 		{
 			$match: {
-				userId: req.params.userId,
 				createdAt: {
 					$gte: new Date(start),
 					$lt: new Date(end),
 				},
 			},
 		},
-
 		{
 			$group: {
-				_id: '-',
-				balance: { $sum: '$balance' },
-				total_price: { $sum: '$total_price' },
+				_id: null,
+				balance: { $sum: '$deposite' },
 			},
 		},
 	]);
 
 	let incomeFromProduct = 0;
+
 	if (incomeByProductArray && incomeByProductArray.length > 0) {
-		incomeFromProduct =
-			incomeByProductArray[0].total_price - incomeByProductArray[0].balance;
+		incomeFromProduct = incomeByProductArray[0].balance;
 	}
 
 	// [+] buy membership income ***====================================
+
 	const incomeByMembershipArray = await BuyMembership.aggregate([
+		{ $match: { userId: req.params.userId } },
+		{
+			$project: {
+				dpayment: '$dpayment',
+				register_fees: '$register_fees',
+				month: { $month: '$createdAt' },
+				year: { $year: '$createdAt' },
+				createdAt: 1,
+			},
+		},
 		{
 			$match: {
-				userId: req.params.userId,
 				createdAt: {
 					$gte: new Date(start),
 					$lt: new Date(end),
@@ -882,19 +875,9 @@ exports.MonthlyIncome = async (req, res) => {
 			},
 		},
 		{
-			$project: {
-				totalp: 1,
-				balance: 1,
-				dpayment: 1,
-				createdAt: 1,
-				register_fees: 1,
-			},
-		},
-		{
 			$group: {
-				_id: '-',
-				balance: { $sum: '$balance' },
-				totalp: { $sum: '$totalp' },
+				_id: null,
+				dpayment: { $sum: '$dpayment' },
 				register_fees: { $sum: '$register_fees' },
 			},
 		},
@@ -903,8 +886,7 @@ exports.MonthlyIncome = async (req, res) => {
 	let incomeFromMembership = 0;
 	if (incomeByMembershipArray && incomeByMembershipArray.length > 0) {
 		incomeFromMembership =
-			incomeByMembershipArray[0].totalp -
-			incomeByMembershipArray[0].balance +
+			incomeByMembershipArray[0].dpayment +
 			incomeByMembershipArray[0].register_fees;
 	}
 
@@ -992,46 +974,49 @@ exports.thisYearIncome = async (req, res) => {
 		{ $match: { userId: req.params.userId } },
 		{
 			$project: {
-				total_price: 1,
-				balance: 1,
+				deposite: '$deposite',
+				month: { $month: '$createdAt' },
 				year: { $year: '$createdAt' },
+				productType: '$product_type',
 			},
 		},
-		{ $match: { year: currentYear } },
+		{
+			$match: { year: currentYear },
+		},
 		{
 			$group: {
-				_id: '-',
-				balance: { $sum: '$balance' },
-				total_price: { $sum: '$total_price' },
+				_id: null,
+				balance: { $sum: '$deposite' },
 			},
 		},
 	]);
 
 	let incomeFromProduct = 0;
+
 	if (incomeByProductArray && incomeByProductArray.length > 0) {
-		incomeFromProduct =
-			incomeByProductArray[0].total_price - incomeByProductArray[0].balance;
+		incomeFromProduct = incomeByProductArray[0].balance;
 	}
 
 	// [+] buy membership income ***====================================
+
 	const incomeByMembershipArray = await BuyMembership.aggregate([
 		{ $match: { userId: req.params.userId } },
-
 		{
 			$project: {
-				totalp: 1,
-				balance: 1,
-				dpayment: 1,
-				register_fees: 1,
+				dpayment: '$dpayment',
+				register_fees: '$register_fees',
+				month: { $month: '$createdAt' },
 				year: { $year: '$createdAt' },
+				membership: '$membership_name',
 			},
 		},
-		{ $match: { year: currentYear } },
+		{
+			$match: { year: currentYear },
+		},
 		{
 			$group: {
-				_id: '-',
-				balance: { $sum: '$balance' },
-				totalp: { $sum: '$totalp' },
+				_id: null,
+				dpayment: { $sum: '$dpayment' },
 				register_fees: { $sum: '$register_fees' },
 			},
 		},
@@ -1040,8 +1025,7 @@ exports.thisYearIncome = async (req, res) => {
 	let incomeFromMembership = 0;
 	if (incomeByMembershipArray && incomeByMembershipArray.length > 0) {
 		incomeFromMembership =
-			incomeByMembershipArray[0].totalp -
-			incomeByMembershipArray[0].balance +
+			incomeByMembershipArray[0].dpayment +
 			incomeByMembershipArray[0].register_fees;
 	}
 
@@ -1122,7 +1106,6 @@ exports.thisYearIncome = async (req, res) => {
 	res.json(total + '');
 };
 
-/////////////////////////
 /////////////////////////
 // Income report with filter
 exports.IncomeReportWithFilters = async (req, res) => {
@@ -1299,6 +1282,8 @@ exports.PnlReportGenerateExpense = async (req, res) => {
 				x === expense._id.category
 		);
 
+		console.log(previous);
+
 		return {
 			category: x,
 			firstMonth: current ? current.amount : 0,
@@ -1331,7 +1316,7 @@ exports.PnlReportGenerateExpense = async (req, res) => {
 	let newCategories = [...new Set(yearlyData.map((x) => x._id)), ...categories];
 	newCategories = [...new Set(newCategories)];
 
-	const data = newCategories.map((x) => {
+	const dataWithourParcentage = newCategories.map((x) => {
 		let monthly = monthlyData.find((a) => a.category === x);
 		let month1 = 0;
 		let month2 = 0;
@@ -1354,12 +1339,39 @@ exports.PnlReportGenerateExpense = async (req, res) => {
 		};
 	});
 
-	const firstMonthTotalExpense = data.reduce((a, x) => a + x.month1, 0);
-	const secondMonthTotalExpense = data.reduce((a, x) => a + x.month2, 0);
-	const yearlyTotalExpense = data.reduce((a, x) => a + x.yearly, 0);
+	const firstMonthTotalExpense = dataWithourParcentage.reduce(
+		(a, x) => a + x.month1,
+		0
+	);
+	const secondMonthTotalExpense = dataWithourParcentage.reduce(
+		(a, x) => a + x.month2,
+		0
+	);
+	const yearlyTotalExpense = dataWithourParcentage.reduce(
+		(a, x) => a + x.yearly,
+		0
+	);
+
+	const dataWithPercentage = dataWithourParcentage.map((x) => {
+		let percentage1 = parseFloat(
+			(x.month1 / firstMonthTotalExpense) * 100
+		).toFixed(2);
+		let percentage2 = parseFloat(
+			(x.month2 / secondMonthTotalExpense) * 100
+		).toFixed(2);
+		let percentage3 = parseFloat((x.yearly / yearlyTotalExpense) * 100).toFixed(
+			2
+		);
+		return {
+			...x,
+			percentage1,
+			percentage2,
+			percentage3,
+		};
+	});
 
 	return res.json({
-		data,
+		data: dataWithPercentage,
 		firstMonthTotalExpense,
 		secondMonthTotalExpense,
 		yearlyTotalExpense,
@@ -1585,13 +1597,6 @@ exports.PnlReportGenerateMembership = async (req, res) => {
 		}
 	}
 
-	// secondMonthEMI
-	// firstMonthEMI
-	// FirstMonthDownPaymentNRegistration
-	// secondMonthDownPaymentNRegistration
-	// yearlyEMI
-	// YearlyDownPaymentNRegistration
-
 	membershipNames = [...new Set(membershipNames)];
 
 	const data = membershipNames.map((x) => {
@@ -1654,8 +1659,27 @@ exports.PnlReportGenerateMembership = async (req, res) => {
 	const secondMonthTotal = data.reduce((a, x) => a + x.secondMonthIncome, 0);
 	const yearlyTotal = data.reduce((a, x) => a + x.incomeInYear, 0);
 
+	const dataWithPercentage = data.map((x) => {
+		let percentage1 = parseFloat(
+			(x.firstMonthIncome / firstMonthTotal) * 100
+		).toFixed(2);
+		let percentage2 = parseFloat(
+			(x.secondMonthIncome / secondMonthTotal) * 100
+		).toFixed(2);
+		let percentage3 = parseFloat((x.incomeInYear / yearlyTotal) * 100).toFixed(
+			2
+		);
+
+		return {
+			...x,
+			percentage1,
+			percentage2,
+			percentage3,
+		};
+	});
+
 	return res.json({
-		data,
+		data: dataWithPercentage,
 		firstMonthTotal,
 		secondMonthTotal,
 		yearlyTotal,
@@ -1935,45 +1959,33 @@ exports.PnlReportGenerateProductSale = async (req, res) => {
 	const secondMonthTotal = data.reduce((a, x) => a + x.secondMonthIncome, 0);
 	const yearlyTotal = data.reduce((a, x) => a + x.incomeInYear, 0);
 
+	const dataWithPercentage = data.map((x) => {
+		let percentage1 = parseFloat(
+			(x.firstMonthIncome / firstMonthTotal) * 100
+		).toFixed(2);
+		let percentage2 = parseFloat(
+			(x.secondMonthIncome / secondMonthTotal) * 100
+		).toFixed(2);
+		let percentage3 = parseFloat((x.incomeInYear / yearlyTotal) * 100).toFixed(
+			2
+		);
+
+		return {
+			...x,
+			percentage1,
+			percentage2,
+			percentage3,
+		};
+	});
+
 	return res.json({
-		data,
+		data: dataWithPercentage,
 		firstMonthTotal,
 		secondMonthTotal,
 		yearlyTotal,
 	});
 };
 
-/////////////
-/////////////
-/////////////
-/////////////
-/////////////
-/////////////
-/////////////
-/////////////
-/////////////
-/////////////
-/////////////
-/////////////
-/////////////
-/////////////
-/////////////
-/////////////
-/////////////
-/////////////
-/////////////
-/////////////
-/////////////
-/////////////
-/////////////
-/////////////
-/////////////
-/////////////
-/////////////
-/////////////
-/////////////
-/////////////
-/////////////
 /////////////
 
 exports.PnlReportGenerateRefund = async (req, res) => {
@@ -1984,122 +1996,97 @@ exports.PnlReportGenerateRefund = async (req, res) => {
 	secondYear = parseInt(secondYear);
 	ytd = parseInt(ytd);
 
-	// payload for first month installment
-	var firstDayOfMonth = new Date(`${firstYear}-${firstMonth}-01`);
-	var lastDayOfMonth = new Date(firstYear, firstMonth, 0);
-	let firstMonthDates = [];
-	for (
-		firstDayOfMonth;
-		firstDayOfMonth <= lastDayOfMonth;
-		firstDayOfMonth.setDate(firstDayOfMonth.getDate() + 1)
-	) {
-		firstMonthDates.push(moment(firstDayOfMonth).format('YYYY-MM-DD'));
-	}
-
-	// payload for first month installment
-	var firstDayOfSecondMonth = new Date(`${secondYear}-${secondMonth}-01`);
-	var lastDayOfSecondMonth = new Date(secondYear, secondMonth, 0);
-	let secondMonthDates = [];
-	for (
-		firstDayOfSecondMonth;
-		firstDayOfSecondMonth <= lastDayOfSecondMonth;
-		firstDayOfSecondMonth.setDate(firstDayOfSecondMonth.getDate() + 1)
-	) {
-		secondMonthDates.push(moment(firstDayOfSecondMonth).format('YYYY-MM-DD'));
-	}
-
-	/// First Month DownPayment + Registration Fee
-	const FirstMonthDownPaymentNRegistration = await BuyProduct.aggregate([
-		{ $match: { isRefund: true } },
-		// {
-		// 	$project: {
-		// 		refund: 1,
-		// 	},
-		// },
-	]);
-
-	///////
-	///////
-	///////
-	///////
-	///////
-	///////
-	///////
-	///////
-	///////
-	///////
-	///////
-
-	/// Second Month DownPayment + Registration Fee
-	const secondMonthDownPaymentNRegistration = await BuyProduct.aggregate([
-		{ $match: { userId: req.params.userId } },
+	/// First Month Refund
+	const FirstMonthRefund = await BuyMembership.aggregate([
+		{ $match: { userId: req.params.userId, isRefund: true } },
 		{
 			$project: {
-				deposite: '$deposite',
-				month: { $month: '$createdAt' },
-				year: { $year: '$createdAt' },
-				productType: '$product_type',
+				refund: 1,
 			},
 		},
-		{
-			$match: { month: secondMonth, year: secondYear },
-		},
-		{
-			$group: {
-				_id: '$productType',
-				balance: { $sum: '$deposite' },
-			},
-		},
-	]);
-
-	// yearly data fetching
-	// @Yearly dates
-	const _d = new Date();
-	var firstDayOfMonth = new Date(`${_d.getFullYear()}-${1}-01`);
-	var lastDayOfMonth = new Date(_d.getFullYear(), 12, 0);
-
-	let dates = [];
-	for (
-		firstDayOfMonth;
-		firstDayOfMonth <= lastDayOfMonth;
-		firstDayOfMonth.setDate(firstDayOfMonth.getDate() + 1)
-	) {
-		dates.push(moment(firstDayOfMonth).format('YYYY-MM-DD'));
-	}
-
-	/// Second Month DownPayment + Registration Fee
-	const YearlyDownPaymentNRegistration = await BuyProduct.aggregate([
-		{ $match: { userId: req.params.userId } },
+		{ $unwind: '$refund' },
 		{
 			$project: {
-				deposite: '$deposite',
-				month: { $month: '$createdAt' },
-				year: { $year: '$createdAt' },
-				productType: '$product_type',
+				amount: '$refund.Amount',
+				month: { $month: '$refund.date' },
+				year: { $year: '$refund.date' },
 			},
 		},
-		{
-			$match: { year: ytd },
-		},
+		{ $match: { month: firstMonth, year: firstYear } },
 		{
 			$group: {
-				_id: '$productType',
-				balance: { $sum: '$deposite' },
+				_id: null,
+				amount: { $sum: '$amount' },
+			},
+		},
+	]);
+	/// Second Month Refund
+	const secondMonthRefund = await BuyMembership.aggregate([
+		{ $match: { userId: req.params.userId, isRefund: true } },
+		{
+			$project: {
+				refund: 1,
+			},
+		},
+		{ $unwind: '$refund' },
+		{
+			$project: {
+				amount: '$refund.Amount',
+				month: { $month: '$refund.date' },
+				year: { $year: '$refund.date' },
+			},
+		},
+		{ $match: { month: secondMonth, year: secondYear } },
+		{
+			$group: {
+				_id: null,
+				amount: { $sum: '$amount' },
+			},
+		},
+	]);
+	/// Second Month Refund
+	const yearlyRefund = await BuyMembership.aggregate([
+		{ $match: { userId: req.params.userId, isRefund: true } },
+		{
+			$project: {
+				refund: 1,
+			},
+		},
+		{ $unwind: '$refund' },
+		{
+			$project: {
+				amount: '$refund.Amount',
+				year: { $year: '$refund.date' },
+			},
+		},
+		{ $match: { year: ytd } },
+		{
+			$group: {
+				_id: null,
+				amount: { $sum: '$amount' },
 			},
 		},
 	]);
 
-	const data = [];
+	let firstMonthTotal = 0;
+	let secondMonthTotal = 0;
 
-	const firstMonthTotal = data.reduce((a, x) => a + x.firstMonthIncome, 0);
-	const secondMonthTotal = data.reduce((a, x) => a + x.secondMonthIncome, 0);
-	const yearlyTotal = data.reduce((a, x) => a + x.incomeInYear, 0);
+	if (FirstMonthRefund && FirstMonthRefund.length > 0) {
+		firstMonthTotal = FirstMonthRefund[0].balance;
+	}
+	if (secondMonthRefund && secondMonthRefund.length > 0) {
+		secondMonthTotal = secondMonthRefund[0].balance;
+	}
+
+	let ytdTotal = 0;
+
+	if (yearlyRefund.length > 0) {
+		ytdTotal = yearlyRefund[0].amount;
+	}
 
 	return res.json({
-		FirstMonthDownPaymentNRegistration,
-		data,
+		yearlyTotal: ytdTotal,
 		firstMonthTotal,
 		secondMonthTotal,
-		yearlyTotal,
 	});
 };
