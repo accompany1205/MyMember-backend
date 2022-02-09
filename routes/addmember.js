@@ -108,13 +108,13 @@ router.delete('/member/delete_multipal_member/:userId', verifySchool, delete_mul
 router.put('/member/update_member/:userId/:memberID', upload.single('memberprofileImage'), verifySchool, updatemember);
 
 //student type 
-router.get('/member/active_trial/:userId/:page_no/:per_page', verifySchool, active_trial_Std);
-router.get('/member/active_student/:userId/:page_no/:per_page', verifySchool, active_Std);
-router.get('/member/Former_trial/:userId/:page_no/:per_page', verifySchool, Former_trial_Std);
-router.get('/member/Former_student/:userId/:page_no/:per_page', verifySchool, Former_Std);
-router.get('/member/Leads/:userId/:page_no/:per_page', verifySchool, leads_Std);
-router.get('/member/camp_student/:userId/:page_no/:per_page', verifySchool, camp_Std);
-router.get('/member/after_school_student/:userId/:page_no/:per_page', verifySchool, after_school_Std);
+router.get('/member/active_trial/:userId', verifySchool, active_trial_Std);
+router.get('/member/active_student/:userId', verifySchool, active_Std);
+router.get('/member/Former_trial/:userId', verifySchool, Former_trial_Std);
+router.get('/member/Former_student/:userId', verifySchool, Former_Std);
+router.get('/member/Leads/:userId', verifySchool, leads_Std);
+router.get('/member/camp_student/:userId', verifySchool, camp_Std);
+router.get('/member/after_school_student/:userId', verifySchool, after_school_Std);
 
 // email and text sms send perticular student
 router.post('/member/email_send_student/:userId', verifySchool, send_mail_std)
