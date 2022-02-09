@@ -913,6 +913,7 @@ exports.MonthlyIncome = async (req, res) => {
 
 	var firstDayOfMonth = new Date(`${year}-${month}-01`);
 	var lastDayOfMonth = new Date(year, month, 0);
+
 	let dates = [];
 	for (
 		firstDayOfMonth;
@@ -1237,9 +1238,8 @@ exports.IncomeReportWithFilters = async (req, res) => {
 	return res.json(data.sort((a, b) => new Date(a.date) - new Date(b.date)));
 };
 
-exports.PnlReportGenerate = async (req, res) => {
+exports.PnlReportGenerateExpense = async (req, res) => {
 	let { firstMonth, firstYear, secondMonth, secondYear, ytd } = req.query;
-
 	firstMonth = parseInt(firstMonth) + 1;
 	firstYear = parseInt(firstYear);
 	secondMonth = parseInt(secondMonth) + 1;
@@ -1250,14 +1250,10 @@ exports.PnlReportGenerate = async (req, res) => {
 		{ $match: { userId: mongoose.Types.ObjectId(req.params.userId) } },
 		{
 			$project: {
-				category: 1,
 				amount: 1,
-				year: { $year: '$date' },
+				category: 1,
 				month: { $month: '$date' },
-				firstMonth: { $month: '$date' },
-				firstYear: { $year: '$date' },
-				secondMonth: { $month: '$date' },
-				secondYear: { $year: '$date' },
+				year: { $year: '$date' },
 			},
 		},
 
@@ -1265,27 +1261,700 @@ exports.PnlReportGenerate = async (req, res) => {
 			$match: {
 				$or: [
 					{
-						firstMonth,
-						firstYear,
+						$and: [{ month: firstMonth }, { year: firstYear }],
 					},
-					{ secondMonth, secondYear },
 					{
-						year: ytd,
+						$and: [{ month: secondMonth }, { year: secondYear }],
 					},
 				],
 			},
 		},
-
 		{
 			$group: {
 				_id: {
 					month: '$month',
 					year: '$year',
+					category: '$category',
 				},
-				total: { $sum: '$amount' },
+				amount: { $sum: '$amount' },
+			},
+		},
+		{ $sort: { _id: 1 } },
+	]);
+
+	const categories = [...new Set(expenses.map((x) => x._id.category))];
+
+	const monthlyData = categories.map((x) => {
+		let current = expenses.find(
+			(expense) =>
+				expense._id.month === firstMonth &&
+				expense._id.year === firstYear &&
+				x === expense._id.category
+		);
+
+		let previous = expenses.find(
+			(expense) =>
+				expense._id.month === secondMonth &&
+				expense._id.year === secondYear &&
+				x === expense._id.category
+		);
+
+		return {
+			category: x,
+			firstMonth: current ? current.amount : 0,
+			secondMonth: previous ? previous.amount : 0,
+		};
+	});
+
+	// Expense By Year
+	let yearlyData = await Expense.aggregate([
+		{ $match: { userId: mongoose.Types.ObjectId(req.params.userId) } },
+		{
+			$project: {
+				amount: 1,
+				category: 1,
+				year: { $year: '$date' },
+			},
+		},
+		{
+			$match: { year: ytd },
+		},
+		{
+			$group: {
+				_id: '$category',
+				amount: { $sum: '$amount' },
+			},
+		},
+		{ $sort: { _id: 1 } },
+	]);
+
+	let newCategories = [...new Set(yearlyData.map((x) => x._id)), ...categories];
+	newCategories = [...new Set(newCategories)];
+
+	const data = newCategories.map((x) => {
+		let monthly = monthlyData.find((a) => a.category === x);
+		let month1 = 0;
+		let month2 = 0;
+		if (monthly) {
+			month1 = monthly.firstMonth;
+			month2 = monthly.secondMonth;
+		}
+
+		let yearly = yearlyData.find((a) => a._id === x);
+		let yearAmt = 0;
+		if (yearly) {
+			yearAmt = yearly.amount;
+		}
+
+		return {
+			category: x,
+			month1,
+			month2,
+			yearly: yearAmt,
+		};
+	});
+
+	const firstMonthTotalExpense = data.reduce((a, x) => a + x.month1, 0);
+	const secondMonthTotalExpense = data.reduce((a, x) => a + x.month2, 0);
+	const yearlyTotalExpense = data.reduce((a, x) => a + x.yearly, 0);
+
+	return res.json({
+		data,
+		firstMonthTotalExpense,
+		secondMonthTotalExpense,
+		yearlyTotalExpense,
+	});
+};
+
+exports.PnlReportGenerateMembership = async (req, res) => {
+	let { firstMonth, firstYear, secondMonth, secondYear, ytd } = req.query;
+	firstMonth = parseInt(firstMonth) + 1;
+	firstYear = parseInt(firstYear);
+	secondMonth = parseInt(secondMonth) + 1;
+	secondYear = parseInt(secondYear);
+	ytd = parseInt(ytd);
+
+	// payload for first month installment
+	var firstDayOfMonth = new Date(`${firstYear}-${firstMonth}-01`);
+	var lastDayOfMonth = new Date(firstYear, firstMonth, 0);
+	let firstMonthDates = [];
+	for (
+		firstDayOfMonth;
+		firstDayOfMonth <= lastDayOfMonth;
+		firstDayOfMonth.setDate(firstDayOfMonth.getDate() + 1)
+	) {
+		firstMonthDates.push(moment(firstDayOfMonth).format('YYYY-MM-DD'));
+	}
+
+	// @ membership EMI Income
+	const firstMonthEMI = await BuyMembership.aggregate([
+		{ $match: { userId: req.params.userId } },
+		{ $unwind: '$schedulePayments' },
+		{
+			$project: {
+				amount: '$schedulePayments.Amount',
+				date: '$schedulePayments.date',
+				status: '$schedulePayments.status',
+				membership: '$membership_name',
+			},
+		},
+		{
+			$match: { date: { $in: firstMonthDates }, status: 'paid' },
+		},
+		{
+			$group: {
+				_id: '$membership',
+				balance: { $sum: '$amount' },
 			},
 		},
 	]);
 
-	return res.json(expenses);
+	// payload for first month installment
+	var firstDayOfSecondMonth = new Date(`${secondYear}-${secondMonth}-01`);
+	var lastDayOfSecondMonth = new Date(secondYear, secondMonth, 0);
+	let secondMonthDates = [];
+	for (
+		firstDayOfSecondMonth;
+		firstDayOfSecondMonth <= lastDayOfSecondMonth;
+		firstDayOfSecondMonth.setDate(firstDayOfSecondMonth.getDate() + 1)
+	) {
+		secondMonthDates.push(moment(firstDayOfSecondMonth).format('YYYY-MM-DD'));
+	}
+
+	// @ membership EMI Income
+	const secondMonthEMI = await BuyMembership.aggregate([
+		{ $match: { userId: req.params.userId } },
+		{ $unwind: '$schedulePayments' },
+		{
+			$project: {
+				amount: '$schedulePayments.Amount',
+				date: '$schedulePayments.date',
+				status: '$schedulePayments.status',
+				membership: '$membership_name',
+			},
+		},
+		{
+			$match: { date: { $in: secondMonthDates }, status: 'paid' },
+		},
+		{
+			$group: {
+				_id: '$membership',
+				balance: { $sum: '$amount' },
+			},
+		},
+	]);
+
+	/// First Month DownPayment + Registration Fee
+	const FirstMonthDownPaymentNRegistration = await BuyMembership.aggregate([
+		{ $match: { userId: req.params.userId } },
+		{
+			$project: {
+				dpayment: '$dpayment',
+				register_fees: '$register_fees',
+				month: { $month: '$createdAt' },
+				year: { $year: '$createdAt' },
+				membership: '$membership_name',
+			},
+		},
+		{
+			$match: { month: firstMonth, year: firstYear },
+		},
+		{
+			$group: {
+				_id: '$membership',
+				dpayment: { $sum: '$dpayment' },
+				register_fees: { $sum: '$register_fees' },
+			},
+		},
+	]);
+
+	/// Second Month DownPayment + Registration Fee
+	const secondMonthDownPaymentNRegistration = await BuyMembership.aggregate([
+		{ $match: { userId: req.params.userId } },
+		{
+			$project: {
+				dpayment: '$dpayment',
+				register_fees: '$register_fees',
+				month: { $month: '$createdAt' },
+				year: { $year: '$createdAt' },
+				membership: '$membership_name',
+			},
+		},
+		{
+			$match: { month: secondMonth, year: secondYear },
+		},
+		{
+			$group: {
+				_id: '$membership',
+				dpayment: { $sum: '$dpayment' },
+				register_fees: { $sum: '$register_fees' },
+			},
+		},
+	]);
+
+	// yearly data fetching
+	// @Yearly dates
+	const _d = new Date();
+	var firstDayOfMonth = new Date(`${_d.getFullYear()}-${1}-01`);
+	var lastDayOfMonth = new Date(_d.getFullYear(), 12, 0);
+
+	let dates = [];
+	for (
+		firstDayOfMonth;
+		firstDayOfMonth <= lastDayOfMonth;
+		firstDayOfMonth.setDate(firstDayOfMonth.getDate() + 1)
+	) {
+		dates.push(moment(firstDayOfMonth).format('YYYY-MM-DD'));
+	}
+
+	const yearlyEMI = await BuyMembership.aggregate([
+		{ $match: { userId: req.params.userId } },
+		{ $unwind: '$schedulePayments' },
+		{
+			$project: {
+				amount: '$schedulePayments.Amount',
+				date: '$schedulePayments.date',
+				status: '$schedulePayments.status',
+				membership: '$membership_name',
+			},
+		},
+		{
+			$match: { date: { $in: dates }, status: 'paid' },
+		},
+		{
+			$group: {
+				_id: '$membership',
+				balance: { $sum: '$amount' },
+			},
+		},
+	]);
+
+	/// Second Month DownPayment + Registration Fee
+	const YearlyDownPaymentNRegistration = await BuyMembership.aggregate([
+		{ $match: { userId: req.params.userId } },
+		{
+			$project: {
+				dpayment: '$dpayment',
+				register_fees: '$register_fees',
+				month: { $month: '$createdAt' },
+				year: { $year: '$createdAt' },
+				membership: '$membership_name',
+			},
+		},
+		{
+			$match: { year: ytd },
+		},
+		{
+			$group: {
+				_id: '$membership',
+				dpayment: { $sum: '$dpayment' },
+				register_fees: { $sum: '$register_fees' },
+			},
+		},
+	]);
+
+	let membershipNames = [];
+	if (secondMonthEMI.length > 0) {
+		for (let each of secondMonthEMI) {
+			membershipNames.push(each._id);
+		}
+	}
+	if (firstMonthEMI.length > 0) {
+		for (let each of firstMonthEMI) {
+			membershipNames.push(each._id);
+		}
+	}
+	if (FirstMonthDownPaymentNRegistration.length > 0) {
+		for (let each of FirstMonthDownPaymentNRegistration) {
+			membershipNames.push(each._id);
+		}
+	}
+	if (secondMonthDownPaymentNRegistration.length > 0) {
+		for (let each of secondMonthDownPaymentNRegistration) {
+			membershipNames.push(each._id);
+		}
+	}
+	if (yearlyEMI.length > 0) {
+		for (let each of yearlyEMI) {
+			membershipNames.push(each._id);
+		}
+	}
+	if (YearlyDownPaymentNRegistration.length > 0) {
+		for (let each of yearlyEMI) {
+			membershipNames.push(each._id);
+		}
+	}
+
+	// secondMonthEMI
+	// firstMonthEMI
+	// FirstMonthDownPaymentNRegistration
+	// secondMonthDownPaymentNRegistration
+	// yearlyEMI
+	// YearlyDownPaymentNRegistration
+
+	membershipNames = [...new Set(membershipNames)];
+
+	const data = membershipNames.map((x) => {
+		// first month=====================================
+		// @EMI
+		let firstMonthIncome = 0;
+		let firstEmi = firstMonthEMI.find((a) => a._id === x);
+		if (firstEmi) {
+			firstMonthIncome += firstEmi.balance;
+		}
+		// @downpayment+registration Fee
+		let firstMDownPNRegis = FirstMonthDownPaymentNRegistration.find(
+			(a) => a._id === x
+		);
+		if (firstMDownPNRegis) {
+			firstMonthIncome +=
+				firstMDownPNRegis.dpayment + firstMDownPNRegis.register_fees;
+		}
+
+		// second month ==================================
+		let secondMonthIncome = 0;
+		let secondEmi = secondMonthEMI.find((a) => a._id === x);
+		if (secondEmi) {
+			secondMonthIncome += secondEmi.balance;
+		}
+		// @downpayment+registration Fee
+		let secondMDownPNRegis = secondMonthDownPaymentNRegistration.find(
+			(a) => a._id === x
+		);
+		if (secondMDownPNRegis) {
+			secondMonthIncome +=
+				secondMDownPNRegis.dpayment + secondMDownPNRegis.register_fees;
+		}
+
+		//year
+
+		let incomeInYear = 0;
+		let yearlyEmi = yearlyEMI.find((a) => a._id === x);
+		if (yearlyEmi) {
+			incomeInYear += yearlyEmi.balance;
+		}
+		// @downpayment+registration Fee
+		let yearlyDownPNRegis = YearlyDownPaymentNRegistration.find(
+			(a) => a._id === x
+		);
+		if (yearlyDownPNRegis) {
+			incomeInYear +=
+				yearlyDownPNRegis.dpayment + yearlyDownPNRegis.register_fees;
+		}
+
+		return {
+			membership: x,
+			firstMonthIncome,
+			secondMonthIncome,
+			incomeInYear,
+		};
+	});
+
+	const firstMonthTotal = data.reduce((a, x) => a + x.firstMonthIncome, 0);
+	const secondMonthTotal = data.reduce((a, x) => a + x.secondMonthIncome, 0);
+	const yearlyTotal = data.reduce((a, x) => a + x.incomeInYear, 0);
+
+	return res.json({
+		data,
+		firstMonthTotal,
+		secondMonthTotal,
+		yearlyTotal,
+	});
+};
+
+///////////////////////////
+///////////////////////////
+///////////////////////////
+///////////////////////////
+///////////////////////////
+///////////////////////////
+///////////////////////////
+///////////////////////////
+///////////////////////////
+///////////////////////////
+///////////////////////////
+///////////////////////////
+///////////////////////////
+///////////////////////////
+///////////////////////////
+
+exports.PnlReportGenerateProductSale = async (req, res) => {
+	let { firstMonth, firstYear, secondMonth, secondYear, ytd } = req.query;
+	firstMonth = parseInt(firstMonth) + 1;
+	firstYear = parseInt(firstYear);
+	secondMonth = parseInt(secondMonth) + 1;
+	secondYear = parseInt(secondYear);
+	ytd = parseInt(ytd);
+
+	// payload for first month installment
+	var firstDayOfMonth = new Date(`${firstYear}-${firstMonth}-01`);
+	var lastDayOfMonth = new Date(firstYear, firstMonth, 0);
+	let firstMonthDates = [];
+	for (
+		firstDayOfMonth;
+		firstDayOfMonth <= lastDayOfMonth;
+		firstDayOfMonth.setDate(firstDayOfMonth.getDate() + 1)
+	) {
+		firstMonthDates.push(moment(firstDayOfMonth).format('YYYY-MM-DD'));
+	}
+
+	// @ membership EMI Income
+	const firstMonthEMI = await BuyProduct.aggregate([
+		{ $match: { userId: req.params.userId } },
+		{ $unwind: '$schedulePayments' },
+		{
+			$project: {
+				amount: '$schedulePayments.Amount',
+				date: '$schedulePayments.date',
+				status: '$schedulePayments.status',
+				productType: '$product_type',
+			},
+		},
+		{
+			$match: { date: { $in: firstMonthDates }, status: 'paid' },
+		},
+		{
+			$group: {
+				_id: '$productType',
+				balance: { $sum: '$amount' },
+			},
+		},
+	]);
+
+	// payload for first month installment
+	var firstDayOfSecondMonth = new Date(`${secondYear}-${secondMonth}-01`);
+	var lastDayOfSecondMonth = new Date(secondYear, secondMonth, 0);
+	let secondMonthDates = [];
+	for (
+		firstDayOfSecondMonth;
+		firstDayOfSecondMonth <= lastDayOfSecondMonth;
+		firstDayOfSecondMonth.setDate(firstDayOfSecondMonth.getDate() + 1)
+	) {
+		secondMonthDates.push(moment(firstDayOfSecondMonth).format('YYYY-MM-DD'));
+	}
+
+	// @ membership EMI Income
+	const secondMonthEMI = await BuyProduct.aggregate([
+		{ $match: { userId: req.params.userId } },
+		{ $unwind: '$schedulePayments' },
+		{
+			$project: {
+				amount: '$schedulePayments.Amount',
+				date: '$schedulePayments.date',
+				status: '$schedulePayments.status',
+				productType: '$product_type',
+			},
+		},
+		{
+			$match: { date: { $in: secondMonthDates }, status: 'paid' },
+		},
+		{
+			$group: {
+				_id: '$productType',
+				balance: { $sum: '$amount' },
+			},
+		},
+	]);
+
+	/// First Month DownPayment + Registration Fee
+	const FirstMonthDownPaymentNRegistration = await BuyProduct.aggregate([
+		{ $match: { userId: req.params.userId } },
+		{
+			$project: {
+				deposite: '$deposite',
+				month: { $month: '$createdAt' },
+				year: { $year: '$createdAt' },
+				productType: '$product_type',
+			},
+		},
+		{
+			$match: { month: firstMonth, year: firstYear },
+		},
+		{
+			$group: {
+				_id: '$productType',
+				balance: { $sum: '$deposite' },
+			},
+		},
+	]);
+
+	/// Second Month DownPayment + Registration Fee
+	const secondMonthDownPaymentNRegistration = await BuyProduct.aggregate([
+		{ $match: { userId: req.params.userId } },
+		{
+			$project: {
+				deposite: '$deposite',
+				month: { $month: '$createdAt' },
+				year: { $year: '$createdAt' },
+				productType: '$product_type',
+			},
+		},
+		{
+			$match: { month: secondMonth, year: secondYear },
+		},
+		{
+			$group: {
+				_id: '$productType',
+				balance: { $sum: '$deposite' },
+			},
+		},
+	]);
+
+	// yearly data fetching
+	// @Yearly dates
+	const _d = new Date();
+	var firstDayOfMonth = new Date(`${_d.getFullYear()}-${1}-01`);
+	var lastDayOfMonth = new Date(_d.getFullYear(), 12, 0);
+
+	let dates = [];
+	for (
+		firstDayOfMonth;
+		firstDayOfMonth <= lastDayOfMonth;
+		firstDayOfMonth.setDate(firstDayOfMonth.getDate() + 1)
+	) {
+		dates.push(moment(firstDayOfMonth).format('YYYY-MM-DD'));
+	}
+
+	const yearlyEMI = await BuyProduct.aggregate([
+		{ $match: { userId: req.params.userId } },
+		{ $unwind: '$schedulePayments' },
+		{
+			$project: {
+				amount: '$schedulePayments.Amount',
+				date: '$schedulePayments.date',
+				status: '$schedulePayments.status',
+				productType: '$product_type',
+			},
+		},
+		{
+			$match: { date: { $in: dates }, status: 'paid' },
+		},
+		{
+			$group: {
+				_id: '$productType',
+				balance: { $sum: '$amount' },
+			},
+		},
+	]);
+
+	/// Second Month DownPayment + Registration Fee
+	const YearlyDownPaymentNRegistration = await BuyProduct.aggregate([
+		{ $match: { userId: req.params.userId } },
+		{
+			$project: {
+				deposite: '$deposite',
+				month: { $month: '$createdAt' },
+				year: { $year: '$createdAt' },
+				productType: '$product_type',
+			},
+		},
+		{
+			$match: { year: ytd },
+		},
+		{
+			$group: {
+				_id: '$productType',
+				balance: { $sum: '$deposite' },
+			},
+		},
+	]);
+
+	let productNames = [];
+	if (secondMonthEMI.length > 0) {
+		for (let each of secondMonthEMI) {
+			productNames.push(each._id);
+		}
+	}
+	if (firstMonthEMI.length > 0) {
+		for (let each of firstMonthEMI) {
+			productNames.push(each._id);
+		}
+	}
+	if (FirstMonthDownPaymentNRegistration.length > 0) {
+		for (let each of FirstMonthDownPaymentNRegistration) {
+			productNames.push(each._id);
+		}
+	}
+	if (secondMonthDownPaymentNRegistration.length > 0) {
+		for (let each of secondMonthDownPaymentNRegistration) {
+			productNames.push(each._id);
+		}
+	}
+	if (yearlyEMI.length > 0) {
+		for (let each of yearlyEMI) {
+			productNames.push(each._id);
+		}
+	}
+
+	if (YearlyDownPaymentNRegistration.length > 0) {
+		for (let each of yearlyEMI) {
+			productNames.push(each._id);
+		}
+	}
+
+	productNames = [...new Set(productNames)];
+
+	const data = productNames.map((x) => {
+		// first month=====================================
+		// @EMI
+		let firstMonthIncome = 0;
+		let firstEmi = firstMonthEMI.find((a) => a._id === x);
+		if (firstEmi) {
+			firstMonthIncome += firstEmi.balance;
+		}
+		// @downpayment+registration Fee
+		let firstMDownPNRegis = FirstMonthDownPaymentNRegistration.find(
+			(a) => a._id === x
+		);
+		if (firstMDownPNRegis) {
+			firstMonthIncome += firstMDownPNRegis.balance;
+		}
+
+		// second month ==================================
+		let secondMonthIncome = 0;
+		let secondEmi = secondMonthEMI.find((a) => a._id === x);
+		if (secondEmi) {
+			secondMonthIncome += secondEmi.balance;
+		}
+		// @downpayment+registration Fee
+		let secondMDownPNRegis = secondMonthDownPaymentNRegistration.find(
+			(a) => a._id === x
+		);
+		if (secondMDownPNRegis) {
+			secondMonthIncome += secondMDownPNRegis.balance;
+		}
+
+		//year
+
+		let incomeInYear = 0;
+		let yearlyEmiFind = yearlyEMI.find((a) => a._id === x);
+		if (yearlyEmiFind) {
+			incomeInYear += yearlyEmiFind.balance;
+		}
+		// @downpayment+registration Fee
+		let yearlyDownPNRegis = YearlyDownPaymentNRegistration.find(
+			(a) => a._id === x
+		);
+		if (yearlyDownPNRegis) {
+			incomeInYear += yearlyDownPNRegis.balance;
+		}
+
+		return {
+			product: x,
+			firstMonthIncome,
+			secondMonthIncome,
+			incomeInYear,
+		};
+	});
+
+	const firstMonthTotal = data.reduce((a, x) => a + x.firstMonthIncome, 0);
+	const secondMonthTotal = data.reduce((a, x) => a + x.secondMonthIncome, 0);
+	const yearlyTotal = data.reduce((a, x) => a + x.incomeInYear, 0);
+
+	return res.json({
+		data,
+		firstMonthTotal,
+		secondMonthTotal,
+		yearlyTotal,
+	});
 };

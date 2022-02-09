@@ -17,7 +17,9 @@ const {
 	MonthlyIncome,
 	thisYearIncome,
 	IncomeReportWithFilters,
-	PnlReportGenerate,
+	PnlReportGenerateExpense,
+	PnlReportGenerateMembership,
+	PnlReportGenerateProductSale,
 } = require('../controllers/finance_info');
 const upload = require('../handler/multer');
 
@@ -74,6 +76,22 @@ router.get(
 	IncomeReportWithFilters
 );
 
-router.get('/finance/pnl-report/:userId', requireSignin, PnlReportGenerate);
+router.get(
+	'/finance/pnl-expense-report/:userId',
+	requireSignin,
+	PnlReportGenerateExpense
+);
+
+router.get(
+	'/finance/pnl-membership-report/:userId',
+	requireSignin,
+	PnlReportGenerateMembership
+);
+
+router.get(
+	'/finance/pnl-product-sale-report/:userId',
+	requireSignin,
+	PnlReportGenerateProductSale
+);
 
 module.exports = router;

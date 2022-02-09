@@ -116,7 +116,7 @@ exports.removeFromRegisterd = async (req, res) => {
     }
     res.json({
         status: true,
-        msg: "The recommeded student successfully removed from the list!!"
+        msg: "The recommended student successfully removed from the list!!"
     })
 
 }

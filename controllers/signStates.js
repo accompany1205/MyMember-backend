@@ -1,8 +1,12 @@
 const SignStates = require("../models/signStates");
-const sgMail = require("@sendgrid/mail");
+const Mailer = require("../helpers/Mailer");
+// const sgMail = require("@sendgrid/mail");
 const buyMembership = require("../models/buy_membership");
 const buy_product = require("../models/buy_product");
+const buffToPdf = require("../Services/pdfConvertor");
 const mongo = require('mongoose')
+const pixelWidth = require('string-pixel-width');
+
 
 
 
@@ -49,7 +53,11 @@ exports.getRequestSign = async (req, res) => {
     try {
         let docuSignId = req.params.docuSignId;
         await SignStates.find({ _id: docuSignId }).then(data => {
-            res.send({ msg: "data!", success: true, data: data })
+            let datas = {}
+            let ipAddress = req.header('x-forwarded-for') || req.connection.remoteAddress;
+            datas.ipAddress = ipAddress;
+            datas = { ...datas, ...data };
+            res.send({ msg: "data!", success: true, data: datas })
         }).catch(err => {
             res.send({ msg: "no Data!", success: false, error: err.message.replace(/\"/g, "") })
         })
@@ -58,6 +66,67 @@ exports.getRequestSign = async (req, res) => {
     }
 }
 
+function getTextWidth(text, size = 14) {
+    var width = pixelWidth(text, { size: size });
+    return width
+};
+
+async function signPdf(file, items) {
+    try {
+        const { PDFDocument, rgb } = require('pdf-lib');
+        //const fs = require('fs')
+        const pdfDoc = await PDFDocument.load(file)
+        for (let [owner, val] of Object.entries(items)) {
+            for (let [_page, value] of Object.entries(val)) {
+                const page = pdfDoc.getPages()[_page - 1]
+                //console.log(value)
+                for (let itm of value) {
+
+                    if (itm.type == "sign" && itm.value) {
+                        let img = await pdfDoc.embedPng(itm.value);
+                        // const { width, height } = img.scale(1);
+                        let x = itm.x - (150 / 2)
+                        let y = (page.getHeight() - itm.y) - (60 / 2)
+                        page.drawImage(img, {
+                            x: x,
+                            y: y,
+                            width: 150,
+                            height: 60,
+                        })
+                    }
+                    if (itm.type === 'date') {
+                        let text = new Date().toLocaleDateString()
+                        let x = itm.x - (getTextWidth(text, 14) / 2)
+                        let y = (page.getHeight() - itm.y) - (14 / 2)
+                        page.drawText(new Date().toLocaleDateString(), {
+                            x: x,
+                            y: y,
+                            size: 14,
+                            color: rgb(0, 0., 0),
+                        })
+                    }
+                    if (itm.type === 'text') {
+                        let text = itm.value
+                        let x = itm.x - (getTextWidth(text, 14) / 2)
+                        let y = (page.getHeight() - itm.y) - (14 / 2)
+                        page.drawText(text, {
+                            x: x,
+                            y: y,
+                            size: 14,
+                            color: rgb(0, 0., 0),
+                        })
+                    }
+                }
+            }
+        }
+        const pdfBytes = await pdfDoc.save()
+        //fs.writeFileSync('./output.pdf', pdfBytes)
+        return pdfBytes
+    } catch (error) {
+        console.log(error)
+        throw error
+    }
+}
 
 exports.setSignItems = async (req, res) => {
     try {
@@ -80,30 +149,61 @@ exports.setSignItems = async (req, res) => {
     }
 };
 
+exports.getSignItems = async (req, res) => {
+    try {
+        let docuSignId = req.params.docuSignId;
+        let userId = req.params.userid;
+        await SignStates.findOne({ _id: docuSignId.trim() }).then(async resp => {
+            let datas = resp.items;
+            if (resp.signDocFor === 'membership') {
+                try {
+                    const data = await buyMembership.findOne({ _id: resp.signDocForId })
+                    let pdfBuff = await buffToPdf(data.mergedDoc);
+                    const pdfs = await signPdf(pdfBuff, datas.toJSON());
+                    let buffer = Buffer.from(pdfs).toString('base64');
+                    res.send({ msg: "pdf buffer!", data: buffer, success:true });
+                } catch (err) {
+                    res.send({ msg: err.message.replace(/\"/g, ""), sucess: false });
+                }
+            } else {
+                try {
+                    const data = await buy_product.findOne({ _id: resp.signDocForId })
+                    let pdfBuff = await buffToPdf(data.mergedDoc);
+                    const pdfs = await signPdf(pdfBuff, datas.toJSON());
+                    let buffer = Buffer.from(pdfs).toString('base64');
+                    res.send({ msg: "pdf buffer!", data: buffer, success:true });
+                } catch (err) {
+                    res.send({ msg: err.message.replace(/\"/g, ""), sucess: false });
+                }
+            }
+        })
+    } catch (err) {
+        res.send({ msg: "not Updated!", success: false, error: err.message.replace(/\"/g, "") });
+    }
+};
+
 // exports.getMailSentHistory = async (req, res) => {
 
 // }
 
 exports.inviteeMailSent = async (req, res) => {
     try {
-        let emailList = req.body.emailList;
+        let emailList = req.body.emails;
         let docLink = req.body.docLink;
-        let ownerEmail = req.body.ownerEmail
-        sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-        const emailData = {
+        let ownerEmail = req.body.ownerEmail;
+        const emailData = new Mailer({
             to: emailList,
             from: ownerEmail,
             subject: "Document Signature Process",
             html: `<h2>Below is the PDF for your signature</h2>
                         <p>${docLink}</p>`,
-        };
-        sgMail
-            .send(emailData, (err, resp) => {
-                if (err) {
-                    res.send(err)
-                } else {
-                    res.send(resp)
-                }
+        })
+        emailData.sendMail()
+            .then(resp => {
+                res.send(resp)
+            })
+            .catch(err => {
+                res.send(err)
             })
 
         // .then(resp => {

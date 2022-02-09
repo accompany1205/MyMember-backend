@@ -43,6 +43,9 @@ const studentINfoRank = require('./routes/student_info_Rank');
 const candidateStripe = require('./routes/candidate_stripe');
 const manage_stripe = require('./routes/stripe');
 const todo_api = require('./routes/todo_apis');
+const Tasks = require('./routes/Tasks');
+const Goals = require('./routes/Gloals');
+
 const adminstrate = require('./routes/administrater_user');
 const goal_settings = require('./routes/goal_setting');
 const goals_api = require('./routes/goals_api');
@@ -61,7 +64,6 @@ const pcategory = require('./routes/pcategory');
 const psubcategory = require('./routes/psubcategory');
 const add_membership = require('./routes/membership');
 const finance_info = require('./routes/finance_info');
-const finance = require('./routes/finance');
 const bymember_ship = require('./routes/buy_membership');
 const membershipFolderRoute = require('./routes/membershipFolder');
 const purchaseMembership = require('./routes/purchaseMemberships');
@@ -144,6 +146,7 @@ const textTemplateRoutes = require('./routes/text_templates_routes');
 const textChatRoutes = require('./routes/text_chat_routes');
 
 const appointmentEvent = require('./routes/appointment_event');
+const finance = require('./routes/finance');
 const app = express();
 // app.use(fileUpload({ safeFileNames: true, preserveExtension: true }))
 const { v4: uuidv4 } = require('uuid');
@@ -192,6 +195,8 @@ app.use('/api', studentINfoRank);
 app.use('/api', candidateStripe);
 app.use('/api', adminstrate);
 app.use('/api', todo_api);
+app.use('/api', Tasks);
+app.use('/api', Goals);
 app.use('/api', goals_api);
 app.use('/api', class_schedule);
 app.use('/api', attendence);
@@ -206,7 +211,6 @@ app.use('/api', pcategory);
 app.use('/api', psubcategory);
 app.use('/api', add_membership);
 app.use('/api', finance_info);
-app.use('/api', finance);
 app.use('/api', bymember_ship);
 app.use('/api', manage_stripe);
 app.use('/api', candidates);
@@ -299,6 +303,7 @@ app.use(middleware.errorHandler);
 app.use(middleware.unknownEndpoint);
 // menu middle
 app.use('/api', student_menu);
+app.use('/api', finance);
 
 // const privateKey1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/privkey.pem', 'utf8');
 // const certificate1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/cert.pem', 'utf8');

@@ -6,7 +6,7 @@ const registerdForTest = new mongoose.Schema({
         type: String
     },
     userId: {
-        typre:String
+        type:String
     },
     testId: {
         type:String

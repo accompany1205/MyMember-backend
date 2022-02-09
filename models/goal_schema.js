@@ -1,38 +1,99 @@
 const mongoose = require("mongoose");
+const mongoosePaginate = require("mongoose-paginate-v2");
 
-const todoSchema = new mongoose.Schema(
+// const todoSchema = new mongoose.Schema(
+//     {
+//         subject: {
+//             type: String,
+//             trim: true,
+//             required: true,
+//             maxlength: 32
+//         },
+
+//         goal_category: {type: String, required: true},
+
+//         compeleting_Date: {
+//             type: String,
+//             required: true
+//         },
+//          reminder_Date: {
+//             type: String,
+//             required: true
+//         }, 
+//         tag: {
+//             type: String,
+//             required: true
+//         },
+//          goal_status: {
+//             type: String,
+//             required: true
+//         },
+//         notes:{ type: String, required: true },
+//         userId:{
+//             type:String
+//         }
+//     },
+//     { timestamps: true }
+// );
+const goalSchema = new mongoose.Schema(
     {
-        subject: {
+        parent: { type: mongoose.Schema.Types.ObjectId, ref: 'goals' },
+        name: {
             type: String,
             trim: true,
             required: true,
             maxlength: 32
         },
-       
-        goal_category: {type: String, required: true},
-
-        compeleting_Date: {
+        icon: {
             type: String,
-            required: true
         },
-         reminder_Date: {
+        color: {
             type: String,
-            required: true
-        }, 
-        tag: {
-            type: String,
-            required: true
         },
-         goal_status: {
+        type: {
             type: String,
-            required: true
+            trim: true,
+            enum : ['personal','mymember'],
         },
-        notes:{ type: String, required: true },
-        userId:{
-            type:String
+        goal_type : {
+            type: String,
+            trim: true,
+            enum : ['daily','fixed'],
+        },
+        start_date: {
+            type: Date,
+        },
+        end_date: {
+            type: Date,
+        },
+        complete_days: {
+           type : Array,
+        },
+        current: {
+            type: Number,
+        },
+        goal: {
+            type: Number,
+        },
+        priority: {
+            type: Number,
+        },
+        status: {
+            type: Number,
+            required: true,
+            default : 1
+        },
+        label: {
+            type: String,
+        },
+        category: {
+            type: String,
+        },
+        userId: {
+            type: String,
         }
     },
     { timestamps: true }
 );
-
-module.exports = mongoose.model("Goal", todoSchema);
+goalSchema.plugin(mongoosePaginate);
+module.exports = mongoose.model("goals", goalSchema);

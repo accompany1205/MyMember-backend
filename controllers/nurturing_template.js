@@ -3,7 +3,7 @@ const nurturingFolderModal = require("../models/email_nurturing_folder");
 const key = require("../models/email_key");
 const moment = require("moment");
 const async = require("async");
-const sgMail = require("sendgrid-v3-node");
+// const sgMail = require("sendgrid-v3-node");
 const cron = require("node-cron");
 const folderNur = require("../models/email_nurturing_folder");
 const cloudUrl = require("../gcloud/imageUrl");
@@ -133,7 +133,7 @@ exports.add_template = async (req, res) => {
       repeat_mail,
       sent_date,
       smartLists,
-    } = req.body
+    } = req.body || {};
     to = to ? JSON.parse(to) : [];
     smartLists = smartLists ? JSON.parse(smartLists) : [];
     let { userId, folderId } = req.params || {};
@@ -169,7 +169,11 @@ exports.add_template = async (req, res) => {
       folderId,
       templete_Id,
       attachments,
-      smartLists
+      smartLists,
+      design,
+      immediately,
+      days,
+      days_type,
     };
     const promises = []
     if (req.files) {
@@ -368,6 +372,8 @@ exports.update_template = async (req, res) => {
       smartList = []
     }
   }
+  updateTemplate.to = to;
+  updateTemplate.smartLists = smartList;
   const promises = []
   if (req.files) {
     (req.files).map(file => {
