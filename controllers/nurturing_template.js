@@ -170,10 +170,6 @@ exports.add_template = async (req, res) => {
       templete_Id,
       attachments,
       smartLists,
-      design,
-      immediately,
-      days,
-      days_type,
     };
     const promises = []
     if (req.files) {

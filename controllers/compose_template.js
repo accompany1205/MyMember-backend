@@ -1,5 +1,6 @@
 const all_temp = require("../models/emailSentSave");
 const students = require("../models/addmember");
+const smartlist = require("../models/smartlists");
 const compose_folder = require("../models/email_compose_folder");
 const authKey = require("../models/email_key");
 const async = require("async");
@@ -197,13 +198,15 @@ exports.status_update_template = (req, res) => {
 };
 
 exports.allSent = async (req, res) => {
-  all_temp.find({ userId: req.params.userId, is_Sent: true }).exec((err, data) => {
-    if (err) {
-      res.send({ success: false, mag: "data not fetched" })
-    } else {
-      res.send({ success: true, msg: "fetched!", data })
-    }
-  })
+  all_temp.find({ userId: req.params.userId, is_Sent: true })
+    .sort({ createdAt: -1 })
+    .exec((err, data) => {
+      if (err) {
+        res.send({ success: false, mag: "data not fetched" })
+      } else {
+        res.send({ success: true, msg: "fetched!", data })
+      }
+    })
 }
 
 exports.sendVerificationMail = async (req, res) => {
@@ -324,6 +327,7 @@ exports.list_template = async (req, res) => {
 
 exports.allScheduledListing = async (req, res) => {
   await all_temp.find({ userId: req.params.userId, is_Sent: false })
+    .sort({ createdAt: -1 })
     .then((data) => {
       res.send({ success: true, msg: "all Schedulded Emails", data })
     }).catch(err => {
@@ -371,10 +375,11 @@ exports.update_template = async (req, res) => {
 
 exports.add_template = async (req, res) => {
   try {
-    const counts = await all_temp
-      .find({ folderId: req.params.folderId })
-      .countDocuments();
-    let templete_Id = counts + 1;
+    const [counts] = await compose_folder
+      .find({ _id: req.params.folderId }, { template: 1, _id: 0 })
+    let templete_Id = counts.template.length + 1
+
+    let { userId, folderId } = req.params || {};
 
     let {
       to,
@@ -383,7 +388,6 @@ exports.add_template = async (req, res) => {
       subject,
       template,
       sent_time,
-      repeat_mail,
       sent_date,
       follow_up,
       smartLists,
@@ -393,13 +397,56 @@ exports.add_template = async (req, res) => {
       days,
       days_type,
     } = req.body || {};
-    to = to ? JSON.parse(to) : [];
-    smartLists = smartLists ? JSON.parse(smartLists) : [];
-    let { userId, folderId } = req.params || {};
-    if (!to.lenght) {
-      smartLists.map(lists => {
-        to = [...to, ...lists.smrtList]
-      });
+
+    if (!to) {
+
+      smartLists = smartLists ? JSON.parse(smartLists) : []
+      smartLists = smartLists.map(s => ObjectId(s));
+
+      let [smartlists] = await smartlist.aggregate([
+        {
+          $match: {
+            _id: { $in: smartLists }
+          }
+        },
+        {
+          $lookup: {
+            from: "members",
+            localField: "smartlists",
+            foreignField: "_id",
+            as: "data"
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            data: "$data.email"
+          }
+        },
+        { $unwind: "$data" },
+        {
+          $group: {
+            _id: "",
+            emails: { $addToSet: "$data" }
+          }
+        },
+        {
+          $project: {
+            _id: 0
+          }
+
+        }
+      ])
+
+      smartlists = smartlists ? smartlists : []
+      if (!smartlists.length) {
+        return res.send({
+          msg: `No Smartlist exist!`,
+          success: false,
+        });
+      }
+      to = smartlists.emails
+
     }
     const obj = {
       to,
@@ -409,8 +456,11 @@ exports.add_template = async (req, res) => {
       template,
       sent_date,
       sent_time,
-      DateT: date_iso_follow,
-      repeat_mail,
+      design,
+      days,
+      days_type,
+      immediately,
+      content_type,
       follow_up,
       email_type: "schedule",
       email_status: true,
@@ -419,12 +469,8 @@ exports.add_template = async (req, res) => {
       folderId,
       templete_Id,
       attachments,
-      smartLists,
-      design,
-      content_type,
-      immediately,
-      days,
-      days_type,
+      smartLists
+
     };
     const promises = []
     if (req.files) {
@@ -434,28 +480,49 @@ exports.add_template = async (req, res) => {
       var attachments = await Promise.all(promises);
     }
     obj.attachments = attachments
-    // Formated Date //
     sent_date = moment(sent_date).format("YYYY-MM-DD");
-    // let scheduleDateOfMonth = moment(sent_date).format('DD')
-    // let scheduleMonth = moment(sent_date).format('MM')
-    // let scheduleDay = moment(sent_date).format('dddd')
+    if (JSON.parse(immediately) && !days) {
+      const emailData = new Mailer({
+        sendgrid_key: process.env.SENDGRID_API_KEY,
+        to,
+        from,
+        from_name: 'noreply@gmail.com',
+        subject,
+        html: template,
+        attachments
+      })
+      emailData.sendMail()
+        .then(resp => {
+          obj.email_type = 'sent'
+          obj.is_Sent = true
+          saveEmailTemplate(obj)
+            .then((data) => {
+              compose_folder
+                .findByIdAndUpdate(folderId, { $push: { template: data._id } }, (err, data) => {
+                  if (err) {
+                    res.send({ msg: err, success: false })
+                  }
+                  res.send({ msg: "Email send Successfully!", success: true })
 
-    if (req.body.follow_up === 0) {
-      var date_iso = timefun(req.body.sent_date, req.body.sent_time);
-      obj.DateT = date_iso;
-    } else if (req.body.follow_up < 0) {
-      res.send({ code: 400, msg: "follow up not set less then 0" });
-    } else {
-      var date_iso_follow = timefun(req.body.sent_date, req.body.sent_time);
-      date_iso_follow.setDate(date_iso_follow.getDate() + req.body.follow_up);
-      var nD = moment(date_iso_follow).format("MM/DD/YYYY");
+                })
+            })
+            .catch((ex) => {
+              res.send({
+                success: false,
+                msg: ex
+              });
+            });
+        })
+        .catch(err => {
+          res.send({ error: err.message.replace(/\"/g, ""), success: false })
+        })
+
+    } else if (!JSON.parse(immediately) && days) {
+      sent_date = moment().add(days, 'days').format("YYYY-MM-DD");
       saveEmailTemplate(obj)
         .then((data) => {
           compose_folder
-            .findOneAndUpdate(
-              { _id: folderId },
-              { $push: { template: data._id } }
-            )
+            .findByIdAndUpdate(folderId, { $push: { template: data._id } })
             .then((data) => {
               res.send({
                 msg: `Email scheduled  Successfully on ${sent_date}`,
@@ -472,9 +539,13 @@ exports.add_template = async (req, res) => {
         .catch((ex) => {
           res.send({
             success: false,
-            msg: ex.message,
+            msg: ex
           });
         });
+    }
+    else {
+      res.send({ msg: 'something went wrong', success: false })
+
     }
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false })
@@ -482,7 +553,7 @@ exports.add_template = async (req, res) => {
 
 };
 
-exports.saveEmailTemplate = (obj) => {
+function saveEmailTemplate(obj) {
   return new Promise((resolve, reject) => {
     let emailDetail = new all_temp(obj);
     emailDetail.save((err, data) => {
@@ -498,7 +569,7 @@ exports.saveEmailTemplate = (obj) => {
 
 var emailCronFucntionality = async () => {
   let promises = [];
-  let scheduledListing = await all_temp.find({ category: "compose", is_Sent: false });
+  let scheduledListing = await all_temp.find({  is_Sent: false });
   scheduledListing.forEach(async (ele) => {
     let sentDate = ele.sent_date;
     let mailId = ele._id;
@@ -533,9 +604,9 @@ var emailCronFucntionality = async () => {
   await Promise.all(promises);
 };
 
-// cron.schedule(`*/5 * * * *`, () => {
-//   emailCronFucntionality();
-// });
+cron.schedule(`*/5 * * * *`, () => {
+  emailCronFucntionality();
+});
 
 
 exports.remove_template = (req, res) => {
