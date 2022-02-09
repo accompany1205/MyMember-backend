@@ -214,7 +214,7 @@ exports.add_template = async (req, res) => {
     }
     obj.attachments = attachments
     sent_date = moment(sent_date).format("YYYY-MM-DD");
-    if (immediately && !days) {
+    if (JSON.parse(immediately) && !days) {
       const emailData = new Mailer({
         sendgrid_key: process.env.SENDGRID_API_KEY,
         to,
