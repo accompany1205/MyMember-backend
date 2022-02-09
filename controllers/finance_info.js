@@ -487,8 +487,6 @@ exports.expenseAdd = async (req, res) => {
 		var userId = req.params.userId;
 		const { amount, category, description, expenses, date, subject } = req.body;
 
-		console.log();
-
 		var imageUrl = '';
 		if (req.file !== undefined) {
 			imageUrl = await cloudUrl.imageUrl(req.file);
@@ -1281,8 +1279,6 @@ exports.PnlReportGenerateExpense = async (req, res) => {
 				expense._id.year === secondYear &&
 				x === expense._id.category
 		);
-
-		console.log(previous);
 
 		return {
 			category: x,
