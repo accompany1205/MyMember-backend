@@ -47,6 +47,10 @@ const Membershipschema = new schema(
 			type: String,
 			required: true,
 		},
+		membership_type: {
+			type: String,
+			required: true,
+		},
 		mactive_date: {
 			type: String,
 			required: true,
