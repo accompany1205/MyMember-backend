@@ -250,6 +250,7 @@ exports.getAllStudentDocs = async (req, res) => {
             let buyMembersgipInfo = await buyMembership.findOne({ _id: buyMembershipId });
             let obj = {};
             obj.mergedDoc = buyMembersgipInfo.mergedDoc;
+            obj.emailToken = buyMembersgipInfo.emailToken;
             let data = { ...signStatesInfo.toJSON(), ...obj };
             res.send({ msg: "data", success: true, data: data });
         } else {
