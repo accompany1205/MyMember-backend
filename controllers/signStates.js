@@ -246,11 +246,16 @@ exports.getAllStudentDocs = async (req, res) => {
                 { signDocForId: buyMembershipId }
             ]
         });
-        let buyMembersgipInfo = await buyMembership.findOne({ _id: buyMembershipId });
-        let obj = {};
-        obj.mergedDoc = buyMembersgipInfo.mergedDoc;
-        let data = {...signStatesInfo.toJSON(), ...obj };
-        res.send({msg:"data", success:true, data:data});
+        if (signStatesInfo) {
+            let buyMembersgipInfo = await buyMembership.findOne({ _id: buyMembershipId });
+            let obj = {};
+            obj.mergedDoc = buyMembersgipInfo.mergedDoc;
+            let data = { ...signStatesInfo.toJSON(), ...obj };
+            res.send({ msg: "data", success: true, data: data });
+        } else {
+            res.status(404).send({ msg: "No buyMembership found!", success: false })
+        }
+
         // await buyMembership.aggregate([
         //     {
         //         $match: {
