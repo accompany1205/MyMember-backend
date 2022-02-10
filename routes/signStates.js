@@ -11,6 +11,6 @@ router.get("/docusign/getStatus/:userId/:docuSignId", getRequestSign);
 router.post("/docusign/setSignItems/:userId/:docuSignId/:emailToken", setSignItems);
 router.get("/docusign/getSignItems/:userId/:docuSignId", getSignItems);
 router.post("/docusign/inviteeEmail/:userId", requireSignin, inviteeMailSent);
-router.get("/docusign/getAllDocs/:userId/:buyMembershipId", requireSignin, getAllStudentDocs);
+router.get("/docusign/getDoc/:userId/:buyMembershipId", requireSignin, getAllStudentDocs);
 
 module.exports = router;
