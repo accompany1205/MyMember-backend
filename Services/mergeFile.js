@@ -15,12 +15,7 @@ async function mergeFiles(docBody, mergedInfo) {
         compression: "DEFLATE",
     });
     let finalPDF = await buffToPdf(buf);
-    return finalPDfBuff;
-
-}
-
-function getPdf(buffer) {
-    let bufCount = Buffer.byteLength(buffer)
+    let bufCount = Buffer.byteLength(finalPDF)
     let fileObj = {
         fieldname: 'attach',
         originalname: 'Test.pdf',
