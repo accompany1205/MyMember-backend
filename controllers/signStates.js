@@ -24,14 +24,14 @@ exports.addRequestSign = async (req, res) => {
     let userId = req.params.userId;
     try {
         let emailToken = makeid(20);
-        await buyMembership.updateOne({ _id: req.body.signDocForId }, { $set: { emailToken:emailToken} });
+        await buyMembership.updateOne({ _id: req.body.signDocForId }, { $set: { emailToken: emailToken } });
         let datas = { ...req.body, userId: userId }
         const signStat = new SignStates(datas)
         await signStat.save(function (err, data) {
             if (err) {
                 res.send({ success: false, msg: "Info not added!!", error: err.message.replace(/\"/g, "") })
             } else {
-                res.send({ data, success: true, emailToken:emailToken });
+                res.send({ data, success: true, emailToken: emailToken });
             }
         })
     } catch (err) {
@@ -236,67 +236,79 @@ exports.inviteeMailSent = async (req, res) => {
 
 exports.getAllStudentDocs = async (req, res) => {
     let userId = req.params.userId;
-    let studentId = req.params.studentId;
-    let objId = mongo.Types.ObjectId(studentId)
+    let buyMembershipId = req.params.buyMembershipId;
+
+    //let objId = mongo.Types.ObjectId(studentId)
     try {
-        await buyMembership.aggregate([
-            {
-                $match: {
-                    $and: [
-                        { userId: userId },
-                        {
-                            studentInfo: {
-                                $in:
-                                    [objId]
-                            }
-                        }
-                    ]
+        let signStatesInfo = await SignStates.findOne({
+            $and: [
+                { userId: userId },
+                { signDocForId: buyMembershipId }
+            ]
+        });
+        let buyMembersgipInfo = await buyMembership.findOne({ _id: buyMembershipId });
+        let obj = {};
+        obj.mergedDoc = buyMembersgipInfo.mergedDoc;
+        let data = {...signStatesInfo.toJSON(), ...obj };
+        res.send({msg:"data", success:true, data:data});
+        // await buyMembership.aggregate([
+        //     {
+        //         $match: {
+        //             $and: [
+        //                 { userId: userId },
+        //                 {
+        //                     studentInfo: {
+        //                         $in:
+        //                             [objId]
+        //                     }
+        //                 }
+        //             ]
 
-                }
-            },
-            {
-                $project: {
-                    mergedDoc: 1
-                }
-            }
-        ]).then(async resp => {
-            let data = await buy_product.aggregate([
-                {
-                    $match: {
-                        $and: [
-                            { userId: userId },
-                            {
-                                studentInfo: {
-                                    $in:
-                                        [objId]
-                                }
-                            }
-                        ]
+        //         }
+        //     },
+        //     {
+        //         $project: {
+        //             mergedDoc: 1
+        //         }
+        //     }
+        // ]).then(async resp => {
+        //     let data = await buy_product.aggregate([
+        //         {
+        //             $match: {
+        //                 $and: [
+        //                     { userId: userId },
+        //                     {
+        //                         studentInfo: {
+        //                             $in:
+        //                                 [objId]
+        //                         }
+        //                     }
+        //                 ]
 
-                    }
-                },
-                {
-                    $project: {
-                        mergedDoc: 1
-                    }
-                }
-            ])
-            let datas = [...resp, ...data];
-            let promise = [];
-            for (let id in datas) {
-                let ne = await SignStates.findOne({ signDocForId: datas[id]._id });
-                if (ne && ne !== null) {
-                    let obj = {};
-                    obj.mergedDoc = datas[id].mergedDoc;
-                    let data = { ...ne.toJSON(), ...obj }
-                    promise.push(data);
-                }
-            }
-            await Promise.all(promise)
-            res.send({ msg: "data", data: promise, success: true })
-        }).catch(err => {
-            res.send({ msg: err.message.replace(/\"/g, ""), sucess: false });
-        })
+        //             }
+        //         },
+        //         {
+        //             $project: {
+        //                 mergedDoc: 1
+        //             }
+        //         }
+        //     ])
+        //     let datas = [...resp, ...data];
+        //     let promise = [];
+        //     for (let id in datas) {
+        //         let ne = await SignStates.findOne({ signDocForId: datas[id]._id });
+        //         if (ne && ne !== null) {
+        //             let obj = {};
+        //             obj.mergedDoc = datas[id].mergedDoc;
+        //             let data = { ...ne.toJSON(), ...obj }
+        //             promise.push(data);
+        //         }
+        //     }
+        //     await Promise.all(promise)
+        //     res.send({ msg: "data", data: promise, success: true })
+        // }).catch(err => {
+        //     res.send({ msg: err.message.replace(/\"/g, ""), sucess: false });
+        // })
     } catch (err) {
         res.send({ msg: err.message.replace(/\"/g, ""), sucess: false });
     }
