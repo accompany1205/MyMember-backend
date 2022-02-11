@@ -456,6 +456,9 @@ exports.studentCount = (req, res) => {
 exports.addmember = async (req, res) => {
   try {
     var memberdetails = req.body;
+    if (memberdetails.after_camp) {
+      memberdetails.after_camp = memberdetails.after_camp ? JSON.parse(memberdetails.after_camp) : []
+    }
     var memberObj = new addmemberModal(memberdetails);
     memberObj.userId = req.params.userId;
     memberObj.save(function (err, data) {
@@ -1555,7 +1558,6 @@ exports.updatemember = async (req, res) => {
   let memberData = req.body
   if (memberData.after_camp) {
     memberData.after_camp = memberData.after_camp ? JSON.parse(memberData.after_camp) : []
-console.log(memberData.after_camp)
   }
   // let [data] = await smartList.find({ "criteria.studentType": memberData.studentType });
   // if (data) {
@@ -1654,7 +1656,7 @@ console.log(memberData.after_camp)
       } else {
         res.send({
           success: true,
-          msg: "Member  updated successfully",
+          msg: "Member is update successfully",
         });
 
       }
