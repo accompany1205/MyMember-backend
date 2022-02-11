@@ -15,16 +15,8 @@ async function mergeMultipleFiles(docBody, mergedInfo) {
         compression: "DEFLATE",
     });
     let finalPDF = await buffToPdf(buf);
-    let bufCount = Buffer.byteLength(finalPDF)
-    let fileObj = {
-        fieldname: 'attach',
-        originalname: 'Test.pdf',
-        encoding: '7bit',
-        mimetype: 'application/pdf',
-        buffer: finalPDF,
-        size: bufCount
-    }
-    return fileObj
+    
+    return finalPDF;
 }
 
 module.exports = mergeMultipleFiles;
