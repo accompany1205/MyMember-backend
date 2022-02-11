@@ -18,6 +18,8 @@ let { saveEmailTemplate } = require('../controllers/compose_template')
 const system_folder = require("../models/email_system_folder");
 const mergeFile = require("../Services/mergeFile")
 const manage_rank = require("../models/program_rank");
+const mergeMultipleFiles = require("../Services/mergeMultipleFiles");
+
 
 
 // const ManyStudents = require('../std.js');
@@ -1230,16 +1232,28 @@ exports.mergeMultipleDoc = async (req, res) => {
   let docBody = req.body.docBody;
   try {
     let promises = [];
+    let bufCount = 0;
     for (let id in studentsIds) {
       let data = await addmemberModal.findOne({ _id: studentsIds[id] });
       let mergedInfo = { ...data.toJSON() }
       let fileObj = await mergeFile(docBody, mergedInfo);
-      await (cloudUrl.imageUrl(fileObj)).then(data => {
-        promises.push(data)
-      })
+      let filebuff = await mergeMultipleFiles(docBody, mergedInfo);
+      bufCount = Buffer.byteLength(filebuff) + bufCount
+      promises.push(filebuff);
     }
     await Promise.all(promises);
-    res.send({ msg: "data!", data: promises, success: true })
+    let resultBuff = Buffer.concat(promises, bufCount)
+    let fileObj = {
+      fieldname: 'attach',
+      originalname: 'Test.pdf',
+      encoding: '7bit',
+      mimetype: 'application/pdf',
+      buffer: resultBuff,
+      size: bufCount
+    }
+    await (cloudUrl.imageUrl(fileObj)).then(data => {
+      res.send({ msg: "data!", data: data, success: true })
+    })
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false })
   }
