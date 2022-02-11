@@ -1553,6 +1553,10 @@ exports.updatemember = async (req, res) => {
   var memberID = req.params.memberID;
   let userId = req.params.userId
   let memberData = req.body
+  if (memberData.after_camp) {
+    memberData.after_camp = memberData.after_camp ? JSON.parse(memberData.after_camp) : []
+console.log(memberData.after_camp)
+  }
   // let [data] = await smartList.find({ "criteria.studentType": memberData.studentType });
   // if (data) {
   // let [data] = await smartList.find({ "criteria.studentType": memberData.studentType });
@@ -1650,7 +1654,7 @@ exports.updatemember = async (req, res) => {
       } else {
         res.send({
           success: true,
-          msg: "Member is update successfully",
+          msg: "Member  updated successfully",
         });
 
       }
