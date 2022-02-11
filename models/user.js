@@ -28,7 +28,8 @@ const userSchema = new schema(
             default: false //for email verify status
         },
         otp: {
-            type: String
+            type: String,
+            unique: true
         },
         otp_expiration_time: {
             type: Date,
