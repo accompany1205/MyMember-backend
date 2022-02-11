@@ -36,10 +36,10 @@ exports.category_list = (req, res) => {
             }
         }).exec((err, categoryList) => {
             if (err) {
-                res.send({ error: 'compose category is not found' })
+                res.send({ msg: 'compose category is not found', success: false })
             }
             else {
-                res.send(categoryList)
+                res.send({ data: categoryList, success: true })
             }
         })
 }
@@ -52,10 +52,10 @@ exports.addcategory = (req, res) => {
     var category = new emailNurturing(cat);
     category.save((err, data) => {
         if (err) {
-            res.send({ error: 'category is not add' })
+            res.send({ msg: "Folder name already exist!", success: false });
         }
         else {
-            res.send({ msg: 'category is add successfully', category: data })
+            res.send({ msg: 'Folder  added successfully!', success: true })
         }
     })
 }
@@ -78,10 +78,10 @@ exports.removeCategory = (req, res) => {
     emailNurturing.findByIdAndRemove(req.params.categoryId)
         .exec((err, delData) => {
             if (err) {
-                res.send({ error: 'category is not delete' })
+                res.send({ error: 'Folder not removed!', success: true })
             }
             else {
-                res.send({ msg: 'category is remove successfully' })
+                res.send({ msg: 'Folder removed successfully', success: true })
             }
         })
 }

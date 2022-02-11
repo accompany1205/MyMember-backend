@@ -8,16 +8,16 @@ exports.create_folder = (req, res) => {
         var folderObj = new Folder(req.body)
         folderObj.save((err, folder) => {
             if (err) {
-                res.send({ error: 'folder is not create' })
+                res.send({ msg: "Folder name already exist!", success: false });
             }
             else {
                 ComposeCat.findByIdAndUpdate(req.params.catId, { $push: { folder: folder._id } })
                     .exec((err, folderUpdate) => {
                         if (err) {
-                            res.send({ error: 'folder id is not push in category' })
+                            res.send({ msg: 'folder id is not push in category', success: false })
                         }
                         else {
-                            res.send({ msg: 'folder create successfully', data: folder })
+                            res.send({ msg: 'folder create successfully', success: true })
                         }
                     })
             }
@@ -29,10 +29,10 @@ exports.update_folder = (req, res) => {
     Folder.findByIdAndUpdate(req.params.folderId, req.body)
         .exec((err, updateFolder) => {
             if (err) {
-                res.send({ error: 'folder is not update' })
+                res.send({ msg: 'folder  not updated', success: false })
             }
             else {
-                res.send({ msg: 'folder is update successfully' })
+                res.send({ msg: 'folder is update successfully', success: true })
             }
         })
 }
@@ -40,15 +40,15 @@ exports.update_folder = (req, res) => {
 exports.delete_folder = (req, res) => {
     Folder.findOneAndRemove({ _id: req.params.folderId }, (err, delFolder) => {
         if (err) {
-            res.send({ error: 'folder is not remove' })
+            res.send({ msg: 'folder not removed', success: false })
         }
         else {
-            ComposeCat.update({ "folder": req.params.folderId }, { $pull: { "folder": req.params.folderId } }, (err, data) => {
+            ComposeCat.updateOne({ "folder": req.params.folderId }, { $pull: { "folder": req.params.folderId } }, (err, data) => {
                 if (err) {
-                    res.send({ error: 'folder is not remove in compose category' })
+                    res.send({ msg: 'folder  not removed ' })
                 }
                 else {
-                    res.send({ msg: 'folder remove successfully' })
+                    res.send({ msg: 'folder remove successfully', success: true })
                 }
             })
         }
