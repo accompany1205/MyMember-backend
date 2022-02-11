@@ -1232,7 +1232,6 @@ exports.mergeMultipleDoc = async (req, res) => {
     for (let id in studentsIds) {
       let data = await addmemberModal.findOne({ _id: studentsIds[id] });
       let mergedInfo = { ...data.toJSON() }
-      let fileObj = await mergeFile(docBody, mergedInfo);
       let filebuff = await mergeMultipleFiles(docBody, mergedInfo);
       bufCount = Buffer.byteLength(filebuff) + bufCount
       promises.push(filebuff);
