@@ -88,11 +88,9 @@ async function signPdf(file, items) {
         const { PDFDocument, rgb } = require('pdf-lib');
         //const fs = require('fs')
         const pdfDoc = await PDFDocument.load(file)
-
         for (let [owner, val] of Object.entries(items)) {
             for (let [_page, value] of Object.entries(val)) {
                 const page = pdfDoc.getPages()[_page - 1]
-                const { width, height } = page.getSize()
                 //console.log(value)
                 for (let itm of value) {
 
@@ -100,7 +98,7 @@ async function signPdf(file, items) {
                         let img = await pdfDoc.embedPng(itm.value);
                         // const { width, height } = img.scale(1);
                         let x = itm.x - (150 / 2)
-                        let y = (height - itm.y) - (60 / 2)
+                        let y = (page.getHeight() - itm.y) - (60 / 2)
                         page.drawImage(img, {
                             x: x,
                             y: y,
@@ -111,7 +109,7 @@ async function signPdf(file, items) {
                     if (itm.type === 'date') {
                         let text = new Date().toLocaleDateString()
                         let x = itm.x - (getTextWidth(text, 14) / 2)
-                        let y = (height - itm.y) - (14 / 2)
+                        let y = (page.getHeight() - itm.y) - (14 / 2)
                         page.drawText(new Date().toLocaleDateString(), {
                             x: x,
                             y: y,
@@ -122,7 +120,7 @@ async function signPdf(file, items) {
                     if (itm.type === 'text') {
                         let text = itm.value
                         let x = itm.x - (getTextWidth(text, 14) / 2)
-                        let y = (height - itm.y) - (14 / 2)
+                        let y = (page.getHeight() - itm.y) - (14 / 2)
                         page.drawText(text, {
                             x: x,
                             y: y,
