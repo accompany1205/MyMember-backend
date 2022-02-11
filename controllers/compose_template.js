@@ -313,8 +313,7 @@ exports.list_template = async (req, res) => {
     .findById(req.params.folderId)
     .populate({
       path: "template",
-      match: { is_Sent: false, email_type: 'schedule' },
-      options: { sort: { templete_Id: 1 } },
+      match: { is_Template: false, category: 'compose' },
     })
     .exec((err, template_data) => {
       if (err) {
@@ -326,7 +325,7 @@ exports.list_template = async (req, res) => {
 };
 
 exports.allScheduledListing = async (req, res) => {
-  await all_temp.find({ userId: req.params.userId, is_Sent: false })
+  await all_temp.find({ userId: req.params.userId, is_Sent: false, is_Template: false })
     .sort({ createdAt: -1 })
     .then((data) => {
       res.send({ success: true, msg: "all Schedulded Emails", data })
@@ -337,72 +336,11 @@ exports.allScheduledListing = async (req, res) => {
 
 exports.update_template = async (req, res) => {
   let updateTemplate = req.body;
-  let smartList = updateTemplate.smartLists;
-  let to = updateTemplate.to;
-  to = to ? JSON.parse(to) : [];
-  smartList = smartList ? JSON.parse(smartList) : [];
-  if (to || smartList) {
-    if (!to.lenght) {
-      smartList.map(lists => {
-        to = [...to, ...lists.smrtList]
-      });
-    } else {
-      smartList = []
-    }
-  }
-  updateTemplate.to = to;
-  updateTemplate.smartLists = smartList;
-  const promises = []
-  if (req.files) {
-    (req.files).map(file => {
-      promises.push(cloudUrl.imageUrl(file))
-    });
-    var allAttachments = await Promise.all(promises);
-    updateTemplate.attachments = allAttachments;
-  }
-  all_temp.updateOne(
-    { _id: req.params.templateId },
-    req.body,
-    (err, updateTemp) => {
-      if (err) {
-        res.send({ success: false, msg: "template is not update" });
-      } else {
-        res.send({ success: true, msg: "template update success" });
-      }
-    }
-  );
-};
-
-exports.add_template = async (req, res) => {
+  let templateId = req.params.templateId
   try {
-    const [counts] = await compose_folder
-      .find({ _id: req.params.folderId }, { template: 1, _id: 0 })
-    let templete_Id = counts.template.length + 1
-
-    let { userId, folderId } = req.params || {};
-
-    let {
-      to,
-      from,
-      title,
-      subject,
-      template,
-      sent_time,
-      sent_date,
-      follow_up,
-      smartLists,
-      design,
-      content_type,
-      immediately,
-      days,
-      days_type,
-    } = req.body || {};
-
-    if (!to) {
-
-      smartLists = smartLists ? JSON.parse(smartLists) : []
+    if (!updateTemplate.to) {
+      smartLists = updateTemplate.smartLists ? JSON.parse(updateTemplate.smartLists) : []
       smartLists = smartLists.map(s => ObjectId(s));
-
       let [smartlists] = await smartlist.aggregate([
         {
           $match: {
@@ -439,19 +377,112 @@ exports.add_template = async (req, res) => {
       ])
 
       smartlists = smartlists ? smartlists : []
-      if (!smartlists.length) {
+
+      if (!smartlists.emails.length) {
+        return res.send({
+          msg: `No Smartlist exist!`,
+          success: false,
+        });
+      }
+      updateTemplate.to = smartlists.emails
+
+    }
+    promises = []
+    if (req.files) {
+      (req.files).map(file => {
+        promises.push(cloudUrl.imageUrl(file))
+      });
+      updateTemplate.attachments = await Promise.all(promises);
+    }
+    await all_temp.updateOne(
+      { _id: templateId },
+      { $set: updateTemplate },
+      (err, updateTemp) => {
+        if (err) {
+          res.send({ success: err, msg: "Template is not update" });
+        } else {
+          res.send({ success: true, msg: "Template updated Successfully!" });
+        }
+      }
+    );
+  }
+  catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+
+  }
+}
+exports.add_template = async (req, res) => {
+  try {
+
+    let { userId, folderId } = req.params || {};
+
+    let {
+      to,
+      from,
+      subject,
+      template,
+      sent_time,
+      sent_date,
+      smartLists,
+      design,
+      days_type,
+      content_type,
+      days,
+      createdBy
+    } = req.body;
+
+    if (!to) {
+
+      smartLists = smartLists ? JSON.parse(smartLists) : []
+      smartLists = smartLists.map(s => ObjectId(s));
+      let [smartlists] = await smartlist.aggregate([
+        {
+          $match: {
+            _id: { $in: smartLists }
+          }
+        },
+        {
+          $lookup: {
+            from: "members",
+            localField: "smartlists",
+            foreignField: "_id",
+            as: "data"
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            data: "$data.email"
+          }
+        },
+        { $unwind: "$data" },
+        {
+          $group: {
+            _id: "",
+            emails: { $addToSet: "$data" }
+          }
+        },
+        {
+          $project: {
+            _id: 0
+          }
+
+        }
+      ])
+
+      smartlists = smartlists ? smartlists : []
+
+      if (!smartlists.emails.length) {
         return res.send({
           msg: `No Smartlist exist!`,
           success: false,
         });
       }
       to = smartlists.emails
-
     }
     const obj = {
       to,
       from,
-      title,
       subject,
       template,
       sent_date,
@@ -459,96 +490,106 @@ exports.add_template = async (req, res) => {
       design,
       days,
       days_type,
-      immediately,
       content_type,
-      follow_up,
-      email_type: "schedule",
-      email_status: true,
+      is_Template: true,
       category: "compose",
       userId,
       folderId,
-      templete_Id,
-      attachments,
-      smartLists
-
+      smartLists,
+      createdBy
     };
     const promises = []
     if (req.files) {
       (req.files).map(file => {
         promises.push(cloudUrl.imageUrl(file))
       });
-      var attachments = await Promise.all(promises);
+      obj.attachments = await Promise.all(promises);
     }
-    obj.attachments = attachments
-    sent_date = moment(sent_date).format("YYYY-MM-DD");
-    if (JSON.parse(immediately) && !days) {
-      const emailData = new Mailer({
-        sendgrid_key: process.env.SENDGRID_API_KEY,
-        to,
-        from,
-        from_name: 'noreply@gmail.com',
-        subject,
-        html: template,
-        attachments
+    saveEmailTemplate(obj)
+      .then(data => {
+        compose_folder
+          .findByIdAndUpdate(folderId, { $push: { template: data._id } }, (err, data) => {
+            if (err) {
+              return res.send({ msg: err, success: false })
+            }
+            return res.send({ msg: "Template saved Successfully!", success: true })
+          })
       })
-      emailData.sendMail()
-        .then(resp => {
-          obj.email_type = 'sent'
-          obj.is_Sent = true
-          saveEmailTemplate(obj)
-            .then((data) => {
-              compose_folder
-                .findByIdAndUpdate(folderId, { $push: { template: data._id } }, (err, data) => {
-                  if (err) {
-                    res.send({ msg: err, success: false })
-                  }
-                  res.send({ msg: "Email send Successfully!", success: true })
-
-                })
-            })
-            .catch((ex) => {
-              res.send({
-                success: false,
-                msg: ex
-              });
-            });
+      .catch(err => {
+        return res.send({
+          success: false, msg: err
         })
-        .catch(err => {
-          res.send({ error: err.message.replace(/\"/g, ""), success: false })
-        })
+      })
 
-    } else if (!JSON.parse(immediately) && days) {
-      sent_date = moment().add(days, 'days').format("YYYY-MM-DD");
-      saveEmailTemplate(obj)
-        .then((data) => {
-          compose_folder
-            .findByIdAndUpdate(folderId, { $push: { template: data._id } })
-            .then((data) => {
-              res.send({
-                msg: `Email scheduled  Successfully on ${sent_date}`,
-                success: true,
-              });
-            })
-            .catch((er) => {
-              res.send({
-                error: "compose template details is not add in folder",
-                success: false,
-              });
-            });
-        })
-        .catch((ex) => {
-          res.send({
-            success: false,
-            msg: ex
-          });
-        });
-    }
-    else {
-      res.send({ msg: 'something went wrong', success: false })
+    // if (JSON.parse(immediately) && !days) {
+    // const emailData = new Mailer({
+    //   // sendgrid_key: process.env.SENDGRID_API_KEY,
+    //   to,
+    //   from,
+    //   from_name: 'noreply@gmail.com',
+    //   subject,
+    //   html: template,
+    //   attachments
+    // })
+    // emailData.sendMail()
+    //   .then(resp => {
+    //     obj.email_type = 'sent'
+    //     obj.is_Sent = true
+    //     saveEmailTemplate(obj)
+    //       .then((data) => {
+    //         compose_folder
+    //           .findByIdAndUpdate(folderId, { $push: { template: data._id } }, (err, data) => {
+    //             if (err) {
+    //               res.send({ msg: err, success: false })
+    //             }
+    //             res.send({ msg: "Email send Successfully!", success: true })
 
-    }
+    //           })
+    //       })
+    //       .catch((ex) => {
+    //         res.send({
+    //           success: false,
+    //           msg: ex
+    //         });
+    //       });
+    //   })
+    //   .catch(err => {
+    //     res.send({ error: err.message.replace(/\"/g, ""), success: false })
+    //   })
+
+    // }
+    //  else if (!JSON.parse(immediately) && days) {
+    //   sent_date = moment().add(days, 'days').format("YYYY-MM-DD");
+    //   saveEmailTemplate(obj)
+    //     .then((data) => {
+    //       compose_folder
+    //         .findByIdAndUpdate(folderId, { $push: { template: data._id } })
+    //         .then((data) => {
+    //           res.send({
+    //             msg: `Email scheduled  Successfully on ${sent_date}`,
+    //             success: true,
+    //           });
+    //         })
+    //         .catch((er) => {
+    //           res.send({
+    //             error: "compose template details is not add in folder",
+    //             success: false,
+    //           });
+    //         });
+    //     })
+    //     .catch((ex) => {
+    //       res.send({
+    //         success: false,
+    //         msg: ex
+    //       });
+    //     });
+    // }
+    // else {
+    //   res.send({ msg: 'something went wrong', success: false })
+
+    // }
   } catch (err) {
-    res.send({ error: err.message.replace(/\"/g, ""), success: false })
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
   }
 
 };
@@ -558,7 +599,7 @@ function saveEmailTemplate(obj) {
     let emailDetail = new all_temp(obj);
     emailDetail.save((err, data) => {
       if (err) {
-        reject({ data: "Data not save in Database!", success: false });
+        reject({ data: "Data not save in Database!", success: err });
       } else {
         resolve(data);
       }
@@ -569,7 +610,7 @@ function saveEmailTemplate(obj) {
 
 var emailCronFucntionality = async () => {
   let promises = [];
-  let scheduledListing = await all_temp.find({  is_Sent: false });
+  let scheduledListing = await all_temp.find({ is_Sent: false });
   scheduledListing.forEach(async (ele) => {
     let sentDate = ele.sent_date;
     let mailId = ele._id;
@@ -610,7 +651,6 @@ cron.schedule(`*/5 * * * *`, () => {
 
 
 exports.remove_template = (req, res) => {
-  // all_temp.remove({}).then().catch();
   all_temp.findByIdAndRemove(req.params.templateId, (err, removeTemplate) => {
     if (err) {
       res.send({ error: "compose template is not remove" });
@@ -621,10 +661,10 @@ exports.remove_template = (req, res) => {
         function (err, temp) {
           if (err) {
             res.send({
-              error: "compose template details is not remove in folder",
+              msg: "Template not removed!", success: false
             });
           } else {
-            res.send({ msg: "compose template is remove successfully" });
+            res.send({ msg: "Template removed successfully", success: true });
           }
         }
       );

@@ -11,6 +11,8 @@ const {
 const from_email = process.env.from_email;
 const Mailer = require("../helpers/Mailer");
 const navbar = require("../models/navbar.js");
+const otpGenerator = require('../Services/otpGenerator')
+const ObjectId = require('mongodb').ObjectId;
 const {
   map
 } = require('lodash');
@@ -65,7 +67,9 @@ exports.signup = async (req, res) => {
     msg.sendMail()
       .then(() => {
       })
-      .catch((error) => {
+      .catch((err) => {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+
       })
     res.json({
       user
@@ -431,56 +435,62 @@ exports.signin = (req, res) => {
     } else {
       if (data.password == req.body.password) {
         if (data.role == 0) {
-          if (data.status == "Active") {
-            // if (!data.authenticate(password)) {
-            //     return res.status(401).json({
-            //         error: 'Email and password dont match'
-            //     });
-            // }
-            token = jwt.sign({
-              id: data._id,
-              auth_key: data.auth_key,
-              app_id: data.app_id,
-              epi: data.epi,
-              descriptor: data.descriptor,
-              product_description: data.product_description
-            }, process.env.JWT_SECRET);
-            res.cookie("t", token, {
-              expire: new Date() + 9999
-            });
-            const {
-              _id,
-              username,
-              name,
-              email,
-              role,
-              logo,
-              location_name,
-              bussinessAddress,
-              country,
-              state,
-              city
-
-            } = data;
-            return res.json({
-              token,
-              data: {
+          if (data.isEmailverify) {
+            if (data.status == "Active") {
+              // if (!data.authenticate(password)) {
+              //     return res.status(401).json({
+              //         error: 'Email and password dont match'
+              //     });
+              // }
+              token = jwt.sign({
+                id: data._id,
+                auth_key: data.auth_key,
+                app_id: data.app_id,
+                epi: data.epi,
+                descriptor: data.descriptor,
+                product_description: data.product_description
+              }, process.env.JWT_SECRET);
+              res.cookie("t", token, {
+                expire: new Date() + 9999
+              });
+              const {
                 _id,
                 username,
-                email,
                 name,
+                email,
                 role,
                 logo,
                 location_name,
                 bussinessAddress,
-                city,
-                state,
                 country,
-              },
-            });
+                state,
+                city
+
+              } = data;
+              return res.json({
+                token,
+                data: {
+                  _id,
+                  username,
+                  email,
+                  name,
+                  role,
+                  logo,
+                  location_name,
+                  bussinessAddress,
+                  city,
+                  state,
+                  country,
+                },
+              });
+            } else {
+              return res.json({
+                error: "Your account is deactivate!"
+              });
+            }
           } else {
             return res.json({
-              error: "your account is deactivate"
+              error: "Your Email is not Verified!"
             });
           }
         } else if (data.role == 1) {
@@ -806,7 +816,7 @@ exports.school_listing = async (req, res) => {
     limit: per_page,
     skip: per_page * (page_no - 1)
   }
-  await User.find({ role: 0 })
+  await User.find({ role: 0, isEmailverify: true })
     .limit(pagination.limit)
     .skip(pagination.skip)
     .exec((err, data) => {
@@ -838,3 +848,76 @@ exports.searchUser = async (req, res) => {
 }
 
 
+
+
+exports.sendOTP_to_email = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const { email } = req.body;
+    let now = new Date;
+    const otp_expiration_time = AddMinutesToDate(now, 10);
+    const otp = otpGenerator();
+    if (!email) {
+      res.send({ msg: "Email not provided!", success: false })
+
+    }
+    let msg = new Mailer({
+      to: email, // Change to your recipient
+      subject: 'Email Verification',
+      html:
+        `Your OTP/verification code is ${otp}`
+    })
+    await msg.sendMail()
+      .then(resp => {
+        User.updateOne({ _id: userId }, { $set: { otp: otp, otp_expiration_time: otp_expiration_time } }, (err, resp) => {
+          if (err) {
+            res.send({ msg: err, success: false });
+          }
+          res.send({ msg: "OTP send Successfully!", success: true })
+
+        })
+
+      })
+      .catch(err => {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+
+      })
+  }
+  catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+
+  }
+}
+
+exports.verify_otp = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const otp = req.body.otp
+    const now = new Date
+    await User.updateOne(
+      { _id: ObjectId(userId), otp: otp, otp_expiration_time: { $gte: now } },
+      {
+        $set: {
+          isEmailverify: true
+        }
+      }
+    )
+      .exec((err, resp) => {
+        if (err || !resp.nModified) {
+          return res.send({ msg: err ? err : "Your OTP is Expired!", success: false });
+        }
+        return res.send({ msg: "Email verified Successfully!", success: true })
+
+      })
+  }
+  catch (err) {
+    return res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+
+  }
+}
+
+
+
+function AddMinutesToDate(date, minutes) {
+  return new Date(date.getTime() + minutes * 60000);
+}

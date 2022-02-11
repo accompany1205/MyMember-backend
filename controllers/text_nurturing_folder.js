@@ -5,7 +5,7 @@ exports.create_folder =(req,res)=>{
     var folderObj = new txtFolderNur(req.body)
     folderObj.save((err,folder)=>{
         if(err){
-            res.send({error:'text nurturing folder is not create'})
+            res.send({ msg: "Folder name already exist!", success: false });
         }
         else{
             txtNurturingCat.findByIdAndUpdate(req.params.catId,{$push:{ folder:folder._id }})
