@@ -16,12 +16,22 @@ const userSchema = new schema(
             maxlength: 100
         },
         twilio: {
-          type: String,
-          unique: true,
+            type: String,
+            unique: true,
         },
         isverify: {
             type: Boolean,
+            default: false
+        },
+        isEmailverify: {
+            type: Boolean,
             default: false //for email verify status
+        },
+        otp: {
+            type: String
+        },
+        otp_expiration_time: {
+            type: Date,
         },
         emailToken: {
             type: String
@@ -228,17 +238,17 @@ const userSchema = new schema(
                 type: Boolean,
                 default: false
             },
-            email:{
-                type:String
+            email: {
+                type: String
             },
-            link:{
-                type:String
+            link: {
+                type: String
             },
-            staffName:{
-                type:String
+            staffName: {
+                type: String
             },
-            password:{
-                type:String
+            password: {
+                type: String
             }
         }]
     },

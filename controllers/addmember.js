@@ -455,13 +455,9 @@ exports.studentCount = (req, res) => {
 
 exports.addmember = async (req, res) => {
   try {
-    var pDetail = await program.findOne({
-      programName: req.body.program,
-    });
     var memberdetails = req.body;
     var memberObj = new addmemberModal(memberdetails);
     memberObj.userId = req.params.userId;
-    // memberObj.programColor = pDetail.color
     memberObj.save(function (err, data) {
       if (err) {
         res.send({

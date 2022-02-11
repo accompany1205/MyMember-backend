@@ -6,15 +6,12 @@ const EmailSchema = schema({
         require: true
     },
     to: {
-        type: Array
-    },
-    title: {
-        type: String,
-        require: true
+        type: Array,
+        required: true
     },
     subject: {
         type: String,
-        require: true
+        required: true
     },
     template: {
         type: String
@@ -34,46 +31,39 @@ const EmailSchema = schema({
     content_type: {
         type: String
     },
-    repeat_mail: {
-        type: String
-    },
-    follow_up: {
-        type: String
-    },
+    // repeat_mail: {
+    //     type: String
+    // },
+    // follow_up: {
+    //     type: String
+    // },
     sent_date: {
         type: String,
     },
     sent_time: {
         type: String,
     },
-    DateT: {
-        type: Date
-    },
+    // DateT: {
+    //     type: Date
+    // },
     category: {
         type: String,
-        default: ' '
     },
-    email_type: {
-        type: String,
-        default: ' '
-    },
-    email_status: {
-        type: Boolean,
-    },
-    email_auth_key: {
-        type: String,
-        require: true
-    },
+    // email_type: {
+    //     type: String,
+    // },
+    // email_auth_key: {
+    //     type: String,
+    //     required: true
+    // },
     userId: {
         type: String,
-        require: true
     },
     folderId: {
         type: String,
-        require: true
     },
     createdBy: {
-        type: String
+        type: String,
     },
     adminId: {
         type: String
@@ -89,17 +79,19 @@ const EmailSchema = schema({
         type: Boolean,
         default: false
     },
+    is_Template: {
+        type: Boolean,
+    },
     attachments: {
         type: Array
     },
-    days: {
-        type: String
-    },
-    smartLists: [{
-        stdtype: String,
-        smId: String,
-        smrtList: Array
-    }]
+    smartLists:
+        { type: Array }
+    // [{
+    //     stdtype: String,
+    //     smId: String,
+    //     smrtList: Array
+    // }]
 },
     { timestamps: true }
 )
