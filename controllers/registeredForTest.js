@@ -154,18 +154,19 @@ exports.multipleDocMerge = async (req, res) => {
             promises.push(filebuff);
         }
         await Promise.all(promises);
-        let resultBuff = Buffer.concat(promises, bufCount)
-        let fileObj = {
-            fieldname: 'attach',
-            originalname: 'Test.pdf',
-            encoding: '7bit',
-            mimetype: 'application/pdf',
-            buffer: resultBuff,
-            size: bufCount
-        }
-        await (cloudUrl.imageUrl(fileObj)).then(data => {
-            res.send({ msg: "data!", data: data, success: true })
-        })
+        res.send({ msg: "data!", data: promises, success: true })
+        // let resultBuff = Buffer.concat(promises, bufCount)
+        // let fileObj = {
+        //     fieldname: 'attach',
+        //     originalname: 'Test.pdf',
+        //     encoding: '7bit',
+        //     mimetype: 'application/pdf',
+        //     buffer: resultBuff,
+        //     size: bufCount
+        // }
+        // await (cloudUrl.imageUrl(fileObj)).then(data => {
+        //     res.send({ msg: "data!", data: data, success: true })
+        // })
 
     } catch (err) {
         res.send({ msg: err.message.replace(/\"/g, ""), success: false })
