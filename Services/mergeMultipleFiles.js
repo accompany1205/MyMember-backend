@@ -10,13 +10,14 @@ async function mergeMultipleFiles(docBody, mergedInfo) {
     const zip = new pizzip(response);
     const doc = new Docxtemplater(zip, { linebreaks: true });
     doc.render(mergedInfo);
-    const buf = doc.getZip().generate({
+    let buf = doc.getZip().generate({
         type: "nodebuffer",
         compression: "DEFLATE",
     });
-    let finalPDF = await buffToPdf(buf);
-    
-    return finalPDF;
+    // let finalPDF = await     (buf);
+
+    // return finalPDF;
+    return buf
 }
 
 module.exports = mergeMultipleFiles;
