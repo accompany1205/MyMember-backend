@@ -3,6 +3,7 @@ const Mailer = require("../helpers/Mailer");
 // const sgMail = require("@sendgrid/mail");
 const buyMembership = require("../models/buy_membership");
 const buy_product = require("../models/buy_product");
+const BuyMembership = require('../models/buy_membership');
 const buffToPdf = require("../Services/pdfConvertor");
 const mongo = require('mongoose')
 const pixelWidth = require('string-pixel-width');
@@ -64,12 +65,22 @@ exports.getRequestSignParam = async (req, res) => {
 exports.getRequestSign = async (req, res) => {
     try {
         let docuSignId = req.params.docuSignId;
-        await SignStates.find({ _id: docuSignId }).then(data => {
-            let datas = {}
-            let ipAddress = req.header('x-forwarded-for') || req.connection.remoteAddress;
-            datas.ipAddress = ipAddress;
-            datas = { ...datas, ...data };
-            res.send({ msg: "data!", success: true, data: datas })
+        let emailToken = req.params.emailToken;
+        await SignStates.find({ _id: docuSignId }).then(async data => {
+            await BuyMembership.findOne({ _id: data.signDocForId }).then(resp => {
+                if (resp.emailToken === emailToken) {
+                    let datas = {}
+                    let ipAddress = req.header('x-forwarded-for') || req.connection.remoteAddress;
+                    datas.ipAddress = ipAddress;
+                    datas = { ...datas, ...data };
+                    res.send({ msg: "data!", success: true, data: datas })
+                } else {
+                    res.status(401).send({ msg: "Not verified!", success: false });
+                }
+
+            }).catch(err => {
+                res.send({ msg: "no Data!", success: false, error: err.message.replace(/\"/g, "") })
+            })
         }).catch(err => {
             res.send({ msg: "no Data!", success: false, error: err.message.replace(/\"/g, "") })
         })
@@ -90,7 +101,9 @@ async function signPdf(file, items) {
         const pdfDoc = await PDFDocument.load(file)
         for (let [owner, val] of Object.entries(items)) {
             for (let [_page, value] of Object.entries(val)) {
+                console.log("_page", _page);
                 const page = pdfDoc.getPages()[_page - 1]
+                console.log("page->", page)
                 //console.log(value)
                 for (let itm of value) {
 
@@ -121,6 +134,7 @@ async function signPdf(file, items) {
                         let text = itm.value
                         let x = itm.x - (getTextWidth(text, 14) / 2)
                         let y = (page.getHeight() - itm.y) - (14 / 2)
+                        console.log("y->", y)
                         page.drawText(text, {
                             x: x,
                             y: y,
@@ -248,7 +262,9 @@ exports.getAllStudentDocs = async (req, res) => {
         });
         if (signStatesInfo) {
             let buyMembersgipInfo = await buyMembership.findOne({ _id: buyMembershipId });
+            let membershipInfo = await BuyMembership.findOne({ _id: buyMembersgipInfo.membershipIds[0] });
             let obj = {};
+            obj.mergedDocName = membershipInfo.membershipDocName;
             obj.mergedDoc = buyMembersgipInfo.mergedDoc;
             obj.emailToken = buyMembersgipInfo.emailToken;
             let data = { ...signStatesInfo.toJSON(), ...obj };
