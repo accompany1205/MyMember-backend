@@ -66,13 +66,14 @@ exports.getRequestSign = async (req, res) => {
     try {
         let docuSignId = req.params.docuSignId;
         let emailToken = req.params.emailToken;
-        await SignStates.find({ _id: docuSignId }).then(async data => {
-            await buyMembership.findOne({ _id: data.signDocForId }).then(resp => {
+        await SignStates.findOne({ _id: docuSignId }).then(async data => {
+            let id = data.signDocForId;
+            await buyMembership.findOne({ _id: id }).then(resp => {
                 if (resp.emailToken === emailToken) {
                     let datas = {}
                     let ipAddress = req.header('x-forwarded-for') || req.connection.remoteAddress;
                     datas.ipAddress = ipAddress;
-                    datas = { ...datas, ...data };
+                    datas = { ...datas, ...data.toJSON() };
                     res.send({ msg: "data!", success: true, data: datas })
                 } else {
                     res.status(401).send({ msg: "Not verified!", success: false });
