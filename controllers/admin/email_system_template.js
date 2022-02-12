@@ -1,4 +1,5 @@
 const addTemp = require("../../models/emailSentSave");
+const template=require('../../models/emailTemplates')
 const students = require("../../models/addmember");
 const smartlist = require("../../models/smartlists");
 const systemFolder = require("../../models/email_system_folder");
@@ -288,7 +289,7 @@ exports.add_template = async (req, res) => {
 
 function saveEmailTemplate(obj) {
   return new Promise((resolve, reject) => {
-    let emailDetail = new addTemp(obj);
+    let emailDetail = new template(obj);
     emailDetail.save((err, data) => {
       if (err) {
         reject({ data: "Data not save in Database!", success: err });
@@ -324,7 +325,7 @@ exports.update_template = async (req, res) => {
     var allAttachments = await Promise.all(promises);
     updateTemplate.attachments = allAttachments;
   }
-  addTemp.updateOne(
+  template.updateOne(
     { _id: req.params.templateId },
     req.body,
     (err, updateTemp) => {
@@ -398,7 +399,7 @@ exports.update_template = async (req, res) => {
 // };
 
 exports.remove_template = (req, res) => {
-  addTemp.findByIdAndRemove(req.params.templateId, (err, removeTemplate) => {
+  template.findByIdAndRemove(req.params.templateId, (err, removeTemplate) => {
     if (err) {
       res.send({ error: "system template is not remove" });
     } else {
@@ -544,7 +545,7 @@ exports.swapAndUpdate_template = async (req, res) => {
 exports.multipal_temp_remove = (req, res) => {
   let folderId = req.params.folderId;
   let templateIds = req.body.templateId;
-  addTemp.remove({ _id: { $in: templateIds } }).exec((err, resp) => {
+  template.remove({ _id: { $in: templateIds } }).exec((err, resp) => {
     if (err) {
       res.json({ code: 400, msg: "templates not remove" });
     } else {

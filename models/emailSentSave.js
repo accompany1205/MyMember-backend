@@ -79,9 +79,6 @@ const EmailSchema = schema({
         type: Boolean,
         default: false
     },
-    is_Template: {
-        type: Boolean,
-    },
     attachments: {
         type: Array
     },
