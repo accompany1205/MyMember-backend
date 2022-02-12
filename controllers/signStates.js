@@ -1,6 +1,7 @@
 const SignStates = require("../models/signStates");
 const Mailer = require("../helpers/Mailer");
 // const sgMail = require("@sendgrid/mail");
+const fetch = require('node-fetch');
 const buyMembership = require("../models/buy_membership");
 const buy_product = require("../models/buy_product");
 const membershipModal = require('../models/membership');
