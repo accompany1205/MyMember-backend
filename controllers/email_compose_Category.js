@@ -4,6 +4,7 @@ const emailSent = require('../models/emailSentSave')
 const smartlist = require("../models/smartlists");
 const Mailer = require("../helpers/Mailer");
 const cloudUrl = require("../gcloud/imageUrl");
+const ObjectId = require('mongodb').ObjectId;
 // const sgMail = require('@sendgrid/mail');
 // sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 // // const sgMail = require('sendgrid-v3-node');
@@ -83,11 +84,76 @@ exports.sendEmail = async (req, res) => {
             template,
             attachments,
             smartLists,
-            text
+            text,
+            isPlaceHolders
         } = req.body;
         if (!to) {
             smartLists = smartLists ? JSON.parse(smartLists) : []
             smartLists = smartLists.map(s => ObjectId(s));
+
+            if (JSON.parse(isPlaceHolders)) {
+                let [mapObj] = await smartlist.aggregate([
+                    {
+                        $match: {
+                            _id: { $in: smartLists }
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: "members",
+                            localField: "smartlists",
+                            foreignField: "_id",
+                            as: "data"
+                        }
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                            data: 1
+                        }
+                    },
+                    { $unwind: "$data" },
+                    {
+                        $group: {
+                            _id: "data",
+                            data: { $push: "$data" }
+                        }
+                    },
+                    {
+                        $project: {
+                            _id: 0
+                        }
+
+                    }
+
+
+                ])
+
+                mapObj = mapObj ? mapObj : []
+
+                if (!mapObj.data.length) {
+                    return res.send({
+                        msg: `No Smartlist exist!`,
+                        success: false,
+                    });
+                }
+
+                (mapObj.data).map(Element => {
+                    let temp = template;
+
+                    for (i in Element) {
+                        if (temp.includes(i)) {
+                            temp = replace(temp, i, Element[i])
+                        }
+                    }
+                    console.log({ from, to: Element["email"], subject, html: temp });
+
+                })
+
+                return res.send({ data: mapObj.data })
+
+
+            }
             let [smartlists] = await smartlist.aggregate([
                 {
                     $match: {
@@ -131,6 +197,7 @@ exports.sendEmail = async (req, res) => {
                     success: false,
                 });
             }
+
             to = smartlists.emails
         }
         let promises = []
@@ -146,7 +213,6 @@ exports.sendEmail = async (req, res) => {
             subject,
             template,
             category: 'compose',
-            is_Template: false,
             userId,
         };
         const emailData = new Mailer({
@@ -225,4 +291,8 @@ exports.removeCategory = (req, res) => {
             res.send({ msg: 'Folder  removed successfully!', success: true })
         }
     })
+}
+function replace(strig, old_word, new_word) {
+    return strig.replace(old_word, new_word)
+
 }

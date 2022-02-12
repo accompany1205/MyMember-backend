@@ -1,6 +1,7 @@
 const all_temp = require("../models/emailSentSave");
 const nurturingFolderModal = require("../models/email_nurturing_folder");
 const smartlist = require("../models/smartlists");
+const template=require('../models/emailTemplates')
 const key = require("../models/email_key");
 const moment = require("moment");
 const async = require("async");
@@ -201,7 +202,6 @@ exports.add_template = async (req, res) => {
       days_type,
       immediately,
       content_type,
-      is_Template: false,
       category: "nurturing",
       userId,
       folderId,
@@ -248,7 +248,7 @@ exports.add_template = async (req, res) => {
 
 function saveEmailTemplate(obj) {
   return new Promise((resolve, reject) => {
-    let emailDetail = new all_temp(obj);
+    let emailDetail = new template(obj);
     emailDetail.save((err, data) => {
       if (err) {
         reject({ data: "Data not save in Database!", success: err });
@@ -260,7 +260,7 @@ function saveEmailTemplate(obj) {
 }
 
 exports.remove_template = (req, res) => {
-  all_temp.findByIdAndRemove(req.params.templateId, (err, removeTemplate) => {
+  template.findByIdAndRemove(req.params.templateId, (err, removeTemplate) => {
     if (err) {
       res.send({ msg: "Template not removed!", success: false });
     } else {
@@ -378,7 +378,7 @@ exports.update_template = async (req, res) => {
       });
       updateTemplate.attachments = await Promise.all(promises);
     }
-    await all_temp.updateOne(
+    await template.updateOne(
       { _id: templateId },
       updateTemplate,
       (err, updateTemp) => {
@@ -449,8 +449,8 @@ exports.swap_template = async (req, res) => {
           success: false
         });
       } else {
-        await all_temp.findByIdAndUpdate(FirstSelectedOid, { $set: { sent_date: DateOfFirstSelectedOid } })
-        await all_temp.findByIdAndUpdate(SecondSelectedOid, { $set: { sent_date: DateOfSecondSelectedOid } })
+        await template.findByIdAndUpdate(FirstSelectedOid, { $set: { sent_date: DateOfFirstSelectedOid } })
+        await template.findByIdAndUpdate(SecondSelectedOid, { $set: { sent_date: DateOfSecondSelectedOid } })
           .exec(async (err, data) => {
             if (err) {
               res.send({
