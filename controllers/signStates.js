@@ -67,7 +67,7 @@ exports.getRequestSign = async (req, res) => {
         let docuSignId = req.params.docuSignId;
         let emailToken = req.params.emailToken;
         await SignStates.find({ _id: docuSignId }).then(async data => {
-            await BuyMembership.findOne({ _id: data.signDocForId }).then(resp => {
+            await buyMembership.findOne({ _id: data.signDocForId }).then(resp => {
                 if (resp.emailToken === emailToken) {
                     let datas = {}
                     let ipAddress = req.header('x-forwarded-for') || req.connection.remoteAddress;
