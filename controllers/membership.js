@@ -13,25 +13,35 @@ exports.create = async (req, res) => {
     membershipDetails.adminId = req.params.adminId;
     membershipDetails.folderId = req.params.folderId;
     const promises = [];
-    if (req.files) {
-      req.files.map((file) => {
-        if (file.originalname.split('.')[0] === 'thumbnail') {
-          cloudUrl
-            .imageUrl(file)
-            .then((data) => {
-              membershipDetails.membershipThumbnail = data;
-            })
-            .catch((err) => {
-              res.send({ msg: 'Thumbnail not uploaded!', success: false });
-            });
-        } else {
-          promises.push(cloudUrl.imageUrl(file));
-        }
-      });
-      var docs = await Promise.all(promises);
+    if (req.file) {
+      membershipDetails.membershipDocName = req.file.originalname;
+      await cloudUrl
+        .imageUrl(req.file)
+        .then((data) => {
+          membershipDetails.membershipDoc = data;
+        })
+        .catch((err) => {
+          res.send({ msg: 'file not uploaded!', success: false });
+        });
+      // req.files.map((file) => {
+      //   if (file.originalname.split('.')[0] === 'thumbnail') {
+      //     cloudUrl
+      //       .imageUrl(file)
+      //       .then((data) => {
+      //         membershipDetails.membershipThumbnail = data;
+      //       })
+      //       .catch((err) => {
+      //         res.send({ msg: 'Thumbnail not uploaded!', success: false });
+      //       });
+      //   } else {
+      //     promises.push(cloudUrl.imageUrl(file));
+      //   }
+      // });
+      // var docs = await Promise.all(promises);
     }
-    membershipDetails.membershipDoc = docs;
+    //membershipDetails.membershipDoc = docs;
     const membershipObj = new membershipModal(membershipDetails);
+    console.log(membershipObj)
     await membershipObj.save((err, data) => {
       if (err) {
         res.send({ msg: 'Membership not created', success: false });
