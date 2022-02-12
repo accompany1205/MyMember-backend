@@ -7,7 +7,10 @@ const membershipSchema = schema(
 			required: true,
 		},
 		membershipDoc: {
-			type: Array,
+			type: String,
+		},
+		membershipDocName: {
+			type: String,
 		},
 		membershipThumbnail: {
 			type: String,
