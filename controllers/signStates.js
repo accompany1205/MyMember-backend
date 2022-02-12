@@ -3,7 +3,7 @@ const Mailer = require("../helpers/Mailer");
 // const sgMail = require("@sendgrid/mail");
 const buyMembership = require("../models/buy_membership");
 const buy_product = require("../models/buy_product");
-const BuyMembership = require('../models/buy_membership');
+const membershipModal = require('../models/membership');
 const buffToPdf = require("../Services/pdfConvertor");
 const mongo = require('mongoose')
 const pixelWidth = require('string-pixel-width');
@@ -262,7 +262,9 @@ exports.getAllStudentDocs = async (req, res) => {
         });
         if (signStatesInfo) {
             let buyMembersgipInfo = await buyMembership.findOne({ _id: buyMembershipId });
-            let membershipInfo = await BuyMembership.findOne({ _id: buyMembersgipInfo.membershipIds[0] });
+            let id = buyMembersgipInfo.membershipIds[0];
+            let objId = mongo.Types.ObjectId(id)
+            let membershipInfo = await membershipModal.findOne({ _id: objId});
             let obj = {};
             obj.mergedDocName = membershipInfo.membershipDocName;
             obj.mergedDoc = buyMembersgipInfo.mergedDoc;
