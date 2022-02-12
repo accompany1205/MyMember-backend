@@ -1,5 +1,5 @@
 const addTemp = require("../../models/emailSentSave");
-const template=require('../models/emailTemplates')
+const template=require('../../models/emailTemplates')
 const students = require("../../models/addmember");
 const smartlist = require("../../models/smartlists");
 const systemFolder = require("../../models/email_system_folder");
