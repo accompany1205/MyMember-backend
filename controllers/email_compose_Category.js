@@ -82,10 +82,9 @@ exports.sendEmail = async (req, res) => {
             from,
             subject,
             template,
-            attachments,
             smartLists,
             text,
-            isPlaceHolders
+            isPlaceHolders,
         } = req.body;
         if (!to) {
             smartLists = smartLists ? JSON.parse(smartLists) : []
@@ -200,13 +199,24 @@ exports.sendEmail = async (req, res) => {
 
             to = smartlists.emails
         }
-        let promises = []
-        if (req.files) {
-            (req.files).map(file => {
-                promises.push(cloudUrl.imageUrl(file))
-            });
-            attachments = await Promise.all(promises);
-        }
+        let attachment = req.files;
+        const attachments = attachment.map((file) => {
+            let content = Buffer.from(file.buffer).toString("base64")
+            return {
+                content: content,
+                filename: file.originalname,
+                type: `application/${file.mimetype.split("/")[1]}`,
+                disposition: "attachment"
+            }
+        })
+        // let promises = []
+        // if (req.files) {
+        //     (req.files).map(file => {
+        //         promises.push(cloudUrl.imageUrl(file))
+        //     });
+        //     attachments = await Promise.all(promises);
+        // }
+
         const obj = {
             to: JSON.parse(to),
             from,
@@ -214,7 +224,9 @@ exports.sendEmail = async (req, res) => {
             template,
             category: 'compose',
             userId,
+            attachments: attachments
         };
+
         const emailData = new Mailer({
             to: obj.to,
             from,
@@ -223,12 +235,13 @@ exports.sendEmail = async (req, res) => {
             html: template,
             attachments: attachments
         })
+
         emailData.sendMail()
             .then(resp => {
                 var emailDetail = new emailSent(obj)
                 emailDetail.save((err, emailSave) => {
                     if (err) {
-                        res.send({ msg: 'Email not sent!', success: err })
+                        res.send({ msg: 'Email not sent!', success: false })
                     }
                     else {
                         emailSent.findByIdAndUpdate(emailSave._id, { is_Sent: true, })
