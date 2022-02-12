@@ -191,7 +191,9 @@ exports.getSignItems = async (req, res) => {
             if (resp.signDocFor === 'membership') {
                 try {
                     const data = await buyMembership.findOne({ _id: resp.signDocForId })
-                    let pdfBuff = await buffToPdf(data.mergedDoc);
+                    let response = await fetch(data.mergedDoc);
+                    response = await response.buffer()
+                    let pdfBuff = await buffToPdf(response);
                     const pdfs = await signPdf(pdfBuff, datas.toJSON());
                     let buffer = Buffer.from(pdfs).toString('base64');
                     res.send({ msg: "pdf buffer!", data: buffer, success: true });
@@ -265,7 +267,7 @@ exports.getAllStudentDocs = async (req, res) => {
             let buyMembersgipInfo = await buyMembership.findOne({ _id: buyMembershipId });
             let id = buyMembersgipInfo.membershipIds[0];
             let objId = mongo.Types.ObjectId(id)
-            let membershipInfo = await membershipModal.findOne({ _id: objId});
+            let membershipInfo = await membershipModal.findOne({ _id: objId });
             let obj = {};
             obj.mergedDocName = membershipInfo.membershipDocName;
             obj.mergedDoc = buyMembersgipInfo.mergedDoc;
