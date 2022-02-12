@@ -2,6 +2,7 @@ const all_temp = require("../models/emailSentSave");
 const students = require("../models/addmember");
 const smartlist = require("../models/smartlists");
 const compose_folder = require("../models/email_compose_folder");
+const template=require('../models/emailTemplates')
 const authKey = require("../models/email_key");
 const async = require("async");
 const Mailer = require("../helpers/Mailer");
@@ -394,7 +395,7 @@ exports.update_template = async (req, res) => {
       });
       updateTemplate.attachments = await Promise.all(promises);
     }
-    await all_temp.updateOne(
+    await template.updateOne(
       { _id: templateId },
       { $set: updateTemplate },
       (err, updateTemp) => {
@@ -491,7 +492,6 @@ exports.add_template = async (req, res) => {
       days,
       days_type,
       content_type,
-      is_Template: true,
       category: "compose",
       userId,
       folderId,
@@ -596,7 +596,7 @@ exports.add_template = async (req, res) => {
 
 function saveEmailTemplate(obj) {
   return new Promise((resolve, reject) => {
-    let emailDetail = new all_temp(obj);
+    let emailDetail = new template(obj);
     emailDetail.save((err, data) => {
       if (err) {
         reject({ data: "Data not save in Database!", success: err });
@@ -651,7 +651,7 @@ cron.schedule(`*/5 * * * *`, () => {
 
 
 exports.remove_template = (req, res) => {
-  all_temp.findByIdAndRemove(req.params.templateId, (err, removeTemplate) => {
+  template.findByIdAndRemove(req.params.templateId, (err, removeTemplate) => {
     if (err) {
       res.send({ error: "compose template is not remove" });
     } else {
@@ -678,7 +678,7 @@ exports.multipal_temp_remove = async (req, res) => {
     const templateIds = req.body.templateId;
     const promises = [];
     for (let id of templateIds) {
-      promises.push(all_temp.remove({ _id: id }));
+      promises.push(template.remove({ _id: id }));
       compose_folder.updateOne(
         { _id: folderId },
         { $pull: { template: ObjectId(id) } }).then((err, res) => {
