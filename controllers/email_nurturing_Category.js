@@ -101,54 +101,54 @@ exports.tempList = (req, res) => {
         })
 }
 
-exports.sendEmail = (req, res) => {
-    if (!req.body.subject || !req.body.template || !req.body.to) {
-        res.send({ error: "invalid input", success: false })
-    } else {
-        let attachment = req.files;
+// exports.sendEmail = (req, res) => {
+//     if (!req.body.subject || !req.body.template || !req.body.to) {
+//         res.send({ error: "invalid input", success: false })
+//     } else {
+//         let attachment = req.files;
 
-        const attachments = attachment.map((file) => {
-            let content = Buffer.from(file.buffer).toString("base64")
-            return {
-                content: content,
-                filename: file.originalname,
-                type: `application/${file.mimetype.split("/")[1]}`,
-                disposition: "attachment"
-            }
-        });
-        const emailData = new Mailer({
-            from: req.body.from,
-            to: to,
-            subject: req.body.subject,
-            text: req.body.template,
-            html: req.body.html,
-            attachments: attachments
-        })
-        emailData.sendMail()
-            .then(resp => {
-                var DT = TimeZone()
-                var emailDetail = new emailSent(req.body)
-                emailDetail.sent_date = DT.Date
-                emailDetail.sent_time = DT.Time
-                emailDetail.save((err, emailSave) => {
-                    if (err) {
-                        res.send({ error: 'email details is not save' })
-                    }
-                    else {
-                        emailSent.findByIdAndUpdate(emailSave._id, { userId: req.params.userId, email_type: 'sent', category: 'compose' })
-                            .exec((err, emailUpdate) => {
-                                if (err) {
-                                    res.send({ error: 'user id is not update in sent email' })
-                                }
-                                else {
-                                    res.send({ message: "Email Sent Successfully", success: true, emailUpdate })
-                                }
-                            })
-                    }
-                })
-            }).catch(err => {
-                res.send({ error: 'email not send', error: err })
-            })
+//         const attachments = attachment.map((file) => {
+//             let content = Buffer.from(file.buffer).toString("base64")
+//             return {
+//                 content: content,
+//                 filename: file.originalname,
+//                 type: `application/${file.mimetype.split("/")[1]}`,
+//                 disposition: "attachment"
+//             }
+//         });
+//         const emailData = new Mailer({
+//             from: req.body.from,
+//             to: to,
+//             subject: req.body.subject,
+//             text: req.body.template,
+//             html: req.body.html,
+//             attachments: attachments
+//         })
+//         emailData.sendMail()
+//             .then(resp => {
+//                 var DT = TimeZone()
+//                 var emailDetail = new emailSent(req.body)
+//                 emailDetail.sent_date = DT.Date
+//                 emailDetail.sent_time = DT.Time
+//                 emailDetail.save((err, emailSave) => {
+//                     if (err) {
+//                         res.send({ error: 'email details is not save' })
+//                     }
+//                     else {
+//                         emailSent.findByIdAndUpdate(emailSave._id, { userId: req.params.userId, email_type: 'sent', category: 'compose' })
+//                             .exec((err, emailUpdate) => {
+//                                 if (err) {
+//                                     res.send({ error: 'user id is not update in sent email' })
+//                                 }
+//                                 else {
+//                                     res.send({ message: "Email Sent Successfully", success: true, emailUpdate })
+//                                 }
+//                             })
+//                     }
+//                 })
+//             }).catch(err => {
+//                 res.send({ error: 'email not send', error: err })
+//             })
 
-    }
-}
+//     }
+// }

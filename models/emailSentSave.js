@@ -22,7 +22,7 @@ const EmailSchema = schema({
     days: {
         type: Number
     },
-    days_type: {
+    days_type: {        //after/before
         type: String
     },
     immediately: {
@@ -31,27 +31,18 @@ const EmailSchema = schema({
     content_type: {
         type: String
     },
-    // repeat_mail: {
-    //     type: String
-    // },
-    // follow_up: {
-    //     type: String
-    // },
     sent_date: {
         type: String,
     },
     sent_time: {
         type: String,
     },
-    // DateT: {
-    //     type: Date
-    // },
-    category: {
+    category: {         //compose/nurturing/system
         type: String,
     },
-    // email_type: {
-    //     type: String,
-    // },
+    email_type: {       //sent/scheduled
+        type: String,
+    },
     // email_auth_key: {
     //     type: String,
     //     required: true

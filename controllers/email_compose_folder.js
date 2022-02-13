@@ -25,6 +25,20 @@ exports.create_folder = (req, res) => {
     }
 }
 
+exports.list_template = async (req, res) => {
+    Folder
+        .findById(req.params.folderId)
+        .populate({
+            path: "template",
+        })
+        .exec((err, template_data) => {
+            if (err) {
+                res.send({ error: "Compose template list not found" });
+            } else {
+                res.send(template_data);
+            }
+        });
+};
 exports.update_folder = (req, res) => {
     Folder.findByIdAndUpdate(req.params.folderId, req.body)
         .exec((err, updateFolder) => {

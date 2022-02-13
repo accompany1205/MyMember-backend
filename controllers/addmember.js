@@ -1613,7 +1613,7 @@ exports.updatemember = async (req, res) => {
   //       template: Email.toJSON().template,
   //       sent_date: sent_date,
   //       sent_time: Email.toJSON().sent_time,
-  //       email_type: "schedule",
+  //       email_type: "scheduled",
   //       email_status: true,
   //       category: "system",
   //       userId: userId,

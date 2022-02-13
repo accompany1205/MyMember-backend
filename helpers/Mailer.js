@@ -39,7 +39,7 @@ module.exports = class Mailer {
             for (let recipient of to) {
                 this.transporter.sendMail({
                     from: from,
-                    cc: from,
+                    // cc: from,
                     to: recipient,
                     subject: subject,
                     text: text,
@@ -47,9 +47,16 @@ module.exports = class Mailer {
                     attachments: attachments,
                 }, (error, info) => {
                     if (error) {
-                        reject({ msg: 'Email not sent', success: false });
+                        resolve({
+                            msg: 'Email not sent',
+                            success: false
+                        });
                     } else {
-                        resolve({ msg: 'Email sent: ' + info.response, success: true });
+
+                        resolve({
+                            msg: 'Email sent: ' + info.response,
+                            success: true
+                        });
                     }
                 });
             }
