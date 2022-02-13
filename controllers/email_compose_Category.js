@@ -58,7 +58,7 @@ exports.category_list = (req, res) => {
             path: 'folder',
             populate: {
                 path: 'template',
-                model: 'sentOrscheduleEmail'
+                model: 'email_template'
             }
         })
         .exec((err, categoryList) => {
