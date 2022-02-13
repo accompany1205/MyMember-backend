@@ -22,13 +22,13 @@ const EmailSchema = schema({
     days: {
         type: Number
     },
-    days_type: {
+    days_type: {            //after/before
         type: String
     },
     content_type: {
         type: String
     },
-    category: {
+    category: {         //sent/schedule
         type: String,
     },
     sent_date: {
@@ -37,7 +37,9 @@ const EmailSchema = schema({
     sent_time: {
         type: String,
     },
-
+    repeat_mail: {
+        type: String
+    },
     createdBy: {
         type: String,
     },
@@ -49,17 +51,19 @@ const EmailSchema = schema({
         type: Array
     },
     smartLists:
-        { type: Array
-     },
+    {
+        type: Array
+    },
     userId: {
-    type: String,
+        type: String,
     },
     adminId: {
-    type: String
+        type: String
     },
     folderId: {
-    type: String,
-}},
+        type: String,
+    }
+},
     { timestamps: true }
 )
 

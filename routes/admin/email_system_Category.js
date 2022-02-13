@@ -11,5 +11,3 @@ router.put("/email_system/edit_category/:userId/:categoryId", verifySchool, upda
 router.delete("/email_system/remove_category/:userId/:categoryId", verifySchool, removeCategory);
 
 module.exports = router;
-
-

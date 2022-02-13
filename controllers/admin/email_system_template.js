@@ -1,5 +1,5 @@
 const addTemp = require("../../models/emailSentSave");
-const template=require('../../models/emailTemplates')
+const Template = require('../../models/emailTemplates')
 const students = require("../../models/addmember");
 const smartlist = require("../../models/smartlists");
 const systemFolder = require("../../models/email_system_folder");
@@ -107,12 +107,9 @@ exports.list_template = (req, res) => {
 
 exports.add_template = async (req, res) => {
   try {
-    const [counts] = await systemFolder
-      .find({ _id: req.params.folderId }, { template: 1, _id: 0 })
-    let templete_Id = counts.template.length + 1
-
-    let { userId, folderId } = req.params || {};
-
+    let userId = req.params.userId;
+    let adminId = req.params.adminId;
+    let folderId = req.params.userId;
     let {
       to,
       from,
@@ -129,12 +126,14 @@ exports.add_template = async (req, res) => {
       follow_up,
       smartLists,
     } = req.body || {};
-
+    to = JSON.parse(req.body.to);
+    if (!sent_date && days_type != 'before') {
+      sent_date = moment().add(days, 'days').format("YYYY-MM-DD");
+    }
+    sent_date = moment(sent_date).format("YYYY-MM-DD");
     if (!to) {
-
       smartLists = smartLists ? JSON.parse(smartLists) : []
       smartLists = smartLists.map(s => ObjectId(s));
-
       let [smartlists] = await smartlist.aggregate([
         {
           $match: {
@@ -184,7 +183,6 @@ exports.add_template = async (req, res) => {
     const obj = {
       to,
       from,
-      title,
       subject,
       template,
       sent_date,
@@ -192,39 +190,49 @@ exports.add_template = async (req, res) => {
       design,
       days,
       days_type,
-      immediately,
       content_type,
-      follow_up,
-      email_type: "schedule",
-      email_status: true,
+      email_type: "scheduled",
       category: "system",
       userId,
       folderId,
-      templete_Id,
-      attachments,
-      smartLists
-
+      smartLists,
+      createdBy,
+      adminId
     };
 
-    const promises = []
+    // const promises = []
+    // if (req.files) {
+    //   (req.files).map(file => {
+    //     promises.push(cloudUrl.imageUrl(file))
+    //   });
+    //   var attachments = await Promise.all(promises);
+    // }
+    // obj.attachments = attachments
+    let attachments = []
     if (req.files) {
-      (req.files).map(file => {
-        promises.push(cloudUrl.imageUrl(file))
-      });
-      var attachments = await Promise.all(promises);
+      (req.files).map((file) => {
+        let content = new Buffer.from(file.buffer, "utf-8")
+        let attach = {
+          content: content,
+          filename: file.originalname,
+          type: `application/${file.mimetype.split("/")[1]}`,
+          disposition: "attachment"
+        }
+        attachments.push(attach)
+
+      })
     }
-    obj.attachments = attachments
-    sent_date = moment(sent_date).format("YYYY-MM-DD");
-    if (JSON.parse(immediately) && !days) {
+    const Allattachments = await Promise.all(attachments);
+    obj.attachments = Allattachments;
+    if (JSON.parse(immediately)) {
       const emailData = new Mailer({
-        sendgrid_key: process.env.SENDGRID_API_KEY,
         to,
         from,
-        from_name: 'noreply@gmail.com',
         subject,
         html: template,
-        attachments
+        attachments: Allattachments
       })
+
       emailData.sendMail()
         .then(resp => {
           obj.email_type = 'sent'
@@ -289,7 +297,7 @@ exports.add_template = async (req, res) => {
 
 function saveEmailTemplate(obj) {
   return new Promise((resolve, reject) => {
-    let emailDetail = new template(obj);
+    let emailDetail = new addTemp(obj);
     emailDetail.save((err, data) => {
       if (err) {
         reject({ data: "Data not save in Database!", success: err });
@@ -325,7 +333,7 @@ exports.update_template = async (req, res) => {
     var allAttachments = await Promise.all(promises);
     updateTemplate.attachments = allAttachments;
   }
-  template.updateOne(
+  addTemp.updateOne(
     { _id: req.params.templateId },
     req.body,
     (err, updateTemp) => {
@@ -399,7 +407,7 @@ exports.update_template = async (req, res) => {
 // };
 
 exports.remove_template = (req, res) => {
-  template.findByIdAndRemove(req.params.templateId, (err, removeTemplate) => {
+  addTemp.findByIdAndRemove(req.params.templateId, (err, removeTemplate) => {
     if (err) {
       res.send({ error: "system template is not remove" });
     } else {
