@@ -12,12 +12,15 @@ function TimeZone() {
     return { Date: date, Time: time }
 }
 exports.category_list = (req, res) => {
-    emailSystem.find({ adminId: req.params.userId })
+    const userId = req.params.userId;
+    const adminId = req.params.adminId;
+    emailSystem
+    .find({ $and: [{ userId: { $in: [userId] } }, { adminId: adminId }] })
         .populate({
             path: 'folder',
             populate: {
                 path: 'template',
-                model: 'sentOrscheduleEmail'
+                model: 'email_template'
             }
         }).exec((err, categoryList) => {
             if (err) {
