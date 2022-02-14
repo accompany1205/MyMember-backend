@@ -52,8 +52,8 @@ exports.userEmailList = (req, res) => {
 //     })
 // }
 
-exports.category_list = (req, res) => {
-    emailCompose.find({ userId: req.params.userId })
+exports.category_list = async (req, res) => {
+    await emailCompose.find({ userId: req.params.userId })
         .populate({
             path: 'folder',
             populate: {
@@ -63,7 +63,7 @@ exports.category_list = (req, res) => {
         })
         .exec((err, categoryList) => {
             if (err) {
-                res.send({ error: 'compose category is not found' })
+                res.send({ msg: 'compose category is not found', success: false })
             }
             else {
                 res.send(categoryList)
