@@ -2051,10 +2051,30 @@ exports.ActiveMemberslistByProgramName = async (req, res) => {
 };
 
 exports.searchStudentbyType = async (req, res) => {
-  const search = req.query.search;
   const userId = req.params.userId;
   const studentType = req.params.studentType;
+  const search = req.query.search;
   try {
+    if (search.split(" ").length > 1) {
+      search1 = search.split(" ")[0]
+      search2 = search.split(" ")[1]
+      const data = await addmemberModal.find(
+        {
+          userId: userId,
+          studentType: studentType,
+          $or: [
+            { firstName: { $regex: search1, $options: "i" } },
+            { lastName: { $regex: search2, $options: "i" } },
+            { email: { $regex: search, $options: "i" } },
+          ],
+        },
+      );
+      return res.send({
+        data: data,
+        success: true
+      });
+    }
+
     const data = await addmemberModal.find(
       {
         userId: userId,
@@ -2062,6 +2082,7 @@ exports.searchStudentbyType = async (req, res) => {
         $or: [
           { firstName: { $regex: search, $options: "i" } },
           { lastName: { $regex: search, $options: "i" } },
+          // { lastName: { $regex: search1, $options: "i" } },
           { email: { $regex: search, $options: "i" } },
         ],
       },

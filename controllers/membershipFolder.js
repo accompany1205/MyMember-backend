@@ -11,7 +11,7 @@ exports.create_folder = async (req, res) => {
   });
   folderObj.save((err, folder) => {
     if (err) {
-      res.send({ error: "Folder name already exist!", success: false });
+      res.send({ msg: "Folder name already exist!", success: false });
     } else {
       res.send({
         msg: "membership folder create successfully",

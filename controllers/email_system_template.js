@@ -1,16 +1,16 @@
-const addTemp = require("../../models/emailSentSave");
-const Template = require('../../models/emailTemplates')
-const students = require("../../models/addmember");
-const smartlist = require("../../models/smartlists");
-const systemFolder = require("../../models/email_system_folder");
-const user = require("../../models/user");
+const addTemp = require("../models/emailSentSave");
+const Template = require('../models/emailTemplates')
+const students = require("../models/addmember");
+const smartlist = require("../models/smartlists");
+const systemFolder = require("../models/email_system_folder");
+const user = require("../models/user");
 const async = require("async");
 moment = require("moment");
 const cron = require("node-cron");
-const Mailer = require("../../helpers/Mailer");
+const Mailer = require("../helpers/Mailer");
 // const sgMail = require('@sendgrid/mail');
 // sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-const cloudUrl = require("../../gcloud/imageUrl");
+const cloudUrl = require("../gcloud/imageUrl");
 const ObjectId = require("mongodb").ObjectId;
 
 function timefun(sd, st) {
@@ -28,23 +28,6 @@ function timefun(sd, st) {
   var mil = "0";
   return (curdat = new Date(y, mo, d, h, mi, se, mil));
 }
-
-exports.list_template = (req, res) => {
-  systemFolder
-    .findById(req.params.folderId)
-    .populate({
-      path: "template",
-      match: { is_Sent: false, email_type: "schedule" },
-      options: { sort: { templete_Id: 1 } },
-    })
-    .exec((err, template_data) => {
-      if (err) {
-        res.send({ error: "template list not found" });
-      } else {
-        res.send(template_data);
-      }
-    });
-};
 
 // exports.add_template = async (req, res) => {
 //   const counts = await addTemp
@@ -109,11 +92,10 @@ exports.add_template = async (req, res) => {
   try {
     let userId = req.params.userId;
     let adminId = req.params.adminId;
-    let folderId = req.params.userId;
+    let folderId = req.params.folderId;
     let {
       to,
       from,
-      title,
       subject,
       template,
       sent_time,
@@ -123,8 +105,8 @@ exports.add_template = async (req, res) => {
       days_type,
       immediately,
       content_type,
-      follow_up,
       smartLists,
+      createdBy
     } = req.body || {};
     to = JSON.parse(req.body.to);
     if (!sent_date && days_type != 'before') {
@@ -260,7 +242,6 @@ exports.add_template = async (req, res) => {
         })
 
     } else if (!JSON.parse(immediately) && days) {
-      sent_date = moment().add(days, 'days').format("YYYY-MM-DD");
       saveEmailTemplate(obj)
         .then((data) => {
           systemFolder
@@ -338,7 +319,7 @@ exports.update_template = async (req, res) => {
     req.body,
     (err, updateTemp) => {
       if (err) {
-        res.send({ msg: "template is not update", success: false });
+        res.send({ msg: "template is not update", success: err });
       } else {
         res.send({ msg: "updated successfully", success: true });
       }
@@ -409,7 +390,7 @@ exports.update_template = async (req, res) => {
 exports.remove_template = (req, res) => {
   addTemp.findByIdAndRemove(req.params.templateId, (err, removeTemplate) => {
     if (err) {
-      res.send({ error: "system template is not remove" });
+      res.send({ msg: "system template is not remove", success: true });
     } else {
       systemFolder.updateOne(
         { template: removeTemplate._id },
@@ -417,10 +398,10 @@ exports.remove_template = (req, res) => {
         function (err, temp) {
           if (err) {
             res.send({
-              error: "system template details is not remove in folder",
+              msg: "Template not removed", success: false
             });
           } else {
-            res.send({ msg: "system template is remove successfully" });
+            res.send({ msg: "Template removed successfully", success: true });
           }
         }
       );

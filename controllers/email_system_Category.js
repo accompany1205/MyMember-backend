@@ -1,7 +1,7 @@
-const emailSystem = require("../../models/email_system_Category")
-const user = require('../../models/user')
-const emailSent = require('../../models/emailSentSave')
-const Mailer = require("../../helpers/Mailer");
+const emailSystem = require("../models/email_system_Category")
+const user = require('../models/user')
+const emailSent = require('../models/emailSentSave')
+const Mailer = require("../helpers/Mailer");
 // const sgMail = require('@sendgrid/mail');
 // sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 function TimeZone() {
@@ -13,9 +13,29 @@ function TimeZone() {
 }
 exports.category_list = (req, res) => {
     const userId = req.params.userId;
+    let adminId = process.env.ADMINID
+    emailSystem
+        .find({ $or: [{ userId: userId }, { adminId: adminId }] })
+        .populate({
+            path: 'folder',
+            populate: {
+                path: 'template',
+                model: 'sentOrscheduleEmail'
+            }
+        }).exec((err, categoryList) => {
+            if (err) {
+                res.send({ error: 'Folder not found!', success: false })
+            }
+            else {
+                res.send({ data: categoryList, success: true })
+            }
+        })
+}
+
+exports.admin_category_list = (req, res) => {
     const adminId = req.params.adminId;
     emailSystem
-    .find({ $and: [{ userId: { $in: [userId] } }, { adminId: adminId }] })
+        .find({ adminId: adminId })
         .populate({
             path: 'folder',
             populate: {
@@ -24,39 +44,51 @@ exports.category_list = (req, res) => {
             }
         }).exec((err, categoryList) => {
             if (err) {
-                res.send({ error: 'system category is not found' })
+                res.send({ error: 'Folder not found!', success: false })
             }
             else {
-                res.send(categoryList)
+                res.send({ data: categoryList, success: true })
             }
         })
 }
 
 exports.addCategory = (req, res) => {
+    const userId = req.params.userId;
+    const adminId = req.params.adminId;
     var cat = {
         categoryName: req.body.categoryName,
-        adminId: req.params.userId,
-        // createdBy: 'admin'
+        userId: userId,
+        adminId: adminId
     }
     var category = new emailSystem(cat);
     category.save((err, data) => {
         if (err) {
-            res.send({ error: 'system category is not add' })
+            res.send({ msg: "Folder name already exist!", success: false });
         }
         else {
-            res.send({ msg: 'system category is add successfully', category: data })
+            res.send({ msg: 'folder added successfully', success: true })
         }
     })
 }
 
 exports.updateCategory = (req, res) => {
-    emailSystem.findByIdAndUpdate(req.params.categoryId, req.body)
-        .exec((err, updateCat) => {
+    const adminId = req.params.adminId
+    const userId = req.params.userId;
+    const folderId = req.params.categoryId
+    emailSystem
+        .updateOne({ _id: folderId, $and: [{ userId: userId }, { adminId: adminId }] }, { $set: req.body })
+        .exec((err, updateFolder) => {
             if (err) {
-                res.send({ error: 'system category is not update' })
+                res.send({ msg: 'Folder not updated!', success: false })
             }
             else {
-                res.send({ msg: "system category is update successfully" })
+                if (updateFolder.n < 1) {
+                    return res.send({
+                        msg: "This is system generated folder Only admin can update",
+                        success: false,
+                    });
+                }
+                res.send({ msg: "Folder update successfully", success: true })
             }
         })
 }
@@ -65,10 +97,10 @@ exports.removeCategory = (req, res) => {
     emailSystem.findByIdAndRemove(req.params.categoryId)
         .exec((err, delData) => {
             if (err) {
-                res.send({ error: 'system category is not delete' })
+                res.send({ msg: 'Folder not removed!', success: false })
             }
             else {
-                res.send({ msg: 'system category is remove successfully' })
+                res.send({ msg: 'Folder removed successfully', success: true })
             }
         })
 }
@@ -127,6 +159,6 @@ exports.sendEmail = (req, res) => {
         }
     }
     catch (err) {
-        res.send({ error: 'email not send', success: false })
+        res.send({ msg: 'email not send', success: false })
     }
 }
