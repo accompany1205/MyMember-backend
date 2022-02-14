@@ -410,7 +410,7 @@ exports.remove_template = (req, res) => {
 };
 
 exports.status_update_template = (req, res) => {
-  if (req.body.status == false) {
+  if (req.body.is_Favorite == false) {
     addTemp
       .find({
         $and: [
@@ -427,7 +427,7 @@ exports.status_update_template = (req, res) => {
             (obj, done) => {
               addTemp.findByIdAndUpdate(
                 obj._id,
-                { $set: { email_status: false } },
+                { $set: { is_Favorite: false } },
                 done
               );
             },
@@ -441,7 +441,7 @@ exports.status_update_template = (req, res) => {
           );
         }
       });
-  } else if (req.body.status == true) {
+  } else if (req.body.is_Favorite == true) {
     addTemp
       .find({
         $and: [
@@ -458,7 +458,7 @@ exports.status_update_template = (req, res) => {
             (obj, done) => {
               addTemp.findByIdAndUpdate(
                 obj._id,
-                { $set: { email_status: true } },
+                { $set: { is_Favorite: true } },
                 done
               );
             },
@@ -476,10 +476,10 @@ exports.status_update_template = (req, res) => {
 };
 
 exports.single_temp_update_status = (req, res) => {
-  if (req.body.email_status == true) {
+  if (req.body.is_Favorite == true) {
     addTemp.updateOne(
       { _id: req.params.tempId },
-      { $set: { email_status: true } },
+      { $set: { is_Favorite: true } },
       (err, resp) => {
         if (err) {
           res.json({ code: 400, msg: "email status not deactive" });
@@ -488,10 +488,10 @@ exports.single_temp_update_status = (req, res) => {
         }
       }
     );
-  } else if (req.body.email_status == false) {
+  } else if (req.body.is_Favorite == false) {
     addTemp.updateOne(
       { _id: req.params.tempId },
-      { $set: { email_status: false } },
+      { $set: { is_Favorite: false } },
       (err, resp) => {
         if (err) {
           res.json({ code: 400, msg: "email status not active" });
