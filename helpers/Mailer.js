@@ -39,7 +39,11 @@ module.exports = class Mailer {
             for (let recipient of to) {
                 this.transporter.sendMail({
                     from: from,
-                    // cc: from,
+                    cc: from,
+                    envelope: {
+                        from: 'admin@mymanager.com',
+                        to: [recipient]
+                    },
                     to: recipient,
                     subject: subject,
                     text: text,
