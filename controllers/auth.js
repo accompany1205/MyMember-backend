@@ -6,10 +6,13 @@ const expressJwt = require("express-jwt"); // for authorization check
 const {
   errorHandler
 } = require("../helpers/dbErrorHandler");
-const sgMail = require("@sendgrid/mail");
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+// const sgMail = require("@sendgrid/mail");
+// sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const from_email = process.env.from_email;
+const Mailer = require("../helpers/Mailer");
 const navbar = require("../models/navbar.js");
+const otpGenerator = require('../Services/otpGenerator')
+const ObjectId = require('mongodb').ObjectId;
 const {
   map
 } = require('lodash');
@@ -23,7 +26,7 @@ const { errorMonitor } = require('events');
 
 //Signup stsrting.....
 exports.signup = async (req, res) => {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  // sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   const user = new User(req.body);
   const admins = await User.find({
     "role": 1
@@ -43,13 +46,13 @@ exports.signup = async (req, res) => {
   let sendingMailToUser = req.body.email;
 
   //todo Pavan - Need to restructure the mail body as per the requirement
-  let msg = {
+  let msg = new Mailer({
     to: sendingMailToUser, // Change to your recipient
     from: from_email, // Change to your verified sender
     subject: 'Varification Email For User',
     text: 'Thanks for signing-up in ',
     html: `<h2>Worth the wait! Soon you will get login credentials once the admin approves your request :)</h2>`,
-  }
+  })
   user.save((err, user) => {
     if (err) {
       return res.status(400).json({
@@ -61,11 +64,12 @@ exports.signup = async (req, res) => {
     user.salt = undefined;
     //user.hashed_password = undefined;
     navbar_custom(user.id);
-    sgMail
-      .send(msg)
+    msg.sendMail()
       .then(() => {
       })
-      .catch((error) => {
+      .catch((err) => {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+
       })
     res.json({
       user
@@ -124,7 +128,7 @@ exports.adminApproval = async (req, res) => {
 }
 
 exports.approveUserRequestByAdmin = async (req, res) => {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  // sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   let data = req.body;
   let query = req.params;
   let filter = {
@@ -151,18 +155,30 @@ exports.approveUserRequestByAdmin = async (req, res) => {
       })
     }
     console.log(updatedUser.username)
-    let msg = {
-      to: updatedUser.email, // Change to your recipient
-      from: from_email, // Change to your verified sender
+    let msg = new Mailer({
+      from: from_email,
+      to: updatedUser.email,
       subject: 'Registration process with My_Member',
       text: 'Congratulation, your request has been accepted.',
       html: `<h2>congratulation, your registration with My Member is completed.</h2>
-                          <p>Your username is ${updatedUser.username},  Login using this passward - ${password} </p> 
-                          <p>You can login here - ${process.env.RESET_URL}</p>
-                          `,
-    }
-    sgMail
-      .send(msg)
+      <p>Your username is ${updatedUser.username},  Login using this passward - ${password} </p> 
+      <p>You can login here - ${process.env.RESET_URL}</p>
+      `,
+      attachments: attachments
+    })
+
+    // let msg = {
+    //   to: updatedUser.email, // Change to your recipient
+    //   from: from_email, // Change to your verified sender
+    //   subject: 'Registration process with My_Member',
+    //   text: 'Congratulation, your request has been accepted.',
+    //   html: `<h2>congratulation, your registration with My Member is completed.</h2>
+    //                       <p>Your username is ${updatedUser.username},  Login using this passward - ${password} </p> 
+    //                       <p>You can login here - ${process.env.RESET_URL}</p>
+    //                       `,
+    // }
+    msg.sendMail()
+
       .then(() => {
       })
       .catch((error) => {
@@ -226,18 +242,15 @@ exports.forgetpasaword = (req, res) => {
               error: "reset token is not add"
             });
           } else {
-            sgMail.send(resetPassData, function (err, data) {
-              if (err) {
-                res.send({
-                  error: "email not sent"
-                });
-                res.send(err);
-              } else {
+            resetPassData.sendMail()
+
+              .then((data) => {
                 res.send({
                   msg: "email send successfully reset link sent your email",
-                });
-              }
-            });
+                })
+              }).catch(err => {
+                res.send({ error: 'email not sent', error: err })
+              })
           }
         }
       );
@@ -422,56 +435,62 @@ exports.signin = (req, res) => {
     } else {
       if (data.password == req.body.password) {
         if (data.role == 0) {
-          if (data.status == "Active") {
-            // if (!data.authenticate(password)) {
-            //     return res.status(401).json({
-            //         error: 'Email and password dont match'
-            //     });
-            // }
-            token = jwt.sign({
-              id: data._id,
-              auth_key: data.auth_key,
-              app_id: data.app_id,
-              epi: data.epi,
-              descriptor: data.descriptor,
-              product_description: data.product_description
-            }, process.env.JWT_SECRET);
-            res.cookie("t", token, {
-              expire: new Date() + 9999
-            });
-            const {
-              _id,
-              username,
-              name,
-              email,
-              role,
-              logo,
-              location_name,
-              bussinessAddress,
-              country,
-              state,
-              city
-
-            } = data;
-            return res.json({
-              token,
-              data: {
+          if (data.isEmailverify) {
+            if (data.status == "Active") {
+              // if (!data.authenticate(password)) {
+              //     return res.status(401).json({
+              //         error: 'Email and password dont match'
+              //     });
+              // }
+              token = jwt.sign({
+                id: data._id,
+                auth_key: data.auth_key,
+                app_id: data.app_id,
+                epi: data.epi,
+                descriptor: data.descriptor,
+                product_description: data.product_description
+              }, process.env.JWT_SECRET);
+              res.cookie("t", token, {
+                expire: new Date() + 9999
+              });
+              const {
                 _id,
                 username,
-                email,
                 name,
+                email,
                 role,
                 logo,
                 location_name,
                 bussinessAddress,
-                city,
-                state,
                 country,
-              },
-            });
+                state,
+                city
+
+              } = data;
+              return res.json({
+                token,
+                data: {
+                  _id,
+                  username,
+                  email,
+                  name,
+                  role,
+                  logo,
+                  location_name,
+                  bussinessAddress,
+                  city,
+                  state,
+                  country,
+                },
+              });
+            } else {
+              return res.json({
+                error: "Your account is deactivate!"
+              });
+            }
           } else {
             return res.json({
-              error: "your account is deactivate"
+              error: "Your Email is not Verified!"
             });
           }
         } else if (data.role == 1) {
@@ -797,7 +816,7 @@ exports.school_listing = async (req, res) => {
     limit: per_page,
     skip: per_page * (page_no - 1)
   }
-  await User.find({ role: 0 })
+  await User.find({ role: 0, isEmailverify: true })
     .limit(pagination.limit)
     .skip(pagination.skip)
     .exec((err, data) => {
@@ -829,3 +848,76 @@ exports.searchUser = async (req, res) => {
 }
 
 
+
+
+exports.sendOTP_to_email = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const { email } = req.body;
+    let now = new Date;
+    const otp_expiration_time = AddMinutesToDate(now, 10);
+    const otp = otpGenerator();
+    if (!email) {
+      res.send({ msg: "Email not provided!", success: false })
+
+    }
+    let msg = new Mailer({
+      to: email, // Change to your recipient
+      subject: 'Email Verification',
+      html:
+        `Your OTP/verification code is ${otp}`
+    })
+    await msg.sendMail()
+      .then(resp => {
+        User.updateOne({ _id: userId }, { $set: { otp: otp, otp_expiration_time: otp_expiration_time } }, (err, resp) => {
+          if (err) {
+            res.send({ msg: err, success: false });
+          }
+          res.send({ msg: "OTP send Successfully!", success: true })
+
+        })
+
+      })
+      .catch(err => {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+
+      })
+  }
+  catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+
+  }
+}
+
+exports.verify_otp = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const otp = req.body.otp
+    const now = new Date
+    await User.updateOne(
+      { _id: ObjectId(userId), otp: otp, otp_expiration_time: { $gte: now } },
+      {
+        $set: {
+          isEmailverify: true
+        }
+      }
+    )
+      .exec((err, resp) => {
+        if (err || !resp.nModified) {
+          return res.send({ msg: err ? err : "Your OTP is Expired!", success: false });
+        }
+        return res.send({ msg: "Email verified Successfully!", success: true })
+
+      })
+  }
+  catch (err) {
+    return res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+
+  }
+}
+
+
+
+function AddMinutesToDate(date, minutes) {
+  return new Date(date.getTime() + minutes * 60000);
+}

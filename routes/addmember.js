@@ -49,7 +49,8 @@ const { addmember,
     leads_this_month,
     leads_past3_month,
     collectionModify,
-    mergeMultipleDoc
+    mergeMultipleDoc,
+    multipleFilter
 
 } = require("../controllers/addmember")
 
@@ -58,6 +59,7 @@ const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 const upload = require('../handler/multer');
 
 
+router.post('/addMember/multiFilter/:userId', requireSignin, multipleFilter);
 router.post('/bluck_student_add/:userId', bluckStd)
 
 // router.post("/member/next_std_find/:stdId",next_std_find)
@@ -69,8 +71,8 @@ router.post("/student/mergeDocs/:userId", requireSignin, mergeMultipleDoc);
 
 
 //dashboard routes
-router.get("/member/searchstudent_by_type/:userId/:studentType", searchStudentbyType)
-router.get("/member/searchstudent_by_interest/:userId/:intrested", searchStudentbyInterest)
+router.get("/member/searchstudent_by_type/:userId/:studentType", verifySchool, searchStudentbyType)
+router.get("/member/searchstudent_by_interest/:userId/:intrested", verifySchool, searchStudentbyInterest)
 router.get('/member/active_trial_created_this_month/:userId/:page_no/:per_page', verifySchool, active_trial_this_month);
 router.get('/member/active_trial_past_3months/:userId/:page_no/:per_page', verifySchool, active_trial_past3_month);
 router.get('/member/leads_created_this_month/:userId/:page_no/:per_page', verifySchool, leads_this_month);
@@ -106,13 +108,13 @@ router.delete('/member/delete_multipal_member/:userId', verifySchool, delete_mul
 router.put('/member/update_member/:userId/:memberID', upload.single('memberprofileImage'), verifySchool, updatemember);
 
 //student type 
-router.get('/member/active_trial/:userId/:page_no/:per_page', verifySchool, active_trial_Std);
-router.get('/member/active_student/:userId/:page_no/:per_page', verifySchool, active_Std);
-router.get('/member/Former_trial/:userId/:page_no/:per_page', verifySchool, Former_trial_Std);
-router.get('/member/Former_student/:userId/:page_no/:per_page', verifySchool, Former_Std);
-router.get('/member/Leads/:userId/:page_no/:per_page', verifySchool, leads_Std);
-router.get('/member/camp_student/:userId/:page_no/:per_page', verifySchool, camp_Std);
-router.get('/member/after_school_student/:userId/:page_no/:per_page', verifySchool, after_school_Std);
+router.get('/member/active_trial/:userId', verifySchool, active_trial_Std);
+router.get('/member/active_student/:userId', verifySchool, active_Std);
+router.get('/member/Former_trial/:userId', verifySchool, Former_trial_Std);
+router.get('/member/Former_student/:userId', verifySchool, Former_Std);
+router.get('/member/Leads/:userId', verifySchool, leads_Std);
+router.get('/member/camp_student/:userId', verifySchool, camp_Std);
+router.get('/member/after_school_student/:userId', verifySchool, after_school_Std);
 
 // email and text sms send perticular student
 router.post('/member/email_send_student/:userId', verifySchool, send_mail_std)

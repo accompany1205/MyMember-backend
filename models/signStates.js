@@ -3,14 +3,14 @@ const schema = mongoose.Schema;
 
 const valueSchema = schema(
     {
-        ipAdderss:{
-            type:String
+        ipAdderss: {
+            type: String
         },
         signer: {
             type: String
         },
         email: {
-            type:String
+            type: String
         },
         signerType: {
             type: String
@@ -42,17 +42,17 @@ const signersSchema = schema(
     { _id: false }
 );
 
-const statusTopSchema = schema(
-    {
-        viewed: {
-            type: Date
-        },
-        signed: {
-            type: Date
-        }
+// const statusTopSchema = schema(
+//     {
+//         viewed: {
+//             type: Date
+//         },
+//         signed: {
+//             type: Date
+//         }
 
-    }
-);
+//     }
+// );
 
 const signStatesSchema = schema(
     {
@@ -60,9 +60,8 @@ const signStatesSchema = schema(
             type: String
         },
         items: signersSchema,
-        status: {
-            type: Object,
-            value: statusTopSchema
+        viewed: {
+            type: Array
         },
         signDocForId: {
             type: String

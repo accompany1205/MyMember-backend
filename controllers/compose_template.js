@@ -1,9 +1,12 @@
 const all_temp = require("../models/emailSentSave");
 const students = require("../models/addmember");
+const smartlist = require("../models/smartlists");
 const compose_folder = require("../models/email_compose_folder");
+const template = require('../models/emailTemplates')
 const authKey = require("../models/email_key");
 const async = require("async");
-const sgMail = require("sendgrid-v3-node");
+const Mailer = require("../helpers/Mailer");
+// const sgMail = require("sendgrid-v3-node");
 const moment = require("moment");
 const mongoose = require("mongoose")
 var request = require("request");
@@ -196,13 +199,15 @@ exports.status_update_template = (req, res) => {
 };
 
 exports.allSent = async (req, res) => {
-  all_temp.find({ userId: req.params.userId, is_Sent: true }).exec((err, data) => {
-    if (err) {
-      res.send({ success: false, mag: "data not fetched" })
-    } else {
-      res.send({ success: true, msg: "fetched!", data })
-    }
-  })
+  all_temp.find({ userId: req.params.userId, is_Sent: true })
+    .sort({ createdAt: -1 })
+    .exec((err, data) => {
+      if (err) {
+        res.send({ success: false, mag: "data not fetched" })
+      } else {
+        res.send({ success: true, msg: "fetched!", data })
+      }
+    })
 }
 
 exports.sendVerificationMail = async (req, res) => {
@@ -304,25 +309,11 @@ exports.swapAndUpdate_template = async (req, res) => {
   }
 };
 
-exports.list_template = async (req, res) => {
-  compose_folder
-    .findById(req.params.folderId)
-    .populate({
-      path: "template",
-      match: { is_Sent: false, email_type: 'schedule' },
-      options: { sort: { templete_Id: 1 } },
-    })
-    .exec((err, template_data) => {
-      if (err) {
-        res.send({ error: "Compose template list not found" });
-      } else {
-        res.send(template_data);
-      }
-    });
-};
+
 
 exports.allScheduledListing = async (req, res) => {
-  await all_temp.find({ userId: req.params.userId, is_Sent: false })
+  await all_temp.find({ userId: req.params.userId, is_Sent: false, email_type: "scheduled" })
+    .sort({ createdAt: -1 })
     .then((data) => {
       res.send({ success: true, msg: "all Schedulded Emails", data })
     }).catch(err => {
@@ -332,149 +323,492 @@ exports.allScheduledListing = async (req, res) => {
 
 exports.update_template = async (req, res) => {
   let updateTemplate = req.body;
-  let smartList = updateTemplate.smartLists;
-  let to = updateTemplate.to;
-  to = to ? JSON.parse(to) : [];
-  smartList = smartList ? JSON.parse(smartList) : [];
-  if (to || smartList) {
-    if (!to.lenght) {
-      smartList.map(lists => {
-        to = [...to, ...lists.smrtList]
-      });
-    } else {
-      smartList = []
+  let templateId = req.params.templateId
+  try {
+    if (!updateTemplate.to) {
+      smartLists = updateTemplate.smartLists ? JSON.parse(updateTemplate.smartLists) : []
+      smartLists = smartLists.map(s => ObjectId(s));
+      let [smartlists] = await smartlist.aggregate([
+        {
+          $match: {
+            _id: { $in: smartLists }
+          }
+        },
+        {
+          $lookup: {
+            from: "members",
+            localField: "smartlists",
+            foreignField: "_id",
+            as: "data"
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            data: "$data.email"
+          }
+        },
+        { $unwind: "$data" },
+        {
+          $group: {
+            _id: "",
+            emails: { $addToSet: "$data" }
+          }
+        },
+        {
+          $project: {
+            _id: 0
+          }
+
+        }
+      ])
+
+      smartlists = smartlists ? smartlists : []
+
+      if (!smartlists.emails.length) {
+        return res.send({
+          msg: `No Smartlist exist!`,
+          success: false,
+        });
+      }
+      updateTemplate.to = smartlists.emails
+
     }
+    let attachments = []
+    if (req.files) {
+      (req.files).map((file) => {
+        let content = new Buffer.from(file.buffer, "utf-8")
+        let attach = {
+          content: content,
+          filename: file.originalname,
+          type: `application/${file.mimetype.split("/")[1]}`,
+          disposition: "attachment"
+        }
+        attachments.push(attach)
+
+      })
+    }
+    const resolvAttachments = await Promise.all(attachments);
+    updateTemplate.attachments = resolvAttachments
+    await template.updateOne(
+      { _id: templateId },
+      { $set: updateTemplate },
+      (err, updateTemp) => {
+        if (err) {
+          res.send({ success: err, msg: "Template is not update" });
+        } else {
+          res.send({ success: true, msg: "Template updated Successfully!" });
+        }
+      }
+    );
   }
-  const promises = []
-  if (req.files) {
-    (req.files).map(file => {
-      promises.push(cloudUrl.imageUrl(file))
-    });
-    var allAttachments = await Promise.all(promises);
-    updateTemplate.attachments = allAttachments;
+  catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+
   }
-  all_temp.updateOne(
-    { _id: req.params.templateId },
-    req.body,
-    (err, updateTemp) => {
-      if (err) {
-        res.send({ success: false, msg: "template is not update" });
-      } else {
-        res.send({ success: true, msg: "template update success" });
+}
+
+exports.sendEmail = async (req, res) => {
+  let userId = req.params.userId;
+  try {
+    if (!req.body.subject || !req.body.template) {
+      res.send({ error: "invalid input", success: false })
+    }
+    emailBody = req.body;
+    emailBody.userId = userId;
+
+    let attachments = []
+    if (req.files) {
+      (req.files).map((file) => {
+        let content = new Buffer.from(file.buffer, "utf-8")
+        let attach = {
+          content: content,
+          filename: file.originalname,
+          type: `application/${file.mimetype.split("/")[1]}`,
+          disposition: "attachment"
+        }
+        attachments.push(attach)
+
+      })
+    }
+    const Allattachments = await Promise.all(attachments);
+    emailBody.attachments = Allattachments;
+    emailBody.category = "compose";
+    emailBody.to = JSON.parse(emailBody.to)
+    if (!emailBody.to) {
+      let smartLists = JSON.parse(emailBody.smartLists) ? JSON.parse(emailBody.smartLists) : []
+      smartLists = smartLists.map(s => ObjectId(s));
+
+      // if (JSON.parse(emailBody.isPlaceHolders)) {
+      //   let [mapObj] = await smartlist.aggregate([
+      //     {
+      //       $match: {
+      //         _id: { $in: smartLists }
+      //       }
+      //     },
+      //     {
+      //       $lookup: {
+      //         from: "members",
+      //         localField: "smartlists",
+      //         foreignField: "_id",
+      //         as: "data"
+      //       }
+      //     },
+      //     {
+      //       $project: {
+      //         _id: 0,
+      //         data: 1
+      //       }
+      //     },
+      //     { $unwind: "$data" },
+      //     {
+      //       $group: {
+      //         _id: "data",
+      //         data: { $push: "$data" }
+      //       }
+      //     },
+      //     {
+      //       $project: {
+      //         _id: 0
+      //       }
+
+      //     }
+
+
+      //   ])
+
+      //   mapObj = mapObj ? mapObj : []
+
+      //   if (!mapObj.data.length) {
+      //     return res.send({
+      //       msg: `No Smartlist exist!`,
+      //       success: false,
+      //     });
+      //   }
+
+      //   (mapObj.data).map(Element => {
+      //     let temp = template;
+
+      //     for (i in Element) {
+      //       if (temp.includes(i)) {
+      //         temp = replace(temp, i, Element[i])
+      //       }
+      //     }
+      //     console.log({ from, to: Element["email"], subject, html: temp });
+
+      //   })
+
+      //   return res.send({ data: mapObj.data })
+
+
+      // }
+      let [smartlists] = await smartlist.aggregate([
+        {
+          $match: {
+            _id: { $in: smartLists }
+          }
+        },
+        {
+          $lookup: {
+            from: "members",
+            localField: "smartlists",
+            foreignField: "_id",
+            as: "data"
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            data: "$data.email"
+          }
+        },
+        { $unwind: "$data" },
+        {
+          $group: {
+            _id: "",
+            emails: { $addToSet: "$data" }
+          }
+        },
+        {
+          $project: {
+            _id: 0
+          }
+
+        }
+      ])
+
+      smartlists = smartlists ? smartlists : []
+
+      if (!smartlists.emails.length) {
+        return res.send({
+          msg: `No Smartlist exist!`,
+          success: false,
+        });
+      }
+
+      emailBody.to = smartlists.emails;
+    }
+
+    if (JSON.parse(emailBody.immediately)) {
+      const emailData = new Mailer({
+        to: emailBody.to,
+        from: emailBody.from,
+        subject: emailBody.subject,
+        html: emailBody.template,
+        attachments: attachments
+      });
+      emailData.sendMail()
+        .then(resp => {
+          let emailDetail = new all_temp(emailBody)
+          emailDetail.save((err, emailSave) => {
+            if (err) {
+              res.send({ msg: err, success: false })
+            }
+            else {
+              all_temp.findByIdAndUpdate(emailSave._id, { is_Sent: true, email_type: "sent" })
+                .exec((err, emailUpdate) => {
+                  if (err) {
+                    res.send({ msg: err, success: false })
+                  }
+                  else {
+                    return res.send({ msg: "Email Sent Successfully", success: true })
+
+                  }
+                })
+            }
+          })
+        })
+        .catch(Err => {
+          res.sen({ msg: Err, success: false })
+        })
+    } else {
+      if (!JSON.parse(emailBody.immediately)) {
+        let sent_date = moment(emailBody.sent_date).format("YYYY-MM-DD");
+        let emailDetail = new all_temp(emailBody)
+        emailDetail.save((err, emailSave) => {
+          if (err) {
+            res.send({ msg: err, success: false })
+          }
+          else {
+            all_temp.findByIdAndUpdate(emailSave._id, { is_Sent: false, email_type: "scheduled" })
+              .exec((err, emailUpdate) => {
+                if (err) {
+                  res.send({ msg: err, success: false })
+                }
+                else {
+                  return res.send({ msg: `Email Successfully! Scheduled on ${sent_date} At ${emailBody.sent_time} `, success: true })
+
+                }
+              })
+          }
+        })
       }
     }
-  );
-};
+
+  }
+  catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false })
+  }
+}
 
 exports.add_template = async (req, res) => {
   try {
-    const counts = await all_temp
-      .find({ folderId: req.params.folderId })
-      .countDocuments();
-    let templete_Id = counts + 1;
+
+    let { userId, folderId } = req.params || {};
 
     let {
       to,
       from,
-      title,
       subject,
       template,
       sent_time,
-      repeat_mail,
       sent_date,
-      follow_up,
-      smartLists
-    } = req.body || {};
-    to = to ? JSON.parse(to) : [];
-    smartLists = smartLists ? JSON.parse(smartLists) : [];
-    let { userId, folderId } = req.params || {};
-    if (!to.lenght) {
-      smartLists.map(lists => {
-        to = [...to, ...lists.smrtList]
-      });
+      smartLists,
+      design,
+      days_type,
+      content_type,
+      days,
+      createdBy
+    } = req.body;
+
+    if (!to) {
+
+      smartLists = smartLists ? JSON.parse(smartLists) : []
+      smartLists = smartLists.map(s => ObjectId(s));
+      let [smartlists] = await smartlist.aggregate([
+        {
+          $match: {
+            _id: { $in: smartLists }
+          }
+        },
+        {
+          $lookup: {
+            from: "members",
+            localField: "smartlists",
+            foreignField: "_id",
+            as: "data"
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            data: "$data.email"
+          }
+        },
+        { $unwind: "$data" },
+        {
+          $group: {
+            _id: "",
+            emails: { $addToSet: "$data" }
+          }
+        },
+        {
+          $project: {
+            _id: 0
+          }
+
+        }
+      ])
+
+      smartlists = smartlists ? smartlists : []
+
+      if (!smartlists.emails.length) {
+        return res.send({
+          msg: `No Smartlist exist!`,
+          success: false,
+        });
+      }
+      to = smartlists.emails
     }
+
     const obj = {
       to,
       from,
-      title,
       subject,
       template,
       sent_date,
       sent_time,
-      DateT: date_iso_follow,
-      repeat_mail,
-      follow_up,
-      email_type: "schedule",
-      email_status: true,
+      design,
+      days,
+      days_type,
+      content_type,
       category: "compose",
       userId,
       folderId,
-      templete_Id,
-      attachments,
-      smartLists
+      smartLists,
+      createdBy
     };
-    const promises = []
+    let attachments = []
     if (req.files) {
-      (req.files).map(file => {
-        promises.push(cloudUrl.imageUrl(file))
-      });
-      var attachments = await Promise.all(promises);
-    }
-    obj.attachments = attachments
-    // Formated Date //
-    sent_date = moment(sent_date).format("YYYY-MM-DD");
-    // let scheduleDateOfMonth = moment(sent_date).format('DD')
-    // let scheduleMonth = moment(sent_date).format('MM')
-    // let scheduleDay = moment(sent_date).format('dddd')
+      (req.files).map((file) => {
+        let content = new Buffer.from(file.buffer, "utf-8")
+        let attach = {
+          content: content,
+          filename: file.originalname,
+          type: `application/${file.mimetype.split("/")[1]}`,
+          disposition: "attachment"
+        }
+        attachments.push(attach)
 
-    if (req.body.follow_up === 0) {
-      var date_iso = timefun(req.body.sent_date, req.body.sent_time);
-      obj.DateT = date_iso;
-    } else if (req.body.follow_up < 0) {
-      res.send({ code: 400, msg: "follow up not set less then 0" });
-    } else {
-      var date_iso_follow = timefun(req.body.sent_date, req.body.sent_time);
-      date_iso_follow.setDate(date_iso_follow.getDate() + req.body.follow_up);
-      var nD = moment(date_iso_follow).format("MM/DD/YYYY");
-      saveEmailTemplate(obj)
-        .then((data) => {
-          compose_folder
-            .findOneAndUpdate(
-              { _id: folderId },
-              { $push: { template: data._id } }
-            )
-            .then((data) => {
-              res.send({
-                msg: `Email scheduled  Successfully on ${sent_date}`,
-                success: true,
-              });
-            })
-            .catch((er) => {
-              res.send({
-                error: "compose template details is not add in folder",
-                success: false,
-              });
-            });
-        })
-        .catch((ex) => {
-          res.send({
-            success: false,
-            msg: ex.message,
-          });
-        });
+      })
     }
+    const resolvAttachments = await Promise.all(attachments);
+    obj.attachments = resolvAttachments
+    saveEmailTemplate(obj)
+      .then(data => {
+        compose_folder
+          .findByIdAndUpdate(folderId, { $push: { template: data._id } }, (err, data) => {
+            if (err) {
+              return res.send({ msg: err, success: false })
+            }
+            return res.send({ msg: "Template saved Successfully!", success: true })
+          })
+      })
+      .catch(err => {
+        return res.send({
+          success: false, msg: err
+        })
+      })
+
+    // if (JSON.parse(immediately) && !days) {
+    // const emailData = new Mailer({
+    //   // sendgrid_key: process.env.SENDGRID_API_KEY,
+    //   to,
+    //   from,
+    //   from_name: 'noreply@gmail.com',
+    //   subject,
+    //   html: template,
+    //   attachments
+    // })
+    // emailData.sendMail()
+    //   .then(resp => {
+    //     obj.email_type = 'sent'
+    //     obj.is_Sent = true
+    //     saveEmailTemplate(obj)
+    //       .then((data) => {
+    //         compose_folder
+    //           .findByIdAndUpdate(folderId, { $push: { template: data._id } }, (err, data) => {
+    //             if (err) {
+    //               res.send({ msg: err, success: false })
+    //             }
+    //             res.send({ msg: "Email send Successfully!", success: true })
+
+    //           })
+    //       })
+    //       .catch((ex) => {
+    //         res.send({
+    //           success: false,
+    //           msg: ex
+    //         });
+    //       });
+    //   })
+    //   .catch(err => {
+    //     res.send({ error: err.message.replace(/\"/g, ""), success: false })
+    //   })
+
+    // }
+    //  else if (!JSON.parse(immediately) && days) {
+    //   sent_date = moment().add(days, 'days').format("YYYY-MM-DD");
+    //   saveEmailTemplate(obj)
+    //     .then((data) => {
+    //       compose_folder
+    //         .findByIdAndUpdate(folderId, { $push: { template: data._id } })
+    //         .then((data) => {
+    //           res.send({
+    //             msg: `Email scheduled  Successfully on ${sent_date}`,
+    //             success: true,
+    //           });
+    //         })
+    //         .catch((er) => {
+    //           res.send({
+    //             error: "compose template details is not add in folder",
+    //             success: false,
+    //           });
+    //         });
+    //     })
+    //     .catch((ex) => {
+    //       res.send({
+    //         success: false,
+    //         msg: ex
+    //       });
+    //     });
+    // }
+    // else {
+    //   res.send({ msg: 'something went wrong', success: false })
+
+    // }
   } catch (err) {
-    res.send({ error: err.message.replace(/\"/g, ""), success: false })
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
   }
 
 };
 
-exports.saveEmailTemplate = (obj) => {
+function saveEmailTemplate(obj) {
   return new Promise((resolve, reject) => {
-    let emailDetail = new all_temp(obj);
+    let emailDetail = new template(obj);
     emailDetail.save((err, data) => {
       if (err) {
-        reject({ data: "Data not save in Database!", success: false });
+        reject({ data: "Data not save in Database!", success: err });
       } else {
         resolve(data);
       }
@@ -485,50 +819,41 @@ exports.saveEmailTemplate = (obj) => {
 
 var emailCronFucntionality = async () => {
   let promises = [];
-  let scheduledListing = await all_temp.find({ category: "compose", is_Sent: false });
-  scheduledListing.forEach(async (ele) => {
-    let sentDate = ele.sent_date;
-    let mailId = ele._id;
+  let scheduledListing = await all_temp.find({ is_Sent: false, email_type: "scheduled" });
+  scheduledListing.forEach(async (ele, i) => {
+    let sentDate = moment(ele.sent_date).format("YYYY-MM-DD");
     let currentDate = moment().format("YYYY-MM-DD");
     if (sentDate === currentDate && !ele.is_Sent) {
-      const emailData = {
-        sendgrid_key: process.env.SENDGRID_API_KEY,
+
+      const emailData = new Mailer({
+        // sendgrid_key: process.env.SENDGRID_API_KEY,
         to: ele.to,
-        from_email: process.env.from_email,
+        from: ele.from,
         //from_name: "noreply@gmail.com",
         subject: ele.subject,
-        content: ele.template,
-        //attachments:ele.attachments
-      };
-      if (ele.is_Sent === false) {
-        sgMail
-          .send_via_sendgrid(emailData)
-          .then(resp => {
-            try {
-              all_temp.findByIdAndUpdate(mailId, { is_Sent: true });
-            } catch (err) {
-              throw new Error("Mail status not updated", err)
-            }
-          })
-          .catch((err) => {
-            throw new Error(err);
-          });
-      } else {
-        throw new Error("No email Scheduled for this Email");
-      }
+        html: ele.template,
+        attachments: ele.attachments
+      })
+      emailData.sendMail()
+        .then(async (resp) => {
+          const update = await all_temp.findOneAndUpdate({ _id: ele._id }, { $set: { is_Sent: true } });
+          console.log(resp)
+        })
+        .catch((err) => {
+          throw new Error(err);
+        });
     }
   });
   await Promise.all(promises);
 };
 
-// cron.schedule(`*/5 * * * *`, () => {
-//   emailCronFucntionality();
-// });
+cron.schedule(`*/5 * * * *`, () => {
+  emailCronFucntionality();
+});
 
 
 exports.remove_template = (req, res) => {
-  // all_temp.remove({}).then().catch();
-  all_temp.findByIdAndRemove(req.params.templateId, (err, removeTemplate) => {
+  template.findByIdAndRemove(req.params.templateId, (err, removeTemplate) => {
     if (err) {
       res.send({ error: "compose template is not remove" });
     } else {
@@ -538,10 +863,10 @@ exports.remove_template = (req, res) => {
         function (err, temp) {
           if (err) {
             res.send({
-              error: "compose template details is not remove in folder",
+              msg: "Template not removed!", success: false
             });
           } else {
-            res.send({ msg: "compose template is remove successfully" });
+            res.send({ msg: "Template removed successfully", success: true });
           }
         }
       );
@@ -555,7 +880,7 @@ exports.multipal_temp_remove = async (req, res) => {
     const templateIds = req.body.templateId;
     const promises = [];
     for (let id of templateIds) {
-      promises.push(all_temp.remove({ _id: id }));
+      promises.push(template.remove({ _id: id }));
       compose_folder.updateOne(
         { _id: folderId },
         { $pull: { template: ObjectId(id) } }).then((err, res) => {
@@ -597,7 +922,7 @@ exports.criteria_met = async (req, res) => {
       template,
       sent_date,
       sent_time,
-      email_type: "schedule",
+      email_type: "scheduled",
       email_status: true,
       category: "nurturing",
       userId,
@@ -729,15 +1054,14 @@ var emailCronFucntionalityfor30DaysBirthday = async () => {
     if (scheduleData.length) {
       scheduleData.map(i => {
 
-        const emailData = {
+        const emailData = new Mailer({
           sendgrid_key: process.env.SENDGRID_API_KEY,
           to: i.email,
-          from_email: ele.from,
+          from: ele.from,
           subject: ele.subject,
           content: ele.template,
-        };
-        sgMail
-          .send_via_sendgrid(emailData)
+        })
+        emailData.sendMail()
           .then(async (resp) => {
             try {
               await all_temp.findOneAndUpdate({ _id: ele._id }, { $set: { is_Sent: true } });

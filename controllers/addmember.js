@@ -17,6 +17,10 @@ const buymembershipModal = require("../models/buy_membership");
 let { saveEmailTemplate } = require('../controllers/compose_template')
 const system_folder = require("../models/email_system_folder");
 const mergeFile = require("../Services/mergeFile")
+const manage_rank = require("../models/program_rank");
+const mergeMultipleFiles = require("../Services/mergeMultipleFiles");
+
+
 
 // const ManyStudents = require('../std.js');
 // const students = require('../std.js');
@@ -451,13 +455,12 @@ exports.studentCount = (req, res) => {
 
 exports.addmember = async (req, res) => {
   try {
-    var pDetail = await program.findOne({
-      programName: req.body.program,
-    });
     var memberdetails = req.body;
+    if (memberdetails.after_camp) {
+      memberdetails.after_camp = memberdetails.after_camp ? JSON.parse(memberdetails.after_camp) : []
+    }
     var memberObj = new addmemberModal(memberdetails);
     memberObj.userId = req.params.userId;
-    // memberObj.programColor = pDetail.color
     memberObj.save(function (err, data) {
       if (err) {
         res.send({
@@ -619,37 +622,37 @@ exports.read = (req, res) => {
 };
 
 exports.active_trial_Std = async (req, res) => {
-  var order = req.query.order || 1
-  let sortBy = req.query.sortBy || "firstName"
-  var totalCount = await addmemberModal
-    .find({
-      userId: req.params.userId,
-      studentType: "Active Trial",
-    })
-    .countDocuments();
+  // var order = req.query.order || 1
+  // let sortBy = req.query.sortBy || "firstName"
+  // var totalCount = await addmemberModal
+  //   .find({
+  //     userId: req.params.userId,
+  //     studentType: "Active Trial",
+  //   })
+  //   .countDocuments();
 
-  var per_page = parseInt(req.params.per_page) || 10;
-  var page_no = parseInt(req.params.page_no) || 0;
-  var pagination = {
-    limit: per_page,
-    skip: per_page * page_no,
-  };
+  // var per_page = parseInt(req.params.per_page) || 10;
+  // var page_no = parseInt(req.params.page_no) || 0;
+  // var pagination = {
+  //   limit: per_page,
+  //   skip: per_page * page_no,
+  // };
   addmemberModal
     .find({
       userId: req.params.userId,
       studentType: "Active Trial"
     })
     .populate("membership_details")
-    .skip(pagination.skip)
-    .limit(pagination.limit)
-    .sort({ [sortBy]: order })
+    // .skip(pagination.skip)
+    // .limit(pagination.limit)
+    // .sort({ [sortBy]: order })
     .exec((err, active_trial) => {
       if (err) {
         res.send({
           msg: "active trial student is not found",
         });
       } else {
-        res.send({ active_trial, totalCount: totalCount, success: true });
+        res.send({ active_trial, success: true });
       }
     });
 };
@@ -657,30 +660,30 @@ exports.active_trial_Std = async (req, res) => {
 exports.leads_Std = async (req, res) => {
   try {
 
-    var order = req.query.order || 1
-    let sortBy = req.query.sortBy || "firstName"
-    var totalCount = await addmemberModal
-      .find({
-        userId: req.params.userId,
-        studentType: "Leads",
-      })
-      .countDocuments();
+    // var order = req.query.order || 1
+    // let sortBy = req.query.sortBy || "firstName"
+    // var totalCount = await addmemberModal
+    //   .find({
+    //     userId: req.params.userId,
+    //     studentType: "Leads",
+    //   })
+    //   .countDocuments();
 
-    var per_page = parseInt(req.params.per_page) || 10;
-    var page_no = parseInt(req.params.page_no) || 0;
-    var pagination = {
-      limit: per_page,
-      skip: per_page * page_no,
-    };
+    // var per_page = parseInt(req.params.per_page) || 10;
+    // var page_no = parseInt(req.params.page_no) || 0;
+    // var pagination = {
+    //   limit: per_page,
+    //   skip: per_page * page_no,
+    // };
     addmemberModal
       .find({
         userId: req.params.userId,
         studentType: "Leads",
       })
       .populate("membership_details")
-      .limit(pagination.limit)
-      .skip(pagination.skip)
-      .sort({ [sortBy]: order })
+      // .limit(pagination.limit)
+      // .skip(pagination.skip)
+      // .sort({ [sortBy]: order })
       .exec((err, lead) => {
         if (err) {
           res.send({
@@ -688,7 +691,7 @@ exports.leads_Std = async (req, res) => {
             success: false
           });
         } else {
-          res.send({ lead, totalCount: totalCount, success: true });
+          res.send({ lead, success: true });
         }
       });
   } catch (err) {
@@ -697,30 +700,30 @@ exports.leads_Std = async (req, res) => {
 };
 
 exports.Former_Std = async (req, res) => {
-  var order = req.query.order || 1
-  let sortBy = req.query.sortBy || "firstName"
-  var totalCount = await addmemberModal
-    .find({
-      userId: req.params.userId,
-      studentType: "Former Student",
-    })
-    .countDocuments();
+  // var order = req.query.order || 1
+  // let sortBy = req.query.sortBy || "firstName"
+  // var totalCount = await addmemberModal
+  //   .find({
+  //     userId: req.params.userId,
+  //     studentType: "Former Student",
+  //   })
+  //   .countDocuments();
 
-  var per_page = parseInt(req.params.per_page) || 10;
-  var page_no = parseInt(req.params.page_no) || 0;
-  var pagination = {
-    limit: per_page,
-    skip: per_page * page_no,
-  };
+  // var per_page = parseInt(req.params.per_page) || 10;
+  // var page_no = parseInt(req.params.page_no) || 0;
+  // var pagination = {
+  //   limit: per_page,
+  //   skip: per_page * page_no,
+  // };
   addmemberModal
     .find({
       userId: req.params.userId,
       studentType: "Former Student",
     })
     .populate("membership_details")
-    .limit(pagination.limit)
-    .skip(pagination.skip)
-    .sort({ [sortBy]: order })
+    // .limit(pagination.limit)
+    // .skip(pagination.skip)
+    // .sort({ [sortBy]: order })
     .exec((err, former) => {
       if (err) {
         res.send({
@@ -728,36 +731,36 @@ exports.Former_Std = async (req, res) => {
           success: false
         });
       } else {
-        res.send({ former, totalCount: totalCount, success: true });
+        res.send({ former, success: true });
       }
     });
 };
 
 exports.active_Std = async (req, res) => {
-  var order = req.query.order || 1
-  let sortBy = req.query.sortBy || "firstName"
-  var totalCount = await addmemberModal
-    .find({
-      userId: req.params.userId,
-      studentType: "Active Student",
-    })
-    .countDocuments();
+  // var order = req.query.order || 1
+  // let sortBy = req.query.sortBy || "firstName"
+  // var totalCount = await addmemberModal
+  //   .find({
+  //     userId: req.params.userId,
+  //     studentType: "Active Student",
+  //   })
+  //   .countDocuments();
 
-  var per_page = parseInt(req.params.per_page) || 10;
-  var page_no = parseInt(req.params.page_no) || 0;
-  var pagination = {
-    limit: per_page,
-    skip: per_page * page_no,
-  };
+  // var per_page = parseInt(req.params.per_page) || 10;
+  // var page_no = parseInt(req.params.page_no) || 0;
+  // var pagination = {
+  //   limit: per_page,
+  //   skip: per_page * page_no,
+  // };
   addmemberModal
     .find({
       userId: req.params.userId,
       studentType: "Active Student",
     })
     .populate("membership_details")
-    .limit(pagination.limit)
-    .skip(pagination.skip)
-    .sort({ [sortBy]: order })
+    // .limit(pagination.limit)
+    // .skip(pagination.skip)
+    // .sort({ [sortBy]: order })
     .exec((err, active_std) => {
       if (err) {
         res.send({
@@ -765,36 +768,36 @@ exports.active_Std = async (req, res) => {
           success: false
         });
       } else {
-        res.send({ active_std, totalCount: totalCount, success: true });
+        res.send({ active_std, success: true });
       }
     });
 };
 
 exports.Former_trial_Std = async (req, res) => {
-  var order = req.query.order || 1
-  let sortBy = req.query.sortBy || "firstName"
-  var totalCount = await addmemberModal
-    .find({
-      userId: req.params.userId,
-      studentType: "Former Trial",
-    })
-    .countDocuments();
+  // var order = req.query.order || 1
+  // let sortBy = req.query.sortBy || "firstName"
+  // var totalCount = await addmemberModal
+  //   .find({
+  //     userId: req.params.userId,
+  //     studentType: "Former Trial",
+  //   })
+  //   .countDocuments();
 
-  var per_page = parseInt(req.params.per_page) || 10;
-  var page_no = parseInt(req.params.page_no) || 0;
-  var pagination = {
-    limit: per_page,
-    skip: per_page * page_no,
-  };
+  // var per_page = parseInt(req.params.per_page) || 10;
+  // var page_no = parseInt(req.params.page_no) || 0;
+  // var pagination = {
+  //   limit: per_page,
+  //   skip: per_page * page_no,
+  // };
   addmemberModal
     .find({
       userId: req.params.userId,
       studentType: "Former Trial",
     })
     .populate("membership_details")
-    .limit(pagination.limit)
-    .skip(pagination.skip)
-    .sort({ [sortBy]: order })
+    // .limit(pagination.limit)
+    // .skip(pagination.skip)
+    // .sort({ [sortBy]: order })
     .exec((err, former_trial) => {
       if (err) {
         res.send({
@@ -802,7 +805,7 @@ exports.Former_trial_Std = async (req, res) => {
           success: false
         });
       } else {
-        res.send({ former_trial, totalCount: totalCount, success: true });
+        res.send({ former_trial, success: true });
       }
     });
 };
@@ -844,29 +847,29 @@ exports.camp_Std = async (req, res) => {
 };
 
 exports.after_school_Std = async (req, res) => {
-  var order = req.query.order || 1
-  let sortBy = req.query.sortBy || "firstName"
-  var totalCount = await addmemberModal
-    .find({
-      userId: req.params.userId,
-      intrested: "After School",
-    })
-    .countDocuments();
-  var per_page = parseInt(req.params.per_page) || 10;
-  var page_no = parseInt(req.params.page_no) || 0;
-  var pagination = {
-    limit: per_page,
-    skip: per_page * page_no,
-  };
+  // var order = req.query.order || 1
+  // let sortBy = req.query.sortBy || "firstName"
+  // var totalCount = await addmemberModal
+  //   .find({
+  //     userId: req.params.userId,
+  //     intrested: "After School",
+  //   })
+  //   .countDocuments();
+  // var per_page = parseInt(req.params.per_page) || 10;
+  // var page_no = parseInt(req.params.page_no) || 0;
+  // var pagination = {
+  //   limit: per_page,
+  //   skip: per_page * page_no,
+  // };
   addmemberModal
     .find({
       userId: req.params.userId,
       intrested: "After School",
     })
     .populate("membership_details")
-    .limit(pagination.limit)
-    .skip(pagination.skip)
-    .sort({ [sortBy]: order })
+    // .limit(pagination.limit)
+    // .skip(pagination.skip)
+    // .sort({ [sortBy]: order })
     .exec((err, after_school) => {
       if (err) {
         res.send({
@@ -874,7 +877,7 @@ exports.after_school_Std = async (req, res) => {
           success: false
         });
       } else {
-        res.send({ after_school, totalCount: totalCount, success: true });
+        res.send({ after_school, success: true });
       }
     });
 };
@@ -1228,16 +1231,51 @@ exports.mergeMultipleDoc = async (req, res) => {
   let docBody = req.body.docBody;
   try {
     let promises = [];
+    let bufCount = 0;
     for (let id in studentsIds) {
       let data = await addmemberModal.findOne({ _id: studentsIds[id] });
       let mergedInfo = { ...data.toJSON() }
-      let fileObj = await mergeFile(docBody, mergedInfo);
-      await (cloudUrl.imageUrl(fileObj)).then(data => {
-        promises.push(data)
-      })
+      let filebuff = await mergeMultipleFiles(docBody, mergedInfo);
+      bufCount = Buffer.byteLength(filebuff) + bufCount
+      promises.push(filebuff);
     }
     await Promise.all(promises);
-    res.send({ msg: "data!", data: promises })
+    res.send({ msg: "data!", data: promises, success: true })
+    // let resultBuff = Buffer.concat(promises, bufCount)
+    // console.log(promises)
+
+    // const docx = new DocxMerger({}, resultBuff)
+    // docx.save('blob', (data) => {
+    // saveAs(data, "output.docx")
+    // })
+
+    // let fileObj = {
+    //   fieldname: 'attach',
+    //   originalname: 'Test.doc',
+    //   encoding: '7bit',
+    //   mimetype: 'application/doc',
+    //   buffer: docx,
+    //   size: bufCount
+    // }
+    // await (cloudUrl.imageUrl(fileObj)).then(data => {
+    //   res.send({ msg: "data!", data: data, success: true })
+    // })
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
+}
+
+
+exports.multipleFilter = async (req, res) => {
+  let userId = req.params;
+  let filters = req.body.filter;
+  try {
+    filters.push(userId);
+    await addmemberModal.find({ $and: filters }).then(resp => {
+      res.send({ msg: "Data!", succes: true, data: resp })
+    }).catch(err => {
+      res.send({ msg: err.message.replace(/\"/g, ""), success: false, err })
+    })
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false })
   }
@@ -1526,80 +1564,83 @@ exports.updatemember = async (req, res) => {
   var memberID = req.params.memberID;
   let userId = req.params.userId
   let memberData = req.body
-  let [data] = await smartList.find({ "criteria.studentType": memberData.studentType });
-  if (data) {
-    let [data] = await smartList.find({ "criteria.studentType": memberData.studentType });
-    let [Email] = await sentEmail.find({ smartLists: data._id });
-    if (Email.toJSON().immediately) {
-      const emailData = {
-        sendgrid_key: process.env.SENDGRID_API_KEY,
-        to: memberData.email,
-        from: Email.toJSON().from,
-        from_name: 'noreply@gmail.com',
-        subject: Email.toJSON().subject,
-        html: Email.toJSON().template,
-        attachments: Email.toJSON().attachments
-      };
-      sgMail.send(emailData)
-        .then(resp => {
-          var emailDetail = new sentEmail(req.body)
-          emailDetail.save((err, emailSave) => {
-            if (err) {
-              res.send({ error: 'email details is not save' })
-            }
-            else {
-              sentEmail.findByIdAndUpdate(emailSave._id, { userId: userId, email_type: 'sent', is_Sent: true, category: 'system' })
-                .exec((err, emailUpdate) => {
-                  if (err) {
-                    console.log({ msg: 'emil not sent', err })
-                  }
-                  else {
-                    // res.send({ message: "Email Sent Successfully", success: true, emailUpdate })
-                  }
-                })
-            }
-          })
-        })
-        .catch(err => {
-          console.log({ msg: 'email not send', error: err })
-        })
-    } else {
-      let sent_date = moment(Email.toJSON().sent_date).add(Email.toJSON().days, 'days').format("YYYY-MM-DD");
-      const obj = {
-        to: memberData.email,
-        from: memberData.email,
-        subject: Email.toJSON().subject,
-        template: Email.toJSON().template,
-        sent_date: sent_date,
-        sent_time: Email.toJSON().sent_time,
-        email_type: "schedule",
-        email_status: true,
-        category: "system",
-        userId: userId,
-        folderId: Email.toJSON().folderId,
-        days: Email.toJSON().days,
-      }
-      console.log(obj)
-      saveEmailTemplate(obj)
-        .then((data) => {
-          system_folder
-            .findOneAndUpdate(
-              { _id: obj.folderId },
-              { $push: { template: data._id } }
-            )
-            .then((data) => {
-              console.log(`Email scheduled  Successfully on ${sent_date}`)
-            })
-            .catch((er) => {
-              res.send({
-                msg: "compose template details is not add in folder",
-                success: er,
-              });
-            });
-        })
-    }
-
+  if (memberData.after_camp) {
+    memberData.after_camp = memberData.after_camp ? JSON.parse(memberData.after_camp) : []
   }
+  // let [data] = await smartList.find({ "criteria.studentType": memberData.studentType });
+  // if (data) {
+  // let [data] = await smartList.find({ "criteria.studentType": memberData.studentType });
+  // let [Email] = await sentEmail.find({ smartLists: data._id });
+  //   if (Email.toJSON().immediately) {
+  //     const emailData = {
+  //       sendgrid_key: process.env.SENDGRID_API_KEY,
+  //       to: memberData.email,
+  //       from: Email.toJSON().from,
+  //       from_name: 'noreply@gmail.com',
+  //       subject: Email.toJSON().subject,
+  //       html: Email.toJSON().template,
+  //       attachments: Email.toJSON().attachments
+  //     };
+  //     sgMail.send(emailData)
+  //       .then(resp => {
+  //         var emailDetail = new sentEmail(req.body)
+  //         emailDetail.save((err, emailSave) => {
+  //           if (err) {
+  //             res.send({ error: 'email details is not save' })
+  //           }
+  //           else {
+  //             sentEmail.findByIdAndUpdate(emailSave._id, { userId: userId, email_type: 'sent', is_Sent: true, category: 'system' })
+  //               .exec((err, emailUpdate) => {
+  //                 if (err) {
+  //                   console.log({ msg: 'emil not sent', err })
+  //                 }
+  //                 else {
+  //                   // res.send({ message: "Email Sent Successfully", success: true, emailUpdate })
+  //                 }
+  //               })
+  //           }
+  //         })
+  //       })
+  //       .catch(err => {
+  //         console.log({ msg: 'email not send', error: err })
+  //       })
+  //   } else {
+  //     let sent_date = moment(Email.toJSON().sent_date).add(Email.toJSON().days, 'days').format("YYYY-MM-DD");
+  //     const obj = {
+  //       to: memberData.email,
+  //       from: memberData.email,
+  //       subject: Email.toJSON().subject,
+  //       template: Email.toJSON().template,
+  //       sent_date: sent_date,
+  //       sent_time: Email.toJSON().sent_time,
+  //       email_type: "scheduled",
+  //       email_status: true,
+  //       category: "system",
+  //       userId: userId,
+  //       folderId: Email.toJSON().folderId,
+  //       days: Email.toJSON().days,
+  //     }
+  //     console.log(obj)
+  //     saveEmailTemplate(obj)
+  //       .then((data) => {
+  //         system_folder
+  //           .findOneAndUpdate(
+  //             { _id: obj.folderId },
+  //             { $push: { template: data._id } }
+  //           )
+  //           .then((data) => {
+  //             console.log(`Email scheduled  Successfully on ${sent_date}`)
+  //           })
+  //           .catch((er) => {
+  //             res.send({
+  //               msg: "compose template details is not add in folder",
+  //               success: er,
+  //             });
+  //           });
+  //       })
+  //   }
+
+  // }
   if (req.file) {
     await cloudUrl
       .imageUrl(req.file)
@@ -2010,10 +2051,30 @@ exports.ActiveMemberslistByProgramName = async (req, res) => {
 };
 
 exports.searchStudentbyType = async (req, res) => {
-  const search = req.query.search;
   const userId = req.params.userId;
   const studentType = req.params.studentType;
+  const search = req.query.search;
   try {
+    if (search.split(" ").length > 1) {
+      search1 = search.split(" ")[0]
+      search2 = search.split(" ")[1]
+      const data = await addmemberModal.find(
+        {
+          userId: userId,
+          studentType: studentType,
+          $or: [
+            { firstName: { $regex: search1, $options: "i" } },
+            { lastName: { $regex: search2, $options: "i" } },
+            { email: { $regex: search, $options: "i" } },
+          ],
+        },
+      );
+      return res.send({
+        data: data,
+        success: true
+      });
+    }
+
     const data = await addmemberModal.find(
       {
         userId: userId,
@@ -2021,6 +2082,7 @@ exports.searchStudentbyType = async (req, res) => {
         $or: [
           { firstName: { $regex: search, $options: "i" } },
           { lastName: { $regex: search, $options: "i" } },
+          // { lastName: { $regex: search1, $options: "i" } },
           { email: { $regex: search, $options: "i" } },
         ],
       },

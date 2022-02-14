@@ -1,4 +1,3 @@
-const { any } = require('async');
 const mongoose = require('mongoose');
 const schema = mongoose.Schema
 const EmailSchema = schema({
@@ -7,23 +6,29 @@ const EmailSchema = schema({
         require: true
     },
     to: {
-        type: Array
-    },
-    title: {
-        type: String,
-        require: true
+        type: Array,
+        required: true
     },
     subject: {
         type: String,
-        require: true
+        required: true
     },
     template: {
         type: String
     },
-    repeat_mail: {
+    design: {
         type: String
     },
-    follow_up: {
+    days: {
+        type: Number
+    },
+    days_type: {        //after/before
+        type: String
+    },
+    immediately: {
+        type: Boolean
+    },
+    content_type: {
         type: String
     },
     sent_date: {
@@ -32,34 +37,24 @@ const EmailSchema = schema({
     sent_time: {
         type: String,
     },
-    DateT: {
-        type: Date
-    },
-    category: {
+    category: {         //compose/nurturing/system
         type: String,
-        default: ' '
     },
-    email_type: {
+    email_type: {       //sent/scheduled
         type: String,
-        default: ' '
     },
-    email_status: {
-        type: Boolean,
-    },
-    email_auth_key: {
-        type: String,
-        require: true
-    },
+    // email_auth_key: {
+    //     type: String,
+    //     required: true
+    // },
     userId: {
         type: String,
-        require: true
     },
     folderId: {
         type: String,
-        require: true
     },
     createdBy: {
-        type: String
+        type: String,
     },
     adminId: {
         type: String
@@ -78,12 +73,13 @@ const EmailSchema = schema({
     attachments: {
         type: Array
     },
-    days: {
-        type: String
-    },
-    smartLists: {
-        type: Array
-    }
+    smartLists:
+        { type: Array }
+    // [{
+    //     stdtype: String,
+    //     smId: String,
+    //     smrtList: Array
+    // }]
 },
     { timestamps: true }
 )
