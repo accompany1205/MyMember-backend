@@ -37,7 +37,7 @@ exports.docupload = async (req, res) => {
         res.send({ msg: 'document is not added', success: false })
       }
       else {
-        if (!(JSON.parse(subFolderId))) {
+        if (!(subFolderId)) {
           docfolder.findByIdAndUpdate(rootFolderId, { $push: { document: docdata._id } },
             function (err, updateDoc) {
               if (err) {
