@@ -103,9 +103,7 @@ async function signPdf(file, items) {
         const pdfDoc = await PDFDocument.load(file)
         for (let [owner, val] of Object.entries(items)) {
             for (let [_page, value] of Object.entries(val)) {
-                console.log("_page", _page);
                 const page = pdfDoc.getPages()[_page - 1]
-                console.log("page->", page)
                 //console.log(value)
                 for (let itm of value) {
 
@@ -136,7 +134,6 @@ async function signPdf(file, items) {
                         let text = itm.value
                         let x = itm.x - (getTextWidth(text, 14) / 2)
                         let y = (page.getHeight() - itm.y) - (14 / 2)
-                        console.log("y->", y)
                         page.drawText(text, {
                             x: x,
                             y: y,
@@ -187,17 +184,20 @@ exports.getSignItems = async (req, res) => {
     try {
         let docuSignId = req.params.docuSignId;
         let userId = req.params.userid;
+        let emailToken = req.params.emailToken;
         await SignStates.findOne({ _id: docuSignId.trim() }).then(async resp => {
             let datas = resp.items;
             if (resp.signDocFor === 'membership') {
                 try {
                     const data = await buyMembership.findOne({ _id: resp.signDocForId })
-                    let response = await fetch(data.mergedDoc);
-                    response = await response.buffer()
-                    let pdfBuff = await buffToPdf(response);
-                    const pdfs = await signPdf(pdfBuff, datas.toJSON());
-                    let buffer = Buffer.from(pdfs).toString('base64');
-                    res.send({ msg: "pdf buffer!", data: buffer, success: true });
+                    if (data.emailToken === emailToken) {
+                        let response = await fetch(data.mergedDoc);
+                        response = await response.buffer()
+                        let pdfBuff = await buffToPdf(response);
+                        const pdfs = await signPdf(pdfBuff, datas.toJSON());
+                        let buffer = Buffer.from(pdfs).toString('base64');
+                        res.send({ msg: "pdf buffer!", data: buffer, success: true });
+                    } else { res.status(404).send({ msg: "Not authorized!", success: false }) }
                 } catch (err) {
                     res.send({ msg: err.message.replace(/\"/g, ""), sucess: false });
                 }
