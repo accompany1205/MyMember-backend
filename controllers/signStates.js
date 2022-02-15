@@ -163,7 +163,10 @@ exports.setSignItems = async (req, res) => {
             // data.status[invite] = { ...data.status[invite], signed: new Date().getTime() };
             // let items = { ...data.items, ...req.body.items };
             let emailToken = await buyMembership.findOne({ _id: data.signDocForId });
-            const docLink = emailToken.mergedDoc;
+            const pdfPath = emailToken.mergedDoc;
+            let pdfLink = pdfPath.split(process.env.GOOGLE_STORAGE_PATH)[1]
+            let docLink = `${process.env.RESET_URL}/docusign/sign/${docuSignId}/${pdfLink}/${emailTokens}`
+
             if (emailToken.emailToken === emailTokens) {
                 await SignStates.updateOne({ _id: docuSignId }, { $set: body }).then(async data => {
                     let items = await SignStates.findOne({ _id: docuSignId });
@@ -181,7 +184,6 @@ exports.setSignItems = async (req, res) => {
                             }
                         }
                     }
-                    console.log(ownerMail)
                     let uniqueEmail = [...new Set(emailArray)];
                     if (uniqueEmail.length) {
                         const emailData = new Mailer({
