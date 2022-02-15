@@ -163,11 +163,59 @@ exports.setSignItems = async (req, res) => {
             // data.status[invite] = { ...data.status[invite], signed: new Date().getTime() };
             // let items = { ...data.items, ...req.body.items };
             let emailToken = await buyMembership.findOne({ _id: data.signDocForId });
+            const docLink = emailToken.mergedDoc;
             if (emailToken.emailToken === emailTokens) {
-                await SignStates.updateOne({ _id: docuSignId }, { $set: body }).then(data => {
-                    res.send({ msg: "Item updated!", success: true });
+                await SignStates.updateOne({ _id: docuSignId }, { $set: body }).then(async data => {
+                    let items = await SignStates.findOne({ _id: docuSignId });
+                    let emailArray = [];
+                    let ownerMail;
+                    for (let [key, value] of Object.entries(items.items.toJSON())) {
+                        for (let [k, v] of Object.entries(value)) {
+                            for (let itmObj of v) {
+                                if (key == "owner") {
+                                    ownerMail = v[0].email;
+                                }
+                                if (itmObj.value === undefined || itmObj.value === "" || !itmObj.value) {
+                                    emailArray.push(itmObj.email);
+                                }
+                            }
+                        }
+                    }
+                    console.log(ownerMail)
+                    let uniqueEmail = [...new Set(emailArray)];
+                    if (uniqueEmail.length) {
+                        const emailData = new Mailer({
+                            to: uniqueEmail,
+                            from: ownerMail,
+                            subject: "Please complete Signature Process",
+                            html: `<h2>Below is the PDF to complete your signature</h2>
+                                        <p>${docLink}</p>`,
+                        });
+                        emailData.sendMail()
+                            .then(resp => {
+                                res.send({ msg: "Item updated!", success: true });
+                            })
+                            .catch(err => {
+                                res.send({ msg: "Item not updated!", success: false, error: err.message.replace(/\"/g, "") })
+                            })
+                    } else {
+                        const emailData = new Mailer({
+                            to: uniqueEmail,
+                            from: ownerMail,
+                            subject: " Signature Process Complted ",
+                            html: `<h2>Below completed SIgn PDF</h2>
+                                        <p>${docLink}</p>`,
+                        });
+                        emailData.sendMail()
+                            .then(resp => {
+                                res.send({ msg: "Item updated!", success: true });
+                            })
+                            .catch(err => {
+                                res.send({ msg: "Item not updated!", success: false, error: err.message.replace(/\"/g, "") })
+                            })
+                    }
                 }).catch(err => {
-                    res.send({ msg: "Itme not updated!", success: false, error: err.message.replace(/\"/g, "") });
+                    res.send({ msg: "Item not updated!", success: false, error: err.message.replace(/\"/g, "") });
                 })
             } else {
                 res.status(401).send({ msg: "Not verified!", success: false });
@@ -276,7 +324,7 @@ exports.getAllStudentDocs = async (req, res) => {
             let data = { ...signStatesInfo.toJSON(), ...obj };
             res.send({ msg: "data", success: true, data: data });
         } else {
-            res.status(404).send({ msg: "No buyMembership found!", success: false })
+            res.send({ msg: "No buyMembership found!", success: false })
         }
 
         // await buyMembership.aggregate([
