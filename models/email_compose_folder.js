@@ -8,7 +8,7 @@ const composefolderSchema = schema({
     },
     template: [{
         type: schema.Types.ObjectId,
-        ref: 'sentOrscheduleEmail'
+        ref: 'email_template'
     }],
     userId: {
         type: String

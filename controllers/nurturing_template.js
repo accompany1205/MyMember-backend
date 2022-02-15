@@ -1,10 +1,11 @@
 const all_temp = require("../models/emailSentSave");
 const nurturingFolderModal = require("../models/email_nurturing_folder");
 const smartlist = require("../models/smartlists");
-const template=require('../models/emailTemplates')
+const Template = require('../models/emailTemplates')
 const key = require("../models/email_key");
 const moment = require("moment");
 const async = require("async");
+const Mailer = require("../helpers/Mailer");
 // const sgMail = require("sendgrid-v3-node");
 const cron = require("node-cron");
 const folderNur = require("../models/email_nurturing_folder");
@@ -97,30 +98,9 @@ exports.getData = (req, res) => {
     });
 };
 
-exports.list_template = (req, res) => {
-  nurturingFolderModal
-    .findById(req.params.folderId)
-    .populate({
-      path: "template",
-      match: { is_Sent: false, email_type: "schedule" },
-      options: { sort: { templete_Id: 1 } },
-    })
-    .exec((err, template_data) => {
-      if (err) {
-        res.send({ error: "nurturing template list not found" });
-      } else {
-        res.send(template_data);
-      }
-    });
-};
-
 exports.add_template = async (req, res) => {
   try {
-    // const [counts] = await nurturingFolderModal
-    //   .find({ _id: req.params.folderId }, { template: 1, _id: 0 })
-    // let templete_Id = counts.template.length + 1
     let { userId, folderId } = req.params
-
     let {
       to,
       from,
@@ -136,12 +116,11 @@ exports.add_template = async (req, res) => {
       smartLists,
       createdBy
     } = req.body;
-    console.log(createdBy)
+    to = JSON.parse(req.body.to);
     if (!sent_date && days_type != 'before') {
       sent_date = moment().add(days, 'days').format("YYYY-MM-DD");
     }
     sent_date = moment(sent_date).format("YYYY-MM-DD");
-
     if (!to) {
       smartLists = smartLists ? JSON.parse(smartLists) : []
       smartLists = smartLists.map(s => ObjectId(s));
@@ -200,46 +179,98 @@ exports.add_template = async (req, res) => {
       design,
       days,
       days_type,
-      immediately,
       content_type,
       category: "nurturing",
+      email_type: "scheduled",
       userId,
       folderId,
       smartLists,
       createdBy
     };
-    const promises = []
+    // const promises = []
+    // if (req.files) {
+    //   (req.files).map(file => {
+    //     promises.push(cloudUrl.imageUrl(file))
+    //   });
+    //   obj.attachments = await Promise.all(promises);
+    // }
+    let attachments = []
     if (req.files) {
-      (req.files).map(file => {
-        promises.push(cloudUrl.imageUrl(file))
-      });
-      obj.attachments = await Promise.all(promises);
-    }
-    console.log(obj)
-    saveEmailTemplate(obj)
-      .then((data) => {
-        nurturingFolderModal
-          .findByIdAndUpdate(folderId, { $push: { template: data._id } })
-          .then((data) => {
-            res.send({
-              msg: `Email scheduled  Successfully on ${sent_date}`,
-              success: true,
-            });
-          })
-          .catch((er) => {
-            res.send({
-              msg: "compose template details is not add in folder",
-              success: false,
-            });
-          });
-      })
-      .catch((err) => {
-        res.send({
-          success: false,
-          msg: err,
-        });
-      });
+      (req.files).map((file) => {
+        let content = new Buffer.from(file.buffer, "utf-8")
+        let attach = {
+          content: content,
+          filename: file.originalname,
+          type: `application/${file.mimetype.split("/")[1]}`,
+          disposition: "attachment"
+        }
+        attachments.push(attach)
 
+      })
+    }
+    const Allattachments = await Promise.all(attachments);
+    obj.attachments = Allattachments;
+
+    if (!(JSON.parse(immediately))) {
+      obj.email_type = "scheduled";
+      saveEmailTemplate(obj)
+        .then((data) => {
+          nurturingFolderModal
+            .findByIdAndUpdate(folderId, { $push: { template: data._id } })
+            .then((data) => {
+              res.send({
+                msg: `Email scheduled  Successfully on ${sent_date}`,
+                success: true,
+              });
+            })
+            .catch((er) => {
+              res.send({
+                msg: "compose template details is not add in folder",
+                success: false,
+              });
+            });
+        })
+        .catch((err) => {
+          res.send({
+            success: false,
+            msg: err,
+          });
+        });
+    }
+    else {
+      let emailData = new Mailer({
+        to,
+        from,
+        subject,
+        html: template,
+        attachments: Allattachments
+      })
+      emailData.sendMail()
+        .then(resp => {
+          obj.email_type = 'sent'
+          obj.is_Sent = true
+          saveEmailTemplate(obj)
+            .then((data) => {
+              nurturingFolderModal
+                .findByIdAndUpdate(folderId, { $push: { template: data._id } }, (err, data) => {
+                  if (err) {
+                    res.send({ msg: err, success: false })
+                  }
+                  res.send({ msg: "Email send Successfully!", success: true })
+
+                })
+            })
+            .catch((ex) => {
+              res.send({
+                success: false,
+                msg: ex
+              });
+            });
+        })
+        .catch(Err => {
+          res.sen({ msg: Err, success: false })
+        })
+    }
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false })
   }
@@ -248,7 +279,7 @@ exports.add_template = async (req, res) => {
 
 function saveEmailTemplate(obj) {
   return new Promise((resolve, reject) => {
-    let emailDetail = new template(obj);
+    let emailDetail = new all_temp(obj);
     emailDetail.save((err, data) => {
       if (err) {
         reject({ data: "Data not save in Database!", success: err });
@@ -260,7 +291,7 @@ function saveEmailTemplate(obj) {
 }
 
 exports.remove_template = (req, res) => {
-  template.findByIdAndRemove(req.params.templateId, (err, removeTemplate) => {
+  all_temp.findByIdAndRemove(req.params.templateId, (err, removeTemplate) => {
     if (err) {
       res.send({ msg: "Template not removed!", success: false });
     } else {
@@ -371,14 +402,30 @@ exports.update_template = async (req, res) => {
       updateTemplate.to = smartlists.emails
 
     }
-    promises = []
+    // promises = []
+    // if (req.files) {
+    //   (req.files).map(file => {
+    //     promises.push(cloudUrl.imageUrl(file))
+    //   });
+    //   updateTemplate.attachments = await Promise.all(promises);
+    // }
+    let attachments = []
     if (req.files) {
-      (req.files).map(file => {
-        promises.push(cloudUrl.imageUrl(file))
-      });
-      updateTemplate.attachments = await Promise.all(promises);
+      (req.files).map((file) => {
+        let content = new Buffer.from(file.buffer, "utf-8")
+        let attach = {
+          content: content,
+          filename: file.originalname,
+          type: `application/${file.mimetype.split("/")[1]}`,
+          disposition: "attachment"
+        }
+        attachments.push(attach)
+
+      })
     }
-    await template.updateOne(
+    const Allattachments = await Promise.all(attachments);
+    updateTemplate.attachments = Allattachments;
+    await all_temp.updateOne(
       { _id: templateId },
       updateTemplate,
       (err, updateTemp) => {
@@ -449,8 +496,8 @@ exports.swap_template = async (req, res) => {
           success: false
         });
       } else {
-        await template.findByIdAndUpdate(FirstSelectedOid, { $set: { sent_date: DateOfFirstSelectedOid } })
-        await template.findByIdAndUpdate(SecondSelectedOid, { $set: { sent_date: DateOfSecondSelectedOid } })
+        await all_temp.findByIdAndUpdate(FirstSelectedOid, { $set: { sent_date: DateOfFirstSelectedOid } })
+        await all_temp.findByIdAndUpdate(SecondSelectedOid, { $set: { sent_date: DateOfSecondSelectedOid } })
           .exec(async (err, data) => {
             if (err) {
               res.send({
@@ -469,10 +516,10 @@ exports.swap_template = async (req, res) => {
 
 //single temp update status
 exports.single_tem_update_status = (req, res) => {
-  if (req.body.email_status == true) {
+  if (req.body.is_Favorite == true) {
     all_temp.updateOne(
       { _id: req.params.tempId },
-      { $set: { email_status: true } },
+      { $set: { is_Favorite: true } },
       (err, resp) => {
         if (err) {
           res.json({ code: 400, msg: "email nurturing status not deactive" });
@@ -484,10 +531,10 @@ exports.single_tem_update_status = (req, res) => {
         }
       }
     );
-  } else if (req.body.email_status == false) {
+  } else if (req.body.is_Favorite == false) {
     all_temp.updateOne(
       { _id: req.params.tempId },
-      { $set: { email_status: false } },
+      { $set: { is_Favorite: false } },
       (err, resp) => {
         if (err) {
           res.json({ code: 400, msg: "email nurturing status not active" });
@@ -504,7 +551,7 @@ exports.single_tem_update_status = (req, res) => {
 
 //update status of all template
 exports.status_update_template = (req, res) => {
-  if (req.body.status == "false") {
+  if (req.body.is_Favorite == "false") {
     all_temp
       .find({
         $and: [
@@ -521,7 +568,7 @@ exports.status_update_template = (req, res) => {
             (obj, done) => {
               all_temp.findByIdAndUpdate(
                 obj._id,
-                { $set: { email_status: false } },
+                { $set: { is_Favorite: false } },
                 done
               );
             },
@@ -535,7 +582,7 @@ exports.status_update_template = (req, res) => {
           );
         }
       });
-  } else if (req.body.status == "true") {
+  } else if (req.body.is_Favorite == "true") {
     all_temp
       .find({
         $and: [
@@ -552,7 +599,7 @@ exports.status_update_template = (req, res) => {
             (obj, done) => {
               all_temp.findByIdAndUpdate(
                 obj._id,
-                { $set: { email_status: true } },
+                { $set: { is_Favorite: true } },
                 done
               );
             },

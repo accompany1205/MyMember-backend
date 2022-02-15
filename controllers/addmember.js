@@ -1267,15 +1267,37 @@ exports.mergeMultipleDoc = async (req, res) => {
 
 
 exports.multipleFilter = async (req, res) => {
-  let userId = req.params;
+  let userId = req.params.userId;
   let filters = req.body.filter;
   try {
-    filters.push(userId);
-    await addmemberModal.find({ $and: filters }).then(resp => {
-      res.send({ msg: "Data!", succes: true, data: resp })
-    }).catch(err => {
-      res.send({ msg: err.message.replace(/\"/g, ""), success: false, err })
-    })
+
+    let promise = [];
+    for (const i in filters) {
+      if (filters[i].length) {
+        promise.push({ [i]: { $in: filters[i] } })
+      }
+    }
+    const promises = await Promise.all(promise);
+    if (promises.length) {
+      await addmemberModal.aggregate([
+        {
+          $match: {
+            userId: userId,
+            $and: promises
+          }
+        }])
+        .exec((err, data) => {
+          if (err) {
+            res.send({ msg: err.message.replace(/\"/g, ""), success: false, err })
+          }
+          else {
+            res.send({ msg: "Data!", success: true, data: data })
+          }
+        })
+    } else {
+      res.send({ msg: "no filter found!", success: false })
+
+    }
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false })
   }
@@ -1613,7 +1635,7 @@ exports.updatemember = async (req, res) => {
   //       template: Email.toJSON().template,
   //       sent_date: sent_date,
   //       sent_time: Email.toJSON().sent_time,
-  //       email_type: "schedule",
+  //       email_type: "scheduled",
   //       email_status: true,
   //       category: "system",
   //       userId: userId,
@@ -2051,10 +2073,30 @@ exports.ActiveMemberslistByProgramName = async (req, res) => {
 };
 
 exports.searchStudentbyType = async (req, res) => {
-  const search = req.query.search;
   const userId = req.params.userId;
   const studentType = req.params.studentType;
+  const search = req.query.search;
   try {
+    if (search.split(" ").length > 1) {
+      search1 = search.split(" ")[0]
+      search2 = search.split(" ")[1]
+      const data = await addmemberModal.find(
+        {
+          userId: userId,
+          studentType: studentType,
+          $or: [
+            { firstName: { $regex: search1, $options: "i" } },
+            { lastName: { $regex: search2, $options: "i" } },
+            { email: { $regex: search, $options: "i" } },
+          ],
+        },
+      );
+      return res.send({
+        data: data,
+        success: true
+      });
+    }
+
     const data = await addmemberModal.find(
       {
         userId: userId,
@@ -2062,6 +2104,7 @@ exports.searchStudentbyType = async (req, res) => {
         $or: [
           { firstName: { $regex: search, $options: "i" } },
           { lastName: { $regex: search, $options: "i" } },
+          // { lastName: { $regex: search1, $options: "i" } },
           { email: { $regex: search, $options: "i" } },
         ],
       },

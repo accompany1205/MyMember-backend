@@ -21,6 +21,21 @@ exports.create_folder = (req, res) => {
     })
 }
 
+
+exports.list_template = (req, res) => {
+    folderNur
+        .findById(req.params.folderId)
+        .populate({
+            path: "template",
+        })
+        .exec((err, template_data) => {
+            if (err) {
+                res.send({ error: "nurturing template list not found" });
+            } else {
+                res.send(template_data);
+            }
+        });
+};
 exports.update_folder = (req, res) => {
     folderNur.findByIdAndUpdate(req.params.folderId, { $set: { folderName: req.body.folderName } })
         .exec((err, updateFolder) => {

@@ -18,8 +18,13 @@ const documentSchema = new schema({
     },
     userId: {
         type: String
+    },
+    adminId: {
+        type: String
     }
-})
+},
+    { timestamps: true }
+)
 
 module.exports = mongoose.model("uploadDocument", documentSchema);
 

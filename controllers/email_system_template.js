@@ -1,16 +1,16 @@
-const addTemp = require("../../models/emailSentSave");
-const template=require('../../models/emailTemplates')
-const students = require("../../models/addmember");
-const smartlist = require("../../models/smartlists");
-const systemFolder = require("../../models/email_system_folder");
-const user = require("../../models/user");
+const addTemp = require("../models/emailSentSave");
+const Template = require('../models/emailTemplates')
+const students = require("../models/addmember");
+const smartlist = require("../models/smartlists");
+const systemFolder = require("../models/email_system_folder");
+const user = require("../models/user");
 const async = require("async");
 moment = require("moment");
 const cron = require("node-cron");
-const Mailer = require("../../helpers/Mailer");
+const Mailer = require("../helpers/Mailer");
 // const sgMail = require('@sendgrid/mail');
 // sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-const cloudUrl = require("../../gcloud/imageUrl");
+const cloudUrl = require("../gcloud/imageUrl");
 const ObjectId = require("mongodb").ObjectId;
 
 function timefun(sd, st) {
@@ -28,23 +28,6 @@ function timefun(sd, st) {
   var mil = "0";
   return (curdat = new Date(y, mo, d, h, mi, se, mil));
 }
-
-exports.list_template = (req, res) => {
-  systemFolder
-    .findById(req.params.folderId)
-    .populate({
-      path: "template",
-      match: { is_Sent: false, email_type: "schedule" },
-      options: { sort: { templete_Id: 1 } },
-    })
-    .exec((err, template_data) => {
-      if (err) {
-        res.send({ error: "template list not found" });
-      } else {
-        res.send(template_data);
-      }
-    });
-};
 
 // exports.add_template = async (req, res) => {
 //   const counts = await addTemp
@@ -107,16 +90,12 @@ exports.list_template = (req, res) => {
 
 exports.add_template = async (req, res) => {
   try {
-    const [counts] = await systemFolder
-      .find({ _id: req.params.folderId }, { template: 1, _id: 0 })
-    let templete_Id = counts.template.length + 1
-
-    let { userId, folderId } = req.params || {};
-
+    let userId = req.params.userId;
+    let adminId = req.params.adminId;
+    let folderId = req.params.folderId;
     let {
       to,
       from,
-      title,
       subject,
       template,
       sent_time,
@@ -126,15 +105,17 @@ exports.add_template = async (req, res) => {
       days_type,
       immediately,
       content_type,
-      follow_up,
       smartLists,
+      createdBy
     } = req.body || {};
-
+    to = JSON.parse(req.body.to);
+    if (!sent_date && days_type != 'before') {
+      sent_date = moment().add(days, 'days').format("YYYY-MM-DD");
+    }
+    sent_date = moment(sent_date).format("YYYY-MM-DD");
     if (!to) {
-
       smartLists = smartLists ? JSON.parse(smartLists) : []
       smartLists = smartLists.map(s => ObjectId(s));
-
       let [smartlists] = await smartlist.aggregate([
         {
           $match: {
@@ -184,7 +165,6 @@ exports.add_template = async (req, res) => {
     const obj = {
       to,
       from,
-      title,
       subject,
       template,
       sent_date,
@@ -192,39 +172,49 @@ exports.add_template = async (req, res) => {
       design,
       days,
       days_type,
-      immediately,
       content_type,
-      follow_up,
-      email_type: "schedule",
-      email_status: true,
+      email_type: "scheduled",
       category: "system",
       userId,
       folderId,
-      templete_Id,
-      attachments,
-      smartLists
-
+      smartLists,
+      createdBy,
+      adminId
     };
 
-    const promises = []
+    // const promises = []
+    // if (req.files) {
+    //   (req.files).map(file => {
+    //     promises.push(cloudUrl.imageUrl(file))
+    //   });
+    //   var attachments = await Promise.all(promises);
+    // }
+    // obj.attachments = attachments
+    let attachments = []
     if (req.files) {
-      (req.files).map(file => {
-        promises.push(cloudUrl.imageUrl(file))
-      });
-      var attachments = await Promise.all(promises);
+      (req.files).map((file) => {
+        let content = new Buffer.from(file.buffer, "utf-8")
+        let attach = {
+          content: content,
+          filename: file.originalname,
+          type: `application/${file.mimetype.split("/")[1]}`,
+          disposition: "attachment"
+        }
+        attachments.push(attach)
+
+      })
     }
-    obj.attachments = attachments
-    sent_date = moment(sent_date).format("YYYY-MM-DD");
-    if (JSON.parse(immediately) && !days) {
+    const Allattachments = await Promise.all(attachments);
+    obj.attachments = Allattachments;
+    if (JSON.parse(immediately)) {
       const emailData = new Mailer({
-        sendgrid_key: process.env.SENDGRID_API_KEY,
         to,
         from,
-        from_name: 'noreply@gmail.com',
         subject,
         html: template,
-        attachments
+        attachments: Allattachments
       })
+
       emailData.sendMail()
         .then(resp => {
           obj.email_type = 'sent'
@@ -252,7 +242,6 @@ exports.add_template = async (req, res) => {
         })
 
     } else if (!JSON.parse(immediately) && days) {
-      sent_date = moment().add(days, 'days').format("YYYY-MM-DD");
       saveEmailTemplate(obj)
         .then((data) => {
           systemFolder
@@ -289,7 +278,7 @@ exports.add_template = async (req, res) => {
 
 function saveEmailTemplate(obj) {
   return new Promise((resolve, reject) => {
-    let emailDetail = new template(obj);
+    let emailDetail = new addTemp(obj);
     emailDetail.save((err, data) => {
       if (err) {
         reject({ data: "Data not save in Database!", success: err });
@@ -325,12 +314,12 @@ exports.update_template = async (req, res) => {
     var allAttachments = await Promise.all(promises);
     updateTemplate.attachments = allAttachments;
   }
-  template.updateOne(
+  addTemp.updateOne(
     { _id: req.params.templateId },
     req.body,
     (err, updateTemp) => {
       if (err) {
-        res.send({ msg: "template is not update", success: false });
+        res.send({ msg: "template is not update", success: err });
       } else {
         res.send({ msg: "updated successfully", success: true });
       }
@@ -399,9 +388,9 @@ exports.update_template = async (req, res) => {
 // };
 
 exports.remove_template = (req, res) => {
-  template.findByIdAndRemove(req.params.templateId, (err, removeTemplate) => {
+  addTemp.findByIdAndRemove(req.params.templateId, (err, removeTemplate) => {
     if (err) {
-      res.send({ error: "system template is not remove" });
+      res.send({ msg: "system template is not remove", success: true });
     } else {
       systemFolder.updateOne(
         { template: removeTemplate._id },
@@ -409,10 +398,10 @@ exports.remove_template = (req, res) => {
         function (err, temp) {
           if (err) {
             res.send({
-              error: "system template details is not remove in folder",
+              msg: "Template not removed", success: false
             });
           } else {
-            res.send({ msg: "system template is remove successfully" });
+            res.send({ msg: "Template removed successfully", success: true });
           }
         }
       );
@@ -421,7 +410,7 @@ exports.remove_template = (req, res) => {
 };
 
 exports.status_update_template = (req, res) => {
-  if (req.body.status == false) {
+  if (req.body.is_Favorite == false) {
     addTemp
       .find({
         $and: [
@@ -438,7 +427,7 @@ exports.status_update_template = (req, res) => {
             (obj, done) => {
               addTemp.findByIdAndUpdate(
                 obj._id,
-                { $set: { email_status: false } },
+                { $set: { is_Favorite: false } },
                 done
               );
             },
@@ -452,7 +441,7 @@ exports.status_update_template = (req, res) => {
           );
         }
       });
-  } else if (req.body.status == true) {
+  } else if (req.body.is_Favorite == true) {
     addTemp
       .find({
         $and: [
@@ -469,7 +458,7 @@ exports.status_update_template = (req, res) => {
             (obj, done) => {
               addTemp.findByIdAndUpdate(
                 obj._id,
-                { $set: { email_status: true } },
+                { $set: { is_Favorite: true } },
                 done
               );
             },
@@ -487,10 +476,10 @@ exports.status_update_template = (req, res) => {
 };
 
 exports.single_temp_update_status = (req, res) => {
-  if (req.body.email_status == true) {
+  if (req.body.is_Favorite == true) {
     addTemp.updateOne(
       { _id: req.params.tempId },
-      { $set: { email_status: true } },
+      { $set: { is_Favorite: true } },
       (err, resp) => {
         if (err) {
           res.json({ code: 400, msg: "email status not deactive" });
@@ -499,10 +488,10 @@ exports.single_temp_update_status = (req, res) => {
         }
       }
     );
-  } else if (req.body.email_status == false) {
+  } else if (req.body.is_Favorite == false) {
     addTemp.updateOne(
       { _id: req.params.tempId },
-      { $set: { email_status: false } },
+      { $set: { is_Favorite: false } },
       (err, resp) => {
         if (err) {
           res.json({ code: 400, msg: "email status not active" });
