@@ -1273,17 +1273,111 @@ exports.multipleFilter = async (req, res) => {
 
     let promise = [];
     for (const i in filters) {
-      if (filters[i].length) {
+      if (filters[i].length && i !== "membership_type") {
         promise.push({ [i]: { $in: filters[i] } })
       }
     }
     const promises = await Promise.all(promise);
-    if (promises.length) {
+    if (promises.length && filters.membership_type.length) {
       await addmemberModal.aggregate([
         {
           $match: {
-            userId: userId,
-            $and: promises
+            $and: promises,
+          }
+        },
+        {
+          $project: {
+            firstName: 1,
+            program: 1,
+            current_rank_name: 1
+          }
+        },
+        {
+          $lookup: {
+            from: "buy_memberships",
+            localField: "_id",
+            foreignField: "studentInfo",
+            as: "data"
+          }
+        },
+        {
+          $match: {
+            data: {
+              $ne: []
+            }
+          }
+        },
+        { $unwind: "$data" },
+        {
+          $match: {
+            "data.membership_type": { $in: filters.membership_type },
+          }
+        }
+        // {
+        //   $project: {
+        //     "membershipIds": "$data.membershipIds",
+        //     firstName: 1,
+        //     program: 1,
+        //     current_rank_name: 1
+        //   }
+        // },
+        // { $unwind: "$membershipIds" },
+        // {
+        //   $lookup: {
+        //     from: "memberships",
+        //     localField: "membershipIds",
+        //     foreignField: "_id",
+        //     as: "memberships"
+        //   }
+        // },
+        // { $unwind: "$memberships" },
+        // {
+        //   $match: {
+        //     "memberships.membership_type": { $in: filters.membership_type },
+        //     $and: promises,
+
+        //   }
+        // }
+
+      ])
+        // await addmemberModal.find(...promises, { firstName: 1, lastName: 1, program: 1 })
+        //   .populate({
+        //     path: "membership_details",
+        //     match: req.membership,
+        //   })
+        // await buymembershipModal.aggregate([{
+        //   $match: {
+        //     _id: ObjectId("620b38e2a83993228f14c714")
+        //   }
+        // },
+        // {
+        //   $project: {
+        //     membership_name: 1,
+        //     studentInfo: 1
+        //   }
+        // },
+        // {
+        //   $lookup: {
+        //     from: "members",
+        //     localField: "studentInfo",
+        //     foreignField: "_id",
+        //     as: 'data'
+        //   }
+        // },
+        // ])
+        .exec((err, data) => {
+          if (err) {
+            res.send({ msg: err.message.replace(/\"/g, ""), success: false, err })
+          }
+          else {
+            res.send({ msg: "Data!", success: true, data: data })
+          }
+        })
+    } else {
+      await addmemberModal.aggregate([
+        {
+          $match: {
+            $and: promises,
           }
         }])
         .exec((err, data) => {
@@ -1294,8 +1388,6 @@ exports.multipleFilter = async (req, res) => {
             res.send({ msg: "Data!", success: true, data: data })
           }
         })
-    } else {
-      res.send({ msg: "no filter found!", success: false })
 
     }
   } catch (err) {
