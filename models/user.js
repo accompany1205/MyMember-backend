@@ -143,6 +143,10 @@ const userSchema = new schema(
         location_name: {
             type: String
         },
+        locations: [{
+            type: schema.Types.ObjectId,
+            ref: "User"
+        }],
         location_address: {
             type: String
         },

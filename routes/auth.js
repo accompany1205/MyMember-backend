@@ -20,11 +20,13 @@ const {
     adminApproval,
     unverifiedsendgriduserlist,
     sendOTP_to_email,
-    verify_otp
+    verify_otp,
+    createLocations
 } = require("../controllers/auth");
 const { userSignupValidator } = require("../validator");
 
 router.post("/signup", userSignupValidator, signup);
+router.post("/new_ocation", createLocations);
 // router.post("/email_activation",activation)
 router.post("/signin", signin);
 router.post("/signout", signout);

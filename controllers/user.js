@@ -11,6 +11,7 @@ exports.userById = (req, res, next, id) => {
   User
     .findById(id)
     .populate('subUsers')
+    .populate('locations')
     .exec((err, user) => {
       if (err || !user) {
         return res.status(400).json({

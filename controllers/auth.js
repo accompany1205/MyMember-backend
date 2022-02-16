@@ -96,6 +96,57 @@ exports.signup = async (req, res) => {
   });
 };
 //...signup ending.
+exports.createLocations = async (req, res) => {
+  // sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  let userBody = req.body;
+  const user = new User(userBody);
+
+  let sendingMailToUser = userBody.email;
+
+  //todo Pavan - Need to restructure the mail body as per the requirement
+  // let msg = new Mailer({
+  //   to: [sendingMailToUser], // Change to your recipient
+  //   // from: from_email, // Change to your verified sender
+  //   subject: 'Varification Email For User',
+  //   text: 'Thanks for signing-up in ',
+  //   html: `<h2>Worth the wait! Soon you will get login credentials once the admin approves your request :)</h2>`,
+  // })
+  user.save((err, userdata) => {
+    if (err) {
+      return res.status(400).json
+        ({
+          msg: "Location already exist!",
+          success: false
+        })
+
+    }
+    else {
+      // msg.sendMail()
+      // .then((resp) => {
+      User.updateOne({ _id: userBody.mainUser },
+        {
+          $addToSet: { locations: userdata._id }
+        }
+      )
+        .exec((err, data) => {
+          if (err) {
+            return res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+          }
+          return res.send({ msg: "location created successfully", success: true })
+
+        })
+
+      // })
+      // .catch((err) => {
+      //   res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+
+      // })
+
+    }
+
+
+  });
+};
 
 exports.adminApproval = async (req, res) => {
   try {
