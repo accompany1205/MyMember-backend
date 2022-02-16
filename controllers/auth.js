@@ -448,7 +448,8 @@ exports.signin = (req, res) => {
   }).exec((err, data) => {
     if (err || !data) {
       return res.status(400).json({
-        error: "User with that email does not exist. Please signup",
+        msg: "User with that email does not exist. Please signup",
+        success: false
       });
     } else {
       if (data.password == req.body.password) {
@@ -503,12 +504,14 @@ exports.signin = (req, res) => {
               });
             } else {
               return res.json({
-                error: "Your account is deactivate!"
+                msg: "Your account is deactivate!",
+                success: false
               });
             }
           } else {
             return res.json({
-              error: "Your Email is not Verified!"
+              msg: "Your Email is not Verified!",
+              success: false
             });
           }
         } else if (data.role == 1) {
@@ -553,7 +556,8 @@ exports.signin = (req, res) => {
         }
       } else {
         res.send({
-          error: "password is wrong"
+          msg: "password is wrong",
+          success: false
         });
       }
     }
