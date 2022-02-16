@@ -456,6 +456,42 @@ exports.expenseReportWithFilter = async (req, res) => {
 		totalExpense,
 	});
 };
+exports.expenseByType = async (req, res) => {
+	let { type } = req.query;
+
+	let totalExpenseAmt = await Expense.aggregate([
+		{ $match: { userId: mongoose.Types.ObjectId(req.params.userId) } },
+		{
+			$project: {
+				category: 1,
+				amount: 1,
+				expenses: 1,
+				month: { $month: '$date' },
+				year: { $year: '$date' },
+				description: 1,
+				date: 1,
+				expense_image: 1,
+				subject: 1,
+			},
+		},
+		{ $match: { expenses: type } },
+		{
+			$group: {
+				_id: 'totalAmount',
+				amount: { $sum: '$amount' },
+			},
+		},
+	]);
+
+	let totalExpense = 0;
+	if (totalExpenseAmt && totalExpenseAmt.length > 0) {
+		totalExpense = totalExpenseAmt[0].amount;
+	}
+
+	return res.json({
+		totalExpense,
+	});
+};
 
 exports.expenseCategoryAdd = async (req, res) => {
 	try {
@@ -965,6 +1001,181 @@ exports.MonthlyIncome = async (req, res) => {
 	).toFixed(2);
 	res.json(total + '');
 };
+
+exports.LastMonthIncome = async (req, res) => {
+	const currentDate = new Date();
+
+	currentDate.setMonth(currentDate.getMonth() - 1);
+	currentDate.setDate(1);
+
+	const firstDateOfMonth = new Date(currentDate);
+	const _local_String_firstDateofMonth = firstDateOfMonth
+		.toLocaleDateString(`fr-CA`)
+		.split('/')
+		.join('-');
+
+	// last day of last month
+	var lastDayofPreviousMonth = new Date(
+		currentDate.getFullYear(),
+		currentDate.getMonth() + 1,
+		0
+	);
+
+	const _local_String_current = lastDayofPreviousMonth
+		.toLocaleDateString(`fr-CA`)
+		.split('/')
+		.join('-');
+
+	const start = `${_local_String_firstDateofMonth}T00:00:00.00Z`;
+	const end = `${_local_String_current}T23:59:59.999Z`;
+
+	const incomeByProductArray = await BuyProduct.aggregate([
+		{ $match: { userId: req.params.userId } },
+		{
+			$project: {
+				deposite: '$deposite',
+				month: { $month: '$createdAt' },
+				year: { $year: '$createdAt' },
+				productType: '$product_type',
+				createdAt: 1,
+			},
+		},
+		{
+			$match: {
+				createdAt: {
+					$gte: new Date(start),
+					$lt: new Date(end),
+				},
+			},
+		},
+		{
+			$group: {
+				_id: null,
+				balance: { $sum: '$deposite' },
+			},
+		},
+	]);
+
+	let incomeFromProduct = 0;
+
+	if (incomeByProductArray && incomeByProductArray.length > 0) {
+		incomeFromProduct = incomeByProductArray[0].balance;
+	}
+
+	// [+] buy membership income ***====================================
+
+	const incomeByMembershipArray = await BuyMembership.aggregate([
+		{ $match: { userId: req.params.userId } },
+		{
+			$project: {
+				dpayment: '$dpayment',
+				register_fees: '$register_fees',
+				month: { $month: '$createdAt' },
+				year: { $year: '$createdAt' },
+				createdAt: 1,
+			},
+		},
+		{
+			$match: {
+				createdAt: {
+					$gte: new Date(start),
+					$lt: new Date(end),
+				},
+			},
+		},
+		{
+			$group: {
+				_id: null,
+				dpayment: { $sum: '$dpayment' },
+				register_fees: { $sum: '$register_fees' },
+			},
+		},
+	]);
+
+	let incomeFromMembership = 0;
+	if (incomeByMembershipArray && incomeByMembershipArray.length > 0) {
+		incomeFromMembership =
+			incomeByMembershipArray[0].dpayment +
+			incomeByMembershipArray[0].register_fees;
+	}
+
+	const month = currentDate.getMonth() + 1;
+	const year = currentDate.getFullYear();
+
+	var firstDayOfMonth = new Date(`${year}-${month}-01`);
+	var lastDayOfMonth = new Date(year, month, 0);
+
+	let dates = [];
+	for (
+		firstDayOfMonth;
+		firstDayOfMonth <= lastDayOfMonth;
+		firstDayOfMonth.setDate(firstDayOfMonth.getDate() + 1)
+	) {
+		dates.push(moment(firstDayOfMonth).format('YYYY-MM-DD'));
+	}
+
+	// @ product EMI income
+	const p2 = await BuyProduct.aggregate([
+		{ $match: { userId: req.params.userId } },
+		{ $unwind: '$schedulePayments' },
+		{
+			$project: {
+				name: '$student_name',
+				amount: '$schedulePayments.Amount',
+				date: '$schedulePayments.date',
+				type: 'Product Sale-EMI',
+				status: '$schedulePayments.status',
+				ptype: '$schedulePayments.ptype',
+			},
+		},
+		{
+			$match: { date: { $in: dates }, status: 'paid' },
+		},
+		{
+			$group: {
+				_id: '-',
+				balance: { $sum: '$amount' },
+			},
+		},
+	]);
+
+	// @ membership EMI Income
+	const m2 = await BuyMembership.aggregate([
+		{ $match: { userId: req.params.userId } },
+		{ $unwind: '$schedulePayments' },
+		{
+			$project: {
+				amount: '$schedulePayments.Amount',
+				date: '$schedulePayments.date',
+				status: '$schedulePayments.status',
+			},
+		},
+		{
+			$match: { date: { $in: dates }, status: 'paid' },
+		},
+		{
+			$group: {
+				_id: '-',
+				balance: { $sum: '$amount' },
+			},
+		},
+	]);
+
+	let emiIncome = 0;
+	if (p2 && p2.length > 0) {
+		emiIncome += p2[0].balance;
+	}
+
+	if (m2 && m2.length > 0) {
+		emiIncome += m2[0].balance;
+	}
+
+	const total = parseFloat(
+		incomeFromProduct + incomeFromMembership + emiIncome
+	).toFixed(2);
+	res.json(total + '');
+};
+
 exports.thisYearIncome = async (req, res) => {
 	const currentDate = new Date();
 	const currentYear = currentDate.getFullYear();
@@ -1124,8 +1335,14 @@ exports.IncomeReportWithFilters = async (req, res) => {
 		dates.push(moment(firstDayOfMonth).format('YYYY-MM-DD'));
 	}
 
+	let query = { userId: req.params.userId };
+
+	if (paymentSystem !== 'all'  && paymentSystem !== 'product') {
+		query.pay_inout = paymentSystem;
+	}
+
 	const p1 = await BuyProduct.aggregate([
-		{ $match: { userId: req.params.userId, pay_inout: paymentSystem } },
+		{ $match: query },
 		{
 			$project: {
 				name: '$student_name',
@@ -1144,7 +1361,7 @@ exports.IncomeReportWithFilters = async (req, res) => {
 	]);
 
 	const p2 = await BuyProduct.aggregate([
-		{ $match: { userId: req.params.userId, pay_inout: paymentSystem } },
+		{ $match: query },
 		{ $unwind: '$schedulePayments' },
 		{
 			$project: {
@@ -1165,44 +1382,49 @@ exports.IncomeReportWithFilters = async (req, res) => {
 	// **=========================================================
 	// Membership Income
 
-	const m1 = await BuyMembership.aggregate([
-		{ $match: { userId: req.params.userId, pay_inout: paymentSystem } },
-		{
-			$project: {
-				name: '$student_name',
-				amount: { $add: ['$register_fees', '$dpayment'] },
-				date: '$createdAt',
-				subject: '$membership_name',
-				type: 'Membership',
-				ptype: 1,
-				month: { $month: '$createdAt' },
-				year: { $year: '$createdAt' },
-				status: 'paid',
-			},
-		},
-		{
-			$match: { month, year },
-		},
-	]);
+	let m1 = [];
+	let m2 = [];
 
-	const m2 = await BuyMembership.aggregate([
-		{ $match: { userId: req.params.userId, pay_inout: paymentSystem } },
-
-		{ $unwind: '$schedulePayments' },
-		{
-			$project: {
-				name: '$student_name',
-				amount: '$schedulePayments.Amount',
-				date: '$schedulePayments.date',
-				type: 'Membership-EMI',
-				status: '$schedulePayments.status',
-				ptype: '$schedulePayments.ptype',
+	if (paymentSystem !== 'product') {
+		m1 = await BuyMembership.aggregate([
+			{ $match: query },
+			{
+				$project: {
+					name: '$student_name',
+					amount: { $add: ['$register_fees', '$dpayment'] },
+					date: '$createdAt',
+					subject: '$membership_name',
+					type: 'Membership',
+					ptype: 1,
+					month: { $month: '$createdAt' },
+					year: { $year: '$createdAt' },
+					status: 'paid',
+				},
 			},
-		},
-		{
-			$match: { date: { $in: dates } },
-		},
-	]);
+			{
+				$match: { month, year },
+			},
+		]);
+
+		m2 = await BuyMembership.aggregate([
+			{ $match: query },
+
+			{ $unwind: '$schedulePayments' },
+			{
+				$project: {
+					name: '$student_name',
+					amount: '$schedulePayments.Amount',
+					date: '$schedulePayments.date',
+					type: 'Membership-EMI',
+					status: '$schedulePayments.status',
+					ptype: '$schedulePayments.ptype',
+				},
+			},
+			{
+				$match: { date: { $in: dates } },
+			},
+		]);
+	}
 
 	const list = [...p1, ...p2, ...m1, ...m2];
 	const data = [];
@@ -2903,4 +3125,27 @@ exports.pnlByCCRecurring = async (req, res) => {
 		secondMonthAmt,
 		yearlyAmt,
 	});
+};
+
+// Delete Expense Category
+
+exports.deleteExpenseCategory = async (req, res) => {
+	let { id } = req.query;
+	// delete
+	const category = await ExpenseCategory.findById(id);
+	if (!category) throw Error('Category not Found');
+	await category.remove();
+	res.send('Deleted');
+};
+
+// Update Category
+exports.udpateExpenseCategory = async (req, res) => {
+	let { _id, expense_category_type, color } = req.body;
+	// delete
+	const category = await ExpenseCategory.findById(_id);
+	if (!category) throw Error('Category not Found');
+	category.expense_category_type = expense_category_type;
+	category.color = color;
+	await category.save();
+	res.send('Updated');
 };

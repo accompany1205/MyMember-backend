@@ -15,6 +15,7 @@ const {
 	todaysIncome,
 	weeklyIncome,
 	MonthlyIncome,
+	LastMonthIncome,
 	thisYearIncome,
 	IncomeReportWithFilters,
 	PnlReportGenerateExpense,
@@ -25,6 +26,9 @@ const {
 	pnlProductSale,
 	pnlInhouseRecurring,
 	pnlByCCRecurring,
+	expenseByType,
+	deleteExpenseCategory,
+	udpateExpenseCategory,
 } = require('../controllers/finance_info');
 const upload = require('../handler/multer');
 
@@ -47,6 +51,17 @@ router.get('/finance/expense-today/:userId', requireSignin, todaysExpense);
 router.get('/finance/expense-weekly/:userId', requireSignin, weeklyExpense);
 router.get('/finance/expense-monthly/:userId', requireSignin, MonthlyExpense);
 router.get('/finance/expense-yearly/:userId', requireSignin, thisYearExpense);
+router.get('/finance/expense-by-type/:userId', requireSignin, expenseByType);
+router.get(
+	'/finance/category-delete/:userId',
+	requireSignin,
+	deleteExpenseCategory
+);
+router.post(
+	'/finance/category-update/:userId',
+	requireSignin,
+	udpateExpenseCategory
+);
 router.get(
 	'/finance/expense-report/:userId',
 	requireSignin,
@@ -69,11 +84,12 @@ router.post(
 );
 
 //////////////////////////////////////////////////////////
-/////////////////////// Income ///////////////////////////
+/////////////////////// Income //////////////////////////
 
 router.get('/finance/income-today/:userId', requireSignin, todaysIncome);
 router.get('/finance/income-weekly/:userId', requireSignin, weeklyIncome);
 router.get('/finance/income-monthly/:userId', requireSignin, MonthlyIncome);
+router.get('/finance/last-month/:userId', requireSignin, LastMonthIncome);
 router.get('/finance/income-yearly/:userId', requireSignin, thisYearIncome);
 router.get(
 	'/finance/income-report/:userId',
