@@ -8,15 +8,19 @@ const request = require("request");
 
 
 exports.userById = (req, res, next, id) => {
-  User.findById(id).exec((err, user) => {
-    if (err || !user) {
-      return res.status(400).json({
-        error: 'User not found'
-      });
-    }
-    req.profile = user;
-    next();
-  });
+  User
+    .findById(id)
+    .populate('subUsers')
+    .exec((err, user) => {
+      if (err || !user) {
+        return res.status(400).json({
+          msg: 'User not found',
+          success: "false"
+        });
+      }
+      req.profile = user;
+      next();
+    });
 };
 
 exports.verificationLink = async (req, res) => {

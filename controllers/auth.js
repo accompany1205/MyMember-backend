@@ -24,10 +24,11 @@ const { errorMonitor } = require('events');
 //todo - Pavan - #Copleted!
 
 
-//Signup stsrting.....
+//Signup starting.....
 exports.signup = async (req, res) => {
   // sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-  const user = new User(req.body);
+  let userBody = req.body;
+  const user = new User(userBody);
   const admins = await User.find({
     "role": 1
   }, {
@@ -43,37 +44,55 @@ exports.signup = async (req, res) => {
   admins.map(email => {
     sendToAllAdmins.push(email["email"])
   })
-  let sendingMailToUser = req.body.email;
+  let sendingMailToUser = userBody.email;
 
   //todo Pavan - Need to restructure the mail body as per the requirement
   let msg = new Mailer({
-    to: sendingMailToUser, // Change to your recipient
-    from: from_email, // Change to your verified sender
+    to: [sendingMailToUser], // Change to your recipient
+    // from: from_email, // Change to your verified sender
     subject: 'Varification Email For User',
     text: 'Thanks for signing-up in ',
     html: `<h2>Worth the wait! Soon you will get login credentials once the admin approves your request :)</h2>`,
   })
-  user.save((err, user) => {
+  user.save((err, userdata) => {
     if (err) {
-      return res.status(400).json({
-        // error: errorHandler(err)
-        error: "Email is taken",
-      });
+      return res.status(400).json
+        ({
+          msg: "Email already exist!",
+          success: false
+        })
+
     }
+    else {
+      msg.sendMail()
+        .then((resp) => {
+          if (userBody.role == 2) {
+            User.updateOne({ _id: userBody.mainUser },
+              {
+                $addToSet: { subUsers: userdata._id }
+              }
+            )
+              .exec((err, data) => {
+                if (err) {
+                  return res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+                }
+                return res.send({ msg: "sub-user created successfully", success: true })
 
-    user.salt = undefined;
-    //user.hashed_password = undefined;
-    navbar_custom(user.id);
-    msg.sendMail()
-      .then(() => {
-      })
-      .catch((err) => {
-        res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+              })
+          } else {
 
-      })
-    res.json({
-      user
-    });
+            return res.send({ msg: "User created successfully", success: true })
+          }
+        })
+        .catch((err) => {
+          res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+
+        })
+
+    }
+    // navbar_custom(user._id);
+
+
   });
 };
 //...signup ending.
@@ -154,7 +173,6 @@ exports.approveUserRequestByAdmin = async (req, res) => {
         "msg": "unable to update user"
       })
     }
-    console.log(updatedUser.username)
     let msg = new Mailer({
       from: from_email,
       to: updatedUser.email,
@@ -434,7 +452,7 @@ exports.signin = (req, res) => {
       });
     } else {
       if (data.password == req.body.password) {
-        if (data.role == 0) {
+        if (data.role == 0 || data.role == 2) {
           if (data.isEmailverify) {
             if (data.status == "Active") {
               // if (!data.authenticate(password)) {
@@ -525,6 +543,13 @@ exports.signin = (req, res) => {
               role
             },
           });
+        } else {
+          res.json({
+            msg: "role is not added to useru",
+            success: false
+          });
+
+
         }
       } else {
         res.send({
@@ -538,7 +563,8 @@ exports.signin = (req, res) => {
 exports.signout = (req, res) => {
   res.clearCookie("t");
   res.json({
-    message: "Signout success"
+    msg: "Signout success",
+    success: true
   });
 };
 
@@ -549,10 +575,10 @@ exports.requireSignin = expressJwt({
 
 exports.isAuth = (req, res, next) => {
   let user = req.profile && req.auth && req.profile._id == req.auth.id;
-  console.log(req.profile, req.auth)
   if (!user) {
     return res.status(403).json({
       msg: "Access denied",
+      success: false
     });
   }
   next();
@@ -842,8 +868,8 @@ exports.searchUser = async (req, res) => {
     }, { username: 1, firstname: 1 })
 
     res.send(data)
-  } catch (er) {
-    console.log(er);
+  } catch (err) {
+    console.log(err);
   }
 }
 
