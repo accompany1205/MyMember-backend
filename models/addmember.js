@@ -171,6 +171,13 @@ const addmemberSchema = new schema(
       type: Boolean,
       default: false,
     },
+    buyerInfo: [{
+      firstName: String,
+      lastName: String,
+      gender: String,
+      dob: String,
+      age: String
+    }],
     userId: {
       type: String,
     },

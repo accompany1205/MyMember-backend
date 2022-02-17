@@ -74,6 +74,9 @@ const membershipSchema = schema(
 		adminId: {
 			type: String,
 		},
+		regular_price:{
+			type:Number
+		},
 		folderId: {
 			type: schema.Types.ObjectId,
 			ref: 'membershipFolder',
