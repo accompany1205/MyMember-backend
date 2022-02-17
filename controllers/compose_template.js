@@ -106,7 +106,7 @@ exports.getData = (req, res) => {
 
 exports.single_temp_update_status = (req, res) => {
   if (req.body.is_Favorite == true) {
-    all_temp.updateOne(
+    template.updateOne(
       { _id: req.params.tempId },
       { $set: { is_Favorite: true } },
       (err, resp) => {
@@ -118,7 +118,7 @@ exports.single_temp_update_status = (req, res) => {
       }
     );
   } else if (req.body.is_Favorite == false) {
-    all_temp.updateOne(
+    template.updateOne(
       { _id: req.params.tempId },
       { $set: { is_Favorite: false } },
       (err, resp) => {
@@ -134,7 +134,7 @@ exports.single_temp_update_status = (req, res) => {
 
 exports.status_update_template = (req, res) => {
   if (req.body.is_Favorite == false) {
-    all_temp
+    template
       .find({
         $and: [
           { userId: req.params.userId },
@@ -148,7 +148,7 @@ exports.status_update_template = (req, res) => {
           async.eachSeries(
             TempData,
             (obj, done) => {
-              all_temp.findByIdAndUpdate(
+              template.findByIdAndUpdate(
                 obj._id,
                 { $set: { is_Favorite: false } },
                 done
@@ -165,7 +165,7 @@ exports.status_update_template = (req, res) => {
         }
       });
   } else if (req.body.is_Favorite == true) {
-    all_temp
+    template
       .find({
         $and: [
           { userId: req.params.userId },
@@ -179,7 +179,7 @@ exports.status_update_template = (req, res) => {
           async.eachSeries(
             TempData,
             (obj, done) => {
-              all_temp.findByIdAndUpdate(
+              template.findByIdAndUpdate(
                 obj._id,
                 { $set: { is_Favorite: true } },
                 done
@@ -614,7 +614,8 @@ exports.sendEmail = async (req, res) => {
 exports.add_template = async (req, res) => {
   try {
 
-    let { userId, folderId } = req.params || {};
+    let userId = req.params.userId;
+    let folderId = req.params.folderId;
 
     let {
       to,
