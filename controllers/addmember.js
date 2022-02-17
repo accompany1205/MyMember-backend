@@ -459,9 +459,12 @@ exports.addmember = async (req, res) => {
     if (memberdetails.after_camp) {
       memberdetails.after_camp = memberdetails.after_camp ? JSON.parse(memberdetails.after_camp) : []
     }
+    if(memberdetails.buyerInfo){
+      memberdetails.buyerInfo = memberdetails.buyerInfo ? JSON.parse(memberdetails.buyerInfo) : {};
+    }
     var memberObj = new addmemberModal(memberdetails);
     memberObj.userId = req.params.userId;
-    memberObj.buyerInfo = JSON.parse(memberdetails.buyerInfo);
+    
     memberObj.save(function (err, data) {
       if (err) {
         console.log(err)
