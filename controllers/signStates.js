@@ -155,7 +155,7 @@ async function signPdf(file, items) {
 
 exports.setSignItems = async (req, res) => {
     try {
-        let docuSignId = req.params.docuSignId;
+        let docuSignId = req.params.docuSignId; 
         let emailTokens = req.params.emailToken;
         let body = req.body;
         await SignStates.findOne({ _id: docuSignId }).then(async data => {
