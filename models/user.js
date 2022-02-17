@@ -56,6 +56,17 @@ const userSchema = new schema(
             type: Number,
             default: 0 // diffrentiate between school and admin
         },
+        mainUser: {
+            type: String
+        },
+        issubUser: {
+            type: Boolean,
+            default: false // diffrentiate between user and subuser
+        },
+        subUsers: [{
+            type: schema.Types.ObjectId,
+            ref: "User"
+        }],
         status: {
             type: String,
             default: 'Inactive' // school status active and diactive by admin
@@ -132,6 +143,10 @@ const userSchema = new schema(
         location_name: {
             type: String
         },
+        locations: [{
+            type: schema.Types.ObjectId,
+            ref: "User"
+        }],
         location_address: {
             type: String
         },
@@ -191,26 +206,6 @@ const userSchema = new schema(
         fullName: {
             type: String,
         },
-        // userName: {
-        //     type: String,
-        // },
-        user_type: {
-            type: String
-        },
-        // phone: {
-        //     type: String,
-        // },
-        // email: {
-        //     type: String,
-        // },
-        // password: {
-        //     type: String,
-
-        // },
-        // status: {
-        //     type: String,
-
-        // },
         profile_type: {
             type: String,
 

@@ -21,6 +21,12 @@ exports.get_smart_list = async (req, res) => {
 }
 exports.create_smart_list = async (req, res) => {
     try {
+        if (!Object.keys(obj).length) {
+            return res.send({
+                success: false,
+                msg: "invalid input!"
+            })
+        }
         let userId = req.params.userId
         if (!userId) {
             res.json({

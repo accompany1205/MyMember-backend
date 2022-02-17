@@ -28,6 +28,32 @@ exports.create_folder = (req, res) => {
     })
 }
 
+exports.list_folders = async (req, res) => {
+    await folderSystem
+        .find({ userId: req.params.userId })
+
+        .exec((err, template_data) => {
+            if (err) {
+                res.send({ msg: "data not found", success: false });
+            } else {
+                res.send({ data: template_data, success: true });
+            }
+        });
+};
+
+exports.admin_list_folders = async (req, res) => {
+    await folderSystem
+        .find({ adminId: req.params.adminId })
+
+        .exec((err, template_data) => {
+            if (err) {
+                res.send({ msg: "data not found", success: false });
+            } else {
+                res.send({ data: template_data, success: true });
+            }
+        });
+};
+
 exports.list_template = (req, res) => {
     folderSystem
         .findById(req.params.folderId)
@@ -36,9 +62,9 @@ exports.list_template = (req, res) => {
         })
         .exec((err, template_data) => {
             if (err) {
-                res.send({ error: "template list not found" });
+                res.send({ msg: "template list not found", success: false });
             } else {
-                res.send(template_data);
+                res.send({ data: template_data, success: true });
             }
         });
 };

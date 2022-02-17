@@ -7,8 +7,8 @@ const std = require("../models/addmember")
 const cloudUrl = require("../gcloud/imageUrl");
 
 exports.docupload = async (req, res) => {
+  let rootFolderId = req.params.folderId;
   let subFolderId = req.params.subFolderId;
-  let rootFolderId = req.params.FolderId;
   let userId = req.params.userId;
   let adminId = req.params.adminId;
   let docData = req.body
@@ -37,7 +37,7 @@ exports.docupload = async (req, res) => {
         res.send({ msg: 'document is not added', success: false })
       }
       else {
-        if (!(JSON.parse(subFolderId))) {
+        if (!(subFolderId)) {
           docfolder.findByIdAndUpdate(rootFolderId, { $push: { document: docdata._id } },
             function (err, updateDoc) {
               if (err) {

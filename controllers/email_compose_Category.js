@@ -66,7 +66,7 @@ exports.category_list = async (req, res) => {
                 res.send({ msg: 'compose category is not found', success: false })
             }
             else {
-                res.send(categoryList)
+                res.send({ data: categoryList, success: true })
             }
         })
 }

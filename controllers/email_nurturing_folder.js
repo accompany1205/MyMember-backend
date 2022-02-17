@@ -2,7 +2,9 @@ const folderNur = require("../models/email_nurturing_folder");
 const nurturingCat = require('../models/email_nurturing_Category')
 
 exports.create_folder = (req, res) => {
-    var folderObj = new folderNur(req.body)
+    let nurtBody = req.body;
+    nurtBody.userId = req.params.userId;
+    var folderObj = new folderNur(nurtBody)
     folderObj.save((err, folder) => {
         if (err) {
             res.send({ msg: "Folder name already exist!", success: false });
@@ -11,7 +13,7 @@ exports.create_folder = (req, res) => {
             nurturingCat.findByIdAndUpdate(req.params.catId, { $push: { folder: folder._id } })
                 .exec((err, folderUpdate) => {
                     if (err) {
-                        res.send({ error: 'Folder not created!', success: false })
+                        res.send({ msg: 'Folder not created!', success: false })
                     }
                     else {
                         res.send({ msg: 'Folder added successfully', success: true })
@@ -21,6 +23,18 @@ exports.create_folder = (req, res) => {
     })
 }
 
+exports.list_folders = async (req, res) => {
+    await folderNur
+        .find({ userId: req.params.userId })
+
+        .exec((err, template_data) => {
+            if (err) {
+                res.send({ msg: "data not found", success: false });
+            } else {
+                res.send({ data: template_data, success: true });
+            }
+        });
+};
 
 exports.list_template = (req, res) => {
     folderNur
@@ -30,9 +44,9 @@ exports.list_template = (req, res) => {
         })
         .exec((err, template_data) => {
             if (err) {
-                res.send({ error: "nurturing template list not found" });
+                res.send({ msg: "nurturing template list not found", success: false });
             } else {
-                res.send(template_data);
+                res.send({ data: template_data, success: true });
             }
         });
 };
