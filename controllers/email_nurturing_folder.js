@@ -11,7 +11,7 @@ exports.create_folder = (req, res) => {
             nurturingCat.findByIdAndUpdate(req.params.catId, { $push: { folder: folder._id } })
                 .exec((err, folderUpdate) => {
                     if (err) {
-                        res.send({ error: 'Folder not created!', success: false })
+                        res.send({ msg: 'Folder not created!', success: false })
                     }
                     else {
                         res.send({ msg: 'Folder added successfully', success: true })
@@ -30,9 +30,9 @@ exports.list_template = (req, res) => {
         })
         .exec((err, template_data) => {
             if (err) {
-                res.send({ error: "nurturing template list not found" });
+                res.send({ msg: "nurturing template list not found", success: false });
             } else {
-                res.send(template_data);
+                res.send({ data: template_data, success: true });
             }
         });
 };

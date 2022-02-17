@@ -36,9 +36,9 @@ exports.list_template = (req, res) => {
         })
         .exec((err, template_data) => {
             if (err) {
-                res.send({ error: "template list not found" });
+                res.send({ msg: "template list not found", success: false });
             } else {
-                res.send(template_data);
+                res.send({ data: template_data, success: true });
             }
         });
 };

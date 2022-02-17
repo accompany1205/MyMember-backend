@@ -33,9 +33,9 @@ exports.list_template = async (req, res) => {
         })
         .exec((err, template_data) => {
             if (err) {
-                res.send({ error: "Compose template list not found" });
+                res.send({ msg: "Compose template list not found", success: true });
             } else {
-                res.send(template_data);
+                res.send({ data: template_data, success: true });
             }
         });
 };
@@ -59,7 +59,7 @@ exports.delete_folder = (req, res) => {
         else {
             ComposeCat.updateOne({ "folder": req.params.folderId }, { $pull: { "folder": req.params.folderId } }, (err, data) => {
                 if (err) {
-                    res.send({ msg: 'folder  not removed ' })
+                    res.send({ msg: 'folder  not removed', success: false })
                 }
                 else {
                     res.send({ msg: 'folder remove successfully', success: true })
