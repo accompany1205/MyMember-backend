@@ -2,10 +2,12 @@ const Folder = require("../models/email_compose_folder");
 const ComposeCat = require('../models/email_compose_Category')
 
 exports.create_folder = (req, res) => {
+    let composeBody = req.body;
+    composeBody.userId = req.params.userId;
     if (!req.body.folderName) {
         res.send({ error: "Invalid Input", suuces: true })
     } else {
-        var folderObj = new Folder(req.body)
+        var folderObj = new Folder(composeBody)
         folderObj.save((err, folder) => {
             if (err) {
                 res.send({ msg: "Folder name already exist!", success: false });
@@ -33,7 +35,20 @@ exports.list_template = async (req, res) => {
         })
         .exec((err, template_data) => {
             if (err) {
-                res.send({ msg: "Compose template list not found", success: true });
+                res.send({ msg: "Compose template list not found", success: false });
+            } else {
+                res.send({ data: template_data, success: true });
+            }
+        });
+};
+
+exports.list_folders = async (req, res) => {
+    await Folder
+        .find({ userId: req.params.userId })
+
+        .exec((err, template_data) => {
+            if (err) {
+                res.send({ msg: "data not found", success: false });
             } else {
                 res.send({ data: template_data, success: true });
             }

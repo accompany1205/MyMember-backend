@@ -2,7 +2,9 @@ const folderNur = require("../models/email_nurturing_folder");
 const nurturingCat = require('../models/email_nurturing_Category')
 
 exports.create_folder = (req, res) => {
-    var folderObj = new folderNur(req.body)
+    let nurtBody = req.body;
+    nurtBody.userId = req.params.userId;
+    var folderObj = new folderNur(nurtBody)
     folderObj.save((err, folder) => {
         if (err) {
             res.send({ msg: "Folder name already exist!", success: false });
@@ -21,6 +23,18 @@ exports.create_folder = (req, res) => {
     })
 }
 
+exports.list_folders = async (req, res) => {
+    await folderNur
+        .find({ userId: req.params.userId })
+
+        .exec((err, template_data) => {
+            if (err) {
+                res.send({ msg: "data not found", success: false });
+            } else {
+                res.send({ data: template_data, success: true });
+            }
+        });
+};
 
 exports.list_template = (req, res) => {
     folderNur
