@@ -461,8 +461,10 @@ exports.addmember = async (req, res) => {
     }
     var memberObj = new addmemberModal(memberdetails);
     memberObj.userId = req.params.userId;
+    memberObj.buyerInfo = JSON.parse(memberdetails.buyerInfo);
     memberObj.save(function (err, data) {
       if (err) {
+        console.log(err)
         res.send({
           success: false,
           msg: "member is not added",
