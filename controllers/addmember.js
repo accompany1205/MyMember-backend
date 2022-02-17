@@ -1686,6 +1686,10 @@ exports.updatemember = async (req, res) => {
   if (memberData.after_camp) {
     memberData.after_camp = memberData.after_camp ? JSON.parse(memberData.after_camp) : []
   }
+  if(memberData.buyerInfo){
+    memberData.buyerInfo = memberData.buyerInfo ? JSON.parse(memberData.buyerInfo) : {};
+  }
+
   // let [data] = await smartList.find({ "criteria.studentType": memberData.studentType });
   // if (data) {
   // let [data] = await smartList.find({ "criteria.studentType": memberData.studentType });
