@@ -117,10 +117,12 @@ exports.add_template = async (req, res) => {
       createdBy
     } = req.body;
     to = JSON.parse(req.body.to);
-    if (!sent_date && days_type != 'before') {
+    if (days && days_type != 'before') {
       sent_date = moment().add(days, 'days').format("YYYY-MM-DD");
+    } else {
+      sent_date = moment(sent_date).format("YYYY-MM-DD");
+
     }
-    sent_date = moment(sent_date).format("YYYY-MM-DD");
     if (!to) {
       smartLists = smartLists ? JSON.parse(smartLists) : []
       smartLists = smartLists.map(s => ObjectId(s));
