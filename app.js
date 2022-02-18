@@ -36,6 +36,7 @@ const summer_camp = require('./routes/summer_camp');
 const speciality_program1 = require('./routes/speciality_program1');
 const speciality_program2 = require('./routes/speciality_program2');
 const smartlists = require('./routes/smartlists');
+const smartlistFolder = require('./routes/smartlist_folder');
 const administrate_user = require('./routes/administrater_user');
 const programRoutes = require('./routes/program');
 const manageRankRoutes = require('./routes/program_rank');
@@ -260,6 +261,7 @@ app.use('/api', summer_camp);
 app.use('/api', speciality_program1);
 app.use('/api', speciality_program2);
 app.use('/api', productFolder);
+app.use('/api', smartlistFolder);
 app.use('/api', smartlists);
 app.use('/api', buy_product);
 // Docu Sign

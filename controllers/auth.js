@@ -607,7 +607,7 @@ exports.signin = (req, res) => {
         }
       } else {
         res.send({
-          msg: "password is wrong",
+          msg: "Incorrect password!",
           success: false
         });
       }
