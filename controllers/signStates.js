@@ -155,22 +155,23 @@ async function signPdf(file, items) {
 
 exports.setSignItems = async (req, res) => {
     try {
-        let docuSignId = req.params.docuSignId; 
+        let docuSignId = req.params.docuSignId;
         let emailTokens = req.params.emailToken;
         let body = req.body;
-        await SignStates.findOne({ _id: docuSignId }).then(async data => {
-            // if (!data.status) data.status = {}
-            // data.status[invite] = { ...data.status[invite], signed: new Date().getTime() };
-            // let items = { ...data.items, ...req.body.items };
-            let emailToken = await buyMembership.findOne({ _id: data.signDocForId });
-            const pdfPath = emailToken.mergedDoc;
-            let pdfLink = pdfPath.split(process.env.GOOGLE_STORAGE_PATH)[1]
-            let docLink = `${process.env.RESET_URL}/docusign/sign/${docuSignId}/${pdfLink}/${emailTokens}`
+        // if (!data.status) data.status = {}
+        // data.status[invite] = { ...data.status[invite], signed: new Date().getTime() };
+        // let items = { ...data.items, ...req.body.items };
+        let emailToken = await buyMembership.findOne({ _id: body.signDocForId });
+        const pdfPath = emailToken.mergedDoc;
+        let pdfLink = pdfPath.split(process.env.GOOGLE_STORAGE_PATH)[1]
+        let docLink = `${process.env.RESET_URL}/docusign/sign/${docuSignId}/${pdfLink}/${emailTokens}`
 
-            if (emailToken.emailToken === emailTokens) {
+        if (emailToken.emailToken === emailTokens) {
+            try {
                 await SignStates.updateOne({ _id: docuSignId }, { $set: body }).then(async data => {
                     let items = await SignStates.findOne({ _id: docuSignId });
                     let emailArray = [];
+                    let completedEmailArray = []
                     let ownerMail;
                     for (let [key, value] of Object.entries(items.items.toJSON())) {
                         for (let [k, v] of Object.entries(value)) {
@@ -178,20 +179,24 @@ exports.setSignItems = async (req, res) => {
                                 if (key == "owner") {
                                     ownerMail = v[0].email;
                                 }
-                                if (itmObj.value === undefined || itmObj.value === "" || !itmObj.value) {
+                                if (itmObj.value === undefined || itmObj.value === "") {
                                     emailArray.push(itmObj.email);
+                                } else {
+                                    completedEmailArray.push(itmObj.email);
                                 }
                             }
                         }
                     }
                     let uniqueEmail = [...new Set(emailArray)];
+                    let completedMails = [...new Set(completedEmailArray)]
+                    console.log(completedMails)
                     if (uniqueEmail.length) {
                         const emailData = new Mailer({
                             to: uniqueEmail,
                             from: ownerMail,
                             subject: "Please complete Signature Process",
                             html: `<h2>Below is the PDF to complete your signature</h2>
-                                        <p>${docLink}</p>`,
+                                            <p>${docLink}</p>`,
                         });
                         emailData.sendMail()
                             .then(resp => {
@@ -202,11 +207,11 @@ exports.setSignItems = async (req, res) => {
                             })
                     } else {
                         const emailData = new Mailer({
-                            to: uniqueEmail,
+                            to: completedEmailArray,
                             from: ownerMail,
                             subject: " Signature Process Complted ",
                             html: `<h2>Below completed SIgn PDF</h2>
-                                        <p>${docLink}</p>`,
+                                            <p>${docLink}</p>`,
                         });
                         emailData.sendMail()
                             .then(resp => {
@@ -219,12 +224,13 @@ exports.setSignItems = async (req, res) => {
                 }).catch(err => {
                     res.send({ msg: "Item not updated!", success: false, error: err.message.replace(/\"/g, "") });
                 })
-            } else {
-                res.status(401).send({ msg: "Not verified!", success: false });
+            } catch (e) {
+                console.error(e)
             }
-        }).catch(err => {
-            res.send({ msg: "not Updated!", success: false, error: err.message.replace(/\"/g, "") });
-        })
+        } else {
+            res.status(401).send({ msg: "Not verified!", success: false });
+        }
+
     } catch (err) {
         res.send({ msg: "not Updated!", success: false, error: err.message.replace(/\"/g, "") });
     }
