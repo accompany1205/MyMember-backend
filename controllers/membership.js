@@ -228,22 +228,27 @@ exports.mergeDoc = async (req, res) => {
     const studentInfo = await Student.findOne({ _id: studentId });
     const membershipInfo = await membershipModal.findOne({ _id: membershipId });
     let ipAddress = req.header('x-forwarded-for') || req.connection.remoteAddress;
-    const mergedInfo = { ...studentInfo.toJSON(), ...membershipInfo.toJSON() };
-    let fileObj = await mergeFile(docBody, mergedInfo)
-    //fs.writeFileSync(path.resolve(__dirname, "output.pdf"), finalPDF);
-    cloudUrl.imageUrl(fileObj).then(Docresp => {
-      BuyMembership.updateOne({ _id: buyMembershipId }, { $set: { mergedDoc: Docresp } }).then(datas => {
-        BuyMembership.findOne({ _id: buyMembershipId }).then(data => {
-          res.send({ msg: "get merged doc", success: true, data: data.mergedDoc, ipAddress: ipAddress, emailTokn: data.emailToken })
+    if (studentInfo && membershipInfo) {
+      var mergedInfo = { ...studentInfo.toJSON(), ...membershipInfo.toJSON() }
+      let fileObj = await mergeFile(docBody, mergedInfo)
+      //fs.writeFileSync(path.resolve(__dirname, "output.pdf"), finalPDF);
+      cloudUrl.imageUrl(fileObj).then(Docresp => {
+        BuyMembership.updateOne({ _id: buyMembershipId }, { $set: { mergedDoc: Docresp } }).then(datas => {
+          BuyMembership.findOne({ _id: buyMembershipId }).then(data => {
+            res.send({ msg: "get merged doc", success: true, data: data.mergedDoc, ipAddress: ipAddress, emailTokn: data.emailToken })
+          }).catch(err => {
+            res.send({ msg: "data not found", success: false });
+          })
         }).catch(err => {
-          res.send({ msg: "data not found", success: false });
+          res.send({ msg: "merged doc not added!", success: false })
         })
       }).catch(err => {
-        res.send({ msg: "merged doc not added!", success: false })
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
       })
-    }).catch(err => {
-      res.send({ msg: err.message.replace(/\"/g, ""), success: false })
-    })
+    }else {
+      res.send({ msg: "membership or student not found!", success:false}) 
+    }
+
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }
