@@ -168,7 +168,24 @@ exports.expenseStateByCategory = async (req, res) => {
 			percentage,
 		};
 	});
-	return res.json(expenses);
+
+	// fetch All Category
+
+	const categories = await ExpenseCategory.find({ userId: req.params.userId });
+
+	const data = categories.map((category) => {
+		const find = expenses.find(
+			(x) => String(x._id) === String(category.expense_category_type)
+		);
+		return {
+			_id: find ? find._id : category.expense_category_type,
+			amount: find ? find.amount : 0,
+			percentage: find ? find.percentage : 0,
+			color: category.color,
+		};
+	});
+
+	return res.json(data);
 };
 
 exports.expenseMonthlyCompare = async (req, res) => {
@@ -1337,7 +1354,7 @@ exports.IncomeReportWithFilters = async (req, res) => {
 
 	let query = { userId: req.params.userId };
 
-	if (paymentSystem !== 'all'  && paymentSystem !== 'product') {
+	if (paymentSystem !== 'all' && paymentSystem !== 'product') {
 		query.pay_inout = paymentSystem;
 	}
 
