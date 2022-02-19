@@ -325,6 +325,7 @@ exports.update_template = async (req, res) => {
   let updateTemplate = req.body;
   let templateId = req.params.templateId
   try {
+    updateTemplate.to = to ? JSON.parse(to) : [];
     if (!updateTemplate.to) {
       smartLists = updateTemplate.smartLists ? JSON.parse(updateTemplate.smartLists) : []
       smartLists = smartLists.map(s => ObjectId(s));
@@ -631,7 +632,7 @@ exports.add_template = async (req, res) => {
       days,
       createdBy
     } = req.body;
-
+    to = JSON.parse(to)
     if (!to) {
 
       smartLists = smartLists ? JSON.parse(smartLists) : []
@@ -715,6 +716,7 @@ exports.add_template = async (req, res) => {
     }
     const resolvAttachments = await Promise.all(attachments);
     obj.attachments = resolvAttachments
+    console.log(obj)
     saveEmailTemplate(obj)
       .then(data => {
         compose_folder
