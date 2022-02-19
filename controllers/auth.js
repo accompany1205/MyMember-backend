@@ -513,56 +513,51 @@ exports.signin = (req, res) => {
         if (data.role == 0 || data.role == 2) {
           if (data.isEmailverify) {
             if (data.status == "Active") {
-              // if (isAccessLocations) {
-              //   token = jwt.sign({
-              //     id: data._id,
-              //     auth_key: data.auth_key,
-              //     app_id: data.app_id,
-              //     epi: data.epi,
-              //     descriptor: data.descriptor,
-              //     product_description: data.product_description
-              //   }, process.env.JWT_SECRET);
-              //   res.cookie("t", token, {
-              //     expire: new Date() + 9999
-              //   });
-              //   const {
-              //     _id,
-              //     username,
-              //     name,
-              //     email,
-              //     role,
-              //     logo,
-              //     location_name,
-              //     bussinessAddress,
-              //     country,
-              //     state,
-              //     city
+              if (isAccessLocations) {
+                token = jwt.sign({
+                  id: data._id,
+                  auth_key: data.auth_key,
+                  app_id: data.app_id,
+                  epi: data.epi,
+                  descriptor: data.descriptor,
+                  product_description: data.product_description
+                }, process.env.JWT_SECRET);
+                res.cookie("t", token, {
+                  expire: new Date() + 9999
+                });
+                const {
+                  _id,
+                  username,
+                  name,
+                  email,
+                  role,
+                  logo,
+                  location_name,
+                  bussinessAddress,
+                  country,
+                  state,
+                  city
 
-              //   } = data;
-              //   return res.json({
-              //     token,
-              //     data: {
-              //       _id,
-              //       username,
-              //       email,
-              //       name,
-              //       role,
-              //       logo,
-              //       location_name,
-              //       bussinessAddress,
-              //       city,
-              //       state,
-              //       country,
-              //       isAccessLocations,
-              //       accessingUserdetails
-              //     },
-              //   });
-              // }
-              // if (!data.authenticate(password)) {
-              //     return res.status(401).json({
-              //         error: 'Email and password dont match'
-              //     });
-              // }
+                } = data;
+                return res.json({
+                  token,
+                  data: {
+                    _id,
+                    username,
+                    email,
+                    name,
+                    role,
+                    logo,
+                    location_name,
+                    bussinessAddress,
+                    city,
+                    state,
+                    country,
+                    isAccessLocations,
+                    accessingUserdetails
+                  },
+                });
+              }
               token = jwt.sign({
                 id: data._id,
                 auth_key: data.auth_key,
@@ -659,7 +654,7 @@ exports.signin = (req, res) => {
       } else {
         res.send({
           msg: "Incorrect email/password!",
-          success: false
+          success: { d: data.password, p: req.body.password }
         });
       }
     }
@@ -1063,17 +1058,17 @@ exports.access_school = async (req, res) => {
     {
       $set: {
         isAccessLocations: true,
+      },
+      $addToSet: {
         locations: access_schools_list
       }
     }
   )
     .exec((err, data) => {
-      if (err) {
-        return res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+      if ((err || data.nModified === 0)) {
+        return res.send({ msg: "User not found", success: false });
+      } else {
+        return res.send({ msg: "Access Granted!", success: true })
       }
-
-
-      return res.send({ msg: "Access Granted!", success: true })
-
     })
 }
