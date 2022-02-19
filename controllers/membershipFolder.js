@@ -25,7 +25,13 @@ exports.getFolders = async (req, res) => {
   const userId = req.params.userId;
   await membershipFolder
     .find({ $or: [{ userId: userId }, { adminId: adminId }] })
-    .populate("membership")
+    .populate({
+      path: "membership",
+      sort: {
+        membership_name: 1
+      }
+    })
+    .sort({ folderName: 1 })
     .exec((err, folder) => {
       if (err) {
         res.send({ msg: "membership folder is not create", success: false });
@@ -42,7 +48,13 @@ exports.getadminFolders = async (req, res) => {
   const adminId = req.params.adminId;
   await membershipFolder
     .find({ adminId: adminId })
-    .populate("membership")
+    .populate({
+      path: "membership",
+      sort: {
+        membership_name: 1
+      }
+    })
+    .sort({ folderName: 1 })
     .exec((err, folder) => {
       if (err) {
         res.send({ msg: "membership folder is  found", success: false });

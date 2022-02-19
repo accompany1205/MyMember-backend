@@ -35,11 +35,18 @@ exports.readfolder = async (req, res) => {
             .find({ $or: [{ userId: userId }, { adminId: adminId }] })
             .populate({
                 path: 'subFolder',
+                sort: {
+                    'subFolderName': 1
+                },
                 populate: {
                     path: 'document',
-                    model: 'uploadDocument'
+                    model: 'uploadDocument',
+                    sort: {
+                        'document_name': 1
+                    },
                 }
             })
+            .sort({ folderName: 1 })
             .exec((err, folderList) => {
                 if (err) {
                     res.send({ success: false, msg: 'document folder is not find' })

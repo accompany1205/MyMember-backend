@@ -22,7 +22,9 @@ exports.category_list = (req, res) => {
                 path: 'template',
                 model: 'sentOrscheduleEmail'
             }
-        }).exec((err, categoryList) => {
+        })
+        .sort({categoryName:1})
+        .exec((err, categoryList) => {
             if (err) {
                 res.send({ error: 'Folder not found!', success: false })
             }
@@ -42,7 +44,9 @@ exports.admin_category_list = (req, res) => {
                 path: 'template',
                 model: 'email_template'
             }
-        }).exec((err, categoryList) => {
+        })
+        .sort({categoryName:1})
+        .exec((err, categoryList) => {
             if (err) {
                 res.send({ error: 'Folder not found!', success: false })
             }
