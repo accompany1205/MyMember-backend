@@ -355,7 +355,7 @@ exports.update_template = async (req, res) => {
   let updateTemplate = req.body;
   let templateId = req.params.templateId
   try {
-    updateTemplate.to = to ? JSON.parse(to) : [];
+    updateTemplate.to = updateTemplate.to ? JSON.parse(updateTemplate.to) : [];
     if (!updateTemplate.to) {
       smartLists = updateTemplate.smartLists ? JSON.parse(updateTemplate.smartLists) : []
       smartLists = smartLists.map(s => ObjectId(s));
