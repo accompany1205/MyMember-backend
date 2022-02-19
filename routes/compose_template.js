@@ -20,7 +20,7 @@ router.delete("/email_compose/multipal_remove_template/:userId/:folderId", verif
 
 
 router.put("/email_compose/drag_drop_templete/:userId", requireSignin, swapAndUpdate_template)
-router.put("/email_compose/single_template_status_change/:userId/:tempId", verifySchool, single_temp_update_status)//single template status change
+router.put("/email_compose/marks_as_star/:userId/:tempId", verifySchool, single_temp_update_status)//single template status change
 router.put("/email_compose/update_template_status/:userId/:folderId", verifySchool, status_update_template)//all template status change
 router.post("/emailsendgrid/sendverification/:userId", sendVerificationMail)
 
