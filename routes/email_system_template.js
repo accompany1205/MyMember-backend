@@ -13,7 +13,7 @@ router.delete("/email_system/multipal_remove_template/:userId/:folderId", verify
 
 router.put("/email_system/drag_drop_templete/:userId", verifySchool, swapAndUpdate_template) //dragAndDrop
 router.put("/email_system/update_template_status/:userId/:folderId", verifySchool, status_update_template)
-router.put("/email_system/single_marks_as_startemplate_status_change/:userId/:tempId", verifySchool, single_temp_update_status)//single template status change
+router.put("/email_system/marks_as_star/:userId/:tempId", verifySchool, single_temp_update_status)//single template status change
 
 
 
