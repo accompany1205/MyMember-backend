@@ -29,6 +29,7 @@ const {
 	expenseByType,
 	deleteExpenseCategory,
 	udpateExpenseCategory,
+	LastMonthExpense,
 } = require('../controllers/finance_info');
 const upload = require('../handler/multer');
 
@@ -50,6 +51,11 @@ router.get(
 router.get('/finance/expense-today/:userId', requireSignin, todaysExpense);
 router.get('/finance/expense-weekly/:userId', requireSignin, weeklyExpense);
 router.get('/finance/expense-monthly/:userId', requireSignin, MonthlyExpense);
+router.get(
+	'/finance/last-month-expense/:userId',
+	requireSignin,
+	LastMonthExpense
+);
 router.get('/finance/expense-yearly/:userId', requireSignin, thisYearExpense);
 router.get('/finance/expense-by-type/:userId', requireSignin, expenseByType);
 router.get(
@@ -77,7 +83,7 @@ router.get(
 // Add Expense
 
 router.post(
-	'/finance/expense-category-add/:userId',
+	'/finance/expense-add/:userId',
 	requireSignin,
 	upload.single('expense_image'),
 	expenseAdd

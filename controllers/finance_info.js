@@ -373,6 +373,69 @@ exports.MonthlyExpense = async (req, res) => {
 	return res.send(expense + '');
 };
 
+exports.LastMonthExpense = async (req, res) => {
+	// Current Month
+
+	const currentDate = new Date();
+
+	currentDate.setMonth(currentDate.getMonth() - 1);
+	currentDate.setDate(1);
+
+	const firstDateOfMonth = new Date(currentDate);
+	const _local_String_firstDateofMonth = firstDateOfMonth
+		.toLocaleDateString(`fr-CA`)
+		.split('/')
+		.join('-');
+
+	// last day of last month
+	var lastDayofPreviousMonth = new Date(
+		currentDate.getFullYear(),
+		currentDate.getMonth() + 1,
+		0
+	);
+
+	const _local_String_current = lastDayofPreviousMonth
+		.toLocaleDateString(`fr-CA`)
+		.split('/')
+		.join('-');
+
+	const start = `${_local_String_firstDateofMonth}T00:00:00.00Z`;
+	const end = `${_local_String_current}T23:59:59.999Z`;
+
+	let expenseData = await Expense.aggregate([
+		{ $match: { userId: mongoose.Types.ObjectId(req.params.userId) } },
+		{
+			$project: {
+				amount: 1,
+				month: { $month: '$date' },
+				year: { $year: '$date' },
+				date: 1,
+			},
+		},
+		{
+			$match: {
+				date: {
+					$gte: new Date(start),
+					$lt: new Date(end),
+				},
+			},
+		},
+		{
+			$group: {
+				_id: '-',
+				amount: { $sum: '$amount' },
+			},
+		},
+	]);
+
+	let expense = 0;
+	if (expenseData && expenseData.length > 0) {
+		expense = expenseData[0].amount;
+	}
+
+	return res.send(expense + '');
+};
+
 exports.thisYearExpense = async (req, res) => {
 	const currentDate = new Date();
 	const currentYear = currentDate.getFullYear();
@@ -514,6 +577,7 @@ exports.expenseCategoryAdd = async (req, res) => {
 	try {
 		var userId = req.params.userId;
 		const { expense_category_type, color } = req.body;
+
 		if (!expense_category_type || expense_category_type === '')
 			throw Error('category is required');
 		// check existing
@@ -521,7 +585,8 @@ exports.expenseCategoryAdd = async (req, res) => {
 			expense_category_type,
 			userId,
 		});
-		if (exist) throw Error('Category Alreay Exist');
+		if (exist)
+			return res.status(400).json({ message: 'category Already Exist' });
 
 		var newCategory = await new ExpenseCategory({
 			userId,
@@ -531,7 +596,7 @@ exports.expenseCategoryAdd = async (req, res) => {
 		}).save();
 		res.json(newCategory);
 	} catch (err) {
-		throw Error(err);
+		return res.status(400).json({ message: err });
 	}
 };
 
@@ -540,6 +605,18 @@ exports.expenseAdd = async (req, res) => {
 	try {
 		var userId = req.params.userId;
 		const { amount, category, description, expenses, date, subject } = req.body;
+
+		if (amount === '') {
+			return res.status(400).json({ message: 'Amount is Empty ' });
+		}
+
+		if (category === '') {
+			return res.status(400).json({ message: 'Please Select Category  ' });
+		}
+
+		if (subject === '') {
+			return res.status(400).json({ message: 'type Expense Subject  ' });
+		}
 
 		var imageUrl = '';
 		if (req.file !== undefined) {
@@ -564,7 +641,7 @@ exports.expenseAdd = async (req, res) => {
 
 		res.json(expense);
 	} catch (err) {
-		throw Error(err);
+		res.status(400).json({ message: err });
 	}
 };
 
@@ -3152,9 +3229,21 @@ exports.pnlByCCRecurring = async (req, res) => {
 
 exports.deleteExpenseCategory = async (req, res) => {
 	let { id } = req.query;
+
 	// delete
 	const category = await ExpenseCategory.findById(id);
 	if (!category) throw Error('Category not Found');
+
+	console.log(category.expense_category_type);
+
+	// Check if any transection is found then return error message
+	const transection = await Expense.findOne({
+		category: category.expense_category_type,
+	});
+	if (transection) {
+		return res.status(400).json({ message: 'Please Delete Transection First' });
+	}
+
 	await category.remove();
 	res.send('Deleted');
 };
@@ -3165,6 +3254,15 @@ exports.udpateExpenseCategory = async (req, res) => {
 	// delete
 	const category = await ExpenseCategory.findById(_id);
 	if (!category) throw Error('Category not Found');
+
+	// update each Document with same category
+	await Expense.updateMany(
+		{ category: category.expense_category_type },
+		{
+			category: expense_category_type,
+		}
+	);
+
 	category.expense_category_type = expense_category_type;
 	category.color = color;
 	await category.save();
