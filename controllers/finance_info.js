@@ -1343,6 +1343,7 @@ exports.IncomeReportWithFilters = async (req, res) => {
 
 	var firstDayOfMonth = new Date(`${year}-${month}-01`);
 	var lastDayOfMonth = new Date(year, month, 0);
+
 	let dates = [];
 	for (
 		firstDayOfMonth;
@@ -1354,7 +1355,10 @@ exports.IncomeReportWithFilters = async (req, res) => {
 
 	let query = { userId: req.params.userId };
 
-	if (paymentSystem !== 'all' && paymentSystem !== 'product') {
+	if (
+		String(paymentSystem) === 'In house' ||
+		String(paymentSystem) === 'auto pay'
+	) {
 		query.pay_inout = paymentSystem;
 	}
 
