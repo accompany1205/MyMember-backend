@@ -1,10 +1,10 @@
-const membershipFolder = require("../models/membershipFolder");
-const membership = require('../models/membership')
+const smartlistFolder = require("../models/smartlist_folder");
+const smartlist = require('../models/smartlists')
 
 exports.create_folder = async (req, res) => {
   let userId = req.params.userId;
   let adminId = req.params.adminId;
-  let folderObj = await new membershipFolder({
+  let folderObj = await new smartlistFolder({
     folderName: req.body.folderName,
     userId: userId,
     adminId: adminId
@@ -14,7 +14,7 @@ exports.create_folder = async (req, res) => {
       res.send({ msg: "Folder name already exist!", success: false });
     } else {
       res.send({
-        msg: "membership folder create successfully",
+        msg: "smartlist folder create successfully",
         success: true,
       });
     }
@@ -23,12 +23,12 @@ exports.create_folder = async (req, res) => {
 exports.getFolders = async (req, res) => {
   let adminId = process.env.ADMINID
   const userId = req.params.userId;
-  await membershipFolder
+  await smartlistFolder
     .find({ $or: [{ userId: userId }, { adminId: adminId }] })
-    .populate("membership")
+    .populate("smartlist")
     .exec((err, folder) => {
       if (err) {
-        res.send({ msg: "membership folder is not create", success: false });
+        res.send({ msg: "smartlist folder is not create", success: false });
       } else {
         res.status(200).send({
           data: folder,
@@ -40,12 +40,12 @@ exports.getFolders = async (req, res) => {
 
 exports.getadminFolders = async (req, res) => {
   const adminId = req.params.adminId;
-  await membershipFolder
+  await smartlistFolder
     .find({ adminId: adminId })
-    .populate("membership")
+    .populate("smartlist")
     .exec((err, folder) => {
       if (err) {
-        res.send({ msg: "membership folder is  found", success: false });
+        res.send({ msg: "smartlist folder is  found", success: false });
       } else {
         res.status(200).send({
           data: folder,
@@ -59,11 +59,11 @@ exports.update_folder = async (req, res) => {
   const adminId = req.params.adminId
   const userId = req.params.userId;
   const folderId = req.params.folderId
-  await membershipFolder
+  await smartlistFolder
     .updateOne({ _id: folderId, $and: [{ userId: userId }, { adminId: adminId }] }, { $set: req.body })
     .exec((err, updateFolder) => {
       if (err) {
-        res.send({ msg: "membership folder is not updated", success: false });
+        res.send({ msg: "smartlist folder is not updated", success: false });
       } else {
         if (updateFolder.n < 1) {
           return res.send({
@@ -83,7 +83,7 @@ exports.delete_folder = async (req, res) => {
   const adminId = req.params.adminId
   const userId = req.params.userId;
   const folderId = req.params.folderId
-  await membershipFolder.findOneAndRemove(
+  await smartlistFolder.findOneAndRemove(
     { _id: folderId, $and: [{ userId: userId }, { adminId: adminId }] },
     (err, delFolder) => {
       if (err) {
@@ -95,7 +95,7 @@ exports.delete_folder = async (req, res) => {
             success: false,
           });
         }
-        membership.deleteMany(
+        smartlist.deleteMany(
           { folderId: req.params.folderId },
           (err, delFolder) => {
             if (err) {

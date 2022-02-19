@@ -71,8 +71,8 @@ router.post("/student/mergeDocs/:userId", requireSignin, mergeMultipleDoc);
 
 
 //dashboard routes
-router.get("/member/searchstudent_by_type/:userId/:studentType", searchStudentbyType)
-router.get("/member/searchstudent_by_interest/:userId/:intrested", searchStudentbyInterest)
+router.get("/member/searchstudent_by_type/:userId/:studentType", verifySchool, searchStudentbyType)
+router.get("/member/searchstudent_by_interest/:userId/:intrested", verifySchool, searchStudentbyInterest)
 router.get('/member/active_trial_created_this_month/:userId/:page_no/:per_page', verifySchool, active_trial_this_month);
 router.get('/member/active_trial_past_3months/:userId/:page_no/:per_page', verifySchool, active_trial_past3_month);
 router.get('/member/leads_created_this_month/:userId/:page_no/:per_page', verifySchool, leads_this_month);

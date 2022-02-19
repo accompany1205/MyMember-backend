@@ -47,6 +47,10 @@ const Membershipschema = new schema(
 			type: String,
 			required: true,
 		},
+		membership_type: {
+			type: String,
+			required: true,
+		},
 		mactive_date: {
 			type: String,
 			required: true,
@@ -118,59 +122,62 @@ const Membershipschema = new schema(
 			type: String,
 		},
 
-		// check_number: {
-		//   type: String,
-		// },
-		// card_number: {
-		//   type: String,
-		// },
-		// card_holder_name: {
-		//   type: String,
-		// },
-		// cvv_number: {
-		//   type: String,
-		// },
-		// card_expiry_date: {
-		//   type: String,
-		// },
-		membership_status: {
-			type: String,
-			required: true,
-		},
-		createdBy: {
-			type: String,
-			required: true,
-		},
-		userId: {
-			type: String,
-			required: true,
-		},
-		transactionId: {},
-		subscription_id: {
-			type: String,
-		},
-		cheque_no: {
-			type: String,
-		},
-		mergedDoc: {
-			type: String,
-		},
-		membershipIds: [
-			{
-				type: schema.Types.ObjectId,
-				ref: 'membership',
-				required: true,
-			},
-		],
-		studentInfo: [
-			{
-				type: schema.Types.ObjectId,
-				ref: 'member',
-				required: true,
-			},
-		],
-	},
-	{ timestamps: true }
+    // check_number: {
+    //   type: String,
+    // },
+    // card_number: {
+    //   type: String,
+    // },
+    // card_holder_name: {
+    //   type: String,
+    // },
+    // cvv_number: {
+    //   type: String,
+    // },
+    // card_expiry_date: {
+    //   type: String,
+    // },
+    membership_status: {
+      type: String,
+      required: true,
+    },
+    createdBy: {
+      type: String,
+      required: true,
+    },
+    userId: {
+      type: String,
+      required: true,
+    },
+    transactionId: {},
+    subscription_id: {
+      type: String
+    },
+    cheque_no: {
+      type: String
+    },
+    mergedDoc: {
+      type:String
+    },
+    emailToken: {
+      type:String
+    },
+    membershipIds: [
+      {
+        type: schema.Types.ObjectId,
+        ref: "membership",
+        required: true,
+      },
+    ],
+    studentInfo: [
+      {
+        type: schema.Types.ObjectId,
+        ref: "member",
+        required: true,
+      },
+    ],
+  },
+  { timestamps: true }
 );
 
 module.exports = mongoose.model('Buy_Membership', Membershipschema);

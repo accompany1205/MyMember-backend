@@ -6,15 +6,12 @@ const EmailSchema = schema({
         require: true
     },
     to: {
-        type: Array
-    },
-    title: {
-        type: String,
-        require: true
+        type: Array,
+        required: true
     },
     subject: {
         type: String,
-        require: true
+        required: true
     },
     template: {
         type: String
@@ -25,7 +22,7 @@ const EmailSchema = schema({
     days: {
         type: Number
     },
-    days_type: {
+    days_type: {        //after/before
         type: String
     },
     immediately: {
@@ -34,46 +31,30 @@ const EmailSchema = schema({
     content_type: {
         type: String
     },
-    repeat_mail: {
-        type: String
-    },
-    follow_up: {
-        type: String
-    },
     sent_date: {
         type: String,
     },
     sent_time: {
         type: String,
     },
-    DateT: {
-        type: Date
-    },
-    category: {
+    category: {         //compose/nurturing/system
         type: String,
-        default: ' '
     },
-    email_type: {
+    email_type: {       //sent/scheduled
         type: String,
-        default: ' '
     },
-    email_status: {
-        type: Boolean,
-    },
-    email_auth_key: {
-        type: String,
-        require: true
-    },
+    // email_auth_key: {
+    //     type: String,
+    //     required: true
+    // },
     userId: {
         type: String,
-        require: true
     },
     folderId: {
         type: String,
-        require: true
     },
     createdBy: {
-        type: String
+        type: String,
     },
     adminId: {
         type: String
@@ -92,14 +73,13 @@ const EmailSchema = schema({
     attachments: {
         type: Array
     },
-    days: {
-        type: String
-    },
-    smartLists: [{
-        stdtype: String,
-        smId: String,
-        smrtList: Array
-    }]
+    smartLists:
+        { type: Array }
+    // [{
+    //     stdtype: String,
+    //     smId: String,
+    //     smrtList: Array
+    // }]
 },
     { timestamps: true }
 )

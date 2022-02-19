@@ -17,16 +17,27 @@ exports.addRank = async (req, res) => {
         const Nrank = req.body.next_rank_name
         const program = req.body.programName
         const data = await program_rank.findOne({ rank_name: Crank }, { _id: 0, rank_image: 1, rank_name: 1, day_to_ready: 1 })
-        const data1 = await program_rank.findOne({ rank_name: Nrank }, { _id: 0, rank_image: 1, rank_name: 1, day_to_ready: 1 })
+        let data1 = await program_rank.findOne({ rank_name: Nrank }, { _id: 0, rank_image: 1, rank_name: 1, day_to_ready: 1 })
+        data1 = data1 ? data1 : {
+            rank_name: Nrank,
+            day_to_ready: '',
+            rank_image: ''
+        }
+        if (!data) {
+            return res.json({
+                success: false,
+                msg: "Rank Not Available"
+            })
+        }
         const recommedtTest = await RecommendedForTest.findOne({ "studentId": studentId, "isDeleted": false })
         if (recommedtTest !== null) {
-            await RecommendedForTest.findOneAndUpdate({ "studentId": studentId, "isDeleted": false }, { $set: { "current_rank_name": Crank, "next_rank_name": Nrank, "current_rank_img": data.rank_image, "next_rank_img": data1.rank_image, "program": program } })
+            await RecommendedForTest.findOneAndUpdate({ "studentId": studentId, "isDeleted": false }, { $set: { "current_rank_name": Crank, "next_rank_name": Nrank, "current_rank_img": data.rank_image, "next_rank_img": data1.rank_image ? data1.rank_image : "", "program": program } })
         }
         const registerTest = await RegisterdForTest.findOne({ "studentId": studentId, "isDeleted": false })
         if (registerTest !== null) {
-            await RegisterdForTest.findOneAndUpdate({ "studentId": studentId, "isDeleted": false }, { $set: { "current_rank_name": Crank, "next_rank_name": Nrank, "current_rank_img": data.rank_image, "next_rank_img": data1.rank_image, "program": program } })
+            await RegisterdForTest.findOneAndUpdate({ "studentId": studentId, "isDeleted": false }, { $set: { "current_rank_name": Crank, "next_rank_name": Nrank, "current_rank_img": data.rank_image, "next_rank_img": data1.rank_image ? data1.rank_image : "", "program": program } })
         }
-        await Member.findOneAndUpdate({ _id: studentId }, { $set: { current_rank_name: Crank, next_rank_name: Nrank, current_rank_img: data.rank_image, next_rank_img: data1.rank_image, program: program } });
+        await Member.findOneAndUpdate({ _id: studentId }, { $set: { current_rank_name: Crank, next_rank_name: Nrank, current_rank_img: data.rank_image, next_rank_img: data1.rank_image ? data1.rank_image : "", program: program } });
         const resp = new student_info_Rank({
             programName: program,
             rank_name: Crank,
@@ -50,7 +61,7 @@ exports.addRank = async (req, res) => {
         })
     }
     catch (error) {
-        res.send({ error: error.message.replace(/\"/g, ""), success: false })
+        res.send({ msg: error.message.replace(/\"/g, ""), success: false })
     }
 }
 

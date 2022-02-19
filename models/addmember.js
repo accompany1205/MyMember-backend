@@ -127,7 +127,7 @@ const addmemberSchema = new schema(
       type: String,
     },
     after_camp: {
-      type: String,
+      type: Array,
     },
     summer_camp: {
       type: String,
@@ -170,6 +170,13 @@ const addmemberSchema = new schema(
     attendence_status: {
       type: Boolean,
       default: false,
+    },
+    buyerInfo: {
+      firstName: String,
+      lastName: String,
+      gender: String,
+      dob: String,
+      age: String
     },
     userId: {
       type: String,

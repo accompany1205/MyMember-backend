@@ -7,7 +7,10 @@ const membershipSchema = schema(
 			required: true,
 		},
 		membershipDoc: {
-			type: Array,
+			type: String,
+		},
+		membershipDocName: {
+			type: String,
 		},
 		membershipThumbnail: {
 			type: String,
@@ -70,6 +73,9 @@ const membershipSchema = schema(
 		},
 		adminId: {
 			type: String,
+		},
+		regular_price:{
+			type:Number
 		},
 		folderId: {
 			type: schema.Types.ObjectId,

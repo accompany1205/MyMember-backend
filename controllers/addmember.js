@@ -18,6 +18,8 @@ let { saveEmailTemplate } = require('../controllers/compose_template')
 const system_folder = require("../models/email_system_folder");
 const mergeFile = require("../Services/mergeFile")
 const manage_rank = require("../models/program_rank");
+const mergeMultipleFiles = require("../Services/mergeMultipleFiles");
+
 
 
 // const ManyStudents = require('../std.js');
@@ -453,15 +455,19 @@ exports.studentCount = (req, res) => {
 
 exports.addmember = async (req, res) => {
   try {
-    var pDetail = await program.findOne({
-      programName: req.body.program,
-    });
     var memberdetails = req.body;
+    if (memberdetails.after_camp) {
+      memberdetails.after_camp = memberdetails.after_camp ? JSON.parse(memberdetails.after_camp) : []
+    }
+    if(memberdetails.buyerInfo){
+      memberdetails.buyerInfo = memberdetails.buyerInfo ? JSON.parse(memberdetails.buyerInfo) : {};
+    }
     var memberObj = new addmemberModal(memberdetails);
     memberObj.userId = req.params.userId;
-    // memberObj.programColor = pDetail.color
+    
     memberObj.save(function (err, data) {
       if (err) {
+        console.log(err)
         res.send({
           success: false,
           msg: "member is not added",
@@ -1230,16 +1236,35 @@ exports.mergeMultipleDoc = async (req, res) => {
   let docBody = req.body.docBody;
   try {
     let promises = [];
+    let bufCount = 0;
     for (let id in studentsIds) {
       let data = await addmemberModal.findOne({ _id: studentsIds[id] });
       let mergedInfo = { ...data.toJSON() }
-      let fileObj = await mergeFile(docBody, mergedInfo);
-      await (cloudUrl.imageUrl(fileObj)).then(data => {
-        promises.push(data)
-      })
+      let filebuff = await mergeMultipleFiles(docBody, mergedInfo);
+      bufCount = Buffer.byteLength(filebuff) + bufCount
+      promises.push(filebuff);
     }
     await Promise.all(promises);
     res.send({ msg: "data!", data: promises, success: true })
+    // let resultBuff = Buffer.concat(promises, bufCount)
+    // console.log(promises)
+
+    // const docx = new DocxMerger({}, resultBuff)
+    // docx.save('blob', (data) => {
+    // saveAs(data, "output.docx")
+    // })
+
+    // let fileObj = {
+    //   fieldname: 'attach',
+    //   originalname: 'Test.doc',
+    //   encoding: '7bit',
+    //   mimetype: 'application/doc',
+    //   buffer: docx,
+    //   size: bufCount
+    // }
+    // await (cloudUrl.imageUrl(fileObj)).then(data => {
+    //   res.send({ msg: "data!", data: data, success: true })
+    // })
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false })
   }
@@ -1247,15 +1272,129 @@ exports.mergeMultipleDoc = async (req, res) => {
 
 
 exports.multipleFilter = async (req, res) => {
-  let userId = req.params;
+  let userId = req.params.userId;
   let filters = req.body.filter;
   try {
-    filters.push(userId);
-    await addmemberModal.find({ $and: filters }).then(resp => {
-      res.send({ msg: "Data!", succes: true, data: resp })
-    }).catch(err => {
-      res.send({ msg: err.message.replace(/\"/g, ""), success: false, err })
-    })
+
+    let promise = [];
+    for (const i in filters) {
+      if (filters[i].length && i !== "membership_type") {
+        promise.push({ [i]: { $in: filters[i] } })
+      }
+    }
+    const promises = await Promise.all(promise);
+    if (promises.length && filters.membership_type.length) {
+      await addmemberModal.aggregate([
+        {
+          $match: {
+            $and: promises,
+          }
+        },
+        {
+          $project: {
+            firstName: 1,
+            program: 1,
+            current_rank_name: 1
+          }
+        },
+        {
+          $lookup: {
+            from: "buy_memberships",
+            localField: "_id",
+            foreignField: "studentInfo",
+            as: "data"
+          }
+        },
+        {
+          $match: {
+            data: {
+              $ne: []
+            }
+          }
+        },
+        { $unwind: "$data" },
+        {
+          $match: {
+            "data.membership_type": { $in: filters.membership_type },
+          }
+        }
+        // {
+        //   $project: {
+        //     "membershipIds": "$data.membershipIds",
+        //     firstName: 1,
+        //     program: 1,
+        //     current_rank_name: 1
+        //   }
+        // },
+        // { $unwind: "$membershipIds" },
+        // {
+        //   $lookup: {
+        //     from: "memberships",
+        //     localField: "membershipIds",
+        //     foreignField: "_id",
+        //     as: "memberships"
+        //   }
+        // },
+        // { $unwind: "$memberships" },
+        // {
+        //   $match: {
+        //     "memberships.membership_type": { $in: filters.membership_type },
+        //     $and: promises,
+
+        //   }
+        // }
+
+      ])
+        // await addmemberModal.find(...promises, { firstName: 1, lastName: 1, program: 1 })
+        //   .populate({
+        //     path: "membership_details",
+        //     match: req.membership,
+        //   })
+        // await buymembershipModal.aggregate([{
+        //   $match: {
+        //     _id: ObjectId("620b38e2a83993228f14c714")
+        //   }
+        // },
+        // {
+        //   $project: {
+        //     membership_name: 1,
+        //     studentInfo: 1
+        //   }
+        // },
+        // {
+        //   $lookup: {
+        //     from: "members",
+        //     localField: "studentInfo",
+        //     foreignField: "_id",
+        //     as: 'data'
+        //   }
+        // },
+        // ])
+        .exec((err, data) => {
+          if (err) {
+            res.send({ msg: err.message.replace(/\"/g, ""), success: false, err })
+          }
+          else {
+            res.send({ msg: "Data!", success: true, data: data })
+          }
+        })
+    } else {
+      await addmemberModal.aggregate([
+        {
+          $match: {
+            $and: promises,
+          }
+        }])
+        .exec((err, data) => {
+          if (err) {
+            res.send({ msg: err.message.replace(/\"/g, ""), success: false, err })
+          }
+          else {
+            res.send({ msg: "Data!", success: true, data: data })
+          }
+        })
+
+    }
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false })
   }
@@ -1544,6 +1683,13 @@ exports.updatemember = async (req, res) => {
   var memberID = req.params.memberID;
   let userId = req.params.userId
   let memberData = req.body
+  if (memberData.after_camp) {
+    memberData.after_camp = memberData.after_camp ? JSON.parse(memberData.after_camp) : []
+  }
+  if(memberData.buyerInfo){
+    memberData.buyerInfo = memberData.buyerInfo ? JSON.parse(memberData.buyerInfo) : {};
+  }
+
   // let [data] = await smartList.find({ "criteria.studentType": memberData.studentType });
   // if (data) {
   // let [data] = await smartList.find({ "criteria.studentType": memberData.studentType });
@@ -1590,7 +1736,7 @@ exports.updatemember = async (req, res) => {
   //       template: Email.toJSON().template,
   //       sent_date: sent_date,
   //       sent_time: Email.toJSON().sent_time,
-  //       email_type: "schedule",
+  //       email_type: "scheduled",
   //       email_status: true,
   //       category: "system",
   //       userId: userId,
@@ -2028,10 +2174,30 @@ exports.ActiveMemberslistByProgramName = async (req, res) => {
 };
 
 exports.searchStudentbyType = async (req, res) => {
-  const search = req.query.search;
   const userId = req.params.userId;
   const studentType = req.params.studentType;
+  const search = req.query.search;
   try {
+    if (search.split(" ").length > 1) {
+      search1 = search.split(" ")[0]
+      search2 = search.split(" ")[1]
+      const data = await addmemberModal.find(
+        {
+          userId: userId,
+          studentType: studentType,
+          $or: [
+            { firstName: { $regex: search1, $options: "i" } },
+            { lastName: { $regex: search2, $options: "i" } },
+            { email: { $regex: search, $options: "i" } },
+          ],
+        },
+      );
+      return res.send({
+        data: data,
+        success: true
+      });
+    }
+
     const data = await addmemberModal.find(
       {
         userId: userId,
@@ -2039,6 +2205,7 @@ exports.searchStudentbyType = async (req, res) => {
         $or: [
           { firstName: { $regex: search, $options: "i" } },
           { lastName: { $regex: search, $options: "i" } },
+          // { lastName: { $regex: search1, $options: "i" } },
           { email: { $regex: search, $options: "i" } },
         ],
       },

@@ -12,6 +12,12 @@ const systemfolderSchema = schema({
 }],
     createdBy:{
         type:String
+    },
+    userId:{
+        type:String
+    },
+    adminId:{
+        type:String
     }
 
 },

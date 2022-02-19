@@ -21,6 +21,12 @@ exports.get_smart_list = async (req, res) => {
 }
 exports.create_smart_list = async (req, res) => {
     try {
+        if (!Object.keys(obj).length) {
+            return res.send({
+                success: false,
+                msg: "invalid input!"
+            })
+        }
         let userId = req.params.userId
         if (!userId) {
             res.json({
@@ -59,9 +65,13 @@ exports.create_smart_list = async (req, res) => {
             },
 
             ])
-            leadData = leadData.ids
-        } else {
-            leadData = []
+
+            if (leadData) {
+                leadData = leadData.ids
+            }
+            else {
+                leadData = []
+            }
         }
         if (membership_status) {
             var [membershipData] = await membership.aggregate([{
@@ -101,7 +111,7 @@ exports.create_smart_list = async (req, res) => {
             },
             ])
 
-            if (membershipData.ids.length) {
+            if (membershipData) {
                 membershipData = membershipData.ids
                 if (leadData.length) {
                     leadData = leadData.filter(e => {
@@ -388,9 +398,13 @@ exports.update_smart_list = async (req, res) => {
             },
 
             ])
-            leadData = leadData.ids
-        } else {
-            leadData = []
+            if (leadData) {
+                leadData = leadData.ids
+            }
+            else {
+                leadData = []
+            }
+
         }
         if (membership_status) {
             var [membershipData] = await membership.aggregate([{
@@ -430,7 +444,7 @@ exports.update_smart_list = async (req, res) => {
             },
             ])
 
-            if (membershipData.ids.length) {
+            if (membershipData) {
                 membershipData = membershipData.ids
                 if (leadData.length) {
                     leadData = leadData.filter(e => {
@@ -660,14 +674,14 @@ exports.update_smart_list = async (req, res) => {
             smartlists: leadData,
             criteria: req.body.criteria
         },
-            ((err, leads_data) => {
+            (err, leads_data) => {
                 if (err) {
                     res.send({ error: err.message.replace(/\"/g, ""), success: false });
 
                 } else {
                     return res.send({ msg: "smartlist updated successfully", success: true });
                 }
-            }))
+            })
     } catch (err) {
         res.send({ error: err.message.replace(/\"/g, ""), success: false });
 

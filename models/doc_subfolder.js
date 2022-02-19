@@ -13,7 +13,13 @@ const docSubFolder = new schema({
             ref: "",
         },
     ],
+    folderId: {
+        type: String,
+    },
     userId: {
+        type: String
+    },
+    adminId: {
         type: String
     }
 })

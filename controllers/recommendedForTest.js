@@ -8,6 +8,8 @@ const Joi = require('@hapi/joi');
 const { valorTechPaymentGateWay } = require("./valorTechPaymentGateWay");
 const mergeFile = require("../Services/mergeFile")
 const cloudUrl = require("../gcloud/imageUrl");
+const mergeMultipleFiles = require("../Services/mergeMultipleFiles");
+
 
 
 
@@ -369,18 +371,32 @@ exports.multipleDocMerge = async (req, res) => {
     let docBody = req.body.docBody;
     try {
         let promises = [];
+        let bufCount = 0;
         for (let id in recommendedId) {
             let data = await RecommendedForTest.findOne({ _id: recommendedId[id] });
             let studentId = data.studentId;
             let resp = await Member.findOne({ _id: studentId });
             let mergedInfo = { ...data.toJSON(), ...resp.toJSON() }
-            let fileObj = await mergeFile(docBody, mergedInfo);
-            await (cloudUrl.imageUrl(fileObj)).then(data => {
-                promises.push(data)
-            })
+            let filebuff = await mergeMultipleFiles(docBody, mergedInfo);
+            bufCount = Buffer.byteLength(filebuff) + bufCount
+            promises.push(filebuff);
+
         }
         await Promise.all(promises);
-        res.send({ msg: "data!", data: promises, succes: true })
+        res.send({ msg: "data!", data: promises, success: true })
+        // let resultBuff = Buffer.concat(promises, bufCount)
+        // let fileObj = {
+        //     fieldname: 'attach',
+        //     originalname: 'Test.pdf',
+        //     encoding: '7bit',
+        //     mimetype: 'application/pdf',
+        //     buffer: resultBuff,
+        //     size: bufCount
+        // }
+        // await (cloudUrl.imageUrl(fileObj)).then(data => {
+        //     res.send({ msg: "data!", data: data, succes: true })
+        // })
+
     } catch (err) {
         res.send({ msg: err.message.replace(/\"/g, ""), success: false })
     }

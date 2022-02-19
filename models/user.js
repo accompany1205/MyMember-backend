@@ -16,12 +16,23 @@ const userSchema = new schema(
             maxlength: 100
         },
         twilio: {
-          type: String,
-          unique: true,
+            type: String,
+            unique: true,
         },
         isverify: {
             type: Boolean,
+            default: false
+        },
+        isEmailverify: {
+            type: Boolean,
             default: false //for email verify status
+        },
+        otp: {
+            type: String,
+            unique: true
+        },
+        otp_expiration_time: {
+            type: Date,
         },
         emailToken: {
             type: String
@@ -45,6 +56,17 @@ const userSchema = new schema(
             type: Number,
             default: 0 // diffrentiate between school and admin
         },
+        mainUser: {
+            type: String
+        },
+        issubUser: {
+            type: Boolean,
+            default: false // diffrentiate between user and subuser
+        },
+        subUsers: [{
+            type: schema.Types.ObjectId,
+            ref: "User"
+        }],
         status: {
             type: String,
             default: 'Inactive' // school status active and diactive by admin
@@ -121,6 +143,10 @@ const userSchema = new schema(
         location_name: {
             type: String
         },
+        locations: [{
+            type: schema.Types.ObjectId,
+            ref: "User"
+        }],
         location_address: {
             type: String
         },
@@ -180,26 +206,6 @@ const userSchema = new schema(
         fullName: {
             type: String,
         },
-        // userName: {
-        //     type: String,
-        // },
-        user_type: {
-            type: String
-        },
-        // phone: {
-        //     type: String,
-        // },
-        // email: {
-        //     type: String,
-        // },
-        // password: {
-        //     type: String,
-
-        // },
-        // status: {
-        //     type: String,
-
-        // },
         profile_type: {
             type: String,
 
@@ -228,17 +234,17 @@ const userSchema = new schema(
                 type: Boolean,
                 default: false
             },
-            email:{
-                type:String
+            email: {
+                type: String
             },
-            link:{
-                type:String
+            link: {
+                type: String
             },
-            staffName:{
-                type:String
+            staffName: {
+                type: String
             },
-            password:{
-                type:String
+            password: {
+                type: String
             }
         }]
     },
