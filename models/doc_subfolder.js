@@ -5,7 +5,7 @@ const docSubFolder = new schema({
     subFolderName: {
         type: String,
         require: true,
-        unique: true
+        // unique: true
     },
     document: [
         {
