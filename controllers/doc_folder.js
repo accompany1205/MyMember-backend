@@ -16,7 +16,7 @@ exports.createfolder = async (req, res) => {
                 res.send({ msg: "Folder name already exist!", success: false });
             } else {
                 res.send({
-                    msg: "Document folder created successfully",
+                    msg: "Folder created successfully",
                     success: true,
                 });
             }
@@ -98,7 +98,7 @@ exports.editFolder = async (req, res) => {
                             success: false,
                         });
                     }
-                    res.send({ msg: 'Document folder update successfully', success: true })
+                    res.send({ msg: 'Folder update successfully', success: true })
                 }
             })
     }
