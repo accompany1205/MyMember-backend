@@ -486,7 +486,7 @@ exports.single_temp_update_status = (req, res) => {
         if (err) {
           res.json({ success: false, msg: "email status not deactive" });
         } else {
-          res.json({ success: trueI, msg: "Template marked as stared successfully" });
+          res.json({ success: true, msg: "Template marked as stared successfully" });
         }
       }
     );
