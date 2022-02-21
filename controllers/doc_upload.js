@@ -106,14 +106,13 @@ exports.updatedocupload = async (req, res) => {
           }
 
           if (!new_SubfolderId) {
-
-            await docfolder.findByIdAndUpdate(new_FolderId, {
-              $addToSet: { document: docId },
-            });
             await docfolder
               .findByIdAndUpdate(old_FolderId, {
                 $pull: { document: docId },
-              })
+              });
+            await docfolder.findByIdAndUpdate(new_FolderId, {
+              $addToSet: { document: docId },
+            })
               .exec((err, temp) => {
                 if (err) {
                   return res.send({
@@ -129,13 +128,14 @@ exports.updatedocupload = async (req, res) => {
               });
           }
           else {
-            await docsubfolder.findByIdAndUpdate(new_SubfolderId, {
-              $addToSet: { document: docId },
-            });
             await docsubfolder
               .findByIdAndUpdate(old_SubfolderId, {
                 $pull: { document: docId },
-              })
+              });
+            await docsubfolder.findByIdAndUpdate(new_SubfolderId, {
+              $addToSet: { document: docId },
+            })
+
               .exec((err, temp) => {
                 if (err) {
                   return res.send({
