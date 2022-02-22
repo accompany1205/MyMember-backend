@@ -62,7 +62,7 @@ exports.createSubFolder = async (req, res) => {
                             res.send({ msg: 'subfolder not added in Folder', success: false })
                         }
                         else {
-                            res.send({ 'msg': 'Subfolder create successfully', success: true })
+                            res.send({ 'msg': 'Subfolder created successfully', success: true })
                         }
                     })
             }

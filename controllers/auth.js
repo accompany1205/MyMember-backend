@@ -332,13 +332,12 @@ exports.approvesendgridverification = (req, res) => {
   let userId = req.params.userId;
   try {
     User.updateOne({ _id: userId, "sendgridVerification.email": email },
-      { $set: { "sendgridVerification.$.isVerified": true } }).then(resp => {
-        User.updateOne({ _id: userId }, { $push: { bussinessEmail: email } }).then(rep => {
-          res.send({ msg: "Email succesfuly verified!", success: true })
-        }).catch(err => {
-          res.send({ error: err.message.replace(/\"/g, ""), success: false })
-        })
-      }).catch(err => {
+      { $set: { "sendgridVerification.$.isVerified": true } },
+      { $push: { bussinessEmail: email } })
+      .then(rep => {
+        res.send({ msg: "Email succesfuly verified!", success: true })
+      })
+      .catch(err => {
         res.send({ error: err.message.replace(/\"/g, ""), success: false })
       })
   } catch (err) {
@@ -492,10 +491,17 @@ exports.signin = (req, res) => {
   // find the user based on email
   const {
     username,
-    password
+    email,
+    password,
+    isAccessLocations,
+    accessingUserdetails
   } = req.body;
+  if (req.body.access_school) {
+
+  }
+
   User.findOne({
-    username
+    $or: [{ username: username }, { email: email }]
   }).exec((err, data) => {
     if (err || !data) {
       return res.status(400).json({
@@ -507,11 +513,51 @@ exports.signin = (req, res) => {
         if (data.role == 0 || data.role == 2) {
           if (data.isEmailverify) {
             if (data.status == "Active") {
-              // if (!data.authenticate(password)) {
-              //     return res.status(401).json({
-              //         error: 'Email and password dont match'
-              //     });
-              // }
+              if (isAccessLocations) {
+                token = jwt.sign({
+                  id: data._id,
+                  auth_key: data.auth_key,
+                  app_id: data.app_id,
+                  epi: data.epi,
+                  descriptor: data.descriptor,
+                  product_description: data.product_description
+                }, process.env.JWT_SECRET);
+                res.cookie("t", token, {
+                  expire: new Date() + 9999
+                });
+                const {
+                  _id,
+                  username,
+                  name,
+                  email,
+                  role,
+                  logo,
+                  location_name,
+                  bussinessAddress,
+                  country,
+                  state,
+                  city
+
+                } = data;
+                return res.json({
+                  token,
+                  data: {
+                    _id,
+                    username,
+                    email,
+                    name,
+                    role,
+                    logo,
+                    location_name,
+                    bussinessAddress,
+                    city,
+                    state,
+                    country,
+                    isAccessLocations,
+                    accessingUserdetails
+                  },
+                });
+              }
               token = jwt.sign({
                 id: data._id,
                 auth_key: data.auth_key,
@@ -607,8 +653,8 @@ exports.signin = (req, res) => {
         }
       } else {
         res.send({
-          msg: "Incorrect password!",
-          success: false
+          msg: "Incorrect email/password!",
+          success: { d: data.password, p: req.body.password }
         });
       }
     }
@@ -1001,4 +1047,28 @@ exports.verify_otp = async (req, res) => {
 
 function AddMinutesToDate(date, minutes) {
   return new Date(date.getTime() + minutes * 60000);
+}
+
+
+exports.access_school = async (req, res) => {
+  let adminId = req.params.adminId;
+  let access_schools_list = req.body.access_schools_list;
+  let email = req.body.email
+  User.updateOne({ email: email },
+    {
+      $set: {
+        isAccessLocations: true,
+      },
+      $addToSet: {
+        locations: access_schools_list
+      }
+    }
+  )
+    .exec((err, data) => {
+      if ((err || data.nModified === 0)) {
+        return res.send({ msg: "User not found", success: false });
+      } else {
+        return res.send({ msg: "Access Granted!", success: true })
+      }
+    })
 }

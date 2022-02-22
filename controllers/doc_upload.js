@@ -95,18 +95,24 @@ exports.updatedocupload = async (req, res) => {
     await docfile.updateOne({ _id: docId, $and: [{ userId: userId }, { adminId: adminId }] }, { $set: docData })
       .exec(async (err, docdata) => {
         if (err) {
-          res.send({ msg: 'document is not added ' })
+          res.send({ msg: 'document is not added', success: err })
         }
         else {
-          if (!new_SubfolderId) {
-
-            await docfolder.findByIdAndUpdate(new_FolderId, {
-              $addToSet: { document: docId },
+          if (docdata.nModified < 1) {
+            return res.send({
+              msg: 'This is system generated document Only admin can update',
+              success: false,
             });
+          }
+
+          if (!new_SubfolderId) {
             await docfolder
               .findByIdAndUpdate(old_FolderId, {
                 $pull: { document: docId },
-              })
+              });
+            await docfolder.findByIdAndUpdate(new_FolderId, {
+              $addToSet: { document: docId },
+            })
               .exec((err, temp) => {
                 if (err) {
                   return res.send({
@@ -122,13 +128,14 @@ exports.updatedocupload = async (req, res) => {
               });
           }
           else {
-            await docsubfolder.findByIdAndUpdate(new_SubfolderId, {
-              $addToSet: { document: docId },
-            });
             await docsubfolder
               .findByIdAndUpdate(old_SubfolderId, {
                 $pull: { document: docId },
-              })
+              });
+            await docsubfolder.findByIdAndUpdate(new_SubfolderId, {
+              $addToSet: { document: docId },
+            })
+
               .exec((err, temp) => {
                 if (err) {
                   return res.send({
@@ -165,7 +172,13 @@ exports.docremove = async (req, res) => {
           res.send({ msg: err, success: false })
         }
         else {
-          if (data) {
+          if (!data) {
+            return res.send({
+              msg: 'This is system generated Documents Only admin can delete',
+              success: false,
+            });
+          }
+          else {
             if (JSON.parse(isFolder)) {
               docfolder.updateOne({ document: docId }, { $pull: { document: docId } },
                 function (err, temp) {
@@ -198,11 +211,6 @@ exports.docremove = async (req, res) => {
                   }
                 })
             }
-          }
-          else {
-            res.send({
-              msg: 'document removed already!', success: true
-            })
           }
         }
 

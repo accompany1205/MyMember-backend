@@ -16,7 +16,7 @@ exports.createfolder = async (req, res) => {
                 res.send({ msg: "Folder name already exist!", success: false });
             } else {
                 res.send({
-                    msg: "Document folder created successfully",
+                    msg: "Folder created successfully",
                     success: true,
                 });
             }
@@ -35,11 +35,18 @@ exports.readfolder = async (req, res) => {
             .find({ $or: [{ userId: userId }, { adminId: adminId }] })
             .populate({
                 path: 'subFolder',
+                sort: {
+                    'subFolderName': 1
+                },
                 populate: {
                     path: 'document',
-                    model: 'uploadDocument'
+                    model: 'uploadDocument',
+                    sort: {
+                        'document_name': 1
+                    },
                 }
             })
+            .sort({ folderName: 1 })
             .exec((err, folderList) => {
                 if (err) {
                     res.send({ success: false, msg: 'document folder is not find' })
@@ -98,7 +105,7 @@ exports.editFolder = async (req, res) => {
                             success: false,
                         });
                     }
-                    res.send({ msg: 'Document folder update successfully', success: true })
+                    res.send({ msg: 'Folder update successfully', success: true })
                 }
             })
     }

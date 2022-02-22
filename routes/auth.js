@@ -21,7 +21,8 @@ const {
     unverifiedsendgriduserlist,
     sendOTP_to_email,
     verify_otp,
-    createLocations
+    createLocations,
+    access_school
 } = require("../controllers/auth");
 const { userSignupValidator } = require("../validator");
 
@@ -47,5 +48,6 @@ router.post("/edit_navbar_li", edit_navbar_li);
 router.post("/edit_navbar_ui", edit_navbar_ui)
 router.get("/school_listing/:adminId/:page_no", isAdmin, school_listing)
 router.put("/approvesendgridverification/:adminId/:userId", isAdmin, approvesendgridverification);
+router.post("/access_school/:adminId", isAdmin, access_school);
 router.get("/unverifiedsendgriduserlist/:adminId", isAdmin, unverifiedsendgriduserlist)
 module.exports = router;

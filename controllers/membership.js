@@ -41,7 +41,6 @@ exports.create = async (req, res) => {
     }
     //membershipDetails.membershipDoc = docs;
     const membershipObj = new membershipModal(membershipDetails);
-    console.log(membershipObj)
     await membershipObj.save((err, data) => {
       if (err) {
         res.send({ msg: 'Membership not created', success: false });

@@ -13,7 +13,7 @@ router.delete("/email_nurturing/remove_template/:userId/:templateId", requireSig
 
 
 router.put("/email_nurturing/swap_templete/:userId/:templateId", requireSignin, verifySchool, swap_template)
-router.put("/email_nurturing/single_template_status_change/:userId/:tempId", verifySchool, single_tem_update_status) //single template status update
+router.put("/email_nurturing/marks_as_star/:userId/:tempId", verifySchool, single_tem_update_status) //single template status update
 router.put("/email_nurturing/update_template_status/:userId/:folderId", verifySchool, status_update_template)// all template status change
 
 module.exports = router;
