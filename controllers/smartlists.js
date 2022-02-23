@@ -31,12 +31,6 @@ exports.create_smart_list = async (req, res) => {
         let userId = req.params.userId
         let adminId = req.params.adminId
         let folderId = req.params.folderId
-        if (!userId) {
-            res.json({
-                success: false,
-                msg: "Please give the userId  in params!"
-            })
-        }
         let { membership_status, finance, renewal } = req.body.criteria
         let promises = [];
         let obj = req.body.criteria
@@ -349,7 +343,7 @@ exports.create_smart_list = async (req, res) => {
         })
         sldata.save((err, sldata) => {
             if (err) {
-                res.send({ error: err.message.replace(/\"/g, ""), success: false });
+                res.send({ msg: err.message.replace(/\"/g, ""), success: false });
 
             } else {
                 smartFolder.findByIdAndUpdate(

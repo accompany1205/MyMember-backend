@@ -1021,21 +1021,28 @@ exports.verify_otp = async (req, res) => {
     const userId = req.params.userId;
     const otp = req.body.otp
     const now = new Date
-    await User.updateOne(
-      { _id: ObjectId(userId), otp: otp, otp_expiration_time: { $gte: now } },
-      {
-        $set: {
-          isEmailverify: true
+    let isCorrectOtp = await User.find({ _id: ObjectId(userId), otp: otp })
+    if (isCorrectOtp.length) {
+      await User.updateOne(
+        { _id: ObjectId(userId), otp: otp, otp_expiration_time: { $gte: now } },
+        {
+          $set: {
+            isEmailverify: true
+          }
         }
-      }
-    )
-      .exec((err, resp) => {
-        if (err || !resp.nModified) {
-          return res.send({ msg: err ? err : "Your OTP is Expired!", success: false });
-        }
-        return res.send({ msg: "Email verified Successfully!", success: true })
+      )
+        .exec((err, resp) => {
+          if (err || !resp.nModified) {
+            return res.send({ msg: err ? err : "Your OTP is Expired!", success: false });
+          }
+          return res.send({ msg: "Email verified Successfully!", success: true })
 
-      })
+        })
+
+    } else {
+      res.send({ msg: "Your OTP is Incorrect!", success: false });
+
+    }
   }
   catch (err) {
     return res.send({ msg: err.message.replace(/\"/g, ""), success: false });
