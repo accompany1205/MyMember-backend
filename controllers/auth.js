@@ -996,7 +996,7 @@ exports.sendOTP_to_email = async (req, res) => {
     })
     await msg.sendMail()
       .then(resp => {
-        User.updateOne({ _id: userId }, { $set: { otp: otp, otp_expiration_time: otp_expiration_time } }, (err, resp) => {
+        User.updateOne({ email: email }, { $set: { otp: otp, otp_expiration_time: otp_expiration_time } }, (err, resp) => {
           if (err) {
             res.send({ msg: err, success: false });
           }
@@ -1019,12 +1019,12 @@ exports.sendOTP_to_email = async (req, res) => {
 exports.verify_otp = async (req, res) => {
   try {
     const userId = req.params.userId;
-    const otp = req.body.otp
+    const { otp, email } = req.body
     const now = new Date
-    let isCorrectOtp = await User.find({ _id: ObjectId(userId), otp: otp })
+    let isCorrectOtp = await User.find({ email: email, otp: otp })
     if (isCorrectOtp.length) {
       await User.updateOne(
-        { _id: ObjectId(userId), otp: otp, otp_expiration_time: { $gte: now } },
+        { email: email, otp: otp, otp_expiration_time: { $gte: now } },
         {
           $set: {
             isEmailverify: true

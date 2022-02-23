@@ -36,8 +36,8 @@ router.put("/resetPassword", resetPassword);
 router.put("/get_user_approved_by_admin/:adminId/:userId", isAdmin, approveUserRequestByAdmin);
 
 //verfications
-router.post("/sendOTP_to_email/:userId", sendOTP_to_email);
-router.post("/verify_otp/:userId", verify_otp);
+router.post("/sendOTP_to_email", sendOTP_to_email);
+router.post("/verify_otp", verify_otp);
 //
 router.put("/updateUser/:userId", updateUser)
 router.get("/searchUser/:userId", searchUser)
