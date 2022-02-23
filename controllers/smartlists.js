@@ -1,4 +1,5 @@
 const smartlist = require('../models/smartlists')
+const smartFolder = require('../models/smartlist_folder')
 const member = require('../models/addmember')
 const buymembership = require('../models/buy_membership')
 const membership = require('../models/buy_membership')
@@ -21,13 +22,15 @@ exports.get_smart_list = async (req, res) => {
 }
 exports.create_smart_list = async (req, res) => {
     try {
-        if (!Object.keys(obj).length) {
-            return res.send({
-                success: false,
-                msg: "invalid input!"
-            })
-        }
+        // if (!Object.keys(obj).length) {
+        //     return res.send({
+        //         success: false,
+        //         msg: "invalid input!"
+        //     })
+        // }
         let userId = req.params.userId
+        let adminId = req.params.adminId
+        let folderId = req.params.folderId
         if (!userId) {
             res.json({
                 success: false,
@@ -340,15 +343,34 @@ exports.create_smart_list = async (req, res) => {
             smartlistname: req.body.smartlistname,
             smartlists: leadData,
             criteria: req.body.criteria,
-            userId: userId
+            userId: userId,
+            adminId: adminId,
+            folderId: folderId
         })
         sldata.save((err, sldata) => {
             if (err) {
                 res.send({ error: err.message.replace(/\"/g, ""), success: false });
 
             } else {
-                return res.send({ msg: sldata, success: true });
-
+                smartFolder.findByIdAndUpdate(
+                    folderId,
+                    {
+                        $push: { smartlists: sldata._id },
+                    },
+                    (err, data) => {
+                        if (err) {
+                            res.send({
+                                msg: 'Smartlist not added in folder',
+                                success: false,
+                            });
+                        } else {
+                            res.send({
+                                msg: 'Smartlist created successfully',
+                                success: true,
+                            });
+                        }
+                    }
+                );
             }
         })
     } catch (err) {
@@ -359,8 +381,11 @@ exports.create_smart_list = async (req, res) => {
 
 exports.update_smart_list = async (req, res) => {
     try {
-        let userId = req.params.userId
         let slId = req.params.slId
+        const adminId = req.params.adminId;
+        const userId = req.params.userId;
+        const new_folderId = req.body.folderId;
+        const old_folderId = req.body.old_folderId;
         if (!slId) {
             res.json({
                 success: false,
@@ -669,21 +694,54 @@ exports.update_smart_list = async (req, res) => {
                 }
             }
         }
-        await smartlist.findByIdAndUpdate(slId, {
-            smartlistname: req.body.smartlistname,
-            smartlists: leadData,
-            criteria: req.body.criteria
-        },
-            (err, leads_data) => {
+        await smartlist.updateOne(
+            { _id: slId, $and: [{ userId: userId }, { adminId: adminId }] },
+            {
+                smartlistname: req.body.smartlistname,
+                smartlists: leadData,
+                criteria: req.body.criteria,
+                folderId: new_folderId
+            })
+            .exec(async (err, data) => {
                 if (err) {
-                    res.send({ error: err.message.replace(/\"/g, ""), success: false });
-
+                    res.send({
+                        msg: err,
+                        success: false,
+                    });
                 } else {
-                    return res.send({ msg: "smartlist updated successfully", success: true });
+                    if (data.n < 1) {
+                        return res.send({
+                            msg: 'This is system generated membership Only admin can update',
+                            success: false,
+                        });
+                    }
+                    await smartFolder.findByIdAndUpdate(new_folderId, {
+                        $addToSet: { smartlists: slId },
+                    });
+                    await smartFolder
+                        .findByIdAndUpdate(old_folderId, {
+                            $pull: { smartlists: slId },
+                        })
+                        .exec((err, temp) => {
+                            if (err) {
+                                res.send({
+                                    msg: 'smartlist not updated',
+                                    success: false,
+                                });
+                            } else {
+                                res.send({
+                                    msg: 'smartlist updated successfully',
+                                    success: true,
+                                });
+                            }
+                        });
                 }
+
+
+                // return res.send({ msg: "smartlist updated successfully", success: true });
             })
     } catch (err) {
-        res.send({ error: err.message.replace(/\"/g, ""), success: false });
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false });
 
     }
 
@@ -691,22 +749,44 @@ exports.update_smart_list = async (req, res) => {
 
 exports.delete_smart_list = async (req, res) => {
     try {
-        let slId = req.params.slId
+        const adminId = req.params.adminId;
+        const userId = req.params.userId;
+        let slId = req.params.slId;
         if (!slId) {
             res.json({
                 success: false,
-                msg: "Please give the leadsId  in params!"
+                msg: "no smarlist selected!"
             })
         }
-        await smartlist.findByIdAndRemove(slId, req.body,
-            ((err, leads_data) => {
-                if (err) {
-                    res.send({ error: err.message.replace(/\"/g, ""), success: false });
-
-                } else {
-                    return res.send({ msg: "smartlist deleted successfully", success: true });
+        await smartlist.findOneAndRemove(
+            { _id: slId, $and: [{ userId: userId }, { adminId: adminId }] },
+            (err, data) => {
+                if (!data) {
+                    return res.send({
+                        msg: 'This is system generated membership Only admin can delete',
+                        success: false,
+                    });
                 }
-            }))
+                else {
+                    smartFolder.updateOne(
+                        { smartlists: data._id },
+                        { $pull: { smartlists: data._id } },
+                        function (err, temp) {
+                            if (err) {
+                                res.send({
+                                    msg: 'smartlist not removed',
+                                    success: false,
+                                });
+                            } else {
+                                res.send({
+                                    msg: 'smartlist removed successfully',
+                                    success: true,
+                                });
+                            }
+                        }
+                    );
+                }
+            })
     } catch (err) {
         res.send({ error: err.message.replace(/\"/g, ""), success: false });
 

@@ -16,6 +16,12 @@ const smartlistSchema = new schema({
     },
     userId: {
         type: String,
+    },
+    adminId: {
+        type: String,
+    },
+    folderId: {
+        type: String,
     }
 },
     { timestamps: true }

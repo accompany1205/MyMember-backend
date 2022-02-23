@@ -46,6 +46,7 @@ exports.readfolder = async (req, res) => {
                     },
                 }
             })
+            .populate("document")
             .sort({ folderName: 1 })
             .exec((err, folderList) => {
                 if (err) {

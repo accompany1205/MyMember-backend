@@ -119,7 +119,7 @@ exports.remove = (req, res) => {
             function (err, temp) {
               if (err) {
                 res.send({
-                  error: 'membership not removed',
+                  msg: 'membership not removed',
                   success: false,
                 });
               } else {
@@ -244,8 +244,8 @@ exports.mergeDoc = async (req, res) => {
       }).catch(err => {
         res.send({ msg: err.message.replace(/\"/g, ""), success: false })
       })
-    }else {
-      res.send({ msg: "membership or student not found!", success:false}) 
+    } else {
+      res.send({ msg: "membership or student not found!", success: false })
     }
 
   } catch (err) {
