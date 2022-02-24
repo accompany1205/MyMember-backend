@@ -5,10 +5,13 @@ const leads_trackSchema = new schema({
     leads_category: {
         type: String,
         trim: true,
-        required: true,
-        unique: true,
+        required: [true, "can't be blank"],
+        unique: [true, "lead already exist!"],
     },
     userId: {
+        type: String,
+    },
+    adminId: {
         type: String,
     }
 },
