@@ -309,6 +309,7 @@ app.use("/api", purchaseMembership);
 app.use("/api", sample_doc);
 app.use("/api", user_document_folder);
 app.use("/api", user_document_subFolder);
+app.use("/api", user_upload_doc);
 app.use("/api", user_smartlists);
 app.use("/api", user_smartlistFolder);
 app.use("/api", user_leads_tracking);
