@@ -21,6 +21,8 @@ exports.docupload = async (req, res) => {
       userId: userId,
       adminId: adminId
     }
+    console.log(subFolderId)
+
     if (req.file) {
       await cloudUrl
         .imageUrl(req.file)
@@ -37,7 +39,7 @@ exports.docupload = async (req, res) => {
         res.send({ msg: 'document is not added', success: err })
       }
       else {
-        if ((subFolderId == null ? true : false)) {
+        if ((subFolderId == "null" ? true : false)) {
           docfolder.findByIdAndUpdate(rootFolderId, { $push: { document: docdata._id } },
             function (err, updateDoc) {
               if (err) {
@@ -50,6 +52,7 @@ exports.docupload = async (req, res) => {
             })
         }
         else {
+          console.log(subFolderId)
           docsubfolder.findByIdAndUpdate(subFolderId, { $push: { document: docdata._id } },
             function (err, updateDoc) {
               if (err) {
