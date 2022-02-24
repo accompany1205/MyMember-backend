@@ -37,7 +37,7 @@ exports.docupload = async (req, res) => {
         res.send({ msg: 'document is not added', success: err })
       }
       else {
-        if ((!JSON.parse(subFolderId) ?true:false)) {
+        if ((!JSON.parse(subFolderId) ? true : false)) {
           docfolder.findByIdAndUpdate(rootFolderId, { $push: { document: docdata._id } },
             function (err, updateDoc) {
               if (err) {
@@ -162,7 +162,8 @@ exports.updatedocupload = async (req, res) => {
 
 exports.docremove = async (req, res) => {
   let docId = req.params.docId;
-  let isFolder = req.query.isFolder || false
+  let isFolder = req.query.isFolder == true ? true : false
+  console.log(isFolder)
   const adminId = req.params.adminId
   const userId = req.params.userId;
   try {
@@ -179,7 +180,7 @@ exports.docremove = async (req, res) => {
             });
           }
           else {
-            if (JSON.parse(isFolder)) {
+            if (isFolder) {
               docfolder.updateOne({ document: docId }, { $pull: { document: docId } },
                 function (err, temp) {
                   if (err) {
