@@ -64,30 +64,30 @@ exports.signup = async (req, res) => {
 
     }
     else {
-      msg.sendMail()
-        .then((resp) => {
-          if (userBody.role == 2) {
-            User.updateOne({ _id: userBody.mainUser },
-              {
-                $addToSet: { subUsers: userdata._id }
-              }
-            )
-              .exec((err, data) => {
-                if (err) {
-                  return res.send({ msg: err.message.replace(/\"/g, ""), success: false });
-                }
-                return res.send({ msg: "sub-user created successfully", success: true })
-
-              })
-          } else {
-
-            return res.send({ msg: "User created successfully", success: true })
+      // msg.sendMail()
+      // .then((resp) => {
+      if (userBody.role == 2) {
+        User.updateOne({ _id: userBody.mainUser },
+          {
+            $addToSet: { subUsers: userdata._id }
           }
-        })
-        .catch((err) => {
-          res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+        )
+          .exec((err, data) => {
+            if (err) {
+              return res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+            }
+            return res.send({ msg: "sub-user created successfully", success: true })
 
-        })
+          })
+      } else {
+
+        return res.send({ msg: "User created successfully", success: true })
+      }
+      // })
+      // .catch((err) => {
+      //   res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+
+      // })
 
     }
     // navbar_custom(user._id);
@@ -226,41 +226,29 @@ exports.approveUserRequestByAdmin = async (req, res) => {
     }
     let msg = new Mailer({
       from: from_email,
-      to: updatedUser.email,
+      to: [updatedUser.email],
       subject: 'Registration process with My_Member',
       text: 'Congratulation, your request has been accepted.',
       html: `<h2>congratulation, your registration with My Member is completed.</h2>
       <p>Your username is ${updatedUser.username},  Login using this passward - ${password} </p> 
       <p>You can login here - ${process.env.RESET_URL}</p>
-      `,
-      attachments: attachments
-    })
-
-    // let msg = {
-    //   to: updatedUser.email, // Change to your recipient
-    //   from: from_email, // Change to your verified sender
-    //   subject: 'Registration process with My_Member',
-    //   text: 'Congratulation, your request has been accepted.',
-    //   html: `<h2>congratulation, your registration with My Member is completed.</h2>
-    //                       <p>Your username is ${updatedUser.username},  Login using this passward - ${password} </p> 
-    //                       <p>You can login here - ${process.env.RESET_URL}</p>
-    //                       `,
-    // }
+      `    })
     msg.sendMail()
 
       .then(() => {
+        res.send({
+          "status": true,
+          "msg": "User has been updated successfully",
+          "data": {
+            "status": updatedUser["status"],
+            "location": updatedUser["isverify"]
+          }
+        })
       })
       .catch((error) => {
         res.send(error)
       })
-    res.send({
-      "status": true,
-      "msg": "User has been updated successfully",
-      "data": {
-        "status": updatedUser["status"],
-        "location": updatedUser["isverify"]
-      }
-    })
+
   } else {
     let updates = {
       "status": data.status,
@@ -1021,6 +1009,13 @@ exports.verify_otp = async (req, res) => {
     const userId = req.params.userId;
     const { otp, email } = req.body
     const now = new Date
+    let msg = new Mailer({
+      to: [email], // Change to your recipient
+      // from: from_email, // Change to your verified sender
+      subject: 'Varification Email For User',
+      text: 'Thanks for signing-up in ',
+      html: `<h2>Worth the wait! Soon you will get login credentials once the admin approves your request :)</h2>`,
+    })
     let isCorrectOtp = await User.find({ email: email, otp: otp })
     if (isCorrectOtp.length) {
       await User.updateOne(
@@ -1035,8 +1030,16 @@ exports.verify_otp = async (req, res) => {
           if (err || !resp.nModified) {
             return res.send({ msg: err ? err : "Your OTP is Expired!", success: false });
           }
-          return res.send({ msg: "Email verified Successfully!", success: true })
+          else {
+            msg.sendMail()
+              .then(resp => {
+                return res.send({ msg: "Email verified Successfully!", success: true })
+              })
+              .catch(err => {
+                return res.send({ msg: err.message.replace(/\"/g, ""), success: false });
 
+              })
+          }
         })
 
     } else {

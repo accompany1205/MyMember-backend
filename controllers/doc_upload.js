@@ -21,8 +21,6 @@ exports.docupload = async (req, res) => {
       userId: userId,
       adminId: adminId
     }
-    console.log(subFolderId)
-
     if (req.file) {
       await cloudUrl
         .imageUrl(req.file)
@@ -52,7 +50,6 @@ exports.docupload = async (req, res) => {
             })
         }
         else {
-          console.log(subFolderId)
           docsubfolder.findByIdAndUpdate(subFolderId, { $push: { document: docdata._id } },
             function (err, updateDoc) {
               if (err) {
