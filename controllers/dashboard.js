@@ -1242,17 +1242,21 @@ exports.memberByMembershipType = async (req, res) => {
 		const pageSize = parseFloat(req.params.per_page) || 5;
 		const skip = (page - 1) * pageSize;
 
+		let type = String(req.params.type).toUpperCase();
+
+		console.log(type);
+
 		const tasks = await BuyMembership.aggregate([
-			{ $match: { userId: req.params.userId } },
-			// {
-			// 	$project: {
-			// 		name: 1,
-			// 		label: 1,
-			// 		type: 1,
-			// 		due_date: 1,
-			// 		status: 1,
-			// 	},
-			// },
+			{ $match: { userId: req.params.userId, membership_type: type } },
+			{
+				$project: {
+					student_name: 1,
+					membership_type: 1,
+					rank: '',
+					status: '',
+					lastStrive: '',
+				},
+			},
 			{
 				$facet: {
 					metadata: [{ $count: 'total' }, { $addFields: { page } }],
