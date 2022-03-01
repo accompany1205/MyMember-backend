@@ -14,7 +14,7 @@ exports.create_folder = async (req, res) => {
       res.send({ msg: "Folder name already exist!", success: false });
     } else {
       res.send({
-        msg: "smartlist folder create successfully",
+        msg: "folder create successfully",
         success: true,
       });
     }
@@ -25,10 +25,10 @@ exports.getFolders = async (req, res) => {
   const userId = req.params.userId;
   await smartlistFolder
     .find({ $or: [{ userId: userId }, { adminId: adminId }] })
-    .populate("smartlist")
+    .populate("smartlists")
     .exec((err, folder) => {
       if (err) {
-        res.send({ msg: "smartlist folder is not create", success: false });
+        res.send({ msg: "folder  not created", success: false });
       } else {
         res.status(200).send({
           data: folder,
@@ -42,10 +42,10 @@ exports.getadminFolders = async (req, res) => {
   const adminId = req.params.adminId;
   await smartlistFolder
     .find({ adminId: adminId })
-    .populate("smartlist")
+    .populate("smartlists")
     .exec((err, folder) => {
       if (err) {
-        res.send({ msg: "smartlist folder is  found", success: false });
+        res.send({ msg: "folder is  found", success: false });
       } else {
         res.status(200).send({
           data: folder,
@@ -63,7 +63,7 @@ exports.update_folder = async (req, res) => {
     .updateOne({ _id: folderId, $and: [{ userId: userId }, { adminId: adminId }] }, { $set: req.body })
     .exec((err, updateFolder) => {
       if (err) {
-        res.send({ msg: "smartlist folder is not updated", success: false });
+        res.send({ msg: "folder is not updated", success: false });
       } else {
         if (updateFolder.n < 1) {
           return res.send({
@@ -72,7 +72,7 @@ exports.update_folder = async (req, res) => {
           });
         }
         res.send({
-          msg: "Folder is update successfully",
+          msg: "Folder updated successfully",
           success: true,
         });
       }

@@ -105,27 +105,27 @@ exports.getData = (req, res) => {
 };
 
 exports.single_temp_update_status = (req, res) => {
-  if (req.body.is_Favorite == true) {
+  if (req.body.is_Favorite) {
     template.updateOne(
       { _id: req.params.tempId },
       { $set: { is_Favorite: true } },
       (err, resp) => {
         if (err) {
-          res.json({ code: 400, msg: "email status not deactive" });
+          res.json({ success: false, msg: "email status not deactive" });
         } else {
-          res.json({ code: 200, msg: "email status active successfully" });
+          res.json({ success: true, msg: "Template marked as stared successfully" });
         }
       }
     );
-  } else if (req.body.is_Favorite == false) {
+  } else {
     template.updateOne(
       { _id: req.params.tempId },
       { $set: { is_Favorite: false } },
       (err, resp) => {
         if (err) {
-          res.json({ code: 400, msg: "email status not active" });
+          res.json({ success: false, msg: "email status not active" });
         } else {
-          res.json({ code: 200, msg: "email status deactive successfully" });
+          res.json({ success: true, msg: "Template marked as unstar" });
         }
       }
     );
@@ -325,6 +325,7 @@ exports.update_template = async (req, res) => {
   let updateTemplate = req.body;
   let templateId = req.params.templateId
   try {
+    updateTemplate.to = to ? JSON.parse(to) : [];
     if (!updateTemplate.to) {
       smartLists = updateTemplate.smartLists ? JSON.parse(updateTemplate.smartLists) : []
       smartLists = smartLists.map(s => ObjectId(s));
@@ -631,7 +632,7 @@ exports.add_template = async (req, res) => {
       days,
       createdBy
     } = req.body;
-
+    to = JSON.parse(to)
     if (!to) {
 
       smartLists = smartLists ? JSON.parse(smartLists) : []
@@ -715,6 +716,7 @@ exports.add_template = async (req, res) => {
     }
     const resolvAttachments = await Promise.all(attachments);
     obj.attachments = resolvAttachments
+    console.log(obj)
     saveEmailTemplate(obj)
       .then(data => {
         compose_folder

@@ -34,10 +34,10 @@ exports.docupload = async (req, res) => {
     var mydoc = new docfile(docFileDetails);
     mydoc.save((err, docdata) => {
       if (err) {
-        res.send({ msg: 'document is not added', success: false })
+        res.send({ msg: 'document is not added', success: err })
       }
       else {
-        if (!(subFolderId)) {
+        if ((subFolderId == "null" ? true : false)) {
           docfolder.findByIdAndUpdate(rootFolderId, { $push: { document: docdata._id } },
             function (err, updateDoc) {
               if (err) {
@@ -95,18 +95,24 @@ exports.updatedocupload = async (req, res) => {
     await docfile.updateOne({ _id: docId, $and: [{ userId: userId }, { adminId: adminId }] }, { $set: docData })
       .exec(async (err, docdata) => {
         if (err) {
-          res.send({ msg: 'document is not added ' })
+          res.send({ msg: 'document is not added', success: err })
         }
         else {
-          if (!new_SubfolderId) {
-
-            await docfolder.findByIdAndUpdate(new_FolderId, {
-              $addToSet: { document: docId },
+          if (docdata.nModified < 1) {
+            return res.send({
+              msg: 'This is system generated document Only admin can update',
+              success: false,
             });
+          }
+
+          if (!new_SubfolderId) {
             await docfolder
               .findByIdAndUpdate(old_FolderId, {
                 $pull: { document: docId },
-              })
+              });
+            await docfolder.findByIdAndUpdate(new_FolderId, {
+              $addToSet: { document: docId },
+            })
               .exec((err, temp) => {
                 if (err) {
                   return res.send({
@@ -122,13 +128,14 @@ exports.updatedocupload = async (req, res) => {
               });
           }
           else {
-            await docsubfolder.findByIdAndUpdate(new_SubfolderId, {
-              $addToSet: { document: docId },
-            });
             await docsubfolder
               .findByIdAndUpdate(old_SubfolderId, {
                 $pull: { document: docId },
-              })
+              });
+            await docsubfolder.findByIdAndUpdate(new_SubfolderId, {
+              $addToSet: { document: docId },
+            })
+
               .exec((err, temp) => {
                 if (err) {
                   return res.send({
@@ -155,7 +162,7 @@ exports.updatedocupload = async (req, res) => {
 
 exports.docremove = async (req, res) => {
   let docId = req.params.docId;
-  let isFolder = req.query.isFolder || false
+  let isFolder = req.query.isFolder == true ? true : false
   const adminId = req.params.adminId
   const userId = req.params.userId;
   try {
@@ -165,8 +172,14 @@ exports.docremove = async (req, res) => {
           res.send({ msg: err, success: false })
         }
         else {
-          if (data) {
-            if (JSON.parse(isFolder)) {
+          if (!data) {
+            return res.send({
+              msg: 'This is system generated Documents Only admin can delete',
+              success: false,
+            });
+          }
+          else {
+            if (isFolder) {
               docfolder.updateOne({ document: docId }, { $pull: { document: docId } },
                 function (err, temp) {
                   if (err) {
@@ -198,11 +211,6 @@ exports.docremove = async (req, res) => {
                   }
                 })
             }
-          }
-          else {
-            res.send({
-              msg: 'document removed already!', success: true
-            })
           }
         }
 

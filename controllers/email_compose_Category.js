@@ -61,6 +61,7 @@ exports.category_list = async (req, res) => {
                 model: 'email_template'
             }
         })
+        .sort({ categoryName: 1 })
         .exec((err, categoryList) => {
             if (err) {
                 res.send({ msg: 'compose category is not found', success: false })

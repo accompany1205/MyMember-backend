@@ -34,7 +34,9 @@ exports.category_list = (req, res) => {
                 path: 'template',
                 model: 'sentOrscheduleEmail'
             }
-        }).exec((err, categoryList) => {
+        })
+        .sort({ categoryName: 1 })
+        .exec((err, categoryList) => {
             if (err) {
                 res.send({ msg: 'compose category is not found', success: false })
             }

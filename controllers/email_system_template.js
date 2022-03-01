@@ -478,27 +478,27 @@ exports.status_update_template = (req, res) => {
 };
 
 exports.single_temp_update_status = (req, res) => {
-  if (req.body.is_Favorite == true) {
+  if (req.body.is_Favorite) {
     addTemp.updateOne(
       { _id: req.params.tempId },
       { $set: { is_Favorite: true } },
       (err, resp) => {
         if (err) {
-          res.json({ code: 400, msg: "email status not deactive" });
+          res.json({ success: false, msg: "email status not deactive" });
         } else {
-          res.json({ code: 200, msg: "email status active successfully" });
+          res.json({ success: true, msg: "Template marked as stared successfully" });
         }
       }
     );
-  } else if (req.body.is_Favorite == false) {
+  } else {
     addTemp.updateOne(
       { _id: req.params.tempId },
       { $set: { is_Favorite: false } },
       (err, resp) => {
         if (err) {
-          res.json({ code: 400, msg: "email status not active" });
+          res.json({ success: false, msg: "email status not active" });
         } else {
-          res.json({ code: 200, msg: "email status deactive successfully" });
+          res.json({ success: true, msg: "Template marked as unstar" });
         }
       }
     );

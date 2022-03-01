@@ -137,6 +137,11 @@ const user_document_folder = require('./routes/admin/document_manage/admin_doc_f
 const user_document_subFolder = require('./routes/admin/document_manage/admin_doc_subfolder');
 const user_upload_doc = require('./routes/admin/document_manage/admin_doc_upload');
 const user_candidateStripes = require('./routes/admin/candidate_manage/admin_candidatesStripes');
+const user_smartlists = require('./routes/admin/smartlist_management/admin_smartlist');
+const user_smartlistFolder = require('./routes/admin/smartlist_management/admin_smartlist_folders');
+const user_leads_tracking = require('./routes/admin/leads_tracking_manage/admin_leads_tracking');
+const user_after_camp = require('./routes/admin/after_camp_manage/admin_after_camp');
+
 //menu routes
 const student_menu = require('./routes/menu/std_menu/all_student_menu');
 
@@ -306,6 +311,11 @@ app.use('/api', sample_doc);
 app.use('/api', user_document_folder);
 app.use('/api', user_document_subFolder);
 app.use('/api', user_upload_doc);
+app.use('/api', user_smartlists);
+app.use('/api', user_smartlistFolder);
+app.use('/api', user_leads_tracking);
+app.use('/api', user_after_camp);
+
 // school auth key middleware
 app.use('/api', emailKey);
 app.use('/api', textkey);

@@ -22,6 +22,7 @@ const {
 	sendOTP_to_email,
 	verify_otp,
 	createLocations,
+	access_school,
 } = require('../controllers/auth');
 const { userSignupValidator } = require('../validator');
 
@@ -39,8 +40,8 @@ router.put(
 );
 
 //verfications
-router.post('/sendOTP_to_email/:userId', sendOTP_to_email);
-router.post('/verify_otp/:userId', verify_otp);
+router.post('/sendOTP_to_email', sendOTP_to_email);
+router.post('/verify_otp', verify_otp);
 //
 router.put('/updateUser/:userId', updateUser);
 router.get('/searchUser/:userId', searchUser);
@@ -55,6 +56,7 @@ router.put(
 	isAdmin,
 	approvesendgridverification
 );
+router.post('/access_school/:adminId', isAdmin, access_school);
 router.get(
 	'/unverifiedsendgriduserlist/:adminId',
 	isAdmin,
