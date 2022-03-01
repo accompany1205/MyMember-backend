@@ -1236,6 +1236,51 @@ exports.ThisWeekTask = async (req, res) => {
 	}
 };
 
+exports.memberByMembershipType = async (req, res) => {
+	try {
+		const page = parseFloat(req.params.page_no) || 1;
+		const pageSize = parseFloat(req.params.per_page) || 5;
+		const skip = (page - 1) * pageSize;
+
+		const tasks = await BuyMembership.aggregate([
+			{ $match: { userId: req.params.userId } },
+			// {
+			// 	$project: {
+			// 		name: 1,
+			// 		label: 1,
+			// 		type: 1,
+			// 		due_date: 1,
+			// 		status: 1,
+			// 	},
+			// },
+			{
+				$facet: {
+					metadata: [{ $count: 'total' }, { $addFields: { page } }],
+					data: [{ $skip: skip }, { $limit: pageSize }], // add projection here wish you re-shape the docs
+				},
+			},
+		]);
+
+		let total = 0;
+		let data = [];
+
+		if (tasks.length > 0) {
+			total = tasks[0].metadata[0] ? tasks[0].metadata[0].total : 0;
+			data = tasks ? tasks[0].data : [];
+		}
+
+		res.json({
+			total,
+			data,
+		});
+	} catch (err) {
+		res.send({
+			data: [],
+			total: 0,
+		});
+	}
+};
+
 // task_schema
 
 // (async () => {

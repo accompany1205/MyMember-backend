@@ -16,6 +16,7 @@ const {
 	allMemberships,
 	TodayTasks,
 	ThisWeekTask,
+	memberByMembershipType,
 } = require('../controllers/dashboard');
 // const upload = require('../handler/multer');
 
@@ -112,6 +113,12 @@ router.get(
 	'/dashboard2/all-tasks/:userId/:page_no/:per_page',
 	requireSignin,
 	ThisWeekTask
+);
+
+router.get(
+	'/dashboard2/members-by-membership-type/:type/:userId/:page_no/:per_page',
+	requireSignin,
+	memberByMembershipType
 );
 
 module.exports = router;
