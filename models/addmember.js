@@ -72,6 +72,7 @@ const addmemberSchema = new schema(
 		},
 		programID: {
 			type: String,
+			required: true,
 		},
 		next_rank_id: {
 			type: String,

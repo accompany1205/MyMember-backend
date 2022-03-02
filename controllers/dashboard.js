@@ -1244,8 +1244,6 @@ exports.memberByMembershipType = async (req, res) => {
 
 		let type = String(req.params.type).toUpperCase();
 
-		console.log(type);
-
 		const tasks = await BuyMembership.aggregate([
 			{ $match: { userId: req.params.userId, membership_type: type } },
 			{
@@ -1267,7 +1265,6 @@ exports.memberByMembershipType = async (req, res) => {
 
 		let total = 0;
 		let data = [];
-
 		if (tasks.length > 0) {
 			total = tasks[0].metadata[0] ? tasks[0].metadata[0].total : 0;
 			data = tasks ? tasks[0].data : [];

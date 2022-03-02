@@ -168,6 +168,9 @@ const followup_notes = require('./models/followup_notes');
 uuidv4();
 // status check expire or not
 
+//statics
+const statictics = require('./routes/statictics');
+
 mongoose
 	.connect(process.env.DATABASE, {
 		useNewUrlParser: true,
@@ -315,6 +318,7 @@ app.use('/api', user_smartlists);
 app.use('/api', user_smartlistFolder);
 app.use('/api', user_leads_tracking);
 app.use('/api', user_after_camp);
+app.use('/api', statictics);
 
 // school auth key middleware
 app.use('/api', emailKey);
