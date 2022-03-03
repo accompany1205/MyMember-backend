@@ -124,7 +124,7 @@ const addmemberSchema = new schema(
       type: String,
     },
     leadsTracking: {
-      type: String,
+      type: Array,
     },
     after_camp: {
       type: Array,
