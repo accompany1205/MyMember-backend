@@ -40,7 +40,7 @@ exports.create = async (req, res) => {
     var schdule_data = await schedule.findOne({ _id: req.params.scheduleId, "class_attendanceArray.studentInfo": { $nin: [objId] } });
     if (schdule_data) {
       student.findOne({ _id: studentId }).exec((err, stdData) => {
-        if (err || stdData==null) {
+        if (err || stdData == null) {
           res.send({ msg: "student data not find", success: false });
         } else {
           console.log(stdData)
@@ -558,3 +558,54 @@ exports.searchAttendance = async (req, res) => {
 
 //   res.json({ status: true, data: attendance })
 // }
+exports.update_rating = async (req, res) => {
+  const pipeline = [
+    {
+      '$match': {
+        'userId': '606aea95a145ea2d26e0f1ab'
+      }
+    }, {
+      '$lookup': {
+        'from': 'class_schedules',
+        'localField': '_id',
+        'foreignField': 'class_attendanceArray.studentInfo',
+        'as': 'data'
+      }
+    }, {
+      '$project': {
+        'last_attended_date': {
+          '$toDate': {
+            '$arrayElemAt': [
+              '$data.start_date', -1
+            ]
+          }
+        }
+      }
+    }, {
+      '$addFields': {
+        'rating': {
+          '$floor': {
+            '$divide': [
+              {
+                '$subtract': [
+                  new Date(), '$last_attended_date'
+                ]
+              }, 1000 * 60 * 60 * 24
+            ]
+          }
+        }
+      }
+    }
+  ]
+  const members = await student.aggregate(pipeline)
+  const promise = await members.map(member => {
+    student.findOneAndUpdate({ _id: member._id }, { $set: { rating: (member.rating == null ? 60 : member.rating) } }, { $upsert: true })
+
+  })
+  Promise.all(promise).then(resp => {
+    res.send({ msg: 'updated' })
+
+  }).catch(err => {
+
+  })
+}
