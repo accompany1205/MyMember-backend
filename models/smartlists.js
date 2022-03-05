@@ -6,7 +6,7 @@ const smartlistSchema = new schema({
         type: String,
         trim: true,
         required: true,
-        unique: true,
+        // unique: true,
     },
     smartlists: {
         type: Array,

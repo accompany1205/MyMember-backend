@@ -46,6 +46,7 @@ const manage_stripe = require('./routes/stripe');
 const todo_api = require('./routes/todo_apis');
 const Tasks = require('./routes/Tasks');
 const Goals = require('./routes/Gloals');
+const Dashboard = require('./routes/dashboard');
 
 const adminstrate = require('./routes/administrater_user');
 const goal_settings = require('./routes/goal_setting');
@@ -132,9 +133,9 @@ const user_program = require('./routes/admin/program_manage/admin_program');
 const user_programCategory = require('./routes/admin/program_manage/admin_programCategory');
 const user_programRanks = require('./routes/admin/program_manage/admin_programRanks');
 const user_candidate = require('./routes/admin/candidate_manage/admin_candidate');
-const user_document_folder = require("./routes/admin/document_manage/admin_doc_folder");
-const user_document_subFolder = require("./routes/admin/document_manage/admin_doc_subfolder");
-const user_upload_doc = require("./routes/admin/document_manage/admin_doc_upload");
+const user_document_folder = require('./routes/admin/document_manage/admin_doc_folder');
+const user_document_subFolder = require('./routes/admin/document_manage/admin_doc_subfolder');
+const user_upload_doc = require('./routes/admin/document_manage/admin_doc_upload');
 const user_candidateStripes = require('./routes/admin/candidate_manage/admin_candidatesStripes');
 const user_smartlists = require('./routes/admin/smartlist_management/admin_smartlist');
 const user_smartlistFolder = require('./routes/admin/smartlist_management/admin_smartlist_folders');
@@ -166,6 +167,9 @@ const { v4: uuidv4 } = require('uuid');
 const followup_notes = require('./models/followup_notes');
 uuidv4();
 // status check expire or not
+
+//statics
+const statictics = require('./routes/statictics');
 
 mongoose
 	.connect(process.env.DATABASE, {
@@ -291,29 +295,30 @@ app.use('/api', finance_list);
 app.use('/api', student_email);
 app.use('/api', student_text);
 //admin middleware
-app.use("/api", manage_user);
+app.use('/api', manage_user);
 app.use('/api', admin_email_system_cat);
 app.use('/api', admin_email_system_folder);
 app.use('/api', admin_email_system_template);
-app.use("/api", location);
-app.use("/api", user_membership);
-app.use("/api", user_membershipFolder);
-app.use("/api", user_product);
-app.use("/api", user_productFolder);
-app.use("/api", user_program);
-app.use("/api", user_programCategory);
-app.use("/api", user_programRanks);
-app.use("/api", user_candidate);
-app.use("/api", user_candidateStripes);
-app.use("/api", purchaseMembership);
-app.use("/api", sample_doc);
-app.use("/api", user_document_folder);
-app.use("/api", user_document_subFolder);
-app.use("/api", user_upload_doc);
-app.use("/api", user_smartlists);
-app.use("/api", user_smartlistFolder);
-app.use("/api", user_leads_tracking);
-app.use("/api", user_after_camp);
+app.use('/api', location);
+app.use('/api', user_membership);
+app.use('/api', user_membershipFolder);
+app.use('/api', user_product);
+app.use('/api', user_productFolder);
+app.use('/api', user_program);
+app.use('/api', user_programCategory);
+app.use('/api', user_programRanks);
+app.use('/api', user_candidate);
+app.use('/api', user_candidateStripes);
+app.use('/api', purchaseMembership);
+app.use('/api', sample_doc);
+app.use('/api', user_document_folder);
+app.use('/api', user_document_subFolder);
+app.use('/api', user_upload_doc);
+app.use('/api', user_smartlists);
+app.use('/api', user_smartlistFolder);
+app.use('/api', user_leads_tracking);
+app.use('/api', user_after_camp);
+app.use('/api', statictics);
 
 // school auth key middleware
 app.use('/api', emailKey);
@@ -322,7 +327,7 @@ app.use('/api', recomendedForTestRoutes);
 app.use('/api', registeredForTestRoutes);
 app.use('/api', recommendedCandidatesRoutes);
 app.use('/api', membershipFolderRoute);
-
+app.use('/api', Dashboard);
 //
 app.use(middleware.errorHandler);
 app.use(middleware.unknownEndpoint);
