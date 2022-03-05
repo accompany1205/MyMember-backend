@@ -926,7 +926,7 @@ exports.updateUser = async (req, res) => {
 exports.school_listing = async (req, res) => {
   var per_page = parseInt(req.body.per_page) || 10
   var page_no = parseInt(req.params.page_no) || 1
-  var totalCount = await User.find({ role: 0 }).count()
+  var totalCount = await User.find({ role: 0, isEmailverify: true }).count()
   var pagination = {
     limit: per_page,
     skip: per_page * (page_no - 1)
