@@ -459,12 +459,12 @@ exports.addmember = async (req, res) => {
     if (memberdetails.after_camp) {
       memberdetails.after_camp = memberdetails.after_camp ? JSON.parse(memberdetails.after_camp) : []
     }
-    if(memberdetails.buyerInfo){
+    if (memberdetails.buyerInfo) {
       memberdetails.buyerInfo = memberdetails.buyerInfo ? JSON.parse(memberdetails.buyerInfo) : {};
     }
     var memberObj = new addmemberModal(memberdetails);
     memberObj.userId = req.params.userId;
-    
+
     memberObj.save(function (err, data) {
       if (err) {
         console.log(err)
@@ -1681,12 +1681,16 @@ exports.delete_multipal_member = (req, res) => {
 
 exports.updatemember = async (req, res) => {
   var memberID = req.params.memberID;
-  let userId = req.params.userId
+  let
+    = req.params.userId
   let memberData = req.body
   if (memberData.after_camp) {
     memberData.after_camp = memberData.after_camp ? JSON.parse(memberData.after_camp) : []
   }
-  if(memberData.buyerInfo){
+  if (memberData.leadsTracking) {
+    memberData.leadsTracking = memberData.leadsTracking ? JSON.parse(memberData.leadsTracking) : []
+  }
+  if (memberData.buyerInfo) {
     memberData.buyerInfo = memberData.buyerInfo ? JSON.parse(memberData.buyerInfo) : {};
   }
 
