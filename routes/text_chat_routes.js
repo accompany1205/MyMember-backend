@@ -13,7 +13,7 @@ const {
 } = require("../controllers/text_chat_controller");
 
 router.post("/text-chat/add-contact/:userId", verifySchool, addTextContact);
-router.post("/text-chat/send-message/:userId", verifySchool, sendTextMessage);
+router.post("/text-chat/send-message/:userId/:studentId", verifySchool, sendTextMessage);
 router.post("/text-chat/seen-contact-messages/:contact/:userId", verifySchool, seenContactTextMessages);
 router.post("/text-chat/pin-contact/:contact/:userId", verifySchool, pinContact);
 router.post("/text-chat/contacts-details/:userId", verifySchool, getTextContactsDetails);

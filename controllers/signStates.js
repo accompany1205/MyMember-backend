@@ -167,7 +167,7 @@ exports.primarySetSignItems = async (req, res) => {
                 await SignStates.updateOne({ _id: docuSignId }, { $set: body }).then(data => {
                     res.send({ msg: "Item updated!", success: true });
                 }).catch(err => {
-                    res.send({ msg: "Itme not updated!", success: false, error: err.message.replace(/\"/g, "") });
+                    res.send({ msg: "Item not updated!", success: false, error: err.message.replace(/\"/g, "") });
                 })
             } else {
                 res.status(401).send({ msg: "Not verified!", success: false });
