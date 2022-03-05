@@ -209,8 +209,8 @@ exports.setSignItems = async (req, res) => {
                         const emailData = new Mailer({
                             to: completedEmailArray,
                             from: ownerMail,
-                            subject: " Signature Process Complted ",
-                            html: `<h2>Below completed SIgn PDF</h2>
+                            subject: " Signature Process Completed ",
+                            html: `<h2>Below completed Sign PDF</h2>
                                             <p>${docLink}</p>`,
                         });
                         emailData.sendMail()
