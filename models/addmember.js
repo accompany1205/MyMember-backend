@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const schema = mongoose.Schema;
 
 const addmemberSchema = new schema(
@@ -271,7 +271,7 @@ const addmemberSchema = new schema(
     },
   },
 
-  { timestamps: true }
+	{ timestamps: true }
 );
 
-module.exports = mongoose.model("member", addmemberSchema);
+module.exports = mongoose.model('member', addmemberSchema);
