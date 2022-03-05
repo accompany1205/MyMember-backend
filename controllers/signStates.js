@@ -153,6 +153,8 @@ async function signPdf(file, items) {
     }
 }
 
+
+
 exports.setSignItems = async (req, res) => {
     try {
         let docuSignId = req.params.docuSignId;
@@ -182,6 +184,7 @@ exports.setSignItems = async (req, res) => {
                                 if (itmObj.value === undefined || itmObj.value === "") {
                                     emailArray.push(itmObj.email);
                                 } else {
+                                    await SignStates.updateOne({ _id: docuSignId }, { $set:{isDone:true} })
                                     completedEmailArray.push(itmObj.email);
                                 }
                             }
@@ -189,7 +192,6 @@ exports.setSignItems = async (req, res) => {
                     }
                     let uniqueEmail = [...new Set(emailArray)];
                     let completedMails = [...new Set(completedEmailArray)]
-                    console.log(completedMails)
                     if (uniqueEmail.length) {
                         const emailData = new Mailer({
                             to: uniqueEmail,
@@ -207,7 +209,7 @@ exports.setSignItems = async (req, res) => {
                             })
                     } else {
                         const emailData = new Mailer({
-                            to: completedEmailArray,
+                            to: completedMails,
                             from: ownerMail,
                             subject: " Signature Process Completed ",
                             html: `<h2>Below completed Sign PDF</h2>

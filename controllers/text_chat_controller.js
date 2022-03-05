@@ -36,7 +36,7 @@ exports.sendTextMessage = async (req, res) => {
   const authToken = process.env.authkey;
 
   // Please uncomment code below in production once we are setting correct twilio number for user
-  let {twilio} = await user.findById(req.params.userId);
+  let {twilio} = await user.findOne({_id:req.params.userId});
 
   let {primaryPhone} = await member.findById(req.body.uid);
   const twilioFormat = phoneNumber => {
