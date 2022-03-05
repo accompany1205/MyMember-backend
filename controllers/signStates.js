@@ -153,6 +153,32 @@ async function signPdf(file, items) {
     }
 }
 
+exports.primarySetSignItems = async (req, res) => {
+    try {
+        let docuSignId = req.params.docuSignId;
+        let emailTokens = req.params.emailToken;
+        let body = req.body;
+        await SignStates.findOne({ _id: docuSignId }).then(async data => {
+            // if (!data.status) data.status = {}
+            // data.status[invite] = { ...data.status[invite], signed: new Date().getTime() };
+            // let items = { ...data.items, ...req.body.items };
+            let emailToken = await buyMembership.findOne({ _id: data.signDocForId });
+            if (emailToken.emailToken === emailTokens) {
+                await SignStates.updateOne({ _id: docuSignId }, { $set: body }).then(data => {
+                    res.send({ msg: "Item updated!", success: true });
+                }).catch(err => {
+                    res.send({ msg: "Itme not updated!", success: false, error: err.message.replace(/\"/g, "") });
+                })
+            } else {
+                res.status(401).send({ msg: "Not verified!", success: false });
+            }
+        }).catch(err => {
+            res.send({ msg: "not Updated!", success: false, error: err.message.replace(/\"/g, "") });
+        })
+    } catch (err) {
+        res.send({ msg: "not Updated!", success: false, error: err.message.replace(/\"/g, "") });
+    }
+};
 
 
 exports.setSignItems = async (req, res) => {
