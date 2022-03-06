@@ -951,7 +951,6 @@ exports.searchUser = async (req, res) => {
 	const search = req.query.search;
 
 	try {
-		// const data = await User.find({ status: { $in: [{ eventName: req.body.eventName, city: req.body.city }] } })
 		const data = await User.find(
 			{
 				$or: [
@@ -959,13 +958,11 @@ exports.searchUser = async (req, res) => {
 					{ email: { $regex: search, $options: 'i' } },
 					{ firstname: { $regex: search, $options: 'i' } },
 				],
-			},
-			{ username: 1, firstname: 1 }
-		);
+			});
 
-		res.send(data);
+		res.send({ data: data, success: true });
 	} catch (err) {
-		console.log(err);
+		res.send({ msg: err.message.replace(/\"/g, ''), success: false });
 	}
 };
 

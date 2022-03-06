@@ -44,7 +44,7 @@ router.post('/sendOTP_to_email', sendOTP_to_email);
 router.post('/verify_otp', verify_otp);
 //
 router.put('/updateUser/:userId', updateUser);
-router.get('/searchUser/:userId', searchUser);
+router.get('/admin/searchUser/:userId', searchUser);
 router.post('/adminApproval', adminApproval);
 
 router.get('/get_navbar', get_navbar);
