@@ -1,4 +1,4 @@
-// const pizzip = require("pizzip");
+const pizzip = require("pizzip");
 const fetch = require("node-fetch");
 const Docxtemplater = require("docxtemplater");
 const buffToPdf = require("./pdfConvertor");
