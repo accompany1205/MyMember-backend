@@ -435,7 +435,6 @@ exports.sendEmail = async (req, res) => {
     const Allattachments = await Promise.all(attachments);
     emailBody.attachments = Allattachments;
     emailBody.category = "compose";
-    emailBody.to = JSON.parse(emailBody.to)
     if (!emailBody.to) {
       let smartLists = JSON.parse(emailBody.smartLists) ? JSON.parse(emailBody.smartLists) : []
       smartLists = smartLists.map(s => ObjectId(s));

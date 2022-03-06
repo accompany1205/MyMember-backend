@@ -6,7 +6,7 @@ const leads_trackSchema = new schema({
         type: String,
         trim: true,
         required: [true, "can't be blank"],
-        unique: [true, "lead already exist!"],
+        // unique: [true, "lead already exist!"],
     },
     userId: {
         type: String,
