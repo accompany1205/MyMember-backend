@@ -193,6 +193,8 @@ exports.setSignItems = async (req, res) => {
         const pdfPath = emailToken.mergedDoc;
         let pdfLink = pdfPath.split(process.env.GOOGLE_STORAGE_PATH)[1]
         let docLink = `${process.env.RESET_URL}/docusign/sign/${docuSignId}/${pdfLink}/${emailTokens}`
+        let aftersigncompleteLink = `${process.env.RESET_URL}/docusign/download/sign-pdf/${docuSignId}/${pdfLink}/${emailTokens}`
+
 
         if (emailToken.emailToken === emailTokens) {
             try {
@@ -233,13 +235,13 @@ exports.setSignItems = async (req, res) => {
                                 res.send({ msg: "Item not updated!", success: false, error: err.message.replace(/\"/g, "") })
                             })
                     } else {
-                        await SignStates.updateOne({ _id: docuSignId }, { $set:{isDone:true} })
+                        await SignStates.updateOne({ _id: docuSignId }, { $set: { isDone: true } })
                         const emailData = new Mailer({
                             to: completedMails,
                             from: ownerMail,
                             subject: " Signature Process Completed ",
                             html: `<h2>Below completed Sign PDF</h2>
-                                            <p>${docLink}</p>`,
+                                            <p>${aftersigncompleteLink}</p>`,
                         });
                         emailData.sendMail()
                             .then(resp => {
