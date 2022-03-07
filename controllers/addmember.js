@@ -453,150 +453,153 @@ exports.studentCount = (req, res) => {
 };
 
 exports.addmember = async (req, res) => {
-  try {
-    var memberdetails = req.body;
-    if (memberdetails.after_camp) {
-      memberdetails.after_camp = memberdetails.after_camp ? JSON.parse(memberdetails.after_camp) : []
-    }
-    if (memberdetails.buyerInfo) {
-      memberdetails.buyerInfo = memberdetails.buyerInfo ? JSON.parse(memberdetails.buyerInfo) : {};
-    }
-    var memberObj = new addmemberModal(memberdetails);
-    memberObj.userId = req.params.userId;
+	try {
+		var memberdetails = req.body;
+		if (memberdetails.after_camp) {
+			memberdetails.after_camp = memberdetails.after_camp ? JSON.parse(memberdetails.after_camp) : []
+		}
+		if (memberdetails.leadsTracking) {
+			memberdetails.leadsTracking = memberdetails.leadsTracking ? JSON.parse(memberdetails.leadsTracking) : []
+		}
+		if (memberdetails.buyerInfo) {
+			memberdetails.buyerInfo = memberdetails.buyerInfo ? JSON.parse(memberdetails.buyerInfo) : {};
+		}
+		var memberObj = new addmemberModal(memberdetails);
+		memberObj.userId = req.params.userId;
 
-    memberObj.save(function (err, data) {
-      if (err) {
-        console.log(err)
-        res.send({
-          success: false,
-          msg: "member is not added",
-        });
-      } else {
-        if (req.file) {
-          cloudUrl
-            .imageUrl(req.file)
-            .then((stdImgUrl) => {
-              addmemberModal
-                .findByIdAndUpdate(data._id, {
-                  $set: {
-                    memberprofileImage: stdImgUrl,
-                  },
-                })
-                .then((response) => {
-                  // res.send({'res':response})
-                  program
-                    .findOne({
-                      programName: req.body.program,
-                    })
-                    .select("programName")
-                    .populate({
-                      path: "program_rank",
-                      model: "Program_rank",
-                      select: "rank_name rank_image",
-                    })
-                    .exec((err, proData) => {
-                      if (err) {
-                        res.send({
-                          success: false,
-                          msg: "program not found",
-                        });
-                      } else {
-                        var d = proData.program_rank[0] || ''
-                        addmemberModal.findByIdAndUpdate(
-                          {
-                            _id: response._id,
-                          },
-                          {
-                            $set: {
-                              next_rank_id: d._id,
-                              next_rank_name: d.rank_name,
-                              next_rank_img: d.rank_image,
-                              programID: proData._id,
-                            },
-                          },
-                          (err, mangerank) => {
-                            if (err) {
-                              res.send({
-                                success: false,
-                                msg: "manage rank not found",
-                              });
-                            } else {
-                              res.send({
-                                msg: "Student created successfully",
-                                success: true,
-                                data: data._id
-                              });
-                            }
-                          }
-                        );
-                      }
-                    });
-                })
-                .catch((err) => {
-                  res.send(err);
-                });
-            })
-            .catch((err) => {
-              res.send({
-                msg: "image url is not create",
-                success: false
-              });
-            });
-        } else {
-          program
-            .findOne({
-              programName: req.body.program,
-            })
-            .select("programName")
-            .populate({
-              path: "program_rank",
-              model: "Program_rank",
-              select: "rank_name rank_image",
-            })
-            .exec((err, proData) => {
-              if (err || !proData) {
-                res.send({
-                  success: false,
-                  msg: "Please select a Program",
-                });
-              } else {
-                var d = proData.program_rank[0] || ''
-                addmemberModal.findByIdAndUpdate(
-                  {
-                    _id: data._id,
-                  },
-                  {
-                    $set: {
-                      next_rank_id: d._id,
-                      next_rank_name: d.rank_name,
-                      next_rank_img: d.rank_image,
-                      programID: proData._id,
-                    },
-                  },
-                  (err, mangerank) => {
-                    if (err) {
-                      res.send({
-                        success: false,
-                        msg: "manage rank not find of program",
-                      });
-                    } else {
-                      res.send({
-                        msg: "Student created successfully",
-                        success: true,
-                        data: data._id
-                      });
-                    }
-                  }
-                );
-              }
-            });
-        }
-      }
-    });
-  }
-  catch (err) {
-    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
-  }
+		memberObj.save(function (err, data) {
+			if (err) {
+				console.log(err)
+				res.send({
+					success: false,
+					msg: "member is not added",
+				});
+			} else {
+				if (req.file) {
+					cloudUrl
+						.imageUrl(req.file)
+						.then((stdImgUrl) => {
+							addmemberModal
+								.findByIdAndUpdate(data._id, {
+									$set: {
+										memberprofileImage: stdImgUrl,
+									},
+								})
+								.then((response) => {
+									// res.send({'res':response})
+									program
+										.findOne({
+											programName: req.body.program,
+										})
+										.select("programName")
+										.populate({
+											path: "program_rank",
+											model: "Program_rank",
+											select: "rank_name rank_image",
+										})
+										.exec((err, proData) => {
+											if (err) {
+												res.send({
+													success: false,
+													msg: "program not found",
+												});
+											} else {
+												var d = proData.program_rank[0] || ''
+												addmemberModal.findByIdAndUpdate(
+													{
+														_id: response._id,
+													},
+													{
+														$set: {
+															next_rank_id: d._id,
+															next_rank_name: d.rank_name,
+															next_rank_img: d.rank_image,
+															programID: proData._id,
+														},
+													},
+													(err, mangerank) => {
+														if (err) {
+															res.send({
+																success: false,
+																msg: "manage rank not found",
+															});
+														} else {
+															res.send({
+																msg: "Student created successfully",
+																success: true,
+																data: data._id
+															});
+														}
+													}
+												);
+											}
+										});
+								})
+								.catch((err) => {
+									res.send(err);
+								});
+						})
+						.catch((err) => {
+							res.send({
+								msg: "image url is not create",
+								success: false
+							});
+						});
+				} else {
+					program
+						.findOne({
+							programName: req.body.program,
+						})
+						.select("programName")
+						.populate({
+							path: "program_rank",
+							model: "Program_rank",
+							select: "rank_name rank_image",
+						})
+						.exec((err, proData) => {
+							if (err || !proData) {
+								res.send({
+									success: false,
+									msg: "Please select a Program",
+								});
+							} else {
+								var d = proData.program_rank[0] || ''
+								addmemberModal.findByIdAndUpdate(
+									{
+										_id: data._id,
+									},
+									{
+										$set: {
+											next_rank_id: d._id,
+											next_rank_name: d.rank_name,
+											next_rank_img: d.rank_image,
+											programID: proData._id,
+										},
+									},
+									(err, mangerank) => {
+										if (err) {
+											res.send({
+												success: false,
+												msg: "manage rank not find of program",
+											});
+										} else {
+											res.send({
+												msg: "Student created successfully",
+												success: true,
+												data: data._id
+											});
+										}
+									}
+								);
+							}
+						});
+				}
+			}
+		});
+	}
+	catch (err) {
+		res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+	}
 };
 
 exports.read = (req, res) => {
@@ -1682,122 +1685,122 @@ exports.delete_multipal_member = (req, res) => {
 };
 
 exports.updatemember = async (req, res) => {
-  var memberID = req.params.memberID;
-  let
-    = req.params.userId
-  let memberData = req.body
-  if (memberData.after_camp) {
-    memberData.after_camp = memberData.after_camp ? JSON.parse(memberData.after_camp) : []
-  }
-  if (memberData.leadsTracking) {
-    memberData.leadsTracking = memberData.leadsTracking ? JSON.parse(memberData.leadsTracking) : []
-  }
-  if (memberData.buyerInfo) {
-    memberData.buyerInfo = memberData.buyerInfo ? JSON.parse(memberData.buyerInfo) : {};
-  }
+	var memberID = req.params.memberID;
+	let
+		= req.params.userId
+	let memberData = req.body
+	if (memberData.after_camp) {
+		memberData.after_camp = memberData.after_camp ? JSON.parse(memberData.after_camp) : []
+	}
+	if (memberData.leadsTracking) {
+		memberData.leadsTracking = memberData.leadsTracking ? JSON.parse(memberData.leadsTracking) : []
+	}
+	if (memberData.buyerInfo) {
+		memberData.buyerInfo = memberData.buyerInfo ? JSON.parse(memberData.buyerInfo) : {};
+	}
 
-  // let [data] = await smartList.find({ "criteria.studentType": memberData.studentType });
-  // if (data) {
-  // let [data] = await smartList.find({ "criteria.studentType": memberData.studentType });
-  // let [Email] = await sentEmail.find({ smartLists: data._id });
-  //   if (Email.toJSON().immediately) {
-  //     const emailData = {
-  //       sendgrid_key: process.env.SENDGRID_API_KEY,
-  //       to: memberData.email,
-  //       from: Email.toJSON().from,
-  //       from_name: 'noreply@gmail.com',
-  //       subject: Email.toJSON().subject,
-  //       html: Email.toJSON().template,
-  //       attachments: Email.toJSON().attachments
-  //     };
-  //     sgMail.send(emailData)
-  //       .then(resp => {
-  //         var emailDetail = new sentEmail(req.body)
-  //         emailDetail.save((err, emailSave) => {
-  //           if (err) {
-  //             res.send({ error: 'email details is not save' })
-  //           }
-  //           else {
-  //             sentEmail.findByIdAndUpdate(emailSave._id, { userId: userId, email_type: 'sent', is_Sent: true, category: 'system' })
-  //               .exec((err, emailUpdate) => {
-  //                 if (err) {
-  //                   console.log({ msg: 'emil not sent', err })
-  //                 }
-  //                 else {
-  //                   // res.send({ message: "Email Sent Successfully", success: true, emailUpdate })
-  //                 }
-  //               })
-  //           }
-  //         })
-  //       })
-  //       .catch(err => {
-  //         console.log({ msg: 'email not send', error: err })
-  //       })
-  //   } else {
-  //     let sent_date = moment(Email.toJSON().sent_date).add(Email.toJSON().days, 'days').format("YYYY-MM-DD");
-  //     const obj = {
-  //       to: memberData.email,
-  //       from: memberData.email,
-  //       subject: Email.toJSON().subject,
-  //       template: Email.toJSON().template,
-  //       sent_date: sent_date,
-  //       sent_time: Email.toJSON().sent_time,
-  //       email_type: "scheduled",
-  //       email_status: true,
-  //       category: "system",
-  //       userId: userId,
-  //       folderId: Email.toJSON().folderId,
-  //       days: Email.toJSON().days,
-  //     }
-  //     console.log(obj)
-  //     saveEmailTemplate(obj)
-  //       .then((data) => {
-  //         system_folder
-  //           .findOneAndUpdate(
-  //             { _id: obj.folderId },
-  //             { $push: { template: data._id } }
-  //           )
-  //           .then((data) => {
-  //             console.log(`Email scheduled  Successfully on ${sent_date}`)
-  //           })
-  //           .catch((er) => {
-  //             res.send({
-  //               msg: "compose template details is not add in folder",
-  //               success: er,
-  //             });
-  //           });
-  //       })
-  //   }
+	// let [data] = await smartList.find({ "criteria.studentType": memberData.studentType });
+	// if (data) {
+	// let [data] = await smartList.find({ "criteria.studentType": memberData.studentType });
+	// let [Email] = await sentEmail.find({ smartLists: data._id });
+	//   if (Email.toJSON().immediately) {
+	//     const emailData = {
+	//       sendgrid_key: process.env.SENDGRID_API_KEY,
+	//       to: memberData.email,
+	//       from: Email.toJSON().from,
+	//       from_name: 'noreply@gmail.com',
+	//       subject: Email.toJSON().subject,
+	//       html: Email.toJSON().template,
+	//       attachments: Email.toJSON().attachments
+	//     };
+	//     sgMail.send(emailData)
+	//       .then(resp => {
+	//         var emailDetail = new sentEmail(req.body)
+	//         emailDetail.save((err, emailSave) => {
+	//           if (err) {
+	//             res.send({ error: 'email details is not save' })
+	//           }
+	//           else {
+	//             sentEmail.findByIdAndUpdate(emailSave._id, { userId: userId, email_type: 'sent', is_Sent: true, category: 'system' })
+	//               .exec((err, emailUpdate) => {
+	//                 if (err) {
+	//                   console.log({ msg: 'emil not sent', err })
+	//                 }
+	//                 else {
+	//                   // res.send({ message: "Email Sent Successfully", success: true, emailUpdate })
+	//                 }
+	//               })
+	//           }
+	//         })
+	//       })
+	//       .catch(err => {
+	//         console.log({ msg: 'email not send', error: err })
+	//       })
+	//   } else {
+	//     let sent_date = moment(Email.toJSON().sent_date).add(Email.toJSON().days, 'days').format("YYYY-MM-DD");
+	//     const obj = {
+	//       to: memberData.email,
+	//       from: memberData.email,
+	//       subject: Email.toJSON().subject,
+	//       template: Email.toJSON().template,
+	//       sent_date: sent_date,
+	//       sent_time: Email.toJSON().sent_time,
+	//       email_type: "scheduled",
+	//       email_status: true,
+	//       category: "system",
+	//       userId: userId,
+	//       folderId: Email.toJSON().folderId,
+	//       days: Email.toJSON().days,
+	//     }
+	//     console.log(obj)
+	//     saveEmailTemplate(obj)
+	//       .then((data) => {
+	//         system_folder
+	//           .findOneAndUpdate(
+	//             { _id: obj.folderId },
+	//             { $push: { template: data._id } }
+	//           )
+	//           .then((data) => {
+	//             console.log(`Email scheduled  Successfully on ${sent_date}`)
+	//           })
+	//           .catch((er) => {
+	//             res.send({
+	//               msg: "compose template details is not add in folder",
+	//               success: er,
+	//             });
+	//           });
+	//       })
+	//   }
 
-  // }
-  if (req.file) {
-    await cloudUrl
-      .imageUrl(req.file)
-      .then((stdimagUrl) => {
-        memberData.memberprofileImage = stdimagUrl
-      })
-      .catch((msg) => {
-        res.send({
-          success: false,
-          msg: "Profile image url not created",
-        });
-      });
-  }
-  await addmemberModal.findOneAndUpdate({ _id: memberID }, { $set: memberData })
-    .exec((err, data) => {
-      if (err) {
-        res.send({
-          success: false,
-          msg: "Member not updated",
-        });
-      } else {
-        res.send({
-          success: true,
-          msg: "Member is update successfully",
-        });
+	// }
+	if (req.file) {
+		await cloudUrl
+			.imageUrl(req.file)
+			.then((stdimagUrl) => {
+				memberData.memberprofileImage = stdimagUrl
+			})
+			.catch((msg) => {
+				res.send({
+					success: false,
+					msg: "Profile image url not created",
+				});
+			});
+	}
+	await addmemberModal.findOneAndUpdate({ _id: memberID }, { $set: memberData })
+		.exec((err, data) => {
+			if (err) {
+				res.send({
+					success: false,
+					msg: "Member not updated",
+				});
+			} else {
+				res.send({
+					success: true,
+					msg: "Member is update successfully",
+				});
 
-      }
-    })
+			}
+		})
 };
 
 function TimeZone() {
