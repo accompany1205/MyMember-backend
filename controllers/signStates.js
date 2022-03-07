@@ -207,10 +207,9 @@ exports.setSignItems = async (req, res) => {
                                 if (key == "owner") {
                                     ownerMail = v[0].email;
                                 }
-                                if (itmObj.value === undefined || itmObj.value === "") {
+                                if (itmObj.value === undefined || itmObj.value === "" || itmObj.value == null) {
                                     emailArray.push(itmObj.email);
                                 } else {
-                                    await SignStates.updateOne({ _id: docuSignId }, { $set:{isDone:true} })
                                     completedEmailArray.push(itmObj.email);
                                 }
                             }
@@ -234,6 +233,7 @@ exports.setSignItems = async (req, res) => {
                                 res.send({ msg: "Item not updated!", success: false, error: err.message.replace(/\"/g, "") })
                             })
                     } else {
+                        await SignStates.updateOne({ _id: docuSignId }, { $set:{isDone:true} })
                         const emailData = new Mailer({
                             to: completedMails,
                             from: ownerMail,
