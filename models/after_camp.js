@@ -6,7 +6,7 @@ const after_camp_Schema = new schema({
         type: String,
         trim: true,
         required: [true, "can't be blank"],
-        unique: [true, 'Tag already exist!'],
+        // unique: [true, 'Tag already exist!'],
     },
     userId: {
         type: String,
