@@ -27,7 +27,7 @@ exports.search_std = (req, res) => {
       });
   }
   catch (err) {
-    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }
 };
 
@@ -37,45 +37,47 @@ exports.create = async (req, res) => {
     var objId = mongo.Types.ObjectId(studentId)
     let time = req.body.time
 
-    var schdule_data = await schedule.findOne({ _id: req.params.scheduleId });
+    var schdule_data = await schedule.findOne({ _id: req.params.scheduleId, "class_attendanceArray.studentInfo": { $nin: [objId] } });
     if (schdule_data) {
       student.findOne({ _id: studentId }).exec((err, stdData) => {
-        if (err) {
-          res.send({ error: "student data not find" });
+        if (err || stdData == null) {
+          res.send({ msg: "student data not find", success: false });
         } else {
+          console.log(stdData)
           var DT = TimeZone();
           let h = parseInt(time.split(':')[0])
           let m = parseInt(time.split(':')[1])
           var DT = TimeZone();
-          let epochTime = new Date(DT.Date)
-          epochTime.setHours(h, m)
-
+          let epochTime = new Date()
+          // epochTime.setHours(h, m)
           var class_attendanceArray = {
             studentInfo: objId,
             time: time,
             date: DT.Date,
-            epochTime: epochTime.toISOString()
+            epochTime: epochTime
           };
           schedule.updateOne({ _id: req.params.scheduleId, "class_attendanceArray.studentInfo": { $nin: [objId] } },
             { $addToSet: { class_attendanceArray: class_attendanceArray } })
             .exec((err, attendanceUpdte) => {
               if (err) {
-                res.send({ error: "student addendance is not add in class", Error: err });
+                res.send({ msg: err, success: false });
               } else {
                 student.updateOne({ _id: studentId },
                   {
                     $set: {
                       rating: 0,
                       missclass_count: 0,
-                      attendedclass_count: stdData.attendedclass_count + 1,
                       attendence_color: "#00FF00",
                       attendence_status: true,
                     },
+                    $inc: {
+                      attendedclass_count: 1,
+                    }
                   }
                 )
                   .exec((err, data) => {
                     if (err) {
-                      res.send({ error: "student rating is not update" });
+                      res.send({ msg: "student rating is not update", success: false });
 
                     } else {
                       res.send({
@@ -89,6 +91,11 @@ exports.create = async (req, res) => {
         }
 
       })
+    } else {
+      res.send({
+        msg: "attendence marked already",
+        success: true
+      });
     }
   }
   catch (err) {
@@ -104,14 +111,14 @@ exports.update = async (req, res) => {
     let h = parseInt(time.split(':')[0])
     let m = parseInt(time.split(':')[1])
     var DT = TimeZone();
-    let epochTime = new Date(DT.Date)
-    epochTime.setHours(h, m)
+    let epochTime = new Date()
+    // epochTime.setHours(h, m)
 
     var class_attendanceArray = {
       studentInfo: objId,
       time: time,
       date: DT.Date,
-      epochTime: epochTime.toISOString()
+      epochTime: epochTime
     };
     schedule.updateOne({
       _id: req.params.scheduleId,
@@ -120,7 +127,7 @@ exports.update = async (req, res) => {
       { $set: { class_attendanceArray: class_attendanceArray } })
       .exec((err, data) => {
         if (err) {
-          res.send({ error: "student rating is not update" });
+          res.send({ msg: "student rating is not update" });
 
         } else {
           res.send({
@@ -131,7 +138,7 @@ exports.update = async (req, res) => {
       });
   }
   catch (err) {
-    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }
 };
 
@@ -148,7 +155,7 @@ exports.remove = (req, res) => {
       { $pull: { "class_attendanceArray": { studentInfo: objId } } },
       (err, attendeRemove) => {
         if (err) {
-          res.send({ error: "student attendance is not remove in class" });
+          res.send({ msg: "student attendance is not remove in class" });
         } else {
           res.send({
             msg: "student attendance is remove successfully",
@@ -159,7 +166,7 @@ exports.remove = (req, res) => {
     );
   }
   catch (err) {
-    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }
 
 };
@@ -271,7 +278,7 @@ exports.list_attendence = (req, res) => {
       ])
       .exec((err, list) => {
         if (err) {
-          res.send({ error: "attendence list not found" });
+          res.send({ msg: "attendence list not found" });
         } else {
           let data = list[0].paginatedResults
           if (data.length > 0) {
@@ -285,7 +292,7 @@ exports.list_attendence = (req, res) => {
   }
 
   catch (err) {
-    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
 
   }
 }
@@ -380,7 +387,7 @@ exports.getStudentAttendence = (req, res) => {
     ])
       .exec((err, list) => {
         if (err) {
-          res.send({ error: "attendence list not found" });
+          res.send({ msg: "attendence list not found" });
         } else {
           let data = list[0].paginatedResults
           if (data.length > 0) {
@@ -394,7 +401,7 @@ exports.getStudentAttendence = (req, res) => {
   }
 
   catch (err) {
-    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }
 
 };
@@ -535,19 +542,70 @@ exports.searchAttendance = async (req, res) => {
         })
     }
   } catch (err) {
-    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }
 }
 
 // exports.getStudentAttendence = async (req, res) => {
 //   let studentId = req.params.studentId
 //   if (!studentId) {
-//     res.json({ status: false, error: "Student id  not found in params" });
+//     res.json({ status: false, msg: "Student id  not found in params" });
 //   }
 //   let attendance = attendance.find({ studentId: studentId })
 //   if (!attendance) {
-//     res.json({ status: false, error: `Attendance data not found with this Student id  ${studentId}` });
+//     res.json({ status: false, msg: `Attendance data not found with this Student id  ${studentId}` });
 //   }
 
 //   res.json({ status: true, data: attendance })
 // }
+exports.update_rating = async (req, res) => {
+  const pipeline = [
+    {
+      '$match': {
+        'userId': '606aea95a145ea2d26e0f1ab'
+      }
+    }, {
+      '$lookup': {
+        'from': 'class_schedules',
+        'localField': '_id',
+        'foreignField': 'class_attendanceArray.studentInfo',
+        'as': 'data'
+      }
+    }, {
+      '$project': {
+        'last_attended_date': {
+          '$toDate': {
+            '$arrayElemAt': [
+              '$data.start_date', -1
+            ]
+          }
+        }
+      }
+    }, {
+      '$addFields': {
+        'rating': {
+          '$floor': {
+            '$divide': [
+              {
+                '$subtract': [
+                  new Date(), '$last_attended_date'
+                ]
+              }, 1000 * 60 * 60 * 24
+            ]
+          }
+        }
+      }
+    }
+  ]
+  const members = await student.aggregate(pipeline)
+  const promise = await members.map(member => {
+    student.findOneAndUpdate({ _id: member._id }, { $set: { rating: (member.rating == null ? 60 : member.rating) } }, { $upsert: true })
+
+  })
+  Promise.all(promise).then(resp => {
+    res.send({ msg: 'updated' })
+
+  }).catch(err => {
+
+  })
+}

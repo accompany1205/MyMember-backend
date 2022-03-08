@@ -59,6 +59,10 @@ const signStatesSchema = schema(
         signDocFor: {
             type: String
         },
+        isDone:{
+            type: Boolean,
+            default: false
+        },
         items: signersSchema,
         viewed: {
             type: Array

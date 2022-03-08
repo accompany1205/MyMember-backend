@@ -4,7 +4,7 @@ const schema = mongoose.Schema
 const docFolderSchema = new schema({
     folderName: {
         type: String,
-        unique: true,
+        // unique: true,
         required: true
     },
     smartlists: [

@@ -158,11 +158,8 @@ exports.seven_to_forteen = async (req, res) => {
             "dayssince": {
               $floor: {
                 $divide: [{
-                  $subtract: [new Date(), {
-                    $dateFromString: {
-                      dateString: "$epochTime"
-                    }
-                  }]
+                  $subtract: [new Date(), "$epochTime"
+                  ]
                 }, 1000 * 60 * 60 * 24]
               }
             }
@@ -355,11 +352,9 @@ exports.fifteen_to_thirty = async (req, res) => {
             "dayssince": {
               $floor: {
                 $divide: [{
-                  $subtract: [new Date(), {
-                    $dateFromString: {
-                      dateString: "$epochTime"
-                    }
-                  }]
+                  $subtract: [new Date(), "$epochTime"
+
+                  ]
                 }, 1000 * 60 * 60 * 24]
               }
             }
@@ -552,11 +547,8 @@ exports.Thirty_to_sixty = async (req, res) => {
             "dayssince": {
               $floor: {
                 $divide: [{
-                  $subtract: [new Date(), {
-                    $dateFromString: {
-                      dateString: "$epochTime"
-                    }
-                  }]
+                  $subtract: [new Date(), "$epochTime"
+                  ]
                 }, 1000 * 60 * 60 * 24]
               }
             }
@@ -749,11 +741,8 @@ exports.more_than_sixty = async (req, res) => {
             "dayssince": {
               $floor: {
                 $divide: [{
-                  $subtract: [new Date(), {
-                    $dateFromString: {
-                      dateString: "$epochTime"
-                    }
-                  }]
+                  $subtract: [new Date(), "$epochTime"
+                  ]
                 }, 1000 * 60 * 60 * 24]
               }
             }
@@ -1152,7 +1141,7 @@ exports.missclasses = async (req, res) => {
       let { missclass_count } = data[0]
       await updateStudentsById(i, missclass_count)
     }
-    console.log("miss_Classes updated!" )
+    console.log("miss_Classes updated!")
   }
   catch (err) {
     throw new Error(err);

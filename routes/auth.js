@@ -44,13 +44,13 @@ router.post('/sendOTP_to_email', sendOTP_to_email);
 router.post('/verify_otp', verify_otp);
 //
 router.put('/updateUser/:userId', updateUser);
-router.get('/searchUser/:userId', searchUser);
+router.get('/admin/searchUser/:userId', searchUser);
 router.post('/adminApproval', adminApproval);
 
 router.get('/get_navbar', get_navbar);
 router.post('/edit_navbar_li', edit_navbar_li);
 router.post('/edit_navbar_ui', edit_navbar_ui);
-router.get('/school_listing/:adminId/:page_no', isAdmin, school_listing);
+router.get('/admin/school_listing/:adminId/:page_no', isAdmin, school_listing);
 router.put(
 	'/approvesendgridverification/:adminId/:userId',
 	isAdmin,
