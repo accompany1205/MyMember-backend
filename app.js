@@ -15,6 +15,8 @@ const corn = require('node-cron');
 const expressValidator = require('express-validator');
 require('dotenv').config();
 
+
+
 // import routes
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
@@ -163,6 +165,16 @@ const finance = require('./routes/finance');
 const app = express();
 // app.use(fileUpload({ safeFileNames: true, preserveExtension: true }))
 const { v4: uuidv4 } = require('uuid');
+const server = http.createServer(app);
+const { Server } = require("socket.io");
+const io = new Server(server,{
+	cors:{
+		origin:'*'
+	}
+});
+const engineSocket = require('./Services/scoket.io');
+new engineSocket(io);
+
 
 const followup_notes = require('./models/followup_notes');
 uuidv4();
