@@ -9,7 +9,7 @@ class SocketEngine {
         var io = this.sConnection
         this.sConnection.on('connection', function (socket) {
             
-            console.log(socket)
+            console.log("connection!")
             socket.on('textAlert', async (text) => {
 
                 socket.emit("getText", "Hello Message!");

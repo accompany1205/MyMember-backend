@@ -14,7 +14,7 @@ const fileUpload = require('express-fileupload');
 const corn = require('node-cron');
 const expressValidator = require('express-validator');
 require('dotenv').config();
-
+const socketio = require('socket.io');
 
 
 // import routes
@@ -165,13 +165,10 @@ const finance = require('./routes/finance');
 const app = express();
 // app.use(fileUpload({ safeFileNames: true, preserveExtension: true }))
 const { v4: uuidv4 } = require('uuid');
+
 const server = http.createServer(app);
-const { Server } = require("socket.io");
-const io = new Server(server,{
-	cors:{
-		origin:'*'
-	}
-});
+const io = socketio(server);
+
 const engineSocket = require('./Services/scoket.io');
 new engineSocket(io);
 
@@ -371,6 +368,6 @@ const port = process.env.PORT || 3001;
 // var server = https.createServer(credentials1, app).listen(port, function(){
 // });
 
-app.listen(port, () => {
+server.listen(port, () => {
 	console.log(`Server is running on port ${port}`);
 });
