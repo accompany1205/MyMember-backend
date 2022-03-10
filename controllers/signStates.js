@@ -186,39 +186,41 @@ function htmlBody(messageBody, link, linkButtonsText) {
     <tbody>
         <tr>
             <td role="module-content">
-                <div
-                style="display: flex;justify-content: center;padding: 10px;align-items: center;min-height:40vh;"
-                >
-                    <div style="padding: 3rem;
-                max-width: 500px;
-                box-shadow: 0px 4px 24px rgb(0 0 0 / 10%);
-                border-radius: 10px;
-                background-color: #fff;
-                text-align: center;
-                display: flex;
-                justify-content: center;
-                flex-direction: column;">
-                        <div>
-                            <img style="width: 100px;" src="https://mymember.com/static/media/logo.940eab8a.png" />
-                        </div>
-                        <div>
-                            <h3>${messageBody} </h3>
-                        </div>
-                        <div>
-                            <br />
-                            <a href=${link} style="border-radius: 30px;
-                        border: 2px solid #2196f3;
-                        padding: 1rem;
-                        color: #2196f3;
-                        text-decoration: none;
-                        width: 200px;
-                        background: #fff;" target="_blank" rel="noopener noreferrer">
-                                ${linkButtonsText}
-                            </a>
-                        </div>
-                    </div>
-                </div>
+<center>
+<div
+style="background:#e8e8e8; display: flex;justify-content: center;padding: 10px;align-items: center;min-height:40vh;"
+>
+    <div style="padding: 3rem;
+max-width: 500px;
+box-shadow: 0px 4px 24px rgb(0 0 0 / 10%);
+border-radius: 10px;
+background-color: #fff;
+text-align: center;
+display: flex;
+justify-content: center;
+flex-direction: column;">
+        <div>
+            <img style="width: 100px;" src="https://mymember.com/static/media/logo.940eab8a.png" />
+        </div>
+        <div>
+            <h3>${messageBody} </h3>
+        </div>
+        <div>
+            <br />
+            <a href=${link} style="border-radius: 30px;
+        border: 2px solid #2196f3;
+        padding: 1rem;
+        color: #2196f3;
+        text-decoration: none;
+        width: 200px;
+        background: #fff;" target="_blank" rel="noopener noreferrer">
+                ${linkButtonsText}
+            </a>
+        </div>
+    </div>
+</div>
 
+</center>
             </td>
         </tr>
 
@@ -286,7 +288,7 @@ exports.setSignItems = async (req, res) => {
                             to: completedMails,
                             from: ownerMail,
                             subject: "Signature Process Completed ",
-                            html:htmlBody('Below completed Sign PDF',aftersigncompleteLink, 'Click to Download 📃')
+                            html: htmlBody('Below completed Sign PDF', aftersigncompleteLink, 'Click to Download 📃')
                         });
                         emailData.sendMail()
                             .then(resp => {
@@ -362,7 +364,7 @@ exports.inviteeMailSent = async (req, res) => {
             to: emailList,
             from: ownerEmail,
             subject: "Document Signature Process",
-            html:htmlBody('Below is the PDF for your signature',docLink, 'Complete Signature')
+            html: htmlBody('Below is the PDF for your signature', docLink, 'Complete Signature')
         })
         emailData.sendMail()
             .then(resp => {
