@@ -211,7 +211,11 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(morgan('dev'));
 app.use(cookieParser());
 app.use(expressValidator());
-app.use(cors());
+var corsOptions = {
+	Origin: '*',
+	optionsSuccessStatus: 200 // For legacy browser support
+  }
+app.use(cors(corsOptions));
 
 app.use('/api', TTL);
 
