@@ -1,31 +1,31 @@
+const { io } = require("socket.io-client");
 const textMessage = require("../models/text_message");
 const textContact = require("../models/text_contact");
 const member = require("../models/addmember");
 const user = require("../models/user");
 const mongoose = require("mongoose");
-// const { io } = require("socket.io-client");
 
 // Adding member in text contact list
 exports.addTextContact = (req, res) => {
   let contact = new textContact(req.body);
   contact.save((err, data) => {
     if (err) {
-      res.send({error: 'contact not added'});
+      res.send({ error: 'contact not added' });
     } else {
-      res.send({textContact: data});
+      res.send({ textContact: data });
     }
   });
 };
 
 // Get member list from text contact list
 exports.getTextContacts = (req, res) => {
-  textContact.find({from: req.params.userId})
+  textContact.find({ from: req.params.userId })
     .populate('textContacts')
-    .exec((err,textContactList)=>{
-      if(err){
-        res.send({error:'text contact list not found'})
+    .exec((err, textContactList) => {
+      if (err) {
+        res.send({ error: 'text contact list not found' })
       }
-      else{
+      else {
         res.send(textContactList)
       }
     });
@@ -37,9 +37,9 @@ exports.sendTextMessage = async (req, res) => {
   const authToken = process.env.authkey;
 
   // Please uncomment code below in production once we are setting correct twilio number for user
-  let {twilio} = await user.findOne({_id:req.params.userId});
-      console.log("twilo", twilio)
-  let {primaryPhone} = await member.findOne({_id:req.body.uid});
+  let { twilio } = await user.findOne({ _id: req.params.userId });
+  console.log("twilo", twilio)
+  let { primaryPhone } = await member.findOne({ _id: req.body.uid });
   console.log("student ->", primaryPhone)
   const twilioFormat = phoneNumber => {
     if (phoneNumber.charAt(0) !== '+') {
@@ -59,56 +59,64 @@ exports.sendTextMessage = async (req, res) => {
       let textMsg = new textMessage(req.body);
       textMsg.save((err, data) => {
         if (err) {
-          res.send({error: 'message not stored'});
+          res.send({ error: 'message not stored' });
         } else {
-          res.send({textMessage: data});
+          res.send({ textMessage: data });
         }
       });
       console.log('Message: ', message);
     }).catch((error) => {
-      res.send({error: 'Failed to send text message to ' + primaryPhone});
+      res.send({ error: 'Failed to send text message to ' + primaryPhone });
       console.log('Error: ', error);
     }).done();
   } else {
     console.log('Error sending message');
-    res.send({error: 'message not sent'});
+    res.send({ error: 'message not sent' });
   }
 };
 
 // Seen text message and store
 exports.seenContactTextMessages = (req, res) => {
-  textContact.updateOne({uid: req.params.contact},req.body)
-    .exec((err,updateFolder)=>{
-      if(err){
-        res.send({error:'text contact is not update'})
+  textContact.updateOne({ uid: req.params.contact }, req.body)
+    .exec((err, updateFolder) => {
+      if (err) {
+        res.send({ error: 'text contact is not update' })
       }
-      else{
-        res.send({msg:'text contact is update successfully'})
+      else {
+        res.send({ msg: 'text contact is update successfully' })
       }
     })
 };
 
 exports.pinContact = (req, res) => {
-  textContact.updateOne({uid: req.params.contact},req.body)
-    .exec((err,updateFolder)=>{
-      if(err){
-        res.send({error:'text contact is not update'})
+  textContact.updateOne({ uid: req.params.contact }, req.body)
+    .exec((err, updateFolder) => {
+      if (err) {
+        res.send({ error: 'text contact is not update' })
       }
-      else{
-        res.send({msg:'text contact is update successfully'})
+      else {
+        res.send({ msg: 'text contact is update successfully' })
       }
     })
 };
 
 // Get message list for user
-exports.getTextMessages= (req, res) => {
-  textMessage.find({userId: req.params.userId})
+exports.getTextMessages = (req, res) => {
+  //const io = req.app.get('socketio');
+  const socketIo = io("https://cf08-49-36-188-205.ngrok.io", { transports: ['websocket'] })
+  //console.log(socketIo);
+  // socketIo.on("connect_error", (err) => {
+  //   console.log(`connect_error due to - ${err.message}`);
+  // });
+  socketIo.emit("textAlertWebhook", "Naresh!");
+  //socket.emit(customerId, { test: "something" });
+  textMessage.find({ userId: req.params.userId })
     .populate('textMessages')
-    .exec((err,textContactList)=>{
-      if(err){
-        res.send({error:'text contact list not found'})
+    .exec((err, textContactList) => {
+      if (err) {
+        res.send({ error: 'text contact list not found' })
       }
-      else{
+      else {
         res.send(textContactList)
       }
     });
@@ -123,21 +131,22 @@ exports.getTextContactsDetails = (req, res) => {
       ids.push(mongoose.Types.ObjectId(id));
     });
   }
-  member.find({'_id': {$in: ids}})
+  member.find({ '_id': { $in: ids } })
     .populate('textContacts')
-    .exec((err,textContactList)=>{
-    if(err){
-      res.send({error:'text contact list not found'})
-    }
-    else{
-      res.send(textContactList)
-    }
-  });
+    .exec((err, textContactList) => {
+      if (err) {
+        res.send({ error: 'text contact list not found' })
+      }
+      else {
+        res.send(textContactList)
+      }
+    });
 };
 
 
 // Incoming Message API to test SMS
 exports.listenIncomingSMS = async (req, res) => {
+  console.log(req.io);
   const msg = req.body.hasOwnProperty('Body') ? req.body.Body : 'Failed to receive sms';
   const from = req.from.hasOwnProperty('From') ? req.from.From : 'Unknown sender';
 
@@ -145,9 +154,8 @@ exports.listenIncomingSMS = async (req, res) => {
 
   // Uncomment this code in production when web hooks is placed for production twilio number
   let to = req.params.twilio;
-
   const getUid = phoneNumber => {
-    return member.findOne({primaryPhone: phoneNumber}).then(data => {
+    return member.findOne({ primaryPhone: phoneNumber }).then(data => {
       return data._id;
     }).catch(err => {
       return '';
@@ -158,34 +166,30 @@ exports.listenIncomingSMS = async (req, res) => {
     // Find userid of user with twilio number
 
     // Uncomment this in production once twilio number is added
-    return user.findOne({twilio: phoneNumber}).then(data => {
+    return user.findOne({ twilio: phoneNumber }).then(data => {
       return data._id;
     }).catch(err => {
       return '';
     });
-
-    // Remove below code in production once twilio number is added
-    // Below is hardcoded user id should be removed after twilio number per organization logic is added
-    // let userId = '606aea95a145ea2d26e0f1ab';
-
-    // return userId;
   };
+
+
 
   const obj = {
     userId: await getUserId(to),
     uid: await getUid(from),
-    textContent:  msg,
+    textContent: msg,
     isSent: false,
   };
 
   if (obj.userId !== '' && obj.uid !== '') {
     let text = new textMessage(obj);
     text.save().then(textMessage => {
-      res.send({msg:'text sms sent successfully'})
+      res.send({ msg: 'text sms sent successfully' })
     }).catch(error => {
-      res.send({error:'txt msg not send'})
+      res.send({ error: 'txt msg not send' })
     });
   } else {
-    res.send({error:'txt msg not send due to wrong twilio or phone number'});
+    res.send({ error: 'txt msg not send due to wrong twilio or phone number' });
   }
 }
