@@ -143,6 +143,7 @@ const user_smartlists = require('./routes/admin/smartlist_management/admin_smart
 const user_smartlistFolder = require('./routes/admin/smartlist_management/admin_smartlist_folders');
 const user_leads_tracking = require('./routes/admin/leads_tracking_manage/admin_leads_tracking');
 const user_after_camp = require('./routes/admin/after_camp_manage/admin_after_camp');
+const user_expense_category = require('./routes/admin/finance_manage/admin_expenses_category');
 
 //menu routes
 const student_menu = require('./routes/menu/std_menu/all_student_menu');
@@ -168,8 +169,8 @@ const { v4: uuidv4 } = require('uuid');
 
 const server = http.createServer(app);
 const io = socketio(server, {
-	cors:{
-		origin:"*"
+	cors: {
+		origin: "*"
 	}
 });
 app.set('socketio', io);
@@ -332,6 +333,7 @@ app.use('/api', user_smartlistFolder);
 app.use('/api', user_leads_tracking);
 app.use('/api', user_after_camp);
 app.use('/api', statictics);
+app.use('/api', user_expense_category)
 
 // school auth key middleware
 app.use('/api', emailKey);
