@@ -362,8 +362,7 @@ exports.inviteeMailSent = async (req, res) => {
             to: emailList,
             from: ownerEmail,
             subject: "Document Signature Process",
-            html: `<h2>Below is the PDF for your signature</h2>
-                        <p>${docLink}</p>`,
+            html:htmlBody('Below is the PDF for your signature',docLink, 'Complete Signature')
         })
         emailData.sendMail()
             .then(resp => {
