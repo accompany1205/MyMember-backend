@@ -137,11 +137,11 @@ const emailTemplateDocuSignUi = (btnText, titleString,desString, linkString)=>{
     
     <body>
         <center class="wrapper" data-link-color="#1188E6"
-            data-body-style="font-size:14px; font-family:inherit; color:#000000; background-color:#f0f0f0;">
+            data-body-style="font-size:14px; font-family:inherit; color:#000000; background-color:#fff;">
             <div class="webkit">
-                <table cellpadding="0" cellspacing="0" border="0" width="100%" class="wrapper" bgcolor="#f0f0f0">
+                <table cellpadding="0" cellspacing="0" border="0" width="100%" class="wrapper" bgcolor="#fff">
                     <tr>
-                        <td valign="top" bgcolor="#f0f0f0" width="100%">
+                        <td valign="top" bgcolor="#fff" width="100%">
                             <table width="100%" role="content-container" class="outer" align="center" cellpadding="0"
                                 cellspacing="0" border="0">
                                 <tr>
@@ -203,7 +203,7 @@ const emailTemplateDocuSignUi = (btnText, titleString,desString, linkString)=>{
                                                                                                                     data-proportionally-constrained="true"
                                                                                                                     data-responsive="false"
                                                                                                                     src="https://mymember.com/static/media/logo.940eab8a.png"
-                                                                                                                    height="40"/>
+                                                                                                                    />
                                                                                                             </td>
                                                                                                         </tr>
                                                                                                     </tbody>
@@ -230,7 +230,7 @@ const emailTemplateDocuSignUi = (btnText, titleString,desString, linkString)=>{
                                                                                                                         style="font-family: inherit; text-align: inherit">
 
                                                                                                                         <span
-                                                                                                                            style="color: #ffffff; font-size: 40px; font-family: inherit">${titleString}</span>
+                                                                                                                            style="color: #2191fd; font-size: 40px; font-family: inherit">${titleString}</span>
                                                                                                                     </div>
                                                                                                                     <div>
                                                                                                                     </div>
@@ -296,10 +296,8 @@ const emailTemplateDocuSignUi = (btnText, titleString,desString, linkString)=>{
                                                                                                                                 bgcolor="#000000"
                                                                                                                                 class="inner-td"
                                                                                                                                 style="border-radius:6px; font-size:16px; text-align:left; background-color:inherit;">
-																																																												const DocuSign = (btnText, titleString,desString, linkString)=>{
-
                                                                                                                                 <a href=${linkString}
-                                                                                                                                    style="background-color:#000000; border:1px solid #000000; border-color:#000000; border-radius:0px; border-width:1px; color:#ffffff; display:inline-block; font-size:18px; font-weight:normal; letter-spacing:0px; line-height:normal; padding:12px 18px 12px 18px; text-align:center; text-decoration:none; border-style:solid; font-family:inherit;"
+                                                                                                                                    style="background-color:#2191fd; border:1px solid #2191fd; border-color:#2191fd; border-radius:0px; border-width:1px; color:#fff; display:inline-block; font-size:18px; font-weight:normal; letter-spacing:0px; line-height:normal; padding:12px 18px 12px 18px; text-align:center; text-decoration:none; border-style:solid; font-family:inherit;"
                                                                                                                                     target="_blank">${btnText}</a>
                                                                                                                             </td>
                                                                                                                         </tr>
