@@ -109,18 +109,36 @@ exports.getJoinDataByYear = async (req, res) => {
 			},
 
 			{
-				$addFields: {
-					quit: 0,
-				},
-			},
-			{
 				$group: {
 					_id: '$month',
 					join: {
 						$sum: 1,
 					},
+				},
+			},
+		]);
+
+		const quiteData = await Member.aggregate([
+			{ $match: { userId, programID: programId } },
+			{
+				$project: {
+					updatedAt: 1,
+					year: { $year: '$updatedAt' },
+					month: { $month: '$updatedAt' },
 					quit: {
-						$last: '$quit',
+						$cond: [{ $eq: ['$studentType', 'Former Student'] }, 1, 0],
+					},
+				},
+			},
+			{
+				$match: { year },
+			},
+
+			{
+				$group: {
+					_id: '$month',
+					quit: {
+						$sum: '$quit',
 					},
 				},
 			},
@@ -146,9 +164,15 @@ exports.getJoinDataByYear = async (req, res) => {
 				memnerData &&
 				memnerData.length > 0 &&
 				memnerData.find((x) => x._id == m.index);
+
+			const quiteFind =
+				quiteData &&
+				quiteData.length > 0 &&
+				quiteData.find((x) => x._id == m.index);
+
 			return {
 				join: find ? find.join : 0,
-				quit: find ? find.quit : 0,
+				quit: quiteFind ? quiteFind.quit : 0,
 				month: m.name,
 			};
 		});
@@ -242,7 +266,16 @@ exports.getMemberByProgram = async (req, res) => {
 
 exports.getRanksReportByProgram = async (req, res) => {
 	try {
-		const { programID } = req.query;
+		let { programID, month, year } = req.query;
+
+		month = parseInt(month);
+		year = parseInt(year);
+
+		//lets get Previous Month
+		let date = new Date(year, month - 2, 1);
+		let lastYear = date.getFullYear();
+		let lastMonth = date.getMonth() + 1;
+
 		if (programID === '') {
 			return res.json([]);
 		}
@@ -273,10 +306,78 @@ exports.getRanksReportByProgram = async (req, res) => {
 					rank_image: '$program.rank_image',
 				},
 			},
+			// Get Current Month Data
+			{
+				$lookup: {
+					from: 'student_info_ranks',
+					localField: 'rank_name',
+					foreignField: 'rank_name',
+					as: 'this-month',
+					pipeline: [
+						{
+							$project: {
+								month: { $month: '$createdAt' },
+								year: { $year: '$createdAt' },
+							},
+						},
+						{
+							$match: {
+								month,
+								year,
+							},
+						},
+						{
+							$count: 'total',
+						},
+					],
+				},
+			},
+
+			// Get Last Month Date
+			{
+				$lookup: {
+					from: 'student_info_ranks',
+					localField: 'rank_name',
+					foreignField: 'rank_name',
+					as: 'last-month',
+					pipeline: [
+						{
+							$project: {
+								month: { $month: '$createdAt' },
+								year: { $year: '$createdAt' },
+							},
+						},
+						{
+							$match: {
+								month: lastMonth,
+								year: lastYear,
+							},
+						},
+						{
+							$count: 'total',
+						},
+					],
+				},
+			},
+
+			// Lets Map the Data
+			{
+				$project: {
+					programName: 1,
+					rank_name: 1,
+					rank_image: 1,
+					this_month: { $arrayElemAt: ['$this-month', 0] },
+					last_month: { $arrayElemAt: ['$last-month', 0] },
+				},
+			},
+			// Ranks
 		]);
+
+		//
 
 		return res.json(ranks);
 	} catch (err) {
+		console.log(err);
 		return res.status(500).json({ message: 'Data not Found' });
 	}
 };
