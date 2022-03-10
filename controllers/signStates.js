@@ -5,6 +5,7 @@ const fetch = require('node-fetch');
 const buyMembership = require("../models/buy_membership");
 const buy_product = require("../models/buy_product");
 const membershipModal = require('../models/membership');
+const emailTemplateDocuSignUi = require('../helpers/emailTemplateDocuSignUi')
 const buffToPdf = require("../Services/pdfConvertor");
 const mongo = require('mongoose')
 const pixelWidth = require('string-pixel-width');
@@ -180,53 +181,6 @@ exports.primarySetSignItems = async (req, res) => {
     }
 };
 
-function htmlBody(messageBody, link, linkButtonsText) {
-    return `<table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%"
-    style="table-layout: fixed;">
-    <tbody>
-        <tr>
-            <td role="module-content">
-<center>
-<div
-style="background:#e8e8e8; display: flex;justify-content: center;padding: 10px;align-items: center;min-height:40vh;"
->
-    <div style="padding: 3rem;
-max-width: 500px;
-box-shadow: 0px 4px 24px rgb(0 0 0 / 10%);
-border-radius: 10px;
-background-color: #fff;
-text-align: center;
-display: flex;
-justify-content: center;
-flex-direction: column;">
-        <div>
-            <img style="width: 100px;" src="https://mymember.com/static/media/logo.940eab8a.png" />
-        </div>
-        <div>
-            <h3>${messageBody} </h3>
-        </div>
-        <div>
-            <br />
-            <a href=${link} style="border-radius: 30px;
-        border: 2px solid #2196f3;
-        padding: 1rem;
-        color: #2196f3;
-        text-decoration: none;
-        width: 200px;
-        background: #fff;" target="_blank" rel="noopener noreferrer">
-                ${linkButtonsText}
-            </a>
-        </div>
-    </div>
-</div>
-
-</center>
-            </td>
-        </tr>
-
-    </tbody>
-</table>`
-}
 
 exports.setSignItems = async (req, res) => {
     try {
@@ -271,8 +225,7 @@ exports.setSignItems = async (req, res) => {
                             to: uniqueEmail,
                             from: ownerMail,
                             subject: "Please complete your Signature Process ✒️",
-                            html: htmlBody('Below is the PDF to complete your signature',
-                                docLink, 'Click to Sign ✒️'),
+                            html: emailTemplateDocuSignUi('Click to Sign','Below is the PDF to complete your signature','Please, do not share this link to others',docLink),
 
                         });
                         emailData.sendMail()
@@ -288,7 +241,7 @@ exports.setSignItems = async (req, res) => {
                             to: completedMails,
                             from: ownerMail,
                             subject: "Signature Process Completed ",
-                            html: htmlBody('Below completed Sign PDF', aftersigncompleteLink, 'Click to Download 📃')
+                            html: emailTemplateDocuSignUi('Click to Download 📃','Document signature done 100%','Below completed Sign PDF',aftersigncompleteLink),
                         });
                         emailData.sendMail()
                             .then(resp => {
@@ -364,7 +317,8 @@ exports.inviteeMailSent = async (req, res) => {
             to: emailList,
             from: ownerEmail,
             subject: "Document Signature Process",
-            html: htmlBody('Below is the PDF for your signature', docLink, 'Complete Signature')
+            // html: emailTemplateDocuSignUi('Click to Download 📃','Document signature done 100%','Below completed Sign PDF',aftersigncompleteLink),
+            html: emailTemplateDocuSignUi('Click to Sign','Below is the PDF to complete your signature','Please, do not share this link to others',docLink),
         })
         emailData.sendMail()
             .then(resp => {
