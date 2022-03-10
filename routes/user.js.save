@@ -13,10 +13,9 @@ router.get('/secret', requireSignin, (req, res) => {
 });
 
 router.get('/user/:userId', requireSignin, read);
-<<<<<<< HEAD
 // router.del
 router.put('/user/:userId', upload.single('profile_image'), requireSignin, update);
->>>>>>> fcae7cc7c80da5b4d21b4fa4a2755d0c9d85452a
+
 router.get('/orders/by/user/:userId', requireSignin, isAuth, purchaseHistory);
 
 router.param('userId', userById);
