@@ -333,8 +333,8 @@ exports.filterByNotes = async (req, res) => {
                 })
         } else if (filterBy == "last_month") {
             let last_month = new Date(moment().subtract(1, "M"))
-            console.log(last_month)
-            console.log(new Date())
+            // console.log(last_month)
+            // console.log(new Date())
             await followUpNotes.
                 aggregate([
                     { $match: filter },

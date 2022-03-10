@@ -43,7 +43,7 @@ exports.create = async (req, res) => {
         if (err || stdData == null) {
           res.send({ msg: "student data not find", success: false });
         } else {
-          console.log(stdData)
+          // console.log(stdData)
           var DT = TimeZone();
           let h = parseInt(time.split(':')[0])
           let m = parseInt(time.split(':')[1])

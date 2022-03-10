@@ -87,7 +87,7 @@ class Goals {
                                 }
                             }
                         ]);
-                        console.log(stats)
+                        // console.log(stats)
                         stats = stats[0]
                     }
 
@@ -137,7 +137,7 @@ class Goals {
                 let up_item = {...findItem._doc, ...input}
                 if (up_item.goal_type === 'daily') {
                     let complete_days = up_item.complete_days ? up_item.complete_days.length : 0
-                    console.log(complete_days)
+                    // console.log(complete_days)
                     up_item.start_date = moment(up_item.start_date).format('YYYY-MM-DD')
                     up_item.end_date = moment(up_item.end_date).format('YYYY-MM-DD')
                     let diff = moment(up_item.end_date).diff(moment(up_item.start_date), 'days')
