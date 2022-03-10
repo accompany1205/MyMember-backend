@@ -585,22 +585,24 @@ exports.sendEmail = async (req, res) => {
     } else {
       if (!JSON.parse(emailBody.immediately)) {
         let sent_date = moment(emailBody.sent_date).format("YYYY-MM-DD");
+        emailBody.is_Sent = false;
+        emailBody.email_type = "scheduled";
         let emailDetail = new all_temp(emailBody)
         emailDetail.save((err, emailSave) => {
           if (err) {
             res.send({ msg: err, success: false })
           }
           else {
-            all_temp.findByIdAndUpdate(emailSave._id, { is_Sent: false, email_type: "scheduled" })
-              .exec((err, emailUpdate) => {
-                if (err) {
-                  res.send({ msg: err, success: false })
-                }
-                else {
-                  return res.send({ msg: `Email Successfully! Scheduled on ${sent_date} At ${emailBody.sent_time} `, success: true })
+            // all_temp.findOneAndUpdate({ _id: emailSave._id }, { is_Sent: false, email_type: "scheduled" })
+            //   .exec((err, emailUpdate) => {
+            //     if (err) {
+            //       res.send({ msg: err, success: false })
+            //     }
+            //     else {
+            return res.send({ msg: `Email Successfully! Scheduled on ${sent_date} At ${emailBody.sent_time} `, success: true })
 
-                }
-              })
+            //   }
+            // })
           }
         })
       }
@@ -716,7 +718,6 @@ exports.add_template = async (req, res) => {
     }
     const resolvAttachments = await Promise.all(attachments);
     obj.attachments = resolvAttachments
-    console.log(obj)
     saveEmailTemplate(obj)
       .then(data => {
         compose_folder
