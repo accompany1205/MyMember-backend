@@ -3,7 +3,7 @@ const schema = mongoose.Schema
 const systemCategorySchema = schema({
     categoryName: {
         type: String,
-        unique: true,
+        // unique: true,
         require: true
     },
     category: {
