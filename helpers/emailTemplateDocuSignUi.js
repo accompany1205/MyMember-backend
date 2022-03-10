@@ -340,4 +340,4 @@ const emailTemplateDocuSignUi = (btnText, titleString,desString, linkString)=>{
     `
 }
 
-export default emailTemplateDocuSignUi;
+module.exports=emailTemplateDocuSignUi;
