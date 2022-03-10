@@ -172,46 +172,46 @@ exports.docremove = async (req, res) => {
           res.send({ msg: err, success: false })
         }
         else {
-          if (!data) {
-            return res.send({
-              msg: 'This is system generated Documents Only admin can delete',
-              success: false,
-            });
-          }
-          else {
-            if (isFolder) {
-              docfolder.updateOne({ document: docId }, { $pull: { document: docId } },
-                function (err, temp) {
-                  if (err) {
-                    res.send({
-                      msg: "Document not removed",
-                      success: false,
-                    });
-                  } else {
-                    res.send({
-                      msg: "Document removed successfully",
-                      success: true,
-                    });
-                  }
-                })
+          // if (!data) {
+          //   return res.send({
+          //     msg: 'This is system generated Documents Only admin can delete',
+          //     success: false,
+          //   });
+          // }
+          // else {
+          if (isFolder) {
+            docfolder.updateOne({ document: docId }, { $pull: { document: docId } },
+              function (err, temp) {
+                if (err) {
+                  res.send({
+                    msg: "Document not removed",
+                    success: false,
+                  });
+                } else {
+                  res.send({
+                    msg: "Document removed successfully",
+                    success: true,
+                  });
+                }
+              })
 
-            } else {
-              docsubfolder.updateOne({ document: docId }, { $pull: { document: docId } },
-                function (err, temp) {
-                  if (err) {
-                    res.send({
-                      msg: "Document not removed",
-                      success: false,
-                    });
-                  } else {
-                    res.send({
-                      msg: "Document removed successfully",
-                      success: true,
-                    });
-                  }
-                })
-            }
+          } else {
+            docsubfolder.updateOne({ document: docId }, { $pull: { document: docId } },
+              function (err, temp) {
+                if (err) {
+                  res.send({
+                    msg: "Document not removed",
+                    success: false,
+                  });
+                } else {
+                  res.send({
+                    msg: "Document removed successfully",
+                    success: true,
+                  });
+                }
+              })
           }
+
         }
 
       })
