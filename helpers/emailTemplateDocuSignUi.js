@@ -168,7 +168,7 @@ const emailTemplateDocuSignUi = (btnText, titleString,desString, linkString)=>{
                                                                 <table border="0" cellpadding="0" cellspacing="0"
                                                                     align="center" width="100%" role="module"
                                                                     data-type="columns" style="padding:30px 20px 40px 30px;"
-                                                                    bgcolor="#77dedb" data-distribution="1">
+                                                                    bgcolor="#eaf4fe" data-distribution="1">
                                                                     <tbody>
                                                                         <tr role="module-content">
                                                                             <td height="100%" valign="top">
