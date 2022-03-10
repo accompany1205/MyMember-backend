@@ -167,8 +167,12 @@ const app = express();
 const { v4: uuidv4 } = require('uuid');
 
 const server = http.createServer(app);
-const io = socketio(server);
-
+const io = socketio(server, {
+	cors:{
+		origin:"*"
+	}
+});
+app.set('socketio', io);
 const engineSocket = require('./Services/scoket.io');
 new engineSocket(io);
 
