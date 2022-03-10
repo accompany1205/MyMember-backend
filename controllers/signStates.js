@@ -180,6 +180,51 @@ exports.primarySetSignItems = async (req, res) => {
     }
 };
 
+function htmlBody(messageBody, link, linkButtonsText) {
+    return `<table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%"
+    style="table-layout: fixed;">
+    <tbody>
+        <tr>
+            <td role="module-content">
+                <div
+                style="display: flex;justify-content: center;padding: 10px;align-items: center;min-height:40vh;"
+                >
+                    <div style="padding: 3rem;
+                max-width: 500px;
+                box-shadow: 0px 4px 24px rgb(0 0 0 / 10%);
+                border-radius: 10px;
+                background-color: #fff;
+                text-align: center;
+                display: flex;
+                justify-content: center;
+                flex-direction: column;">
+                        <div>
+                            <img style="width: 100px;" src="https://mymember.com/static/media/logo.940eab8a.png" />
+                        </div>
+                        <div>
+                            <h3>${messageBody} </h3>
+                        </div>
+                        <div>
+                            <br />
+                            <a href=${link} style="border-radius: 30px;
+                        border: 2px solid #2196f3;
+                        padding: 1rem;
+                        color: #2196f3;
+                        text-decoration: none;
+                        width: 200px;
+                        background: #fff;" target="_blank" rel="noopener noreferrer">
+                                ${linkButtonsText}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </td>
+        </tr>
+
+    </tbody>
+</table>`
+}
 
 exports.setSignItems = async (req, res) => {
     try {
@@ -223,9 +268,10 @@ exports.setSignItems = async (req, res) => {
                         const emailData = new Mailer({
                             to: uniqueEmail,
                             from: ownerMail,
-                            subject: "Please complete Signature Process",
-                            html: `<h2>Below is the PDF to complete your signature</h2>
-                                            <p>${docLink}</p>`,
+                            subject: "Please complete your Signature Process ✒️",
+                            html: htmlBody('Below is the PDF to complete your signature',
+                                docLink, 'Click to Sign ✒️'),
+
                         });
                         emailData.sendMail()
                             .then(resp => {
@@ -239,9 +285,8 @@ exports.setSignItems = async (req, res) => {
                         const emailData = new Mailer({
                             to: completedMails,
                             from: ownerMail,
-                            subject: " Signature Process Completed ",
-                            html: `<h2>Below completed Sign PDF</h2>
-                                            <p>${aftersigncompleteLink}</p>`,
+                            subject: "Signature Process Completed ",
+                            html:htmlBody('Below completed Sign PDF',aftersigncompleteLink, 'Click to Download 📃')
                         });
                         emailData.sendMail()
                             .then(resp => {
