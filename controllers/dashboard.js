@@ -223,6 +223,7 @@ exports.active_trial_this_month = async (req, res) => {
 			limit: per_page,
 			skip: per_page * page_no,
 		};
+
 		await addmemberModal
 			.aggregate([
 				{
@@ -808,6 +809,13 @@ exports.birthday_this_month = async (req, res) => {
 					},
 				},
 				{ $sort: { daysTillBirthday: 1 } },
+				{
+					$match: {
+						daysTillBirthday: {
+							$lte: 30,
+						},
+					},
+				},
 				{
 					$facet: {
 						paginatedResults: [
