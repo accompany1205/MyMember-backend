@@ -3234,7 +3234,7 @@ exports.deleteExpenseCategory = async (req, res) => {
 	const category = await ExpenseCategory.findById(id);
 	if (!category) throw Error('Category not Found');
 
-	console.log(category.expense_category_type);
+	// console.log(category.expense_category_type);
 
 	// Check if any transection is found then return error message
 	const transection = await Expense.findOne({

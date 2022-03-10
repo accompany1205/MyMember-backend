@@ -841,7 +841,7 @@ var emailCronFucntionality = async () => {
       emailData.sendMail()
         .then(async (resp) => {
           const update = await all_temp.findOneAndUpdate({ _id: ele._id }, { $set: { is_Sent: true } });
-          console.log(resp)
+          // console.log(resp)
         })
         .catch((err) => {
           throw new Error(err);
