@@ -10,7 +10,7 @@ exports.addTextContact = (req, res) => {
   let contact = new textContact(req.body);
   contact.save((err, data) => {
     if (err) {
-      res.send({ error: 'contact not added' });
+      res.send({ error: 'contact already added!' });
     } else {
       res.send({ textContact: data });
     }
