@@ -42,7 +42,7 @@ exports.admin_category_list = (req, res) => {
             path: 'folder',
             populate: {
                 path: 'template',
-                model: 'email_template'
+                model: 'sentOrscheduleEmail'
             }
         })
         .sort({categoryName:1})
