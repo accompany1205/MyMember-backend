@@ -212,7 +212,7 @@ app.use(morgan('dev'));
 app.use(cookieParser());
 app.use(expressValidator());
 var corsOptions = {
-	Origin: '*',
+	Origin: 'http://localhost:3000',
 	optionsSuccessStatus: 200 // For legacy browser support
   }
 app.use(cors(corsOptions));
