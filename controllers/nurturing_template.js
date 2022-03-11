@@ -615,10 +615,15 @@ exports.status_update_template = (req, res) => {
 
 exports.multipal_temp_remove = (req, res) => {
   let folderId = req.params.folderId;
-  let templateIds = req.body.templateId;
+  let templateIds = req.body.templateIds;
+  
+  if (!templateIds.length) {
+    res.send({ msg: "templates not selected", success: false });
+
+  }
   all_temp.remove({ _id: { $in: templateIds } }).exec((err, resp) => {
     if (err) {
-      res.json({ code: 400, msg: "templates not remove" });
+      res.json({ success: false, msg: "templates not remove" });
     } else {
       for (let id of templateIds) {
         folderNur.updateOne(
@@ -630,7 +635,7 @@ exports.multipal_temp_remove = (req, res) => {
           }
         })
       }
-      res.json({ success: true, msg: "template is remove successfully" });
+      res.json({ success: true, msg: "template  removed successfully" });
     }
   });
 };
