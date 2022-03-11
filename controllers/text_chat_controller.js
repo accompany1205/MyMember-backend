@@ -10,9 +10,9 @@ exports.addTextContact = (req, res) => {
   let contact = new textContact(req.body);
   contact.save((err, data) => {
     if (err) {
-      res.send({ error: 'contact already added!' });
+      res.send({ msg: 'contact already added!', success:false });
     } else {
-      res.send({ textContact: data });
+      res.send({ msg:'contact added!', data, success:true });
     }
   });
 };
@@ -23,10 +23,10 @@ exports.getTextContacts = (req, res) => {
     .populate('textContacts')
     .exec((err, textContactList) => {
       if (err) {
-        res.send({ error: 'text contact list not found' })
+        res.send({ msg: 'text contact list not found', success:false })
       }
       else {
-        res.send(textContactList)
+        res.send({msg:textContactList, success:true})
       }
     });
 };
@@ -80,10 +80,10 @@ exports.seenContactTextMessages = (req, res) => {
   textContact.updateOne({ uid: req.params.contact }, req.body)
     .exec((err, updateFolder) => {
       if (err) {
-        res.send({ error: 'text contact is not update' })
+        res.send({ msg: 'text contact is not update', success:false  })
       }
       else {
-        res.send({ msg: 'text contact is update successfully' })
+        res.send({ msg: 'text contact is update successfully', success:true })
       }
     })
 };
@@ -92,10 +92,10 @@ exports.pinContact = (req, res) => {
   textContact.updateOne({ uid: req.params.contact }, req.body)
     .exec((err, updateFolder) => {
       if (err) {
-        res.send({ error: 'text contact is not update' })
+        res.send({ msg: 'text contact is not update', success:false })
       }
       else {
-        res.send({ msg: 'text contact is update successfully' })
+        res.send({ msg: 'text contact is update successfully', success:true })
       }
     })
 };
