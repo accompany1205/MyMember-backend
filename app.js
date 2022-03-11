@@ -170,8 +170,9 @@ const { v4: uuidv4 } = require('uuid');
 const server = http.createServer(app);
 const io = socketio(server, {
 	cors: {
-		origin: "*"
-	}
+		origin: "*",
+		credentials: true
+	  }
 });
 app.set('socketio', io);
 const engineSocket = require('./Services/scoket.io');
@@ -210,7 +211,11 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(morgan('dev'));
 app.use(cookieParser());
 app.use(expressValidator());
-app.use(cors());
+var corsOptions = {
+	Origin: '*',
+	optionsSuccessStatus: 200 // For legacy browser support
+  }
+app.use(cors(corsOptions));
 
 app.use('/api', TTL);
 

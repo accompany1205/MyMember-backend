@@ -5,6 +5,7 @@ const fetch = require('node-fetch');
 const buyMembership = require("../models/buy_membership");
 const buy_product = require("../models/buy_product");
 const membershipModal = require('../models/membership');
+const emailTemplateDocuSignUi = require('../helpers/emailTemplateDocuSignUi')
 const buffToPdf = require("../Services/pdfConvertor");
 const mongo = require('mongoose')
 const pixelWidth = require('string-pixel-width');
@@ -223,9 +224,9 @@ exports.setSignItems = async (req, res) => {
                         const emailData = new Mailer({
                             to: uniqueEmail,
                             from: ownerMail,
-                            subject: "Please complete Signature Process",
-                            html: `<h2>Below is the PDF to complete your signature</h2>
-                                            <p>${docLink}</p>`,
+                            subject: "Please complete your Signature Process ✒️",
+                            html: emailTemplateDocuSignUi('Click to Sign','Below is the PDF to complete your signature','Please, do not share this link to others',docLink),
+
                         });
                         emailData.sendMail()
                             .then(resp => {
@@ -239,9 +240,8 @@ exports.setSignItems = async (req, res) => {
                         const emailData = new Mailer({
                             to: completedMails,
                             from: ownerMail,
-                            subject: " Signature Process Completed ",
-                            html: `<h2>Below completed Sign PDF</h2>
-                                            <p>${aftersigncompleteLink}</p>`,
+                            subject: "Signature Process Completed ",
+                            html: emailTemplateDocuSignUi('Click to Download 📃','Document signature done 100%','Below completed Sign PDF',aftersigncompleteLink),
                         });
                         emailData.sendMail()
                             .then(resp => {
@@ -317,8 +317,8 @@ exports.inviteeMailSent = async (req, res) => {
             to: emailList,
             from: ownerEmail,
             subject: "Document Signature Process",
-            html: `<h2>Below is the PDF for your signature</h2>
-                        <p>${docLink}</p>`,
+            // html: emailTemplateDocuSignUi('Click to Download 📃','Document signature done 100%','Below completed Sign PDF',aftersigncompleteLink),
+            html: emailTemplateDocuSignUi('Click to Sign','Below is the PDF to complete your signature','Please, do not share this link to others',docLink),
         })
         emailData.sendMail()
             .then(resp => {

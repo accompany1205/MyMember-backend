@@ -174,7 +174,7 @@ exports.templateRemove =(req,res)=>{
     template:req.body.template,
   }
   UploadFiles.findOneAndRemove({template: req.body.template}, {}, function (err, doc) {
-    console.log('Doc: ', doc);
+    // console.log('Doc: ', doc);
     templateSubFolder.updateOne({subFolderName: req.body.subFolderName},{$pull:docFileDetails},
       function(err,updateDoc){
         if(err){

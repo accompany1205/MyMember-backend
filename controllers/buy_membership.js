@@ -629,7 +629,7 @@ exports.buyMembership = async (req, res) => {
 					const resp = await valorTechPaymentGateWay.saleSubscription(
 						saleFormatedPayload
 					);
-					console.log(resp.data);
+					// console.log(resp.data);
 					if (resp.data.error_no == 'S00') {
 						if (
 							payLatter === 'credit card' &&
@@ -649,7 +649,7 @@ exports.buyMembership = async (req, res) => {
 							const addresp = await valorTechPaymentGateWay.addSubscription(
 								addFormatedPayload
 							);
-							console.log(addresp.data);
+							// console.log(addresp.data);
 							if (addresp.data.error_no === 'S00') {
 								membershipData.subscription_id = addresp.data.subscription_id;
 								membershipData.transactionId = {
@@ -747,13 +747,13 @@ exports.buyMembership = async (req, res) => {
 						const addresp = await valorTechPaymentGateWay.addSubscription(
 							addFormatedPayload
 						);
-						console.log(addresp.data);
+						// console.log(addresp.data);
 						if (addresp.data.error_no === 'S00') {
 							membershipData.subscription_id = addresp.data.subscription_id;
 							membershipData.transactionId = {
 								payment_type: 'cash',
 							};
-							console.log('isdnjv');
+							// console.log('isdnjv');
 
 							if (!financeId) {
 								valorPayload.address = Address;
@@ -842,7 +842,7 @@ exports.buyMembership = async (req, res) => {
 						const resp = await valorTechPaymentGateWay.saleSubscription(
 							FormatedPayload
 						);
-						console.log(resp.data);
+						// console.log(resp.data);
 						if (resp.data.error_no === 'S00') {
 							membershipData.transactionId = {
 								rrn: resp.data.rrn,
