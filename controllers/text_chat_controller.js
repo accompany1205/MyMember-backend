@@ -148,7 +148,7 @@ exports.getTextContactsDetails = (req, res) => {
 // Incoming Message API to test SMS
 exports.listenIncomingSMS = async (req, res) => {
   const msg = req.body.Body;
-  const from = req.from.From;
+  const from = req.body.From;
   console.log(msg, from)
   // Pass twilio number as parameter in webhooks
 
