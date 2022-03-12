@@ -10,9 +10,9 @@ exports.addTextContact = (req, res) => {
   let contact = new textContact(req.body);
   contact.save((err, data) => {
     if (err) {
-      res.send({ msg: 'contact already added!', success:false });
+      res.send({ msg: 'contact already added!', success: false });
     } else {
-      res.send({ msg:'contact added!', data, success:true });
+      res.send({ msg: 'contact added!', data, success: true });
     }
   });
 };
@@ -23,10 +23,10 @@ exports.getTextContacts = (req, res) => {
     .populate('textContacts')
     .exec((err, textContactList) => {
       if (err) {
-        res.send({ msg: 'text contact list not found', success:false })
+        res.send({ msg: 'text contact list not found', success: false })
       }
       else {
-        res.send({msg:textContactList, success:true})
+        res.send({ msg: textContactList, success: true })
       }
     });
 };
@@ -80,10 +80,10 @@ exports.seenContactTextMessages = (req, res) => {
   textContact.updateOne({ uid: req.params.contact }, req.body)
     .exec((err, updateFolder) => {
       if (err) {
-        res.send({ msg: 'text contact is not update', success:false  })
+        res.send({ msg: 'text contact is not update', success: false })
       }
       else {
-        res.send({ msg: 'text contact is update successfully', success:true })
+        res.send({ msg: 'text contact is update successfully', success: true })
       }
     })
 };
@@ -92,10 +92,10 @@ exports.pinContact = (req, res) => {
   textContact.updateOne({ uid: req.params.contact }, req.body)
     .exec((err, updateFolder) => {
       if (err) {
-        res.send({ msg: 'text contact is not update', success:false })
+        res.send({ msg: 'text contact is not update', success: false })
       }
       else {
-        res.send({ msg: 'text contact is update successfully', success:true })
+        res.send({ msg: 'text contact is update successfully', success: true })
       }
     })
 };
@@ -155,7 +155,8 @@ exports.listenIncomingSMS = async (req, res) => {
   // Uncomment this code in production when web hooks is placed for production twilio number
   let to = req.params.twilio;
   const getUid = phoneNumber => {
-    return member.findOne({ primaryPhone: phoneNumber }).then(data => {
+    let phonen = phoneNumber.slice(2)
+    member.findOne({ primaryPhone: phoneNumber }).then(data => {
       return data._id;
     }).catch(err => {
       return '';
@@ -164,9 +165,9 @@ exports.listenIncomingSMS = async (req, res) => {
 
   const getUserId = phoneNumber => {
     // Find userid of user with twilio number
-
+    let phonen = '+'+ phoneNumber;
     // Uncomment this in production once twilio number is added
-    return user.findOne({ twilio: phoneNumber }).then(data => {
+    user.findOne({ twilio: phonen }).then(data => {
       return data._id;
     }).catch(err => {
       return '';
