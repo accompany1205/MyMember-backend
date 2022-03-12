@@ -185,7 +185,7 @@ exports.listenIncomingSMS = async (req, res) => {
     isSent: false,
   };
   console.log("Message Object", obj)
-  let stuid = getUid(from);
+  let stuid = await getUid(from);
   console.log(stuid)
   if (obj.userId !== '' && obj.uid !== '') {
     let text = new textMessage(obj);
