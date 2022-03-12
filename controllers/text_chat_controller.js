@@ -150,7 +150,7 @@ exports.listenIncomingSMS = async (req, res) => {
   console.log(req.io);
   const msg = req.body.hasOwnProperty('Body') ? req.body.Body : 'Failed to receive sms';
   const from = req.from.hasOwnProperty('From') ? req.from.From : 'Unknown sender';
-
+  console.log(msg, from)
   // Pass twilio number as parameter in webhooks
 
   // Uncomment this code in production when web hooks is placed for production twilio number
@@ -182,6 +182,7 @@ exports.listenIncomingSMS = async (req, res) => {
     textContent: msg,
     isSent: false,
   };
+  console.log("Message Object", obj)
 
   if (obj.userId !== '' && obj.uid !== '') {
     let text = new textMessage(obj);
