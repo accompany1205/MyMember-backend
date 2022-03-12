@@ -156,7 +156,8 @@ exports.listenIncomingSMS = async (req, res) => {
   let to = req.params.twilio;
   const getUid = phoneNumber => {
     let phonen = phoneNumber.slice(2)
-    member.findOne({ primaryPhone: phoneNumber }).then(data => {
+    console.log(phonen)
+    return member.findOne({ primaryPhone: phonen }).then(data => {
       return data._id;
     }).catch(err => {
       return '';
@@ -166,8 +167,9 @@ exports.listenIncomingSMS = async (req, res) => {
   const getUserId = phoneNumber => {
     // Find userid of user with twilio number
     let phonen = '+'+ phoneNumber;
+    console.log('to', phonen)
     // Uncomment this in production once twilio number is added
-    user.findOne({ twilio: phonen }).then(data => {
+    return user.findOne({ twilio: phonen }).then(data => {
       return data._id;
     }).catch(err => {
       return '';
