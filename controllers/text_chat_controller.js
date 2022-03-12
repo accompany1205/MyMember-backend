@@ -43,7 +43,7 @@ exports.sendTextMessage = async (req, res) => {
   console.log("student ->", primaryPhone)
   const twilioFormat = phoneNumber => {
     if (phoneNumber.charAt(0) !== '+') {
-      return '+91' + phoneNumber;
+      return '+1' + phoneNumber;
     } else {
       return phoneNumber;
     }

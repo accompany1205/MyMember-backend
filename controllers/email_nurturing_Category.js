@@ -46,10 +46,31 @@ exports.category_list = (req, res) => {
         })
 }
 
+exports.admin_category_list = (req, res) => {
+    emailNurturing.find({ adminId: req.params.adminId })
+        .populate({
+            path: 'folder',
+            populate: {
+                path: 'template',
+                model: 'sentOrscheduleEmail'
+            }
+        })
+        .sort({ categoryName: 1 })
+        .exec((err, categoryList) => {
+            if (err) {
+                res.send({ msg: 'compose category is not found', success: false })
+            }
+            else {
+                res.send({ data: categoryList, success: true })
+            }
+        })
+}
+
 exports.addcategory = (req, res) => {
     var cat = {
         categoryName: req.body.categoryName,
-        userId: req.params.userId
+        userId: req.params.userId,
+        adminId: req.params.adminId
     }
     var category = new emailNurturing(cat);
     category.save((err, data) => {
@@ -66,10 +87,10 @@ exports.updateCategory = (req, res) => {
     emailNurturing.findByIdAndUpdate(req.params.categoryId, req.body)
         .exec((err, updateCat) => {
             if (err) {
-                res.send({ error: 'category is not update' })
+                res.send({ error: 'category is not update', success: false })
             }
             else {
-                res.send({ msg: "category is update successfully" })
+                res.send({ msg: "category is update successfully", success: true })
             }
         })
 }

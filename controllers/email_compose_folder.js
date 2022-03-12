@@ -2,29 +2,32 @@ const Folder = require("../models/email_compose_folder");
 const ComposeCat = require('../models/email_compose_Category')
 
 exports.create_folder = (req, res) => {
-    let composeBody = req.body;
-    composeBody.userId = req.params.userId;
     if (!req.body.folderName) {
-        res.send({ error: "Invalid Input", suuces: true })
-    } else {
-        var folderObj = new Folder(composeBody)
-        folderObj.save((err, folder) => {
-            if (err) {
-                res.send({ msg: "Folder name already exist!", success: false });
-            }
-            else {
-                ComposeCat.findByIdAndUpdate(req.params.catId, { $push: { folder: folder._id } })
-                    .exec((err, folderUpdate) => {
-                        if (err) {
-                            res.send({ msg: 'folder id is not push in category', success: false })
-                        }
-                        else {
-                            res.send({ msg: 'folder create successfully', success: true })
-                        }
-                    })
-            }
-        })
+        res.send({ msg: "Invalid Input", suuces: true })
     }
+    const folderObj = new Folder({
+        folderName: req.body.folderName,
+        userId: req.params.userId,
+        adminId: req.params.adminId
+
+    })
+    folderObj.save((err, folder) => {
+        if (err) {
+            res.send({ msg: err, success: false });
+        }
+        else {
+            ComposeCat.findByIdAndUpdate(req.params.catId, { $push: { folder: folder._id } })
+                .exec((err, folderUpdate) => {
+                    if (err) {
+                        res.send({ msg: 'folder id is not push in category', success: false })
+                    }
+                    else {
+                        res.send({ msg: 'folder create successfully', success: true })
+                    }
+                })
+        }
+    })
+
 }
 
 exports.list_template = async (req, res) => {

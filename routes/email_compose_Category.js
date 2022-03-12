@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const upload = require('../handler/multer');
 const { category_list, addCategory, updateCategory, removeCategory, userEmailList } = require("../controllers/email_compose_Category")
 const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 

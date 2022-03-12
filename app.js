@@ -123,9 +123,15 @@ const signStates = require('./routes/signStates');
 
 //admin routes
 const manage_user = require('./routes/admin/manage_user');
-const admin_email_system_cat = require('./routes/admin/system_email/admin_system_category');
-const admin_email_system_folder = require('./routes/admin/system_email/admin_system_folder');
-const admin_email_system_template = require('./routes/admin/system_email/admin_system_template');
+const admin_email_system_cat = require('./routes/admin/email_manage/system/admin_system_category');
+const admin_email_compose_cat = require('./routes/admin/email_manage/compose/admin_compose_category');
+const admin_email_nurturing_cat = require('./routes/admin/email_manage/nurturing/admin_nurturing_category');
+const admin_email_system_folder = require('./routes/admin/email_manage/system/admin_system_folder');
+const admin_email_compose_folder = require('./routes/admin/email_manage/compose/admin_compose_folder');
+const admin_email_nurturing_folder = require('./routes/admin/email_manage/nurturing/admin_nurturing_folder');
+const admin_email_system_template = require('./routes/admin/email_manage/system/admin_system_template');
+const admin_email_compose_template = require('./routes/admin/email_manage/compose/admin_compose_template');
+const admin_email_nurturing_template = require('./routes/admin/email_manage/nurturing/admin_nurturing_template');
 const location = require('./routes/admin/settings/location');
 const user_membership = require('./routes/admin/membership_management/admin_membership');
 const user_membershipFolder = require('./routes/admin/membership_management/admin_membershipFolder');
@@ -311,8 +317,14 @@ app.use('/api', student_text);
 //admin middleware
 app.use('/api', manage_user);
 app.use('/api', admin_email_system_cat);
+app.use('/api', admin_email_compose_cat);
+app.use('/api', admin_email_nurturing_cat);
 app.use('/api', admin_email_system_folder);
+app.use('/api', admin_email_compose_folder);
+app.use('/api', admin_email_nurturing_folder);
 app.use('/api', admin_email_system_template);
+app.use('/api', admin_email_compose_template);
+app.use('/api', admin_email_nurturing_template);
 app.use('/api', location);
 app.use('/api', user_membership);
 app.use('/api', user_membershipFolder);
