@@ -103,8 +103,8 @@ exports.pinContact = (req, res) => {
 // Get message list for user
 exports.getTextMessages = (req, res) => {
   //const io = req.app.get('socketio');
-  const socketIo = io("https://mymember.com", { transports: ['websocket'] })
-  socketIo.emit("textAlertWebhook", "Hello!");
+  // const socketIo = io("https://mymember.com", { transports: ['websocket'] })
+  // socketIo.emit("textAlertWebhook", "Hello!");
   //console.log(socketIo);
   // socketIo.on("connect_error", (err) => {
   //   console.log(`connect_error due to - ${err.message}`);
@@ -186,8 +186,8 @@ exports.listenIncomingSMS = async (req, res) => {
   if (obj.userId !== '' && obj.uid !== '') {
     let text = new textMessage(obj);
     text.save().then(textMessage => {
-      // const socketIo = io("https://mymember.com", { transports: ['websocket'] })
-      // socketIo.emit("textAlertWebhook", getUid(from));
+      const socketIo = io("https://mymember.com", { transports: ['websocket'] })
+      socketIo.emit("textAlertWebhook", getUid(from));
       res.send({ msg: 'text sms sent successfully' })
     }).catch(error => {
       res.send({ error: 'txt msg not send' })
