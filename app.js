@@ -204,6 +204,7 @@ const statusCheck = require('./notice/status');
 const purchaseMemberships = require('./models/purchaseMemberships');
 
 // middlewares
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.set('view engine', 'ejs');
