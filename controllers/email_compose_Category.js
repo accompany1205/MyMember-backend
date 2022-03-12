@@ -71,11 +71,30 @@ exports.category_list = async (req, res) => {
             }
         })
 }
-
+exports.admin_category_list = async (req, res) => {
+    await emailCompose.find({ adminId: req.params.adminId })
+        .populate({
+            path: 'folder',
+            populate: {
+                path: 'template',
+                model: 'email_template'
+            }
+        })
+        .sort({ categoryName: 1 })
+        .exec((err, categoryList) => {
+            if (err) {
+                res.send({ msg: 'compose category is not found', success: false })
+            }
+            else {
+                res.send({ data: categoryList, success: true })
+            }
+        })
+}
 exports.addCategory = (req, res) => {
     var cat = {
         categoryName: req.body.categoryName,
-        userId: req.params.userId
+        userId: req.params.userId,
+        adminId: req.params.adminId
     }
     var category = new emailCompose(cat);
     category.save((err, data) => {
@@ -89,6 +108,7 @@ exports.addCategory = (req, res) => {
 }
 
 exports.updateCategory = (req, res) => {
+    // catBody = req.body
     emailCompose.findByIdAndUpdate(req.params.categoryId, req.body)
         .exec((err, updateCat) => {
             if (err) {

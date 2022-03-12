@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const upload = require('../../../handler/multer');
-const { isAdmin, verifySchool } = require("../../../controllers/auth")
-const { add_template, update_template, remove_template, status_update_template, single_temp_update_status, swapAndUpdate_template, multipal_temp_remove } = require("../../../controllers/email_system_template")
+const upload = require('../../../../handler/multer');
+const { isAdmin, verifySchool } = require("../../../../controllers/auth")
+const { add_template, update_template, remove_template, status_update_template, single_temp_update_status, swapAndUpdate_template, multipal_temp_remove } = require("../../../../controllers/email_system_template")
 
 
 router.post("/admin/email_system/add_template/:adminId/:folderId", isAdmin, upload.array('attachments'), add_template)
