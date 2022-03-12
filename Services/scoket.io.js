@@ -26,8 +26,8 @@ class SocketEngine {
                 }
             })
 
-            socket.on('textAlertWebhook', async (uid) => {
-                console.log(uid);
+            socket.on('textAlertWebhook', async (stuid) => {
+                console.log(stuid);
                 io.to("606aea95a145ea2d26e0f1ab").emit('getAlertText', uid)
                 //socket.emit("getAlertText", "Hello Message!");
             })
