@@ -7,9 +7,10 @@ const { dateRangeBuild } = require('./../utilities/dateRangeProcess');
 const mongoose = require('mongoose');
 exports.getAllProgram = async (req, res) => {
 	try {
+		const adminId = process.env.ADMINID;
 		const userId = req.params.userId;
 		const data = await program
-			.find({ $or: [{ userId: userId }] })
+			.find({ $or: [{ userId: userId }, { adminId: adminId }] })
 			.select('_id color programName');
 
 		return res.json(data);
@@ -283,7 +284,6 @@ exports.getRanksReportByProgram = async (req, res) => {
 		const ranks = await program.aggregate([
 			{
 				$match: {
-					userId: req.params.userId,
 					_id: mongoose.Types.ObjectId(programID),
 				},
 			},
