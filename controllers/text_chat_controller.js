@@ -10,9 +10,9 @@ exports.addTextContact = (req, res) => {
   let contact = new textContact(req.body);
   contact.save((err, data) => {
     if (err) {
-      res.send({ msg: 'contact already added!', success:false });
+      res.send({ msg: 'contact already added!', success: false });
     } else {
-      res.send({ msg:'contact added!', data, success:true });
+      res.send({ msg: 'contact added!', data, success: true });
     }
   });
 };
@@ -23,10 +23,10 @@ exports.getTextContacts = (req, res) => {
     .populate('textContacts')
     .exec((err, textContactList) => {
       if (err) {
-        res.send({ msg: 'text contact list not found', success:false })
+        res.send({ msg: 'text contact list not found', success: false })
       }
       else {
-        res.send({msg:textContactList, success:true})
+        res.send({ msg: textContactList, success: true })
       }
     });
 };
@@ -80,10 +80,10 @@ exports.seenContactTextMessages = (req, res) => {
   textContact.updateOne({ uid: req.params.contact }, req.body)
     .exec((err, updateFolder) => {
       if (err) {
-        res.send({ msg: 'text contact is not update', success:false  })
+        res.send({ msg: 'text contact is not update', success: false })
       }
       else {
-        res.send({ msg: 'text contact is update successfully', success:true })
+        res.send({ msg: 'text contact is update successfully', success: true })
       }
     })
 };
@@ -92,10 +92,10 @@ exports.pinContact = (req, res) => {
   textContact.updateOne({ uid: req.params.contact }, req.body)
     .exec((err, updateFolder) => {
       if (err) {
-        res.send({ msg: 'text contact is not update', success:false })
+        res.send({ msg: 'text contact is not update', success: false })
       }
       else {
-        res.send({ msg: 'text contact is update successfully', success:true })
+        res.send({ msg: 'text contact is update successfully', success: true })
       }
     })
 };
@@ -103,8 +103,8 @@ exports.pinContact = (req, res) => {
 // Get message list for user
 exports.getTextMessages = (req, res) => {
   //const io = req.app.get('socketio');
-  const socketIo = io("https://mymember.com", { transports: ['websocket'] })
-  socketIo.emit("textAlertWebhook", "Hello!");
+  // const socketIo = io("https://mymember.com", { transports: ['websocket'] })
+  // socketIo.emit("textAlertWebhook", "Hello!");
   //console.log(socketIo);
   // socketIo.on("connect_error", (err) => {
   //   console.log(`connect_error due to - ${err.message}`);
@@ -147,16 +147,17 @@ exports.getTextContactsDetails = (req, res) => {
 
 // Incoming Message API to test SMS
 exports.listenIncomingSMS = async (req, res) => {
-  console.log(req.io);
-  const msg = req.body.hasOwnProperty('Body') ? req.body.Body : 'Failed to receive sms';
-  const from = req.from.hasOwnProperty('From') ? req.from.From : 'Unknown sender';
-
+  const msg = req.body.Body;
+  const from = req.body.From;
+  console.log(msg, from)
   // Pass twilio number as parameter in webhooks
 
   // Uncomment this code in production when web hooks is placed for production twilio number
   let to = req.params.twilio;
   const getUid = phoneNumber => {
-    return member.findOne({ primaryPhone: phoneNumber }).then(data => {
+    let phonen = phoneNumber.slice(2)
+    console.log(phonen)
+    return member.findOne({ primaryPhone: phonen }).then(data => {
       return data._id;
     }).catch(err => {
       return '';
@@ -165,9 +166,10 @@ exports.listenIncomingSMS = async (req, res) => {
 
   const getUserId = phoneNumber => {
     // Find userid of user with twilio number
-
+    let phonen = '+'+ phoneNumber;
+    console.log('to', phonen)
     // Uncomment this in production once twilio number is added
-    return user.findOne({ twilio: phoneNumber }).then(data => {
+    return user.findOne({ twilio: phonen }).then(data => {
       return data._id;
     }).catch(err => {
       return '';
@@ -182,12 +184,14 @@ exports.listenIncomingSMS = async (req, res) => {
     textContent: msg,
     isSent: false,
   };
-
+  console.log("Message Objects", obj)
+  let stuid = await getUid(from);
+  console.log(stuid)
   if (obj.userId !== '' && obj.uid !== '') {
     let text = new textMessage(obj);
     text.save().then(textMessage => {
-      // const socketIo = io("https://mymember.com", { transports: ['websocket'] })
-      // socketIo.emit("textAlertWebhook", getUid(from));
+      const socketIo = io("https://mymember.com", { transports: ['websocket'] })
+      socketIo.emit("textAlertWebhook", stuid);
       res.send({ msg: 'text sms sent successfully' })
     }).catch(error => {
       res.send({ error: 'txt msg not send' })
