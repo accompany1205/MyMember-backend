@@ -674,7 +674,7 @@ exports.add_template = async (req, res) => {
         }
       ])
 
-      smartlists = smartlists ? smartlists : []
+      smartlists = smartlists ? smartlists : { emails: [] }
 
       if (!smartlists.emails.length) {
         return res.send({
