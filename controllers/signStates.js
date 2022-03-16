@@ -142,6 +142,17 @@ async function signPdf(file, items) {
                             color: rgb(0, 0., 0),
                         })
                     }
+                    if (itm.type === 'field') {
+                        let text = itm.value
+                        let x = itm.x - (getTextWidth(text, 14) / 2)
+                        let y = (page.getHeight() - itm.y) - (14 / 2)
+                        page.drawText(text, {
+                            x: x,
+                            y: y,
+                            size: 14,
+                            color: rgb(0, 0., 0),
+                        })
+                    }
                 }
             }
         }
