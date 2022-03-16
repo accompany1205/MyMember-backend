@@ -3,7 +3,7 @@ const router = express.Router();
 const upload = require('../handler/multer');
 const { requireSignin, isAuth, isAdmin } = require('../controllers/auth');
 
-const { userById, read, update, purchaseHistory, deleteUser, deleteMultiple_User, verificationLink, listingVerifications, deleteVerifiedSendgridUser } = require('../controllers/user');
+const { userById, read, update, purchaseHistory, deleteUser, deleteMultiple_User, verificationLink, listingVerifications, deleteVerifiedSendgridUser, mergeUserInfo } = require('../controllers/user');
 
 router.get('/secret', requireSignin, (req, res) => {
     res.json({
@@ -22,5 +22,7 @@ router.get('/getsendgridverification/:userId', requireSignin, listingVerificatio
 router.delete('/delete/verifiedsendgriduser/:userId/:email', requireSignin, deleteVerifiedSendgridUser)
 
 router.param('userId', userById);
+router.post('/mergeUserInfo/:userId', requireSignin, isAuth, mergeUserInfo);
+
 
 module.exports = router; 

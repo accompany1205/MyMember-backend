@@ -116,7 +116,6 @@ exports.add_template = async (req, res) => {
       smartLists,
       createdBy
     } = req.body;
-    to = JSON.parse(req.body.to);
     if (days && days_type != 'before') {
       sent_date = moment().add(days, 'days').format("YYYY-MM-DD");
     } else {
@@ -161,7 +160,7 @@ exports.add_template = async (req, res) => {
         }
       ])
 
-      smartlists = smartlists ? smartlists : []
+      smartlists = smartlists ? smartlists : { emails: [] }
 
       if (!smartlists.emails.length) {
         return res.send({
@@ -170,6 +169,8 @@ exports.add_template = async (req, res) => {
         });
       }
       to = smartlists.emails
+    } else {
+      to = JSON.parse(to);
     }
     const obj = {
       to,
@@ -615,10 +616,15 @@ exports.status_update_template = (req, res) => {
 
 exports.multipal_temp_remove = (req, res) => {
   let folderId = req.params.folderId;
-  let templateIds = req.body.templateId;
+  let templateIds = req.body.templateIds;
+
+  if (!templateIds.length) {
+    res.send({ msg: "templates not selected", success: false });
+
+  }
   all_temp.remove({ _id: { $in: templateIds } }).exec((err, resp) => {
     if (err) {
-      res.json({ code: 400, msg: "templates not remove" });
+      res.json({ success: false, msg: "templates not remove" });
     } else {
       for (let id of templateIds) {
         folderNur.updateOne(
@@ -630,7 +636,7 @@ exports.multipal_temp_remove = (req, res) => {
           }
         })
       }
-      res.json({ success: true, msg: "template is remove successfully" });
+      res.json({ success: true, msg: "template  removed successfully" });
     }
   });
 };

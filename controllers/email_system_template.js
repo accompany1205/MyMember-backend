@@ -108,7 +108,6 @@ exports.add_template = async (req, res) => {
       smartLists,
       createdBy
     } = req.body || {};
-    to = JSON.parse(req.body.to);
     if (days && days_type != 'before') {
       sent_date = moment().add(days, 'days').format("YYYY-MM-DD");
     } else {
@@ -153,8 +152,8 @@ exports.add_template = async (req, res) => {
         }
       ])
 
-      smartlists = smartlists ? smartlists : []
-      if (!smartlists.length) {
+      smartlists = smartlists ? smartlists : { emails: [] }
+      if (!smartlists.emails.length) {
         return res.send({
           msg: `No Smartlist exist!`,
           success: false,
@@ -163,7 +162,9 @@ exports.add_template = async (req, res) => {
       to = smartlists.emails
 
     }
-
+    else {
+      to = JSON.parse(to);
+    }
     const obj = {
       to,
       from,

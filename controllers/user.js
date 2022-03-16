@@ -4,7 +4,7 @@ const { errorHandler } = require('../helpers/dbErrorHandler');
 const navbar = require('../models/navbar.js')
 const cloudUrl = require("../gcloud/imageUrl")
 const request = require("request");
-
+const mergeFile = require('../Services/mergeFile');
 
 
 exports.userById = (req, res, next, id) => {
@@ -270,4 +270,29 @@ exports.deleteMultiple_User = async (req, res) => {
 
   }
 
+};
+
+exports.mergeUserInfo = async (req, res) => {
+  try {
+    let docBody = req.body.docUrl;
+    let userId = req.params.userId;
+    const userInfo = await User.findOne({ _id: userId });
+    if (userInfo) {
+      var mergedInfo = { ...userInfo.toJSON() }
+      let fileObj = await mergeFile(docBody, mergedInfo)
+      cloudUrl.imageUrl(fileObj)
+        .then(data => {
+          res.send({ msg: "get merged doc", success: true, data: data })
+        })
+        .catch(err => {
+          res.send({ msg: "data not found", success: false });
+        })
+
+    } else {
+      res.send({ msg: "User not found!", success: false })
+    }
+
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ''), success: false });
+  }
 };

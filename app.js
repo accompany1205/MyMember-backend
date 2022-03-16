@@ -14,6 +14,8 @@ const fileUpload = require('express-fileupload');
 const corn = require('node-cron');
 const expressValidator = require('express-validator');
 require('dotenv').config();
+const socketio = require('socket.io');
+
 
 // import routes
 const authRoutes = require('./routes/auth');
@@ -121,9 +123,15 @@ const signStates = require('./routes/signStates');
 
 //admin routes
 const manage_user = require('./routes/admin/manage_user');
-const admin_email_system_cat = require('./routes/admin/system_email/admin_system_category');
-const admin_email_system_folder = require('./routes/admin/system_email/admin_system_folder');
-const admin_email_system_template = require('./routes/admin/system_email/admin_system_template');
+const admin_email_system_cat = require('./routes/admin/email_manage/system/admin_system_category');
+const admin_email_compose_cat = require('./routes/admin/email_manage/compose/admin_compose_category');
+const admin_email_nurturing_cat = require('./routes/admin/email_manage/nurturing/admin_nurturing_category');
+const admin_email_system_folder = require('./routes/admin/email_manage/system/admin_system_folder');
+const admin_email_compose_folder = require('./routes/admin/email_manage/compose/admin_compose_folder');
+const admin_email_nurturing_folder = require('./routes/admin/email_manage/nurturing/admin_nurturing_folder');
+const admin_email_system_template = require('./routes/admin/email_manage/system/admin_system_template');
+const admin_email_compose_template = require('./routes/admin/email_manage/compose/admin_compose_template');
+const admin_email_nurturing_template = require('./routes/admin/email_manage/nurturing/admin_nurturing_template');
 const location = require('./routes/admin/settings/location');
 const user_membership = require('./routes/admin/membership_management/admin_membership');
 const user_membershipFolder = require('./routes/admin/membership_management/admin_membershipFolder');
@@ -141,6 +149,7 @@ const user_smartlists = require('./routes/admin/smartlist_management/admin_smart
 const user_smartlistFolder = require('./routes/admin/smartlist_management/admin_smartlist_folders');
 const user_leads_tracking = require('./routes/admin/leads_tracking_manage/admin_leads_tracking');
 const user_after_camp = require('./routes/admin/after_camp_manage/admin_after_camp');
+const user_expense_category = require('./routes/admin/finance_manage/admin_expenses_category');
 
 //menu routes
 const student_menu = require('./routes/menu/std_menu/all_student_menu');
@@ -163,6 +172,13 @@ const finance = require('./routes/finance');
 const app = express();
 // app.use(fileUpload({ safeFileNames: true, preserveExtension: true }))
 const { v4: uuidv4 } = require('uuid');
+
+const server = http.createServer(app);
+const io = socketio(server);
+app.set('socketio', io);
+const engineSocket = require('./Services/scoket.io');
+new engineSocket(io);
+
 
 const followup_notes = require('./models/followup_notes');
 uuidv4();
@@ -188,6 +204,7 @@ const statusCheck = require('./notice/status');
 const purchaseMemberships = require('./models/purchaseMemberships');
 
 // middlewares
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.set('view engine', 'ejs');
@@ -196,7 +213,11 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(morgan('dev'));
 app.use(cookieParser());
 app.use(expressValidator());
-app.use(cors());
+var corsOptions = {
+	Origin: "['http://localhost:3000, 'https://mymember.com']",
+	optionsSuccessStatus: 200 // For legacy browser support
+  }
+app.use(cors(corsOptions));
 
 app.use('/api', TTL);
 
@@ -297,8 +318,14 @@ app.use('/api', student_text);
 //admin middleware
 app.use('/api', manage_user);
 app.use('/api', admin_email_system_cat);
+app.use('/api', admin_email_compose_cat);
+app.use('/api', admin_email_nurturing_cat);
 app.use('/api', admin_email_system_folder);
+app.use('/api', admin_email_compose_folder);
+app.use('/api', admin_email_nurturing_folder);
 app.use('/api', admin_email_system_template);
+app.use('/api', admin_email_compose_template);
+app.use('/api', admin_email_nurturing_template);
 app.use('/api', location);
 app.use('/api', user_membership);
 app.use('/api', user_membershipFolder);
@@ -319,6 +346,7 @@ app.use('/api', user_smartlistFolder);
 app.use('/api', user_leads_tracking);
 app.use('/api', user_after_camp);
 app.use('/api', statictics);
+app.use('/api', user_expense_category)
 
 // school auth key middleware
 app.use('/api', emailKey);
@@ -359,6 +387,6 @@ const port = process.env.PORT || 3001;
 // var server = https.createServer(credentials1, app).listen(port, function(){
 // });
 
-app.listen(port, () => {
+server.listen(port, () => {
 	console.log(`Server is running on port ${port}`);
 });

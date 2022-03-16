@@ -172,7 +172,7 @@ class Tasks {
 			const input = req.body;
 			const item = new model(input);
 			item.save((err, data) => {
-				console.log(data);
+				// console.log(data);
 
 				if (err) {
 					return res.status(400).json({ message: err });

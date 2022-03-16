@@ -10,6 +10,7 @@ router.get("/email_nurturing/Alltemplate/:userId", verifySchool, all_email_list)
 router.post("/email_nurturing/add_template/:userId/:folderId", verifySchool, upload.array('attachments'), add_template) //add Templete
 router.put("/email_nurturing/update_template/:userId/:templateId", verifySchool, upload.array('attachments'), update_template) //update Templete
 router.delete("/email_nurturing/remove_template/:userId/:templateId", requireSignin, remove_template)
+router.delete("/email_nurturing/multipal_remove_template/:userId/:folderId", requireSignin, multipal_temp_remove)
 
 
 router.put("/email_nurturing/swap_templete/:userId/:templateId", requireSignin, verifySchool, swap_template)

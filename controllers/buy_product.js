@@ -78,7 +78,7 @@ exports.buy_product = async (req, res) => {
                     const resp = await valorTechPaymentGateWay.saleSubscription(
                         saleFormatedPayload
                     );
-                    console.log(resp.data)
+                    // console.log(resp.data)
 
                     if (resp.data.error_no == 'S00') {
                         if (payLatter === "credit card" && (productData.payment_type === "monthly" || productData.payment_type === "weekly")) {
@@ -87,7 +87,7 @@ exports.buy_product = async (req, res) => {
                             const addresp = await valorTechPaymentGateWay.addSubscription(
                                 addFormatedPayload
                             );
-                            console.log(addresp.data)
+                            // console.log(addresp.data)
                             if (addresp.data.error_no === "S00") {
                                 productData.subscription_id = addresp.data.subscription_id
                                 productData.transactionId = {
@@ -192,7 +192,7 @@ exports.buy_product = async (req, res) => {
                         const resp = await valorTechPaymentGateWay.saleSubscription(
                             FormatedPayload
                         );
-                        console.log(resp.data)
+                        // console.log(resp.data)
                         if (resp.data.error_no === "S00") {
                             productData.transactionId = {
                                 rrn: resp.data.rrn,
