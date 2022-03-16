@@ -7,7 +7,7 @@ const { dateRangeBuild } = require('./../utilities/dateRangeProcess');
 const mongoose = require('mongoose');
 exports.getAllProgram = async (req, res) => {
 	try {
-		const adminId = process.env.ADMINID;
+		const adminId = process.env.ADMINID; // fix adminid
 		const userId = req.params.userId;
 		const data = await program
 			.find({ $or: [{ userId: userId }, { adminId: adminId }] })
