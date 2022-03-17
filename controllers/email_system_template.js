@@ -158,8 +158,6 @@ exports.admin_add_template = async (req, res) => {
       subject,
       template,
       design,
-      days,
-      days_type,
       content_type,
       email_type: "scheduled",
       category: "system",
