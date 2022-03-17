@@ -103,7 +103,7 @@ exports.pinContact = (req, res) => {
 // Get message list for user
 exports.getTextMessages = (req, res) => {
   //const io = req.app.get('socketio');
-  const socketIo = io("https://0aa1-49-36-186-179.ngrok.io", { transports: ['websocket'] })
+  const socketIo = io("https://mymember.com", { transports: ['websocket'] })
   socketIo.emit("textAlertWebhook", "Hello!");
   console.log(socketIo);
   // socketIo.on("connect_error", (err) => {
