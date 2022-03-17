@@ -97,8 +97,6 @@ exports.admin_add_template = async (req, res) => {
       subject,
       template,
       design,
-      days,
-      days_type,
       immediately,
       content_type,
       smartLists,
