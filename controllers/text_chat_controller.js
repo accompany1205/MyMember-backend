@@ -104,6 +104,9 @@ exports.pinContact = (req, res) => {
 exports.getTextMessages = (req, res) => {
   //const io = req.app.get('socketio');
   const socketIo = io("https://mymember.com", { transports: ['websocket'] })
+  socketIo.on("connect_error", (err) => {
+    console.log(`connect_error due to - ${err.message}`);
+  });
   socketIo.emit("textAlertWebhook", "Hello!");
   console.log(socketIo);
   // socketIo.on("connect_error", (err) => {
