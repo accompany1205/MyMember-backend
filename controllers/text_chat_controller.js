@@ -194,6 +194,9 @@ exports.listenIncomingSMS = async (req, res) => {
     let text = new textMessage(obj);
     text.save().then(textMessage => {
       const socketIo = io("http://localhost:3001", { transports: ['websocket'] })
+      socketIo.on("connect_error", (err) => {
+        console.log(`connect_error due to - ${err.message}`);
+      });
       socketIo.emit("textAlertWebhook", stuid);
       res.send({ msg: 'text sms sent successfully' })
     }).catch(error => {
