@@ -193,7 +193,7 @@ exports.listenIncomingSMS = async (req, res) => {
   if (obj.userId !== '' && obj.uid !== '') {
     let text = new textMessage(obj);
     text.save().then(textMessage => {
-      const socketIo = io("https://mymember.com", { transports: ['websocket'] })
+      const socketIo = io("http://localhost:3001", { transports: ['websocket'] })
       socketIo.emit("textAlertWebhook", stuid);
       res.send({ msg: 'text sms sent successfully' })
     }).catch(error => {
