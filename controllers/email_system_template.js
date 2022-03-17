@@ -87,6 +87,181 @@ function timefun(sd, st) {
 //     throw new Error(error)
 //   }
 // };
+exports.admin_add_template = async (req, res) => {
+  try {
+    let adminId = req.params.adminId;
+    let folderId = req.params.folderId;
+    let {
+      to,
+      from,
+      subject,
+      template,
+      design,
+      days,
+      days_type,
+      immediately,
+      content_type,
+      smartLists,
+      createdBy
+    } = req.body || {};
+    if (!to) {
+      smartLists = smartLists ? JSON.parse(smartLists) : []
+      smartLists = smartLists.map(s => ObjectId(s));
+      let [smartlists] = await smartlist.aggregate([
+        {
+          $match: {
+            _id: { $in: smartLists }
+          }
+        },
+        {
+          $lookup: {
+            from: "members",
+            localField: "smartlists",
+            foreignField: "_id",
+            as: "data"
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            data: "$data.email"
+          }
+        },
+        { $unwind: "$data" },
+        {
+          $group: {
+            _id: "",
+            emails: { $addToSet: "$data" }
+          }
+        },
+        {
+          $project: {
+            _id: 0
+          }
+
+        }
+      ])
+      smartlists = smartlists ? smartlists : { emails: [] }
+      if (!smartlists.emails.length) {
+        return res.send({
+          msg: `No Smartlist exist!`,
+          success: false,
+        });
+      }
+      to = smartlists.emails
+
+    }
+    else {
+      to = JSON.parse(to);
+    }
+    const obj = {
+      to,
+      from,
+      subject,
+      template,
+      design,
+      days,
+      days_type,
+      content_type,
+      email_type: "scheduled",
+      category: "system",
+      folderId,
+      smartLists,
+      createdBy,
+      adminId
+    };
+
+    // const promises = []
+    // if (req.files) {
+    //   (req.files).map(file => {
+    //     promises.push(cloudUrl.imageUrl(file))
+    //   });
+    //   var attachments = await Promise.all(promises);
+    // }
+    // obj.attachments = attachments
+    let attachments = []
+    if (req.files) {
+      (req.files).map((file) => {
+        let content = new Buffer.from(file.buffer, "utf-8")
+        let attach = {
+          content: content,
+          filename: file.originalname,
+          type: `application/${file.mimetype.split("/")[1]}`,
+          disposition: "attachment"
+        }
+        attachments.push(attach)
+
+      })
+    }
+    const Allattachments = await Promise.all(attachments);
+    obj.attachments = Allattachments;
+    if (JSON.parse(immediately)) {
+      const emailData = new Mailer({
+        to,
+        from,
+        subject,
+        html: template,
+        attachments: Allattachments
+      })
+
+      emailData.sendMail()
+        .then(resp => {
+          saveEmailTemplate(obj)
+            .then((data) => {
+              systemFolder
+                .findByIdAndUpdate(folderId, { $push: { template: data._id } }, (err, data) => {
+                  if (err) {
+                    res.send({ msg: err, success: false })
+                  }
+                  res.send({ msg: "Email send Successfully!", success: true })
+
+                })
+            })
+            .catch((ex) => {
+              res.send({
+                success: false,
+                msg: ex
+              });
+            });
+        })
+        .catch(err => {
+          res.send({ error: err.message.replace(/\"/g, ""), success: false })
+        })
+
+    } else if (!JSON.parse(immediately) && days) {
+      saveEmailTemplate(obj)
+        .then((data) => {
+          systemFolder
+            .findByIdAndUpdate(folderId, { $push: { template: data._id } })
+            .then((data) => {
+              res.send({
+                msg: `Template created Successfully`,
+                success: true,
+              });
+            })
+            .catch((er) => {
+              res.send({
+                error: "compose template details is not add in folder",
+                success: false,
+              });
+            });
+        })
+        .catch((ex) => {
+          res.send({
+            success: false,
+            msg: ex
+          });
+        });
+    }
+    else {
+      res.send({ msg: 'something went wrong', success: false })
+
+    }
+  } catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false })
+  }
+
+};
 
 exports.add_template = async (req, res) => {
   try {
@@ -151,8 +326,10 @@ exports.add_template = async (req, res) => {
 
         }
       ])
+      console.log(smartlists)
 
       smartlists = smartlists ? smartlists : { emails: [] }
+      console.log(smartlists)
       if (!smartlists.emails.length) {
         return res.send({
           msg: `No Smartlist exist!`,
