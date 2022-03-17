@@ -838,7 +838,7 @@ function navbar_custom(user_id) {
 		},
 	];
 
-	navbar.insertMany(Data).then((response) => { });
+	navbar.insertMany(Data).then((response) => {});
 }
 
 exports.get_navbar = async (req, res) => {
@@ -927,38 +927,38 @@ exports.updateUser = async (req, res) => {
 };
 
 exports.school_listing = async (req, res) => {
-	var per_page = parseInt(req.body.per_page) || 10
-	var page_no = parseInt(req.params.page_no) || 1
-	var totalCount = await User.find({ role: 0, isEmailverify: true }).count()
+	var per_page = parseInt(req.body.per_page) || 10;
+	var page_no = parseInt(req.params.page_no) || 1;
+	var totalCount = await User.find({ role: 0, isEmailverify: true }).count();
 	var pagination = {
 		limit: per_page,
-		skip: per_page * (page_no - 1)
-	}
+		skip: per_page * (page_no - 1),
+	};
 	await User.find({ role: 0, isEmailverify: true })
 		.limit(pagination.limit)
 		.skip(pagination.skip)
 		.exec((err, data) => {
 			if (err) {
-				res.send({ msg: "data not found!", success: false })
+				res.send({ msg: 'data not found!', success: false });
+			} else {
+				res
+					.status(200)
+					.send({ data: data, success: true, totalCount: totalCount });
 			}
-			else {
-				res.status(200).send({ data: data, "success": true, totalCount: totalCount })
-			}
-		})
-}
+		});
+};
 
 exports.searchUser = async (req, res) => {
 	const search = req.query.search;
 
 	try {
-		const data = await User.find(
-			{
-				$or: [
-					{ username: { $regex: search, $options: 'i' } },
-					{ email: { $regex: search, $options: 'i' } },
-					{ firstname: { $regex: search, $options: 'i' } },
-				],
-			});
+		const data = await User.find({
+			$or: [
+				{ username: { $regex: search, $options: 'i' } },
+				{ email: { $regex: search, $options: 'i' } },
+				{ firstname: { $regex: search, $options: 'i' } },
+			],
+		});
 
 		res.send({ data: data, success: true });
 	} catch (err) {

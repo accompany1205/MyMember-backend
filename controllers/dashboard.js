@@ -1290,15 +1290,3 @@ exports.memberByMembershipType = async (req, res) => {
 	}
 };
 
-// task_schema
-
-// (async () => {
-// 	const tasks = await MyTask.find({});
-// 	tasks.forEach(async (each) => {
-// 		// each.userId = await
-// 		const task = await MyTask.findById(each._id);
-// 		task.userId = '621b3906f1bdbe119c212f6f';
-// 		await task.save();
-// 		console.log('saved', task._id);
-// 	});
-// })();
