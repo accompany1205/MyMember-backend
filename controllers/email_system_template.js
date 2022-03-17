@@ -97,6 +97,7 @@ exports.admin_add_template = async (req, res) => {
       subject,
       template,
       design,
+      days_type,
       immediately,
       content_type,
       smartLists,
@@ -158,6 +159,7 @@ exports.admin_add_template = async (req, res) => {
       subject,
       template,
       design,
+      days_type,
       content_type,
       email_type: "scheduled",
       category: "system",
@@ -224,7 +226,7 @@ exports.admin_add_template = async (req, res) => {
           res.send({ error: err.message.replace(/\"/g, ""), success: false })
         })
 
-    } else if (!JSON.parse(immediately) && days) {
+    } else if (!JSON.parse(immediately)) {
       saveEmailTemplate(obj)
         .then((data) => {
           systemFolder
