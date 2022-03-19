@@ -138,6 +138,7 @@ exports.fetchAllCC = async (req, res) => {
 
 exports.expenseStateByCategory = async (req, res) => {
 	// fetch expese state
+	
 	const total = await Expense.aggregate([
 		{ $match: { userId: mongoose.Types.ObjectId(req.params.userId) } },
 		{
@@ -170,9 +171,8 @@ exports.expenseStateByCategory = async (req, res) => {
 	});
 
 	// fetch All Category
-
-	const categories = await ExpenseCategory.find({ userId: req.params.userId });
-
+	let adminId = process.env.ADMINID;
+	const categories = await ExpenseCategory.find({ $or:[{userId: req.params.userId}, {adminId}]  });
 	const data = categories.map((category) => {
 		const find = expenses.find(
 			(x) => String(x._id) === String(category.expense_category_type)
