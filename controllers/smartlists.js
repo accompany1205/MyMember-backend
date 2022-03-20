@@ -788,3 +788,307 @@ exports.delete_smart_list = async (req, res) => {
 
 }
 
+async function filter(criteria) {
+    let { membership_status, finance, renewal } = criteria
+    let promises = [];
+    let obj = criteria
+    for (const i in obj) {
+        if (obj[i].length && i !== "membership_status" && i !== "finance" && i !== "renewal") {
+            promises.push({ [i]: { $in: obj[i] } })
+        }
+    }
+    Promise.all(promises);
+    if (promises.length) {
+        var [leadData] = await member.aggregate([{
+            $match: {
+                userId: userId,
+                $and: promises
+            }
+        },
+        {
+            $project: { _id: 1 }
+        },
+
+        {
+            $group: {
+                _id: "",
+                ids: { $addToSet: "$_id" }
+            }
+        },
+        {
+            $project: { _id: 0 }
+        },
+
+        ])
+
+        if (leadData) {
+            leadData = leadData.ids
+        }
+        else {
+            leadData = []
+        }
+    }
+    if (membership_status) {
+        var [membershipData] = await membership.aggregate([{
+            $match: { userId: userId, membership_status: { $in: membership_status } }
+        }, {
+            $project: {
+                studentInfo: 1,
+                membership_status: 1
+            }
+        }, { $unwind: "$studentInfo" },
+        {
+            $lookup: {
+                from: "members",
+                localField: "studentInfo",
+                foreignField: "_id",
+                as: "data"
+            }
+        },
+        {
+            $project: {
+                data: "$data._id",
+                _id: 0,
+
+            }
+        },
+        { $unwind: "$data" },
+        {
+            "$group": {
+                "_id": "",
+                "ids": { "$addToSet": "$data" }
+            }
+        },
+        {
+            $project: {
+                _id: 0,
+            }
+        },
+        ])
+
+        if (membershipData) {
+            membershipData = membershipData.ids
+            if (leadData.length) {
+                leadData = leadData.filter(e => {
+                    return membershipData.some(item => String(item) === String(e));
+                })
+            } else {
+                leadData = []
+            }
+        }
+    }
+    if (finance) {
+        if (finance.includes('expired')) {
+            var financeData = await financeInfo.aggregate(
+                [{
+                    $match: {
+                        userId: userId
+                    }
+                },
+                {
+                    $project: {
+                        studentId: 1,
+                        expiry_date: 1,
+                        month: { $month: "$$NOW" },
+                        year: { $toInt: { $substrBytes: [{ $toString: { $year: "$$NOW" } }, 2, -1] } },
+                        expired_month: { $toInt: { $substrBytes: ["$expiry_date", 0, 2] } },
+                        expired_year: { $toInt: { $substrBytes: ["$expiry_date", 2, -1] } },
+
+                    }
+                },
+                {
+                    $addFields: {
+                        studentId: { $convert: { input: '$studentId', to: 'objectId', onError: '', onNull: '' } }
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "members",
+                        localField: "studentId",
+                        foreignField: "_id",
+                        as: "data"
+                    }
+                },
+                {
+                    $match: {
+                        $expr: {
+                            $and: [
+                                { $gte: ["$year", "$expired_year"] },
+                                { $gte: ["$month", "$expired_month"] }
+                            ]
+                        },
+                    }
+                },
+                {
+                    $project: {
+                        data: "$data._id",
+                        _id: 0,
+
+                    }
+                },
+
+                { $unwind: "$data" },
+                {
+                    "$group": {
+                        "_id": "",
+                        "data": { "$addToSet": "$data" }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                    }
+                },
+                ]
+            )
+            financeData = financeData.data ? financeData.data : []
+        }
+        if (finance.includes('not_expired')) {
+            let not_expiredFinance = await financeInfo.aggregate(
+                [{
+                    $match: {
+                        userId: userId
+                    }
+                },
+                {
+                    $project: {
+                        studentId: 1,
+                        expiry_date: 1,
+                        month: { $month: "$$NOW" },
+                        year: { $toInt: { $substrBytes: [{ $toString: { $year: "$$NOW" } }, 2, -1] } },
+                        expired_month: { $toInt: { $substrBytes: ["$expiry_date", 0, 2] } },
+                        expired_year: { $toInt: { $substrBytes: ["$expiry_date", 2, -1] } },
+                    }
+                },
+                {
+                    $addFields: {
+                        studentId: { $convert: { input: '$studentId', to: 'objectId', onError: '', onNull: '' } }
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "members",
+                        localField: "studentId",
+                        foreignField: "_id",
+                        as: "data"
+                    }
+                },
+                {
+                    $match: {
+                        $expr: {
+                            $and: [
+                                { $gt: ["$expired_year", "$year"] },
+                            ]
+                        },
+                    }
+                },
+                {
+                    $project: {
+                        data: "$data._id",
+                        _id: 0
+
+                    }
+                },
+
+                { $unwind: "$data" },
+                {
+                    "$group": {
+                        "_id": "",
+                        "data": { "$addToSet": "$data" }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                    }
+                },
+                ]
+            )
+            if (financeData) {
+                financeData.push(...not_expiredFinance[0].data)
+            } else {
+                financeData = [...not_expiredFinance[0].data]
+            }
+        }
+        if (leadData.length) {
+            leadData = leadData.filter(e => {
+                return financeData.some(item => String(item) === String(e));
+            })
+        } else {
+            leadData = []
+        }
+    }
+
+    if (renewal) {
+        var renewalData = await buymembership
+            .aggregate([
+                { $match: { userId: userId } },
+                {
+                    $project: {
+                        membership_type: 1,
+                        membership_name: 1,
+                        membership_status: 1,
+                        expiry_date: { $toDate: "$expiry_date" },
+                        studentInfo: 1,
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "members",
+                        localField: "studentInfo",
+                        foreignField: "_id",
+                        as: 'data'
+                    }
+                },
+                {
+                    $project: {
+                        membership_name: 1,
+                        membership_type: 1,
+                        membership_status: 1,
+                        data: 1,
+                        expiry_date: 1,
+                        days_till_Expire: {
+                            $multiply: [{
+                                $floor: {
+                                    $divide: [{ $subtract: [new Date(), '$expiry_date'] }, 1000 * 60 * 60 * 24]
+                                }
+                            }, -1]
+
+                        },
+                    }
+                },
+
+                { $match: { days_till_Expire: { $lte: renewal[0], $gt: 0 } } },
+                {
+                    $project: {
+                        data: "$data._id",
+                        _id: 0
+
+                    }
+                },
+
+                { $unwind: "$data" },
+                {
+                    "$group": {
+                        "_id": "",
+                        "data": { "$addToSet": "$data" }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                    }
+                },
+            ])
+        if (renewalData.length) {
+            renewalData = renewalData[0].data
+            if (leadData.length) {
+                leadData = leadData.filter(e => {
+                    return renewalData.some(item => String(item) === String(e));
+                })
+            } else {
+                leadData = []
+            }
+        }
+    }
+}

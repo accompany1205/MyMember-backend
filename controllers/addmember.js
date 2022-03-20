@@ -1410,49 +1410,70 @@ exports.multipleFilter = async (req, res) => {
 
 //need to cha
 exports.collectionModify = async (req, res) => {
-	let LittleTiger = [];
-	// var mongo.Types.ObjectId = mongo.Types.mongo.Types.ObjectId()
-
-	// membership Scrip
 	try {
-		let users = await program.insertMany({
-			program_category: [],
-			program_rank: [
-				'61926ee2e953ff693a3f72fc',
-				'61926f46e953ff693a3f7338',
-				'61926f61e953ff693a3f7342',
-				'61926fc8e953ff693a3f7382',
-				'61926fe5e953ff693a3f73b7',
-				'61926ffde953ff693a3f73dd',
-				'61927016e953ff693a3f73fe',
-				'61927031e953ff693a3f743b',
-				'6192704ce953ff693a3f7440',
-				'61927068e953ff693a3f7461',
-				'61927082e953ff693a3f7466',
-			],
-			programName: 'Little Tiger',
-			color: '#88d317',
-			lable: 2,
-			total_rank: 11,
-			progression: 'by time & attendance',
-			type: 'By Stripe',
-			requirement: 'bottel',
-			adminId: '6138893333c9482cb41d88d5',
-		});
-		//   let users = await User.find();
-		//   users.forEach(async element => {
-		//     if(element._id !== "619155201e2a465ca222dfe0"){
-		//       var membershipObj = new membershipModal(
-		//         {"isfavorite":0,"membership_name":"BBC 33 Monthly E","color":"#969696","membership_type":"Taekwondo","duration_time":"33","duration_type":"month","total_price":6897,"down_payment":418,"payment_type":"monthly","balance":6479,"due_every":"1","userId":element._id});
-		//       var member = await membershipObj.save();
-		//       console.log("member",member)
-		//     }
-		//   });
+		// function getUserId() {
+		// 	return new Promise((resolve, reject) => {
+		// 		User.find({}, { _id: 1 })
+		// 			.then(data => resolve(data))
+		// 			.catch(err => reject(err))
 
-		res.send({
-			data: users,
-			success: true,
-		});
+		// 	})
+		// }
+
+		addmemberModal.aggregate([
+			// { $match: { 'userId': "606aea95a145ea2d26e0f1ab" } },
+			{
+				'$lookup': {
+					'from': 'class_schedules',
+					'localField': '_id',
+					'foreignField': 'class_attendanceArray.studentInfo',
+					'as': 'data'
+				}
+			}, {
+				'$project': {
+					'last_attended_date': {
+						'$toDate': {
+							'$arrayElemAt': [
+								'$data.start_date', -1
+							]
+						}
+					}
+				}
+			}, {
+				'$addFields': {
+					'rating': {
+						'$floor': {
+							'$divide': [
+								{
+									'$subtract': [
+										new Date(), '$last_attended_date'
+									]
+								}, 1000 * 60 * 60 * 24
+							]
+						}
+					}
+				}
+			}
+		], (function (err, myDoc) {
+			if (err) {
+				console.log(err)
+			}
+			console.log("Id: " + myDoc._id)
+		}))
+		// const promise = users.map(async (member) => {
+		// 	await addmemberModal.findOneAndUpdate({ _id: member._id }, { $set: { rating: (member.rating == null ? 60 : member.rating) } }, { $upsert: true })
+		// });
+		// console.log(promise)
+		// Promise.all(promise)
+		// 	.then(resp => {
+		// 		console.log('updated')
+
+		// 	}).catch(err => {
+		// 		console.log(err)
+		// 	})
+
+
+
 	} catch (err) {
 		res.send({ msg: err.message.replace(/\"/g, ''), success: false });
 	}

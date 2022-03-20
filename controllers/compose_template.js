@@ -618,6 +618,7 @@ exports.add_template = async (req, res) => {
   try {
 
     let userId = req.params.userId;
+    let adminId = req.params.adminId;
     let folderId = req.params.folderId;
 
     let {
@@ -634,7 +635,6 @@ exports.add_template = async (req, res) => {
       days,
       createdBy
     } = req.body;
-    to = JSON.parse(to)
     if (!to) {
 
       smartLists = smartLists ? JSON.parse(smartLists) : []
@@ -684,6 +684,9 @@ exports.add_template = async (req, res) => {
       }
       to = smartlists.emails
     }
+    else {
+      to = JSON.parse(to);
+    }
 
     const obj = {
       to,
@@ -698,6 +701,7 @@ exports.add_template = async (req, res) => {
       content_type,
       category: "compose",
       userId,
+      adminId,
       folderId,
       smartLists,
       createdBy

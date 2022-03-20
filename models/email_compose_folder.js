@@ -3,7 +3,7 @@ const schema = mongoose.Schema
 const composefolderSchema = schema({
     folderName: {
         type: String,
-        unique: true,
+        // unique: true,
         require: true
     },
     template: [{
