@@ -53,7 +53,10 @@ exports.userEmailList = (req, res) => {
 // }
 
 exports.category_list = async (req, res) => {
-    await emailCompose.find({ userId: req.params.userId })
+    let adminId = process.env.ADMINID
+    const userId = req.params.userId;
+    await emailCompose
+        .find({ $or: [{ userId: userId }, { adminId: adminId }] })
         .populate({
             path: 'folder',
             populate: {

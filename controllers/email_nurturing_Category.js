@@ -27,7 +27,10 @@ exports.userEmailList = (req, res) => {
 }
 
 exports.category_list = (req, res) => {
-    emailNurturing.find({ userId: req.params.userId })
+    let adminId = process.env.ADMINID
+    const userId = req.params.userId;
+    emailNurturing
+        .find({ $or: [{ userId: userId }, { adminId: adminId }] })
         .populate({
             path: 'folder',
             populate: {
