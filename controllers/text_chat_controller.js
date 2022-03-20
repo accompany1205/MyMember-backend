@@ -103,8 +103,11 @@ exports.pinContact = (req, res) => {
 // Get message list for user
 exports.getTextMessages = (req, res) => {
   //const io = req.app.get('socketio');
-  const socketIo = io("https://0aa1-49-36-186-179.ngrok.io", { transports: ['websocket'] })
-  socketIo.emit("textAlertWebhook", "Hello!");
+  const socketIo = io("http://localhost:3001", { transports: ['websocket'] })
+  socketIo.on("connect_error", (err) => {
+    console.log(`connect_error due to - ${err.message}`);
+  });
+  socketIo.emit("textAlertWebhook", "622a05808e2d967cdb7394fc");
   console.log(socketIo);
   // socketIo.on("connect_error", (err) => {
   //   console.log(`connect_error due to - ${err.message}`);
@@ -190,7 +193,10 @@ exports.listenIncomingSMS = async (req, res) => {
   if (obj.userId !== '' && obj.uid !== '') {
     let text = new textMessage(obj);
     text.save().then(textMessage => {
-      const socketIo = io("https://mymember.com", { transports: ['websocket'] })
+      const socketIo = io("http://localhost:3001", { transports: ['websocket'] })
+      socketIo.on("connect_error", (err) => {
+        console.log(`connect_error due to - ${err.message}`);
+      });
       socketIo.emit("textAlertWebhook", stuid);
       res.send({ msg: 'text sms sent successfully' })
     }).catch(error => {
