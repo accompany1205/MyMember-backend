@@ -10,8 +10,8 @@ const mergeFile = require('../Services/mergeFile');
 exports.userById = (req, res, next, id) => {
   User
     .findById(id)
-    .populate('subUsers')
     .populate('locations')
+    // .populate('subUsers')
     // .populate('mainUser')
     .exec((err, user) => {
       if (err || !user) {

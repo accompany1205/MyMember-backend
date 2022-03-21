@@ -145,7 +145,7 @@ const userSchema = new schema(
         },
         locations: [{
             type: schema.Types.ObjectId,
-            ref: "User"
+            ref: "location"
         }],
         isAccessLocations: {
             type: Boolean,
