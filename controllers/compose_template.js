@@ -15,6 +15,7 @@ const cron = require("node-cron");
 const axios = require("axios");
 const cloudUrl = require("../gcloud/imageUrl");
 const ObjectId = require('mongodb').ObjectId;
+const { filterSmartlist } = require('../controllers/smartlists')
 // compose template
 
 function timefun(sd, st) {
@@ -437,9 +438,27 @@ exports.sendEmail = async (req, res) => {
     emailBody.category = "compose";
     emailBody.to = emailBody.to ? JSON.parse(emailBody.to) : undefined
     if (!emailBody.to) {
-      let smartLists = JSON.parse(emailBody.smartLists) ? JSON.parse(emailBody.smartLists) : []
-      smartLists = smartLists.map(s => ObjectId(s));
+      emailBody.smartLists = emailBody.smartLists ? JSON.parse(emailBody.smartLists) : []
+      smartLists = emailBody.smartLists.map(s => ObjectId(s));
+      let smartlists = await smartlist.aggregate([
+        { $match: { _id: { $in: smartLists } } },
+        { $project: { criteria: 1, _id: 0 } }
+      ])
+      let promises = [];
+      smartlists.forEach((element, index) => {
+        promises.push(filterSmartlist(element.criteria, userId))
+      })
+      let data = await Promise.all(promises)
+      rest = data.reduce(function (a, b) {
+        return b.map(function (e, i) { return a[i] instanceof Object ? a[i] : e; });
+      }, []);
 
+      if (!rest.length) {
+        return res.send({
+          msg: `No Smartlist exist!`,
+          success: false,
+        });
+      }
       // if (JSON.parse(emailBody.isPlaceHolders)) {
       //   let [mapObj] = await smartlist.aggregate([
       //     {
@@ -503,51 +522,8 @@ exports.sendEmail = async (req, res) => {
 
 
       // }
-      let [smartlists] = await smartlist.aggregate([
-        {
-          $match: {
-            _id: { $in: smartLists }
-          }
-        },
-        {
-          $lookup: {
-            from: "members",
-            localField: "smartlists",
-            foreignField: "_id",
-            as: "data"
-          }
-        },
-        {
-          $project: {
-            _id: 0,
-            data: "$data.email"
-          }
-        },
-        { $unwind: "$data" },
-        {
-          $group: {
-            _id: "",
-            emails: { $addToSet: "$data" }
-          }
-        },
-        {
-          $project: {
-            _id: 0
-          }
 
-        }
-      ])
-
-      smartlists = smartlists ? smartlists : { emails: [] }
-
-      if (!smartlists.emails.length) {
-        return res.send({
-          msg: `No Smartlist exist!`,
-          success: false,
-        });
-      }
-
-      emailBody.to = smartlists.emails;
+      emailBody.to = rest;
     }
 
     if (JSON.parse(emailBody.immediately)) {
@@ -639,50 +615,62 @@ exports.add_template = async (req, res) => {
 
       smartLists = smartLists ? JSON.parse(smartLists) : []
       smartLists = smartLists.map(s => ObjectId(s));
-      let [smartlists] = await smartlist.aggregate([
-        {
-          $match: {
-            _id: { $in: smartLists }
-          }
-        },
-        {
-          $lookup: {
-            from: "members",
-            localField: "smartlists",
-            foreignField: "_id",
-            as: "data"
-          }
-        },
-        {
-          $project: {
-            _id: 0,
-            data: "$data.email"
-          }
-        },
-        { $unwind: "$data" },
-        {
-          $group: {
-            _id: "",
-            emails: { $addToSet: "$data" }
-          }
-        },
-        {
-          $project: {
-            _id: 0
-          }
-
-        }
+      let smartlists = await smartlist.aggregate([
+        { $match: { _id: { $in: smartLists } } },
+        { $project: { criteria: 1, _id: 0 } }
       ])
+      let promises = [];
+      smartlists.forEach((element, index) => {
+        promises.push(filterSmartlist(element.criteria, userId))
+      })
+      let data = await Promise.all(promises)
+      rest = data.reduce(function (a, b) {
+        return b.map(function (e, i) { return a[i] instanceof Object ? a[i] : e; });
+      }, []);
+      // let [smartlists] = await smartlist.aggregate([
+      //   {
+      //     $match: {
+      //       _id: { $in: smartLists }
+      //     }
+      //   },
+      //   {
+      //     $lookup: {
+      //       from: "members",
+      //       localField: "smartlists",
+      //       foreignField: "_id",
+      //       as: "data"
+      //     }
+      //   },
+      //   {
+      //     $project: {
+      //       _id: 0,
+      //       data: "$data.email"
+      //     }
+      //   },
+      //   { $unwind: "$data" },
+      //   {
+      //     $group: {
+      //       _id: "",
+      //       emails: { $addToSet: "$data" }
+      //     }
+      //   },
+      //   {
+      //     $project: {
+      //       _id: 0
+      //     }
 
-      smartlists = smartlists ? smartlists : { emails: [] }
+      //   }
+      // ])
 
-      if (!smartlists.emails.length) {
+      // smartlists = smartlists ? smartlists : { emails: [] }
+
+      if (!rest.length) {
         return res.send({
           msg: `No Smartlist exist!`,
           success: false,
         });
       }
-      to = smartlists.emails
+      to = rest;
     }
     else {
       to = JSON.parse(to);
@@ -706,6 +694,7 @@ exports.add_template = async (req, res) => {
       smartLists,
       createdBy
     };
+    console.log(obj)
     let attachments = []
     if (req.files) {
       (req.files).map((file) => {
@@ -845,7 +834,6 @@ var emailCronFucntionality = async () => {
       emailData.sendMail()
         .then(async (resp) => {
           const update = await all_temp.findOneAndUpdate({ _id: ele._id }, { $set: { is_Sent: true } });
-          // console.log(resp)
         })
         .catch((err) => {
           throw new Error(err);

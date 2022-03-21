@@ -11,6 +11,7 @@ const cron = require("node-cron");
 const folderNur = require("../models/email_nurturing_folder");
 const cloudUrl = require("../gcloud/imageUrl");
 const ObjectId = require("mongodb").ObjectId;
+const { filterSmartlist } = require('../controllers/smartlists')
 
 function timefun(sd, st) {
   var date = sd;
@@ -125,50 +126,25 @@ exports.add_template = async (req, res) => {
     if (!to) {
       smartLists = smartLists ? JSON.parse(smartLists) : []
       smartLists = smartLists.map(s => ObjectId(s));
-      let [smartlists] = await smartlist.aggregate([
-        {
-          $match: {
-            _id: { $in: smartLists }
-          }
-        },
-        {
-          $lookup: {
-            from: "members",
-            localField: "smartlists",
-            foreignField: "_id",
-            as: "data"
-          }
-        },
-        {
-          $project: {
-            _id: 0,
-            data: "$data.email"
-          }
-        },
-        { $unwind: "$data" },
-        {
-          $group: {
-            _id: "",
-            emails: { $addToSet: "$data" }
-          }
-        },
-        {
-          $project: {
-            _id: 0
-          }
-
-        }
+      let smartlists = await smartlist.aggregate([
+        { $match: { _id: { $in: smartLists } } },
+        { $project: { criteria: 1, _id: 0 } }
       ])
-
-      smartlists = smartlists ? smartlists : { emails: [] }
-
-      if (!smartlists.emails.length) {
+      let promises = [];
+      smartlists.forEach((element, index) => {
+        promises.push(filterSmartlist(element.criteria, userId))
+      })
+      let data = await Promise.all(promises)
+      rest = data.reduce(function (a, b) {
+        return b.map(function (e, i) { return a[i] instanceof Object ? a[i] : e; });
+      }, []);
+      if (!rest.length) {
         return res.send({
           msg: `No Smartlist exist!`,
           success: false,
         });
       }
-      to = smartlists.emails
+      to = rest;
     } else {
       to = JSON.parse(to);
     }

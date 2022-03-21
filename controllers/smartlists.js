@@ -788,7 +788,7 @@ exports.delete_smart_list = async (req, res) => {
 
 }
 
-async function filter(criteria) {
+exports.filterSmartlist = async (criteria, userId) => {
     let { membership_status, finance, renewal } = criteria
     let promises = [];
     let obj = criteria
@@ -798,6 +798,7 @@ async function filter(criteria) {
         }
     }
     Promise.all(promises);
+    console.log(userId)
     if (promises.length) {
         var [leadData] = await member.aggregate([{
             $match: {
@@ -806,13 +807,13 @@ async function filter(criteria) {
             }
         },
         {
-            $project: { _id: 1 }
+            $project: { _id: 0, email: 1 }
         },
 
         {
             $group: {
                 _id: "",
-                ids: { $addToSet: "$_id" }
+                mailIds: { $addToSet: "$email" }
             }
         },
         {
@@ -821,8 +822,9 @@ async function filter(criteria) {
 
         ])
 
+
         if (leadData) {
-            leadData = leadData.ids
+            leadData = leadData.mailIds
         }
         else {
             leadData = []
@@ -1091,4 +1093,6 @@ async function filter(criteria) {
             }
         }
     }
+    return leadData;
 }
+
