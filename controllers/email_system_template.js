@@ -106,26 +106,51 @@ exports.admin_add_template = async (req, res) => {
     } = req.body || {};
     if (!to) {
       smartLists = smartLists ? JSON.parse(smartLists) : []
-      smartLists = smartLists.map(s => ObjectId(s));
-      let smartlists = await smartlist.aggregate([
-        { $match: { _id: { $in: smartLists } } },
-        { $project: { criteria: 1, _id: 0 } }
-      ])
-      let promises = [];
-      smartlists.forEach((element, index) => {
-        promises.push(filterSmartlist(element.criteria, userId))
-      })
-      let data = await Promise.all(promises)
-      rest = data.reduce(function (a, b) {
-        return b.map(function (e, i) { return a[i] instanceof Object ? a[i] : e; });
-      }, []);
-      if (!rest.length) {
-        return res.send({
-          msg: `No Smartlist exist!`,
-          success: false,
-        });
-      }
-      to = rest;
+      console.log(smartLists)
+      // smartLists = smartLists.map(s => ObjectId(s));
+      // let [smartlists] = await smartlist.aggregate([
+      //   {
+      //     $match: {
+      //       _id: { $in: smartLists }
+      //     }
+      //   },
+      //   {
+      //     $lookup: {
+      //       from: "members",
+      //       localField: "smartlists",
+      //       foreignField: "_id",
+      //       as: "data"
+      //     }
+      //   },
+      //   {
+      //     $project: {
+      //       _id: 0,
+      //       data: "$data.email"
+      //     }
+      //   },
+      //   { $unwind: "$data" },
+      //   {
+      //     $group: {
+      //       _id: "",
+      //       emails: { $addToSet: "$data" }
+      //     }
+      //   },
+      //   {
+      //     $project: {
+      //       _id: 0
+      //     }
+
+      //   }
+      // ])
+      // smartlists = smartlists ? smartlists : { emails: [] }
+      // if (!smartlists.emails.length) {
+      //   return res.send({
+      //     msg: `No Smartlist exist!`,
+      //     success: false,
+      //   });
+      // }
+      // to = smartlists.emails
+
     }
     else {
       to = JSON.parse(to);
@@ -146,7 +171,7 @@ exports.admin_add_template = async (req, res) => {
       adminId,
       immediately
     };
-
+console.log(obj)
     // const promises = []
     // if (req.files) {
     //   (req.files).map(file => {
