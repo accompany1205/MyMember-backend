@@ -167,7 +167,8 @@ exports.admin_add_template = async (req, res) => {
       folderId,
       smartLists,
       createdBy,
-      adminId
+      adminId,
+      immediately
     };
 
     // const promises = []

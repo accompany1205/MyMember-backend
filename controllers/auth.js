@@ -916,11 +916,11 @@ exports.updateUser = async (req, res) => {
 	await User.findByIdAndUpdate(req.params.userId, req.body).exec(
 		(err, data) => {
 			if (err) {
-				res.send({ error: 'User is not updated!', status: 'failure' });
+				res.send({ msg: 'User is not updated!', success: false });
 			} else {
 				res
 					.status(200)
-					.send({ msg: 'User is updated successfully', status: 'success' });
+					.send({ msg: 'User is updated successfully', 'success': true });
 			}
 		}
 	);
