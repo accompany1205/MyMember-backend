@@ -170,7 +170,7 @@ exports.admin_add_template = async (req, res) => {
       adminId,
       immediately
     };
-
+console.log(obj)
     // const promises = []
     // if (req.files) {
     //   (req.files).map(file => {
