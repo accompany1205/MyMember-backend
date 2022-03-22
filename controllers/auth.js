@@ -838,7 +838,7 @@ function navbar_custom(user_id) {
 		},
 	];
 
-	navbar.insertMany(Data).then((response) => {});
+	navbar.insertMany(Data).then((response) => { });
 }
 
 exports.get_navbar = async (req, res) => {
@@ -936,6 +936,7 @@ exports.school_listing = async (req, res) => {
 	};
 	await User.find({ role: 0, isEmailverify: true })
 		.limit(pagination.limit)
+		.populate('locations')
 		.skip(pagination.skip)
 		.exec((err, data) => {
 			if (err) {
