@@ -490,6 +490,21 @@ exports.resetPassword = (req, res) => {
 //     } catch (err) {
 //     }
 // };
+exports.addTwillioNumber = (req, res) => {
+	let userId = req.params.userId;
+	let twilio = req.body.twilio;
+	try {
+		User.findOneAndUpdate(
+			{ _id: userId }, { $set: { twilio: twilio } }).then(data => {
+				res.send({ msg: "updated successfully!", success: true })
+			}).catch(err => {
+				res.send({ msg: err.message.replace(/\"/g, ''), success: false });
+			})
+
+	} catch (err) {
+		res.send({ msg: err.message.replace(/\"/g, ''), success: false });
+	}
+}
 
 exports.signin = (req, res) => {
 	// find the user based on email
@@ -838,7 +853,7 @@ function navbar_custom(user_id) {
 		},
 	];
 
-	navbar.insertMany(Data).then((response) => {});
+	navbar.insertMany(Data).then((response) => { });
 }
 
 exports.get_navbar = async (req, res) => {
