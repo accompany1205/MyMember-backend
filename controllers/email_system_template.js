@@ -106,49 +106,49 @@ exports.admin_add_template = async (req, res) => {
     } = req.body || {};
     if (!to) {
       smartLists = smartLists ? JSON.parse(smartLists) : []
-      smartLists = smartLists.map(s => ObjectId(s));
-      let [smartlists] = await smartlist.aggregate([
-        {
-          $match: {
-            _id: { $in: smartLists }
-          }
-        },
-        {
-          $lookup: {
-            from: "members",
-            localField: "smartlists",
-            foreignField: "_id",
-            as: "data"
-          }
-        },
-        {
-          $project: {
-            _id: 0,
-            data: "$data.email"
-          }
-        },
-        { $unwind: "$data" },
-        {
-          $group: {
-            _id: "",
-            emails: { $addToSet: "$data" }
-          }
-        },
-        {
-          $project: {
-            _id: 0
-          }
+      // smartLists = smartLists.map(s => ObjectId(s));
+      // let [smartlists] = await smartlist.aggregate([
+      //   {
+      //     $match: {
+      //       _id: { $in: smartLists }
+      //     }
+      //   },
+      //   {
+      //     $lookup: {
+      //       from: "members",
+      //       localField: "smartlists",
+      //       foreignField: "_id",
+      //       as: "data"
+      //     }
+      //   },
+      //   {
+      //     $project: {
+      //       _id: 0,
+      //       data: "$data.email"
+      //     }
+      //   },
+      //   { $unwind: "$data" },
+      //   {
+      //     $group: {
+      //       _id: "",
+      //       emails: { $addToSet: "$data" }
+      //     }
+      //   },
+      //   {
+      //     $project: {
+      //       _id: 0
+      //     }
 
-        }
-      ])
-      smartlists = smartlists ? smartlists : { emails: [] }
-      if (!smartlists.emails.length) {
-        return res.send({
-          msg: `No Smartlist exist!`,
-          success: false,
-        });
-      }
-      to = smartlists.emails
+      //   }
+      // ])
+      // smartlists = smartlists ? smartlists : { emails: [] }
+      // if (!smartlists.emails.length) {
+      //   return res.send({
+      //     msg: `No Smartlist exist!`,
+      //     success: false,
+      //   });
+      // }
+      // to = smartlists.emails
 
     }
     else {
@@ -170,7 +170,7 @@ exports.admin_add_template = async (req, res) => {
       adminId,
       immediately
     };
-
+console.log(obj)
     // const promises = []
     // if (req.files) {
     //   (req.files).map(file => {

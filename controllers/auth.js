@@ -951,6 +951,7 @@ exports.school_listing = async (req, res) => {
 	};
 	await User.find({ role: 0, isEmailverify: true })
 		.limit(pagination.limit)
+		.populate('locations')
 		.skip(pagination.skip)
 		.exec((err, data) => {
 			if (err) {
@@ -973,7 +974,8 @@ exports.searchUser = async (req, res) => {
 				{ email: { $regex: search, $options: 'i' } },
 				{ firstname: { $regex: search, $options: 'i' } },
 			],
-		});
+		})
+		.populate('locations')
 
 		res.send({ data: data, success: true });
 	} catch (err) {

@@ -590,6 +590,90 @@ exports.sendEmail = async (req, res) => {
   }
 }
 
+exports.admin_add_template = async (req, res) => {
+  try {
+
+    let userId = req.params.userId;
+    let adminId = req.params.adminId;
+    let folderId = req.params.folderId;
+
+    let {
+      to,
+      from,
+      subject,
+      template,
+      sent_time,
+      sent_date,
+      smartLists,
+      design,
+      days_type,
+      content_type,
+      days,
+      createdBy
+    } = req.body;
+    if (!to) {
+      smartLists = smartLists ? JSON.parse(smartLists) : []
+
+    }
+    else {
+      to = JSON.parse(to);
+    }
+
+    const obj = {
+      to,
+      from,
+      subject,
+      template,
+      sent_date,
+      sent_time,
+      design,
+      days,
+      days_type,
+      content_type,
+      category: "compose",
+      userId,
+      adminId,
+      folderId,
+      smartLists,
+      createdBy
+    };
+    let attachments = []
+    if (req.files) {
+      (req.files).map((file) => {
+        let content = new Buffer.from(file.buffer, "utf-8")
+        let attach = {
+          content: content,
+          filename: file.originalname,
+          type: `application/${file.mimetype.split("/")[1]}`,
+          disposition: "attachment"
+        }
+        attachments.push(attach)
+
+      })
+    }
+    const resolvAttachments = await Promise.all(attachments);
+    obj.attachments = resolvAttachments
+    saveEmailTemplate(obj)
+      .then(data => {
+        compose_folder
+          .findByIdAndUpdate(folderId, { $push: { template: data._id } }, (err, data) => {
+            if (err) {
+              return res.send({ msg: err, success: false })
+            }
+            return res.send({ msg: "Template saved Successfully!", success: true })
+          })
+      })
+      .catch(err => {
+        return res.send({
+          success: false, msg: err
+        })
+      })
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
+
+};
+
 exports.add_template = async (req, res) => {
   try {
 
