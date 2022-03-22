@@ -257,6 +257,22 @@ exports.deleteUser = async (req, res) => {
 
 };
 
+exports.userSignatureUpdate = async (req, res) => {
+  let userId = req.params.userId;
+  let signature = req.body.signature;
+  try {
+    User.findOneAndUpdate({ _id: userId }, { $set: { signature: signature } })
+      .then(resp => {
+        res.send({ msg: "signature Updated!", success: true })
+      }).catch(err => {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+      });
+
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
+}
+
 exports.deleteMultiple_User = async (req, res) => {
   try {
 

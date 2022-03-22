@@ -103,6 +103,9 @@ const userSchema = new schema(
             unique: true,
             maxlength: 100
         },
+        signature:{
+            type:String
+        },
         email: {
             type: String,
             trim: true,
