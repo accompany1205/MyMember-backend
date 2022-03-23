@@ -13,6 +13,7 @@ const otpGenerator = require('../Services/otpGenerator');
 const ObjectId = require('mongodb').ObjectId;
 const { map } = require('lodash');
 const { errorMonitor } = require('events');
+const location = require("../models/admin/settings/location")
 
 // TODO - Rakesh - Please write a mail service if user is coming with role 0(School)
 //TODO - Rakesh - Please read the admin email ids using a mongo query with the role 1.
@@ -506,16 +507,16 @@ exports.addTwillioNumber = (req, res) => {
 	}
 }
 
-exports.signin = (req, res) => {
+exports.signin = async (req, res) => {
 	// find the user based on email
-	const { username, email, password, isAccessLocations, accessingUserdetails } =
+	const { username, email, password, isAccessLocations } =
 		req.body;
 	if (req.body.access_school) {
 	}
 
-	User.findOne({
+	await User.findOne({
 		$or: [{ username: username }, { email: email }],
-	}).exec((err, data) => {
+	}).exec(async (err, data) => {
 		if (err || !data) {
 			return res.status(400).json({
 				msg: 'User with that email does not exist. Please signup',
@@ -527,9 +528,12 @@ exports.signin = (req, res) => {
 					if (data.isEmailverify) {
 						if (data.status == 'Active') {
 							if (isAccessLocations) {
+								let locationData = await location.findOne({ locationName: req.body.locationName })
 								token = jwt.sign(
 									{
-										id: data._id,
+										id: locationData._id,
+										username: req.body.username,
+										password: req.body.password,
 										auth_key: data.auth_key,
 										app_id: data.app_id,
 										epi: data.epi,
@@ -543,33 +547,25 @@ exports.signin = (req, res) => {
 								});
 								const {
 									_id,
-									username,
-									name,
+									locationName,
 									email,
-									role,
-									logo,
-									location_name,
-									bussinessAddress,
-									country,
-									state,
 									city,
-								} = data;
+								} = locationData;
 								return res.json({
 									token,
 									data: {
 										_id,
-										username,
 										email,
-										name,
-										role,
-										logo,
-										location_name,
-										bussinessAddress,
 										city,
-										state,
-										country,
+										locationName,
 										isAccessLocations,
-										accessingUserdetails,
+										"username": data.username,
+										"role": data.role,
+										"logo": data.logo,
+										"bussinessAddress": data.bussinessAddress,
+										"city": data.city,
+										"state": data.state,
+										"country": data.country
 									},
 								});
 							}
