@@ -15,7 +15,8 @@ const locationSchema = schema({
     },
     email: {
         type: String,
-        require: true
+        unique: true,
+        required: true
     },
     phone: {
         type: String

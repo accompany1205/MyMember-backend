@@ -80,7 +80,7 @@ exports.removeLocation = (req, res) => {
                 res.send({ msg: 'location not removed ', success: false })
             }
             else {
-                User.updateOne({ locations: locationId }, { $pull: { locations: locationId } })
+                User.updateOne({ locations: locationId }, { $pull: { default_location: locationId } })
                     .exec((err, data) => {
                         if (err) {
                             res.send({ msg: 'location not removed ', success: false })
