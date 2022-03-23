@@ -19,6 +19,7 @@ const system_folder = require('../models/email_system_folder');
 const mergeFile = require('../Services/mergeFile');
 const manage_rank = require('../models/program_rank');
 const mergeMultipleFiles = require('../Services/mergeMultipleFiles');
+const cron = require("node-cron");
 
 // const ManyStudents = require('../std.js');
 // const students = require('../std.js');
@@ -1409,7 +1410,7 @@ exports.multipleFilter = async (req, res) => {
 };
 
 //need to cha
-exports.collectionModify = async (req, res) => {
+collectionModify = async (req, res) => {
 	try {
 		function getUserId() {
 			return new Promise((resolve, reject) => {
@@ -1493,7 +1494,7 @@ exports.collectionModify = async (req, res) => {
 
 
 	} catch (err) {
-		res.send({ msg: err.message.replace(/\"/g, ''), success: false });
+		console.log({ msg: err.message.replace(/\"/g, ''), success: false });
 	}
 };
 
@@ -2619,3 +2620,5 @@ exports.leads_past3_month = async (req, res) => {
 		res.send({ msg: err.message.replace(/\"/g, ''), success: false });
 	}
 };
+
+cron.schedule("0 0 * * *", () => collectionModify())
