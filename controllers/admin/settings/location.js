@@ -2,7 +2,7 @@ const location = require("../../../models/admin/settings/location")
 const User = require("../../../models/user")
 
 exports.listLocation = (req, res) => {
-    location.find().exec((err, list) => {
+    User.find({ isLocation: true }).exec((err, list) => {
         if (err) {
             res.send({ error: 'location list not found' })
         }
@@ -17,10 +17,12 @@ exports.addLocation = (req, res) => {
     let userId = req.params.userId;
     let locationData = req.body;
     locationData.userId = userId;
-    let addLocation = new location(locationData)
+    locationData.isLocation = true
+
+    let addLocation = new User(locationData)
     addLocation.save((err, loc) => {
         if (err) {
-            res.send({ msg: 'location already exist!', success: false })
+            res.send({ msg: 'location already exist!', success: err })
         }
         else {
             User.findByIdAndUpdate(userId,
@@ -64,7 +66,7 @@ exports.access_school = async (req, res) => {
 
 
 exports.updateLocation = (req, res) => {
-    location.updateOne({ _id: req.params.locationId }, req.body)
+    User.updateOne({ _id: req.params.locationId }, req.body)
         .then((result) => {
             res.send({ msg: 'location updated successfully', success: true })
         }).catch((err) => {
@@ -74,7 +76,7 @@ exports.updateLocation = (req, res) => {
 
 exports.removeLocation = (req, res) => {
     let locationId = req.params.locationId;
-    location.findByIdAndRemove(locationId)
+    User.findByIdAndRemove(locationId)
         .exec((err, delLoc) => {
             if (err) {
                 res.send({ msg: 'location not removed ', success: false })
