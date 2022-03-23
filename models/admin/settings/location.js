@@ -3,7 +3,11 @@ const schema = mongoose.Schema
 const locationSchema = schema({
     locationName: {
         type: String,
-        require: true
+        unique: true,
+        required: true
+    },
+    password: {
+        type: String,
     },
     website: {
         type: String,
@@ -11,7 +15,8 @@ const locationSchema = schema({
     },
     email: {
         type: String,
-        require: true
+        unique: true,
+        required: true
     },
     phone: {
         type: String
