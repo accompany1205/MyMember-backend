@@ -23,6 +23,7 @@ const {
 	verify_otp,
 	createLocations,
 	access_school,
+	addTwillioNumber
 } = require('../controllers/auth');
 const { userSignupValidator } = require('../validator');
 
@@ -39,6 +40,7 @@ router.put(
 	approveUserRequestByAdmin
 );
 
+router.put('/addtwilllio/:adminId/:userId',isAdmin, addTwillioNumber);
 //verfications
 router.post('/sendOTP_to_email', sendOTP_to_email);
 router.post('/verify_otp', verify_otp);
