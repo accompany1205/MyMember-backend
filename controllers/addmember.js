@@ -1411,55 +1411,73 @@ exports.multipleFilter = async (req, res) => {
 //need to cha
 exports.collectionModify = async (req, res) => {
 	try {
-		// function getUserId() {
-		// 	return new Promise((resolve, reject) => {
-		// 		User.find({}, { _id: 1 })
-		// 			.then(data => resolve(data))
-		// 			.catch(err => reject(err))
+		function getUserId() {
+			return new Promise((resolve, reject) => {
+				User.find({}, { _id: 1 })
+					.then(data => resolve(data))
+					.catch(err => reject(err))
 
-		// 	})
-		// }
+			})
+		}
+		const allUsers = await getUserId()
+		const promise = [];
+		const content = await Promise.all(allUsers.map(async (userId, i) => {
 
-		addmemberModal.aggregate([
-			// { $match: { 'userId': "606aea95a145ea2d26e0f1ab" } },
-			{
-				'$lookup': {
-					'from': 'class_schedules',
-					'localField': '_id',
-					'foreignField': 'class_attendanceArray.studentInfo',
-					'as': 'data'
-				}
-			}, {
-				'$project': {
-					'last_attended_date': {
-						'$toDate': {
-							'$arrayElemAt': [
-								'$data.start_date', -1
-							]
+			const data = await addmemberModal.aggregate([
+				{ $match: { 'userId': userId._id.toString() } },
+				{
+					'$lookup': {
+						'from': 'class_schedules',
+						'localField': '_id',
+						'foreignField': 'class_attendanceArray.studentInfo',
+						'as': 'data'
+					}
+				}, {
+					'$project': {
+						'last_attended_date': {
+							'$toDate': {
+								'$arrayElemAt': [
+									'$data.start_date', -1
+								]
+							}
+						}
+					}
+				},
+				{
+					'$addFields': {
+						'rating': {
+							'$floor': {
+								'$divide': [
+									{
+										'$subtract': [
+											new Date(), '$last_attended_date'
+										]
+									}, 1000 * 60 * 60 * 24
+								]
+							}
 						}
 					}
 				}
-			}, {
-				'$addFields': {
-					'rating': {
-						'$floor': {
-							'$divide': [
-								{
-									'$subtract': [
-										new Date(), '$last_attended_date'
-									]
-								}, 1000 * 60 * 60 * 24
-							]
-						}
-					}
-				}
-			}
-		], (function (err, myDoc) {
-			if (err) {
-				console.log(err)
-			}
-			console.log("Id: " + myDoc._id)
+			])
+			await Promise.all(data.map(async (member) => {
+				updateRating(member).
+					then(resp => {
+						console.log(resp)
+					})
+					.catch(err => {
+						console.log(err)
+					})
+
+			}))
+
 		}))
+
+		async function updateRating(member) {
+			return new Promise((resolve, reject) => {
+				addmemberModal.findOneAndUpdate({ _id: member._id }, { $set: { rating: (member.rating == null ? 60 : member.rating) } })
+
+			})
+		}
 		// const promise = users.map(async (member) => {
 		// 	await addmemberModal.findOneAndUpdate({ _id: member._id }, { $set: { rating: (member.rating == null ? 60 : member.rating) } }, { $upsert: true })
 		// });

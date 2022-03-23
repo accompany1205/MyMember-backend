@@ -11,6 +11,7 @@ exports.userById = (req, res, next, id) => {
   User
     .findById(id)
     .populate('locations')
+    .populate('default_location')
     // .populate('subUsers')
     // .populate('mainUser')
     .exec((err, user) => {

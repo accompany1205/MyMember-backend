@@ -103,8 +103,8 @@ const userSchema = new schema(
             unique: true,
             maxlength: 100
         },
-        signature:{
-            type:String
+        signature: {
+            type: String
         },
         email: {
             type: String,
@@ -146,6 +146,10 @@ const userSchema = new schema(
         location_name: {
             type: String
         },
+        default_location: [{
+            type: schema.Types.ObjectId,
+            ref: "location"
+        }],
         locations: [{
             type: schema.Types.ObjectId,
             ref: "location"

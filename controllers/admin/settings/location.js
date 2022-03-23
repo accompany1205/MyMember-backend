@@ -17,15 +17,15 @@ exports.addLocation = (req, res) => {
     let userId = req.params.userId;
     let locationData = req.body;
     locationData.userId = userId;
-    var addLocation = new location(locationData)
+    let addLocation = new location(locationData)
     addLocation.save((err, loc) => {
         if (err) {
-            res.send({ msg: 'location is not create', success: false })
+            res.send({ msg: 'location already exist!', success: false })
         }
         else {
             User.findByIdAndUpdate(userId,
                 {
-                    $addToSet: { locations: loc._id },
+                    $addToSet: { default_location: loc._id },
                 }
             )
                 .exec((err, locupdate) => {
