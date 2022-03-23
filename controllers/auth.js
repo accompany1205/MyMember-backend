@@ -1061,25 +1061,3 @@ function AddMinutesToDate(date, minutes) {
 	return new Date(date.getTime() + minutes * 60000);
 }
 
-exports.access_school = async (req, res) => {
-	let adminId = req.params.adminId;
-	let access_schools_list = req.body.access_schools_list;
-	let email = req.body.email;
-	User.updateOne(
-		{ email: email },
-		{
-			$set: {
-				isAccessLocations: true,
-			},
-			$addToSet: {
-				locations: access_schools_list,
-			},
-		}
-	).exec((err, data) => {
-		if (err || data.nModified === 0) {
-			return res.send({ msg: 'User not found', success: false });
-		} else {
-			return res.send({ msg: 'Access Granted!', success: true });
-		}
-	});
-};

@@ -40,6 +40,29 @@ exports.addLocation = (req, res) => {
     })
 }
 
+exports.access_school = async (req, res) => {
+    let userId = req.params.userId;
+    let access_location_list = req.body.access_location_list;
+    User.updateOne(
+        { _id: userId },
+        {
+            $set: {
+                isAccessLocations: true,
+            },
+            $addToSet: {
+                locations: access_location_list,
+            },
+        }
+    ).exec((err, data) => {
+        if (err || data.nModified === 0) {
+            return res.send({ msg: 'User not found', success: false });
+        } else {
+            return res.send({ msg: 'Access Granted!', success: true });
+        }
+    });
+};
+
+
 exports.updateLocation = (req, res) => {
     location.updateOne({ _id: req.params.locationId }, req.body)
         .then((result) => {

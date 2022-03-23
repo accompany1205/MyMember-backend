@@ -56,7 +56,6 @@ router.put(
 	isAdmin,
 	approvesendgridverification
 );
-router.post('/access_school/:adminId', isAdmin, access_school);
 router.get(
 	'/unverifiedsendgriduserlist/:adminId',
 	isAdmin,
