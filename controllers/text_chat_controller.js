@@ -113,7 +113,7 @@ exports.getTextMessages = (req, res) => {
   socketIo.on("connect_error", (err) => {
     console.log(`connect_error due to - ${err.message}`);
   });
-  socketIo.emit("textAlertWebhook", uid);
+  socketIo.emit("textAlertWebhook", uidObj);
   console.log(socketIo);
   // socketIo.on("connect_error", (err) => {
   //   console.log(`connect_error due to - ${err.message}`);
