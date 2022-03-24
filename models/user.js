@@ -143,18 +143,25 @@ const userSchema = new schema(
         street: {
             type: String
         },
-        location_name: {
-            type: String
+        locationName: {
+            type: String,
+            unique: true,
+            trim: true,
+            maxlength: 100
         },
         default_location: [{
             type: schema.Types.ObjectId,
-            ref: "location"
+            ref: "User"
         }],
         locations: [{
             type: schema.Types.ObjectId,
-            ref: "location"
+            ref: "User"
         }],
         isAccessLocations: {
+            type: Boolean,
+            default: false
+        },
+        isLocation: {
             type: Boolean,
             default: false
         },

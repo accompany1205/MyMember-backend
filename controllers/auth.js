@@ -528,7 +528,7 @@ exports.signin = async (req, res) => {
 					if (data.isEmailverify) {
 						if (data.status == 'Active') {
 							if (isAccessLocations) {
-								let locationData = await location.findOne({ locationName: req.body.locationName })
+								let locationData = await User.findOne({ locationName: req.body.locationName })
 								token = jwt.sign(
 									{
 										id: locationData._id,
@@ -546,26 +546,32 @@ exports.signin = async (req, res) => {
 									expire: new Date() + 9999,
 								});
 								const {
-									_id,
-									locationName,
+									username,
+									name,
 									email,
+									role,
+									logo,
+									locationName,
+									bussinessAddress,
+									country,
+									state,
 									city,
-								} = locationData;
+								} = data;
 								return res.json({
 									token,
 									data: {
-										_id,
+										_id:locationData._id,
+										username,
+										name,
 										email,
-										city,
+										role,
+										logo,
 										locationName,
-										isAccessLocations,
-										"username": data.username,
-										"role": data.role,
-										"logo": data.logo,
-										"bussinessAddress": data.bussinessAddress,
-										"city": data.city,
-										"state": data.state,
-										"country": data.country
+										bussinessAddress,
+										country,
+										state,
+										city,
+										isAccessLocations
 									},
 								});
 							}
@@ -590,7 +596,7 @@ exports.signin = async (req, res) => {
 								email,
 								role,
 								logo,
-								location_name,
+								locationName,
 								bussinessAddress,
 								country,
 								state,
@@ -605,7 +611,7 @@ exports.signin = async (req, res) => {
 									name,
 									role,
 									logo,
-									location_name,
+									locationName,
 									bussinessAddress,
 									city,
 									state,
