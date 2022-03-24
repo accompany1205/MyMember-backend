@@ -63,7 +63,7 @@ exports.sendTextMessage = async (req, res) => {
         if (err) {
           res.send({ error: 'message not stored' });
         } else {
-          await member.fineOneAndUpdate({_id:uid},{$set:{time:Date.now(), textContent:textContent}})
+          await member.findOneAndUpdate({_id:uid},{$set:{time:Date.now(), textContent:textContent}})
           res.send({ textMessage: data });
         }
       });
@@ -212,7 +212,7 @@ exports.listenIncomingSMS = async (req, res) => {
         console.log(`connect_error due to - ${err.message}`);
       });
       socketIo.emit("textAlertWebhook", uidObj);
-      await member.fineOneAndUpdate({_id:stuid},{$set:{time:Date.now(), textContent:msg}})
+      await member.findOneAndUpdate({_id:stuid},{$set:{time:Date.now(), textContent:msg}})
       res.send({ msg: 'text sms sent successfully' })
     }).catch(error => {
       res.send({ error: 'txt msg not send' })
