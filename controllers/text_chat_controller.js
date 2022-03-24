@@ -57,10 +57,13 @@ exports.sendTextMessage = async (req, res) => {
     }).then((message) => {
       console.log('Text Message sent : ', message);
       let textMsg = new textMessage(req.body);
-      textMsg.save((err, data) => {
+      let uid = req.body.uid;
+      let textContent = req.body.textContent;
+      textMsg.save(async (err, data) => {
         if (err) {
           res.send({ error: 'message not stored' });
         } else {
+          await member.fineOneAndUpdate({_id:uid},{$set:{time:Date.now(), textContent:textContent}})
           res.send({ textMessage: data });
         }
       });
@@ -106,7 +109,9 @@ exports.getTextMessages = (req, res) => {
   uidObj = {};
   let date = new Date();
   let uid = req.params.uid;
-  uidObj.date = date;
+  let textContent = "test Message!";
+  uidObj.time = date;
+  uidObj.textContent = textContent;
   uidObj.uid = uid;
   console.log(uidObj);
   const socketIo = io("http://localhost:3001", { transports: ['websocket'] })
@@ -194,16 +199,20 @@ exports.listenIncomingSMS = async (req, res) => {
     isSent: false,
   };
   console.log("Message Objects", obj)
+  uidObj = {};
   let stuid = await getUid(from);
-  console.log(stuid)
+  uidObj.uid = stuid
+  uidObj.time = Date.now();
+  uidObj.textContent = msg;
   if (obj.userId !== '' && obj.uid !== '') {
     let text = new textMessage(obj);
-    text.save().then(textMessage => {
+    text.save().then(async (textMessage) => {
       const socketIo = io("http://localhost:3001", { transports: ['websocket'] })
       socketIo.on("connect_error", (err) => {
         console.log(`connect_error due to - ${err.message}`);
       });
-      socketIo.emit("textAlertWebhook", stuid);
+      socketIo.emit("textAlertWebhook", uidObj);
+      await member.fineOneAndUpdate({_id:stuid},{$set:{time:Date.now(), textContent:msg}})
       res.send({ msg: 'text sms sent successfully' })
     }).catch(error => {
       res.send({ error: 'txt msg not send' })

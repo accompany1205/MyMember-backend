@@ -269,9 +269,16 @@ const addmemberSchema = new schema(
       default: false,
       type: Boolean,
     },
+    time: {
+      type: Date,
+      default: Date.now()
+    },
+    textContent : {
+      type:String
+    }
   },
 
-	{ timestamps: true }
+  { timestamps: true }
 );
 
 module.exports = mongoose.model('member', addmemberSchema);
