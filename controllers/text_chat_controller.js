@@ -63,7 +63,7 @@ exports.sendTextMessage = async (req, res) => {
         if (err) {
           res.send({ error: 'message not stored' });
         } else {
-          await member.findOneAndUpdate({_id:uid},{$set:{time:Date.now(), textContent:textContent}})
+          await member.findOneAndUpdate({_id:uid},{$set:{time:new Date(), textContent:textContent}})
           res.send({ textMessage: data });
         }
       });
@@ -202,7 +202,7 @@ exports.listenIncomingSMS = async (req, res) => {
   uidObj = {};
   let stuid = await getUid(from);
   uidObj.uid = stuid
-  uidObj.time = Date.now();
+  uidObj.time = new Date();
   uidObj.textContent = msg;
   if (obj.userId !== '' && obj.uid !== '') {
     let text = new textMessage(obj);
