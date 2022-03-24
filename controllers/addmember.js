@@ -1503,13 +1503,68 @@ collectionModify = async (req, res) => {
 		// 		console.log(err)
 		// 	})
 
-
-
 	} catch (err) {
 		console.log({ msg: err.message.replace(/\"/g, ''), success: false });
 	}
 };
+async function updateRating(member) {
+	let { _id, rating } = member
+	rating = rating == null ? 0 : rating;
+	return new Promise((resolve, reject) => {
+		addmemberModal.findOneAndUpdate({ _id: _id.toString() }, { $set: { rating: rating.toString() } })
+			.then(resp => resolve(resp))
+			.catch(err => reject(err))
 
+	})
+}
+exports.updateRating = async (req, res) => {
+	const userId = req.params.userId;
+	const data = await addmemberModal.aggregate([
+		{ $match: { 'userId': userId } },
+		{
+			'$lookup': {
+				'from': 'class_schedules',
+				'localField': '_id',
+				'foreignField': 'class_attendanceArray.studentInfo',
+				'as': 'data'
+			}
+		}, {
+			'$project': {
+				'last_attended_date': {
+					'$toDate': {
+						'$arrayElemAt': [
+							'$data.start_date', -1
+						]
+					}
+				}
+			}
+		},
+		{
+			'$addFields': {
+				'rating': {
+					'$floor': {
+						'$divide': [
+							{
+								'$subtract': [
+									new Date(), '$last_attended_date'
+								]
+							}, 1000 * 60 * 60 * 24
+						]
+					}
+				}
+			}
+		}
+	])
+	for (let member of data) {
+		updateRating(member)
+			.then(resp => {
+			})
+			.catch(err => {
+				console.log(err)
+			})
+	}
+	res.send({ msg: 'rating updated successfully' })
+}
 exports.birth_next_month = (req, res) => {
 	var curDate = new Date();
 	var next_month = new Date(
@@ -2633,4 +2688,4 @@ exports.leads_past3_month = async (req, res) => {
 	}
 };
 
-cron.schedule("0 0 * * *", () => collectionModify())
+// cron.schedule("*/30 * * * *", () => collectionModify())
