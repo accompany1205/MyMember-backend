@@ -527,12 +527,13 @@ exports.signin = async (req, res) => {
 				if (data.role == 0 || data.role == 2) {
 					if (data.isEmailverify) {
 						if (data.status == 'Active') {
+							let locationData = await User.find({ _id: data.locations });
+							let default_locationData = await User.find({ _id: data.default_location });
 							if (isAccessLocations) {
-								let locationData = await User.findOne({ locationName: req.body.locationName })
-								let default_locationData = await User.find({ _id: data.default_location })
+								let current_locationData = await User.findOne({ locationName: req.body.locationName });
 								token = jwt.sign(
 									{
-										id: locationData._id,
+										id: current_locationData._id,
 										auth_key: data.auth_key,
 										app_id: data.app_id,
 										epi: data.epi,
@@ -559,10 +560,10 @@ exports.signin = async (req, res) => {
 								return res.json({
 									token,
 									data: {
-										_id: locationData._id,
-										locationName: locationData.locationName,
+										_id: current_locationData._id,
+										locationName: current_locationData.locationName,
 										default_locationData,
-										locations: [...locations,...default_locationData],
+										locations: [...locationData, ...default_locationData],
 										username,
 										password,
 										name,
@@ -609,6 +610,8 @@ exports.signin = async (req, res) => {
 								data: {
 									_id,
 									username,
+									default_locationData,
+									locations: [...locationData, ...default_locationData],
 									email,
 									name,
 									role,
