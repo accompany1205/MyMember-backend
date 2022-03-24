@@ -509,7 +509,7 @@ exports.addTwillioNumber = (req, res) => {
 
 exports.signin = async (req, res) => {
 	// find the user based on email
-	const { username, email, password, isAccessLocations } =
+	const { username, email, password, isAccessLocations, locations } =
 		req.body;
 	if (req.body.access_school) {
 	}
@@ -544,38 +544,34 @@ exports.signin = async (req, res) => {
 									expire: new Date() + 9999,
 								});
 								const {
-									_id,
 									username,
+									password,
 									name,
 									email,
 									role,
 									logo,
-									locationName,
 									bussinessAddress,
 									country,
 									state,
 									city,
-								} = locationData;
+								} = data;
 								return res.json({
 									token,
 									data: {
-										_id,
+										_id: locationData._id,
+										locationName: locationData.locationName,
+										locations,
 										username,
+										password,
 										name,
 										email,
 										role,
 										logo,
-										locationName,
 										bussinessAddress,
 										country,
 										state,
 										city,
 										isAccessLocations,
-										previousLocation: {
-											locationName: data.locationName,
-											username: data.username,
-											password: data.password,
-										}
 									},
 								});
 							}
