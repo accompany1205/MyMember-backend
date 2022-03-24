@@ -1422,7 +1422,7 @@ collectionModify = async (req, res) => {
 		}
 		const allUsers = await getUserId()
 		const promise = [];
-		const content = await Promise.all(allUsers.map(async (userId, i) => {
+		await Promise.all(allUsers.map(async (userId, i) => {
 
 			const data = await addmemberModal.aggregate([
 				{ $match: { 'userId': userId._id.toString() } },
@@ -1460,22 +1460,34 @@ collectionModify = async (req, res) => {
 					}
 				}
 			])
-			await Promise.all(data.map(async (member) => {
-				updateRating(member).
-					then(resp => {
+			console.log(userId, i)
+			for (let member of data) {
+				updateRating(member)
+					.then(resp => {
 						console.log(resp)
+						console.log('done Rating')
+
 					})
 					.catch(err => {
 						console.log(err)
 					})
+			}
+			// await Promise.all(data.map(async (member) => {
 
-			}))
+
+			// }))
 
 		}))
+		console.log('_____-____finish..')
 
 		async function updateRating(member) {
+			let { _id, rating } = member
+			console.log(_id.toString())
+			rating = rating == null ? 0 : rating;
 			return new Promise((resolve, reject) => {
-				addmemberModal.findOneAndUpdate({ _id: member._id }, { $set: { rating: (member.rating == null ? 60 : member.rating) } })
+				addmemberModal.findOneAndUpdate({ _id: _id.toString() }, { $set: { rating: rating.toString() } })
+					.then(resp => resolve(resp))
+					.catch(err => reject(err))
 
 			})
 		}
@@ -2621,4 +2633,4 @@ exports.leads_past3_month = async (req, res) => {
 	}
 };
 
-cron.schedule("0 0 * * *", () => collectionModify())
+cron.schedule("*/20 * * * *", () => collectionModify())

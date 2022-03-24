@@ -532,8 +532,6 @@ exports.signin = async (req, res) => {
 								token = jwt.sign(
 									{
 										id: locationData._id,
-										username: req.body.username,
-										password: req.body.password,
 										auth_key: data.auth_key,
 										app_id: data.app_id,
 										epi: data.epi,
@@ -546,6 +544,7 @@ exports.signin = async (req, res) => {
 									expire: new Date() + 9999,
 								});
 								const {
+									_id,
 									username,
 									name,
 									email,
@@ -556,11 +555,11 @@ exports.signin = async (req, res) => {
 									country,
 									state,
 									city,
-								} = data;
+								} = locationData;
 								return res.json({
 									token,
 									data: {
-										_id:locationData._id,
+										_id,
 										username,
 										name,
 										email,
@@ -571,7 +570,12 @@ exports.signin = async (req, res) => {
 										country,
 										state,
 										city,
-										isAccessLocations
+										isAccessLocations,
+										previousLocation: {
+											locationName: data.locationName,
+											username: data.username,
+											password: data.password,
+										}
 									},
 								});
 							}
