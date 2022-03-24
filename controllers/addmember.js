@@ -1460,12 +1460,12 @@ collectionModify = async (req, res) => {
 					}
 				}
 			])
-			console.log(userId, i)
+			// console.log(userId, i)
 			for (let member of data) {
 				updateRating(member)
 					.then(resp => {
-						console.log(resp)
-						console.log('done Rating')
+						// console.log(resp)
+						// console.log('done Rating')
 
 					})
 					.catch(err => {
@@ -1482,7 +1482,7 @@ collectionModify = async (req, res) => {
 
 		async function updateRating(member) {
 			let { _id, rating } = member
-			console.log(_id.toString())
+			// console.log(_id.toString())
 			rating = rating == null ? 0 : rating;
 			return new Promise((resolve, reject) => {
 				addmemberModal.findOneAndUpdate({ _id: _id.toString() }, { $set: { rating: rating.toString() } })
@@ -2633,4 +2633,4 @@ exports.leads_past3_month = async (req, res) => {
 	}
 };
 
-cron.schedule("*/20 * * * *", () => collectionModify())
+cron.schedule("0 0 * * *", () => collectionModify())
