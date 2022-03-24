@@ -111,7 +111,7 @@ async function signPdf(file, items) {
                     if (itm.type == "sign" && itm.value) {
                         let img = await pdfDoc.embedPng(itm.value);
                         // const { width, height } = img.scale(1);
-                        let x = (itm.x + 35) - (150 / 2)
+                        let x = (itm.x - 35) - (150 / 2)
                         let y = (page.getHeight() - (itm.y-12)) - (60 / 2)
                         page.drawImage(img, {
                             x: x,
@@ -122,8 +122,8 @@ async function signPdf(file, items) {
                     }
                     if (itm.type === 'date') {
                         let text = new Date().toLocaleDateString()
-                        let x = (itm.x + 35) - (getTextWidth(text, 14) / 2)
-                        let y = (page.getHeight() - (itm.y+12)) - (14 / 2)
+                        let x = (itm.x - 35) - (getTextWidth(text, 14) / 2)
+                        let y = (page.getHeight() - (itm.y-12)) - (14 / 2)
                         page.drawText(new Date().toLocaleDateString(), {
                             x: x,
                             y: y,
@@ -133,8 +133,8 @@ async function signPdf(file, items) {
                     }
                     if (itm.type === 'text') {
                         let text = itm.value
-                        let x = (itm.x + 35) - (getTextWidth(text, 14) / 2)
-                        let y = (page.getHeight() - (itm.y+12)) - (14 / 2)
+                        let x = (itm.x - 35) - (getTextWidth(text, 14) / 2)
+                        let y = (page.getHeight() - (itm.y-12)) - (14 / 2)
                         page.drawText(text, {
                             x: x,
                             y: y,
@@ -144,7 +144,7 @@ async function signPdf(file, items) {
                     }
                     if (itm.type === 'field') {
                         let text = itm.value
-                        let x = (itm.x + 35) - (getTextWidth(text, 14) / 2)
+                        let x = (itm.x - 35) - (getTextWidth(text, 14) / 2)
                         let y = (page.getHeight() - (itm.y -12)) - (14 / 2)
                         page.drawText(text, {
                             x: x,
