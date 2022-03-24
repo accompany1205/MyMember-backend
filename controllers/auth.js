@@ -562,7 +562,7 @@ exports.signin = async (req, res) => {
 										_id: locationData._id,
 										locationName: locationData.locationName,
 										default_locationData,
-										locations,
+										locations: [...locations,...default_locationData],
 										username,
 										password,
 										name,
