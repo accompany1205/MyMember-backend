@@ -103,12 +103,17 @@ exports.pinContact = (req, res) => {
 // Get message list for user
 exports.getTextMessages = (req, res) => {
   //const io = req.app.get('socketio');
+  uidObj = {};
+  let date = new Date();
   let uid = req.params.uid;
+  uidObj.date = date;
+  uidObj.uid = uid;
+  console.log(uidObj);
   const socketIo = io("http://localhost:3001", { transports: ['websocket'] })
   socketIo.on("connect_error", (err) => {
     console.log(`connect_error due to - ${err.message}`);
   });
-  socketIo.emit("textAlertWebhook", uid);
+  socketIo.emit("textAlertWebhook", uidObj);
   console.log(socketIo);
   // socketIo.on("connect_error", (err) => {
   //   console.log(`connect_error due to - ${err.message}`);
