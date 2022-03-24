@@ -529,6 +529,7 @@ exports.signin = async (req, res) => {
 						if (data.status == 'Active') {
 							if (isAccessLocations) {
 								let locationData = await User.findOne({ locationName: req.body.locationName })
+								let default_locationData = await User.find({ _id: data.default_location })
 								token = jwt.sign(
 									{
 										id: locationData._id,
@@ -560,6 +561,7 @@ exports.signin = async (req, res) => {
 									data: {
 										_id: locationData._id,
 										locationName: locationData.locationName,
+										default_locationData,
 										locations,
 										username,
 										password,
