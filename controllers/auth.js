@@ -559,6 +559,7 @@ exports.signin = async (req, res) => {
 									city,
 								} = data;
 								return res.json({
+									success:true,
 									token,
 									data: {
 										_id: current_locationData._id,
@@ -607,6 +608,7 @@ exports.signin = async (req, res) => {
 								city,
 							} = data;
 							return res.json({
+								success:true,
 								token,
 								data: {
 									_id,
