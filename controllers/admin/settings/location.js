@@ -2,7 +2,9 @@ const location = require("../../../models/admin/settings/location")
 const User = require("../../../models/user")
 
 exports.listLocation = (req, res) => {
-    User.find({ isLocation: true }).exec((err, list) => {
+    User.find({ isLocation: true })
+    .populate('default_location')
+    .exec((err, list) => {
         if (err) {
             res.send({ error: 'location list not found' })
         }
@@ -27,6 +29,9 @@ exports.addLocation = (req, res) => {
         }
         else {
             User.findByIdAndUpdate(userId,
+                {
+                    $set:{isLocation:true}
+                },
                 {
                     $addToSet: { default_location: loc._id },
                 }
