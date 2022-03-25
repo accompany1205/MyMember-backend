@@ -3,15 +3,15 @@ const User = require("../../../models/user")
 
 exports.listLocation = (req, res) => {
     User.find({ isLocation: true })
-    .populate('default_location')
-    .exec((err, list) => {
-        if (err) {
-            res.send({ error: 'location list not found' })
-        }
-        else {
-            res.send(list)
-        }
-    })
+        .populate('default_location')
+        .exec((err, list) => {
+            if (err) {
+                res.send({ error: 'location list not found' })
+            }
+            else {
+                res.send(list)
+            }
+        })
 
 }
 
@@ -28,15 +28,18 @@ exports.addLocation = (req, res) => {
             res.send({ msg: 'location already exist!', success: err })
         }
         else {
-            User.findByIdAndUpdate(userId,
+            console.log(loc._id)
+            User.findOneAndUpdate({ _id: userId },
+
                 {
-                    $set:{isLocation:true}
+                    $addToSet: { default_location: [loc._id] },
                 },
-                {
-                    $addToSet: { default_location: loc._id },
-                }
             )
-                .exec((err, locupdate) => {
+                .exec(async (err, locupdate) => {
+                    await User.findOneAndUpdate({ _id: userId }, {
+                        $set: { isLocation: true }
+                    })
+                    console.log(locupdate)
                     if (err) {
                         res.send({ msg: err, success: false })
                     }
