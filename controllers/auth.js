@@ -527,7 +527,8 @@ exports.signin = async (req, res) => {
 				if (data.role == 0 || data.role == 2) {
 					if (data.isEmailverify) {
 						if (data.status == 'Active') {
-							let locationData = await User.find({ _id: data.locations });
+							let locationData = await User.find({ _id: data.locations }).populate('default_location')
+							console.log(locationData);
 							let default_locationData = await location.find({ _id: data.default_location });
 							if (isAccessLocations) {
 								let current_locationData = await User.findOne({ locationName: req.body.locationName });
