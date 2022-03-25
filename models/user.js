@@ -151,7 +151,7 @@ const userSchema = new schema(
         },
         default_location: [{
             type: schema.Types.ObjectId,
-            ref: "User"
+            ref: "location"
         }],
         locations: [{
             type: schema.Types.ObjectId,

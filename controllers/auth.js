@@ -528,9 +528,12 @@ exports.signin = async (req, res) => {
 					if (data.isEmailverify) {
 						if (data.status == 'Active') {
 							let locationData = await User.find({ _id: data.locations });
+							console.log("locationData ", locationData);
 							let default_locationData = await User.find({ _id: data.default_location });
+							console.log("default_locationData ", default_locationData);
 							if (isAccessLocations) {
 								let current_locationData = await User.findOne({ locationName: req.body.locationName });
+								console.log("3 ", current_locationData)
 								token = jwt.sign(
 									{
 										id: current_locationData._id,
@@ -957,9 +960,8 @@ exports.school_listing = async (req, res) => {
 		skip: per_page * (page_no - 1),
 	};
 	await User.find({ role: 0, isEmailverify: true })
-		.limit(pagination.limit)
-		.populate('locations')
 		.populate('default_location')
+		.limit(pagination.limit)
 		.skip(pagination.skip)
 		.exec((err, data) => {
 			if (err) {

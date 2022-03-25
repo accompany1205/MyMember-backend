@@ -19,9 +19,10 @@ exports.addLocation = (req, res) => {
     locationData.userId = userId;
     locationData.isLocation = true
 
-    let addLocation = new User(locationData)
+    let addLocation = new location(locationData)
     addLocation.save((err, loc) => {
         if (err) {
+            console.log(err)
             res.send({ msg: 'location already exist!', success: err })
         }
         else {
