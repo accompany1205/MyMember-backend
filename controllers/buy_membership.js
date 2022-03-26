@@ -604,9 +604,9 @@ exports.buyMembership = async (req, res) => {
 	try {
 		if (membershipData.isEMI) {
 			if (
-				membershipData.payment_time > 0 &&
-				membershipData.balance > 0 &&
-				membershipData.payment_type != 'pif'
+				membershipData.payment_time > 0
+				&& membershipData.balance > 0
+				//  && membershipData.payment_type != 'pif'
 			) {
 				membershipData.schedulePayments = createEMIRecord(
 					membershipData.payment_time,
@@ -829,8 +829,8 @@ exports.buyMembership = async (req, res) => {
 		} else {
 			if (
 				!membershipData.isEMI &&
-				membershipData.balance == 0 &&
-				membershipData.payment_type == 'pif'
+				membershipData.balance == 0 
+				// && membershipData.payment_type == 'pif'
 			) {
 				membershipData.due_status = 'paid';
 				membershipData.membership_status = 'Active';
