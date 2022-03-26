@@ -326,54 +326,57 @@ exports.update_template = async (req, res) => {
   let updateTemplate = req.body;
   let templateId = req.params.templateId
   try {
-    updateTemplate.to = updateTemplate.to ? JSON.parse(updateTemplate.to) : [];
     if (!updateTemplate.to) {
-      smartLists = updateTemplate.smartLists ? JSON.parse(updateTemplate.smartLists) : []
-      smartLists = smartLists.map(s => ObjectId(s));
-      let [smartlists] = await smartlist.aggregate([
-        {
-          $match: {
-            _id: { $in: smartLists }
-          }
-        },
-        {
-          $lookup: {
-            from: "members",
-            localField: "smartlists",
-            foreignField: "_id",
-            as: "data"
-          }
-        },
-        {
-          $project: {
-            _id: 0,
-            data: "$data.email"
-          }
-        },
-        { $unwind: "$data" },
-        {
-          $group: {
-            _id: "",
-            emails: { $addToSet: "$data" }
-          }
-        },
-        {
-          $project: {
-            _id: 0
-          }
+      updateTemplate.smartLists = updateTemplate.smartLists ? JSON.parse(updateTemplate.smartLists) : []
+      // smartLists = smartLists.map(s => ObjectId(s));
+      // let [smartlists] = await smartlist.aggregate([
+      //   {
+      //     $match: {
+      //       _id: { $in: smartLists }
+      //     }
+      //   },
+      //   {
+      //     $lookup: {
+      //       from: "members",
+      //       localField: "smartlists",
+      //       foreignField: "_id",
+      //       as: "data"
+      //     }
+      //   },
+      //   {
+      //     $project: {
+      //       _id: 0,
+      //       data: "$data.email"
+      //     }
+      //   },
+      //   { $unwind: "$data" },
+      //   {
+      //     $group: {
+      //       _id: "",
+      //       emails: { $addToSet: "$data" }
+      //     }
+      //   },
+      //   {
+      //     $project: {
+      //       _id: 0
+      //     }
 
-        }
-      ])
+      //   }
+      // ])
 
-      smartlists = smartlists ? smartlists : []
+      // smartlists = smartlists ? smartlists : []
 
-      if (!smartlists.emails.length) {
-        return res.send({
-          msg: `No Smartlist exist!`,
-          success: false,
-        });
-      }
-      updateTemplate.to = smartlists.emails
+      // if (!smartlists.emails.length) {
+      //   return res.send({
+      //     msg: `No Smartlist exist!`,
+      //     success: false,
+      //   });
+      // }
+      // updateTemplate.to = smartlists.emails
+
+    }
+    else {
+      updateTemplate.to =  JSON.parse(updateTemplate.to);
 
     }
     let attachments = []
