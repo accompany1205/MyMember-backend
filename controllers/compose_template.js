@@ -328,6 +328,7 @@ exports.update_template = async (req, res) => {
   try {
     if (!updateTemplate.to) {
       updateTemplate.smartLists = updateTemplate.smartLists ? JSON.parse(updateTemplate.smartLists) : []
+      updateTemplate.to = [];
       // smartLists = smartLists.map(s => ObjectId(s));
       // let [smartlists] = await smartlist.aggregate([
       //   {
@@ -376,7 +377,9 @@ exports.update_template = async (req, res) => {
 
     }
     else {
-      updateTemplate.to =  JSON.parse(updateTemplate.to);
+      updateTemplate.to = JSON.parse(updateTemplate.to);
+      updateTemplate.smartLists = [];
+
 
     }
     let attachments = []
