@@ -52,7 +52,7 @@ router.post('/adminApproval', adminApproval);
 router.get('/get_navbar', get_navbar);
 router.post('/edit_navbar_li', edit_navbar_li);
 router.post('/edit_navbar_ui', edit_navbar_ui);
-router.get('/admin/school_listing/:adminId/:page_no', isAdmin, school_listing);
+router.get('/admin/school_listing/:adminId', isAdmin, school_listing);
 router.put(
 	'/approvesendgridverification/:adminId/:userId',
 	isAdmin,
