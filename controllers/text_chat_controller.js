@@ -63,7 +63,7 @@ exports.sendTextMessage = async (req, res) => {
         if (err) {
           res.send({ error: 'message not stored' });
         } else {
-          await member.findOneAndUpdate({_id:uid},{$set:{time:new Date(), textContent:textContent}})
+          await member.findOneAndUpdate({ _id: uid }, { $set: { time: new Date(), textContent: textContent } })
           res.send({ textMessage: data });
         }
       });
@@ -90,6 +90,26 @@ exports.seenContactTextMessages = (req, res) => {
       }
     })
 };
+
+exports.searchTextContact = async (req, res) => {
+  //let userId = req.params.userId;
+  const search = req.query.search;
+  console.log(search)
+  try {
+    const data = await member.find({
+      $or: [
+        { lastName: { $regex: search, $options: 'i' } },
+        { firstName: { $regex: search, $options: 'i' } }
+      ]
+    });
+    console.log(data)
+    res.send({ data: data, success: true })
+
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ''), success: false })
+  }
+}
+
 
 exports.pinContact = (req, res) => {
   textContact.updateOne({ uid: req.params.contact }, req.body)
@@ -180,7 +200,7 @@ exports.listenIncomingSMS = async (req, res) => {
 
   const getUserId = phoneNumber => {
     // Find userid of user with twilio number
-    let phonen = '+'+ phoneNumber;
+    let phonen = '+' + phoneNumber;
     console.log('to', phonen)
     // Uncomment this in production once twilio number is added
     return user.findOne({ twilio: phonen }).then(data => {
@@ -212,7 +232,7 @@ exports.listenIncomingSMS = async (req, res) => {
         console.log(`connect_error due to - ${err.message}`);
       });
       socketIo.emit("textAlertWebhook", uidObj);
-      await member.findOneAndUpdate({_id:stuid},{$set:{time:Date.now(), textContent:msg}})
+      await member.findOneAndUpdate({ _id: stuid }, { $set: { time: Date.now(), textContent: msg } })
       res.send({ msg: 'text sms sent successfully' })
     }).catch(error => {
       res.send({ error: 'txt msg not send' })

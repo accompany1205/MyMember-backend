@@ -67,8 +67,8 @@ exports.updateAll = async (req, res) => {
 }
 
 exports.read = async (req, res) => {
-  await appoint
-    .find({ userId: req.params.userId })
+  appoint.find({ userId: req.params.userId })
+    .limit(500)
     .then((result) => {
       res.send({ success: true, data: result });
     })

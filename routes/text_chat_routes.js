@@ -9,7 +9,8 @@ const {
   getTextContacts,
   getTextMessages,
   getTextContactsDetails,
-  listenIncomingSMS
+  listenIncomingSMS,
+  searchTextContact
 } = require("../controllers/text_chat_controller");
 
 router.post("/text-chat/add-contact/:userId", verifySchool, addTextContact);
@@ -20,5 +21,7 @@ router.post("/text-chat/contacts-details/:userId", verifySchool, getTextContacts
 router.get("/text-chat/get-contacts/:userId", verifySchool, getTextContacts);
 router.get("/text-chat/get-messages/:userId/:uid", verifySchool, getTextMessages);
 router.post("/text-chat/listen-message/:twilio", listenIncomingSMS);
+router.get("/text-chat/searchContact/:userId", searchTextContact);
+
 
 module.exports = router;
