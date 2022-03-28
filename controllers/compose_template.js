@@ -521,13 +521,6 @@ exports.sendEmail = async (req, res) => {
               temp = replace(temp, i, Element[i])
             }
           }
-          console.log({
-            to: [Element["email"]],
-            from: emailBody.from,
-            subject: emailBody.subject,
-            html: temp,
-            attachments: emailBody.attachments
-          })
           const emailData = new Mailer({
             to: [Element["email"]],
             from: emailBody.from,
@@ -536,13 +529,6 @@ exports.sendEmail = async (req, res) => {
             attachments: emailBody.attachments
           });
           emailData.sendMail()
-          console.log({
-            to: [Element["email"]],
-            from: emailBody.from,
-            subject: emailBody.subject,
-            html: temp,
-            attachments: emailBody.attachments
-          })
 
         }))
         .then(resp => {
@@ -573,63 +559,63 @@ exports.sendEmail = async (req, res) => {
       emailBody.to = rest;
     }
 
-    // if (JSON.parse(emailBody.immediately)) {
-    //   const emailData = new Mailer({
-    //     to: emailBody.to,
-    //     from: emailBody.from,
-    //     subject: emailBody.subject,
-    //     html: emailBody.template,
-    //     attachments: attachments
-    //   });
-    //   emailData.sendMail()
-    //     .then(resp => {
-    //       let emailDetail = new all_temp(emailBody)
-    //       emailDetail.save((err, emailSave) => {
-    //         if (err) {
-    //           res.send({ msg: err, success: false })
-    //         }
-    //         else {
-    //           all_temp.findByIdAndUpdate(emailSave._id, { is_Sent: true, email_type: "sent" })
-    //             .exec((err, emailUpdate) => {
-    //               if (err) {
-    //                 res.send({ msg: err, success: false })
-    //               }
-    //               else {
-    //                 return res.send({ msg: "Email Sent Successfully", success: true })
+    if (JSON.parse(emailBody.immediately)) {
+      const emailData = new Mailer({
+        to: emailBody.to,
+        from: emailBody.from,
+        subject: emailBody.subject,
+        html: emailBody.template,
+        attachments: attachments
+      });
+      emailData.sendMail()
+        .then(resp => {
+          let emailDetail = new all_temp(emailBody)
+          emailDetail.save((err, emailSave) => {
+            if (err) {
+              res.send({ msg: err, success: false })
+            }
+            else {
+              all_temp.findByIdAndUpdate(emailSave._id, { is_Sent: true, email_type: "sent" })
+                .exec((err, emailUpdate) => {
+                  if (err) {
+                    res.send({ msg: err, success: false })
+                  }
+                  else {
+                    return res.send({ msg: "Email Sent Successfully", success: true })
 
-    //               }
-    //             })
-    //         }
-    //       })
-    //     })
-    //     .catch(Err => {
-    //       res.sen({ msg: Err, success: false })
-    //     })
-    // } else {
-    //   if (!JSON.parse(emailBody.immediately)) {
-    //     let sent_date = moment(emailBody.sent_date).format("YYYY-MM-DD");
-    //     emailBody.is_Sent = false;
-    //     emailBody.email_type = "scheduled";
-    //     let emailDetail = new all_temp(emailBody)
-    //     emailDetail.save((err, emailSave) => {
-    //       if (err) {
-    //         res.send({ msg: err, success: false })
-    //       }
-    //       else {
-    //         // all_temp.findOneAndUpdate({ _id: emailSave._id }, { is_Sent: false, email_type: "scheduled" })
-    //         //   .exec((err, emailUpdate) => {
-    //         //     if (err) {
-    //         //       res.send({ msg: err, success: false })
-    //         //     }
-    //         //     else {
-    //         return res.send({ msg: `Email Successfully! Scheduled on ${sent_date} At ${emailBody.sent_time} `, success: true })
+                  }
+                })
+            }
+          })
+        })
+        .catch(Err => {
+          res.sen({ msg: Err, success: false })
+        })
+    } else {
+      if (!JSON.parse(emailBody.immediately)) {
+        let sent_date = moment(emailBody.sent_date).format("YYYY-MM-DD");
+        emailBody.is_Sent = false;
+        emailBody.email_type = "scheduled";
+        let emailDetail = new all_temp(emailBody)
+        emailDetail.save((err, emailSave) => {
+          if (err) {
+            res.send({ msg: err, success: false })
+          }
+          else {
+            // all_temp.findOneAndUpdate({ _id: emailSave._id }, { is_Sent: false, email_type: "scheduled" })
+            //   .exec((err, emailUpdate) => {
+            //     if (err) {
+            //       res.send({ msg: err, success: false })
+            //     }
+            //     else {
+            return res.send({ msg: `Email Successfully! Scheduled on ${sent_date} At ${emailBody.sent_time} `, success: true })
 
-    //         //   }
-    //         // })
-    //       }
-    //     })
-    //   }
-    // }
+            //   }
+            // })
+          }
+        })
+      }
+    }
 
   }
   catch (err) {
