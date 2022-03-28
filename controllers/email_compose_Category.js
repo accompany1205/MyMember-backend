@@ -134,7 +134,3 @@ exports.removeCategory = (req, res) => {
         }
     })
 }
-function replace(strig, old_word, new_word) {
-    return strig.replace(old_word, new_word)
-
-}

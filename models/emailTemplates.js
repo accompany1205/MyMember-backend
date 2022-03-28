@@ -37,6 +37,9 @@ const EmailSchema = schema({
     sent_time: {
         type: String,
     },
+    immediately: {
+        type: Boolean
+    },
     repeat_mail: {
         type: String
     },

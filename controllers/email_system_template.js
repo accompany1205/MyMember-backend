@@ -170,7 +170,6 @@ exports.admin_add_template = async (req, res) => {
       adminId,
       immediately
     };
-console.log(obj)
     // const promises = []
     // if (req.files) {
     //   (req.files).map(file => {
@@ -470,7 +469,7 @@ exports.update_template = async (req, res) => {
   }
   addTemp.updateOne(
     { _id: req.params.templateId },
-    req.body,
+    updateTemplate,
     (err, updateTemp) => {
       if (err) {
         res.send({ msg: "template is not update", success: err });
