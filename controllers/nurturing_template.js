@@ -115,7 +115,8 @@ exports.add_template = async (req, res) => {
       content_type,
       sent_date,
       smartLists,
-      createdBy
+      createdBy,
+      isPlaceHolders
     } = req.body;
     if (days && days_type != 'before') {
       sent_date = moment().add(days, 'days').format("YYYY-MM-DD");
@@ -217,6 +218,97 @@ exports.add_template = async (req, res) => {
         });
     }
     else {
+      if (JSON.parse(isPlaceHolders)) {
+        let [mapObj] = await smartlist.aggregate([
+          {
+            $match: {
+              _id: { $in: smartLists }
+            }
+          },
+          {
+            $lookup: {
+              from: "members",
+              localField: "smartlists",
+              foreignField: "_id",
+              as: "data"
+            }
+          },
+          {
+            $project: {
+              _id: 0,
+              data: 1
+            }
+          },
+          { $unwind: "$data" },
+          {
+            $group: {
+              _id: "data",
+              data: { $push: "$data" }
+            }
+          },
+          {
+            $project: {
+              _id: 0
+            }
+
+          }
+
+
+        ])
+
+        mapObj = mapObj ? mapObj : []
+
+        if (!mapObj.data.length) {
+          return res.send({
+            msg: `No Smartlist exist!`,
+            success: false,
+          });
+        }
+
+        Promise.all((mapObj.data).map(Element => {
+          let temp = template;
+
+          for (i in Element) {
+            if (temp.includes(i)) {
+              temp = replace(temp, i, Element[i])
+            }
+          }
+          const emailData = new Mailer({
+            to: [Element["email"]],
+            from: from,
+            subject: subject,
+            html: temp,
+            attachments: Allattachments
+          });
+          emailData.sendMail()
+
+        }))
+          .then(resp => {
+            obj.email_type = 'sent'
+            obj.is_Sent = true
+            saveEmailTemplate(obj)
+              .then((data) => {
+                nurturingFolderModal
+                  .findByIdAndUpdate(folderId, { $push: { template: data._id } }, (err, data) => {
+                    if (err) {
+                      res.send({ msg: err, success: false })
+                    }
+                    res.send({ msg: "Email send Successfully!", success: true })
+
+                  })
+              })
+              .catch((ex) => {
+                res.send({
+                  success: false,
+                  msg: ex
+                });
+              });
+          })
+          .catch(Err => {
+            res.sen({ msg: Err, success: false })
+          })
+      }
+
       let emailData = new Mailer({
         to,
         from,

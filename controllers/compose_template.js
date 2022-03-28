@@ -465,6 +465,9 @@ exports.sendEmail = async (req, res) => {
           success: false,
         });
       }
+      emailBody.to = rest;
+    }
+    if (JSON.parse(emailBody.immediately)) {
       if (JSON.parse(emailBody.isPlaceHolders)) {
         let [mapObj] = await smartlist.aggregate([
           {
@@ -502,7 +505,6 @@ exports.sendEmail = async (req, res) => {
 
 
         ])
-        // console.log(mapObj)
 
         mapObj = mapObj ? mapObj : []
 
@@ -556,10 +558,6 @@ exports.sendEmail = async (req, res) => {
           })
       }
 
-      emailBody.to = rest;
-    }
-
-    if (JSON.parse(emailBody.immediately)) {
       const emailData = new Mailer({
         to: emailBody.to,
         from: emailBody.from,
@@ -944,7 +942,78 @@ var emailCronFucntionality = async () => {
     let sentDate = moment(ele.sent_date).format("YYYY-MM-DD");
     let currentDate = moment().format("YYYY-MM-DD");
     if (sentDate === currentDate && !ele.is_Sent) {
+      if (ele.isPlaceHolders) {
+        let [mapObj] = await smartlist.aggregate([
+          {
+            $match: {
+              _id: { $in: ele.smartLists }
+            }
+          },
+          {
+            $lookup: {
+              from: "members",
+              localField: "smartlists",
+              foreignField: "_id",
+              as: "data"
+            }
+          },
+          {
+            $project: {
+              _id: 0,
+              data: 1
+            }
+          },
+          { $unwind: "$data" },
+          {
+            $group: {
+              _id: "data",
+              data: { $push: "$data" }
+            }
+          },
+          {
+            $project: {
+              _id: 0
+            }
 
+          }
+
+
+        ])
+
+        mapObj = mapObj ? mapObj : []
+
+        if (!mapObj.data.length) {
+          return res.send({
+            msg: `No Smartlist exist!`,
+            success: false,
+          });
+        }
+
+        Promise.all((mapObj.data).map(Element => {
+          let temp = ele.template;
+
+          for (i in Element) {
+            if (temp.includes(i)) {
+              temp = replace(temp, i, Element[i])
+            }
+          }
+          const emailData = new Mailer({
+            to: [Element["email"]],
+            from: ele.from,
+            subject: ele.subject,
+            html: temp,
+            attachments: ele.attachments
+          });
+          emailData.sendMail()
+
+        }))
+          .then(async (resp) => {
+            const update = await all_temp.findOneAndUpdate({ _id: ele._id }, { $set: { is_Sent: true } });
+          })
+          .catch((err) => {
+            throw new Error(err);
+          });
+      }
       const emailData = new Mailer({
         // sendgrid_key: process.env.SENDGRID_API_KEY,
         to: ele.to,

@@ -40,6 +40,9 @@ const EmailSchema = schema({
     immediately: {
         type: Boolean
     },
+    isPlaceHolders: {
+        type: Boolean
+    },
     repeat_mail: {
         type: String
     },
