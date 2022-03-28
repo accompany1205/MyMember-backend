@@ -531,29 +531,29 @@ exports.sendEmail = async (req, res) => {
           emailData.sendMail()
 
         }))
-        .then(resp => {
-          let emailDetail = new all_temp(emailBody)
-          emailDetail.save((err, emailSave) => {
-            if (err) {
-              res.send({ msg: err, success: false })
-            }
-            else {
-              all_temp.findByIdAndUpdate(emailSave._id, { is_Sent: true, email_type: "sent" })
-                .exec((err, emailUpdate) => {
-                  if (err) {
-                    res.send({ msg: err, success: false })
-                  }
-                  else {
-                    return res.send({ msg: "Email Sent Successfully", success: true })
+          .then(resp => {
+            let emailDetail = new all_temp(emailBody)
+            emailDetail.save((err, emailSave) => {
+              if (err) {
+                res.send({ msg: err, success: false })
+              }
+              else {
+                all_temp.findByIdAndUpdate(emailSave._id, { is_Sent: true, email_type: "sent" })
+                  .exec((err, emailUpdate) => {
+                    if (err) {
+                      res.send({ msg: err, success: false })
+                    }
+                    else {
+                      return res.send({ msg: "Email Sent Successfully", success: true })
 
-                  }
-                })
-            }
+                    }
+                  })
+              }
+            })
           })
-        })
-        .catch(Err => {
-          res.sen({ msg: Err, success: false })
-        })
+          .catch(Err => {
+            res.sen({ msg: Err, success: false })
+          })
       }
 
       emailBody.to = rest;
@@ -624,7 +624,7 @@ exports.sendEmail = async (req, res) => {
 }
 
 function replace(strig, old_word, new_word) {
-  return strig.replace(old_word, new_word)
+  return strig.replace('{' + old_word + '}', new_word)
 
 }
 exports.admin_add_template = async (req, res) => {
