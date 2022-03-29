@@ -28,6 +28,9 @@ const EmailSchema = schema({
     immediately: {
         type: Boolean
     },
+    isPlaceHolders: {
+        type: Boolean
+    },
     content_type: {
         type: String
     },
