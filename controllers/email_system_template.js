@@ -350,6 +350,10 @@ exports.admin_add_template = async (req, res) => {
   }
 
 };
+function replace(strig, old_word, new_word) {
+  return strig.replace('{' + old_word + '}', new_word)
+
+}
 
 exports.add_template = async (req, res) => {
   try {
