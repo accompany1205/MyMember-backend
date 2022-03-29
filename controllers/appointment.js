@@ -66,9 +66,30 @@ exports.updateAll = async (req, res) => {
   }
 }
 
+String.prototype.replaceAt = function (index, replacement) {
+  return this.substring(0, index) + replacement + this.substring(index + replacement.length);
+}
+
 exports.read = async (req, res) => {
-  appoint.find({ userId: req.params.userId })
-    .limit(500)
+  let startDate = req.params.dates;
+  let newMonth = startDate.slice(0, 2)
+  let newDate = startDate.slice(3, 5)
+  let newYear = startDate.slice(-4);
+  let updateM = ("0" + (parseInt(newMonth) + 1)).slice(-2);
+  let finalDate;
+  if (newMonth === "12") {
+    let newupdateM = "01";
+    let updateY = ("" + (parseInt(newYear) + 1))
+    finalDate = `${newupdateM}/${newDate}/${updateY}`;
+  } else {
+    finalDate = `${updateM}/${newDate}/${newYear}`;
+  }
+
+  appoint.find({
+    $and: [{ userId: req.params.userId },
+      { start: { $gte: (startDate), $lt: (finalDate) } }
+    ]
+  })
     .then((result) => {
       res.send({ success: true, data: result });
     })
