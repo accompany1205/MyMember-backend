@@ -556,39 +556,38 @@ exports.sendEmail = async (req, res) => {
           .catch(Err => {
             res.sen({ msg: Err, success: false })
           })
-      }
+      } else {
 
-      const emailData = new Mailer({
-        to: emailBody.to,
-        from: emailBody.from,
-        subject: emailBody.subject,
-        html: emailBody.template,
-        attachments: attachments
-      });
-      emailData.sendMail()
-        .then(resp => {
-          let emailDetail = new all_temp(emailBody)
-          emailDetail.save((err, emailSave) => {
-            if (err) {
-              res.send({ msg: err, success: false })
-            }
-            else {
-              all_temp.findByIdAndUpdate(emailSave._id, { is_Sent: true, email_type: "sent" })
-                .exec((err, emailUpdate) => {
-                  if (err) {
-                    res.send({ msg: err, success: false })
-                  }
-                  else {
-                     res.send({ msg: "Email Sent Successfully", success: true })
+        const emailData = new Mailer({
+          to: emailBody.to,
+          from: emailBody.from,
+          subject: emailBody.subject,
+          html: emailBody.template,
+          attachments: attachments
+        });
+        emailData.sendMail()
+          .then(resp => {
+            let emailDetail = new all_temp(emailBody)
+            emailDetail.save((err, emailSave) => {
+              if (err) {
+                res.send({ msg: err, success: false })
+              }
+              else {
+                all_temp.findByIdAndUpdate(emailSave._id, { is_Sent: true, email_type: "sent" })
+                  .exec((err, emailUpdate) => {
+                    if (err) {
+                      res.send({ msg: err, success: false })
+                    }
+                    return res.send({ msg: "Email Sent Successfully", success: true })
 
-                  }
-                })
-            }
+                  })
+              }
+            })
           })
-        })
-        .catch(Err => {
-          res.sen({ msg: Err, success: false })
-        })
+          .catch(Err => {
+            res.sen({ msg: Err, success: false })
+          })
+      }
     } else {
       if (!JSON.parse(emailBody.immediately)) {
         let sent_date = moment(emailBody.sent_date).format("YYYY-MM-DD");
