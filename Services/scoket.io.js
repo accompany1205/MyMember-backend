@@ -1,4 +1,5 @@
 const textMessage = require("../models/text_message");
+const member = require("../models/addmember");
 
 
 class SocketEngine {
@@ -27,8 +28,10 @@ class SocketEngine {
             })
 
             socket.on('textAlertWebhook', async (uidObj) => {
-                console.log(uidObj);
-                io.to("606aea95a145ea2d26e0f1ab").emit('getAlertText', uidObj)
+                let uid = uidObj.uid
+                let {userId} = await member.findOne({_id:uid});
+                console.log(uidObj, userId);
+                io.to(userId).emit('getAlertText', uidObj)
                 //socket.emit("getAlertText", "Hello Message!");
             })
 
