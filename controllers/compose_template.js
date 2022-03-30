@@ -579,7 +579,7 @@ exports.sendEmail = async (req, res) => {
                     res.send({ msg: err, success: false })
                   }
                   else {
-                    return res.send({ msg: "Email Sent Successfully", success: true })
+                     res.send({ msg: "Email Sent Successfully", success: true })
 
                   }
                 })
