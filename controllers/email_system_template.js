@@ -269,7 +269,7 @@ exports.admin_add_template = async (req, res) => {
                     if (err) {
                       res.send({ msg: err, success: false })
                     }
-                    res.send({ msg: "Email send Successfully!", success: true })
+                    return res.send({ msg: "Email send Successfully!", success: true })
 
                   })
               })

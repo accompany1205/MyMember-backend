@@ -732,7 +732,8 @@ exports.add_template = async (req, res) => {
       days_type,
       content_type,
       days,
-      createdBy
+      createdBy,
+      isPlaceHolders
     } = req.body;
     if (!to) {
 
@@ -815,9 +816,9 @@ exports.add_template = async (req, res) => {
       adminId,
       folderId,
       smartLists,
-      createdBy
+      createdBy,
+      isPlaceHolders
     };
-    console.log(obj)
     let attachments = []
     if (req.files) {
       (req.files).map((file) => {

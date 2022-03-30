@@ -308,39 +308,40 @@ exports.add_template = async (req, res) => {
             res.sen({ msg: Err, success: false })
           })
       }
+      else {
+        let emailData = new Mailer({
+          to,
+          from,
+          subject,
+          html: template,
+          attachments: Allattachments
+        })
+        emailData.sendMail()
+          .then(resp => {
+            obj.email_type = 'sent'
+            obj.is_Sent = true
+            saveEmailTemplate(obj)
+              .then((data) => {
+                nurturingFolderModal
+                  .findByIdAndUpdate(folderId, { $push: { template: data._id } }, (err, data) => {
+                    if (err) {
+                      res.send({ msg: err, success: false })
+                    }
+                  return  res.send({ msg: "Email send Successfully!", success: true })
 
-      let emailData = new Mailer({
-        to,
-        from,
-        subject,
-        html: template,
-        attachments: Allattachments
-      })
-      emailData.sendMail()
-        .then(resp => {
-          obj.email_type = 'sent'
-          obj.is_Sent = true
-          saveEmailTemplate(obj)
-            .then((data) => {
-              nurturingFolderModal
-                .findByIdAndUpdate(folderId, { $push: { template: data._id } }, (err, data) => {
-                  if (err) {
-                    res.send({ msg: err, success: false })
-                  }
-                  res.send({ msg: "Email send Successfully!", success: true })
-
-                })
-            })
-            .catch((ex) => {
-              res.send({
-                success: false,
-                msg: ex
+                  })
+              })
+              .catch((ex) => {
+                res.send({
+                  success: false,
+                  msg: ex
+                });
               });
-            });
-        })
-        .catch(Err => {
-          res.sen({ msg: Err, success: false })
-        })
+          })
+          .catch(Err => {
+            res.sen({ msg: Err, success: false })
+          })
+      }
     }
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false })
