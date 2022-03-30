@@ -169,7 +169,8 @@ exports.admin_add_template = async (req, res) => {
       smartLists,
       createdBy,
       adminId,
-      immediately
+      immediately,
+      isPlaceHolders
     };
     // const promises = []
     // if (req.files) {
@@ -349,6 +350,10 @@ exports.admin_add_template = async (req, res) => {
   }
 
 };
+function replace(strig, old_word, new_word) {
+  return strig.replace('{' + old_word + '}', new_word)
+
+}
 
 exports.add_template = async (req, res) => {
   try {
@@ -368,7 +373,8 @@ exports.add_template = async (req, res) => {
       immediately,
       content_type,
       smartLists,
-      createdBy
+      createdBy,
+      isPlaceHolders
     } = req.body || {};
     if (days && days_type != 'before') {
       sent_date = moment().add(days, 'days').format("YYYY-MM-DD");
@@ -420,7 +426,8 @@ exports.add_template = async (req, res) => {
       folderId,
       smartLists,
       createdBy,
-      adminId
+      adminId,
+      isPlaceHolders
     };
 
     // const promises = []

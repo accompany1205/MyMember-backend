@@ -645,7 +645,8 @@ exports.admin_add_template = async (req, res) => {
       content_type,
       days,
       createdBy,
-      immediately
+      immediately,
+      isPlaceHolders
     } = req.body;
     if (!to) {
       smartLists = smartLists ? JSON.parse(smartLists) : []
@@ -672,7 +673,8 @@ exports.admin_add_template = async (req, res) => {
       folderId,
       smartLists,
       createdBy,
-      immediately
+      immediately,
+      isPlaceHolders
     };
     let attachments = []
     if (req.files) {

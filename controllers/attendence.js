@@ -1,6 +1,7 @@
 const student = require("../models/addmember");
 const schedule = require("../models/class_schedule");
 var mongo = require("mongoose")
+const moment = require('moment')
 
 function TimeZone() {
   const str = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
@@ -36,19 +37,25 @@ exports.create = async (req, res) => {
     const studentId = req.params.studentId
     var objId = mongo.Types.ObjectId(studentId)
     let time = req.body.time
-
+    var DT = TimeZone();
+    let h = parseInt(time.split(':')[0])
+    let m = parseInt(time.split(':')[1])
+    var DT = TimeZone();
+    let epochTime = new Date()
     var schdule_data = await schedule.findOne({ _id: req.params.scheduleId, "class_attendanceArray.studentInfo": { $nin: [objId] } });
     if (schdule_data) {
+      let start_date = moment(schdule_data.start_date, ["DD-MM-YYYY", "MM-DD-YYYY"])
+      if (moment().isSameOrBefore(start_date)) {
+
+        return res.send({ msg: "unable to mark attendence", success: false });
+
+      }
       student.findOne({ _id: studentId }).exec((err, stdData) => {
         if (err || stdData == null) {
           res.send({ msg: "student data not find", success: false });
         } else {
           // console.log(stdData)
-          var DT = TimeZone();
-          let h = parseInt(time.split(':')[0])
-          let m = parseInt(time.split(':')[1])
-          var DT = TimeZone();
-          let epochTime = new Date()
+
           // epochTime.setHours(h, m)
           var class_attendanceArray = {
             studentInfo: objId,

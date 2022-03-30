@@ -347,6 +347,10 @@ exports.add_template = async (req, res) => {
   }
 
 };
+function replace(strig, old_word, new_word) {
+  return strig.replace('{' + old_word + '}', new_word)
+
+}
 
 function saveEmailTemplate(obj) {
   return new Promise((resolve, reject) => {

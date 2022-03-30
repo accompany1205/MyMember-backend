@@ -1532,9 +1532,7 @@ exports.updateRating = async (req, res) => {
 			'$project': {
 				'last_attended_date': {
 					'$toDate': {
-						'$arrayElemAt': [
-							'$data.start_date', -1
-						]
+						$max: '$data.start_date'
 					}
 				}
 			}
