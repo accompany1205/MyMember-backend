@@ -469,53 +469,21 @@ exports.sendEmail = async (req, res) => {
     }
     if (JSON.parse(emailBody.immediately)) {
       if (JSON.parse(emailBody.isPlaceHolders)) {
-        let [mapObj] = await smartlist.aggregate([
-          {
-            $match: {
-              _id: { $in: smartLists }
-            }
-          },
-          {
-            $lookup: {
-              from: "members",
-              localField: "smartlists",
-              foreignField: "_id",
-              as: "data"
-            }
-          },
-          {
-            $project: {
-              _id: 0,
-              data: 1
-            }
-          },
-          { $unwind: "$data" },
-          {
-            $group: {
-              _id: "data",
-              data: { $push: "$data" }
-            }
-          },
-          {
-            $project: {
-              _id: 0
-            }
 
-          }
-
-
-        ])
+        let mapObj = await students.find({
+          email: { $in: rest },
+          userId: userId
+        })
 
         mapObj = mapObj ? mapObj : []
-
-        if (!mapObj.data.length) {
+        if (!mapObj.length) {
           return res.send({
             msg: `No Smartlist exist!`,
             success: false,
           });
         }
 
-        Promise.all((mapObj.data).map(Element => {
+        Promise.all(mapObj.map(Element => {
           let temp = emailBody.template;
 
           for (i in Element) {

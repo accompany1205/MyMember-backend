@@ -107,49 +107,6 @@ exports.admin_add_template = async (req, res) => {
     } = req.body || {};
     if (!to) {
       smartLists = smartLists ? JSON.parse(smartLists) : []
-      // smartLists = smartLists.map(s => ObjectId(s));
-      // let [smartlists] = await smartlist.aggregate([
-      //   {
-      //     $match: {
-      //       _id: { $in: smartLists }
-      //     }
-      //   },
-      //   {
-      //     $lookup: {
-      //       from: "members",
-      //       localField: "smartlists",
-      //       foreignField: "_id",
-      //       as: "data"
-      //     }
-      //   },
-      //   {
-      //     $project: {
-      //       _id: 0,
-      //       data: "$data.email"
-      //     }
-      //   },
-      //   { $unwind: "$data" },
-      //   {
-      //     $group: {
-      //       _id: "",
-      //       emails: { $addToSet: "$data" }
-      //     }
-      //   },
-      //   {
-      //     $project: {
-      //       _id: 0
-      //     }
-
-      //   }
-      // ])
-      // smartlists = smartlists ? smartlists : { emails: [] }
-      // if (!smartlists.emails.length) {
-      //   return res.send({
-      //     msg: `No Smartlist exist!`,
-      //     success: false,
-      //   });
-      // }
-      // to = smartlists.emails
 
     }
     else {
@@ -197,93 +154,6 @@ exports.admin_add_template = async (req, res) => {
     const Allattachments = await Promise.all(attachments);
     obj.attachments = Allattachments;
     if (JSON.parse(immediately)) {
-      if (JSON.parse(isPlaceHolders)) {
-        let [mapObj] = await smartlist.aggregate([
-          {
-            $match: {
-              _id: { $in: smartLists }
-            }
-          },
-          {
-            $lookup: {
-              from: "members",
-              localField: "smartlists",
-              foreignField: "_id",
-              as: "data"
-            }
-          },
-          {
-            $project: {
-              _id: 0,
-              data: 1
-            }
-          },
-          { $unwind: "$data" },
-          {
-            $group: {
-              _id: "data",
-              data: { $push: "$data" }
-            }
-          },
-          {
-            $project: {
-              _id: 0
-            }
-
-          }
-
-
-        ])
-
-        mapObj = mapObj ? mapObj : []
-
-        if (!mapObj.data.length) {
-          return res.send({
-            msg: `No Smartlist exist!`,
-            success: false,
-          });
-        }
-
-        Promise.all((mapObj.data).map(Element => {
-          let temp = template;
-
-          for (i in Element) {
-            if (temp.includes(i)) {
-              temp = replace(temp, i, Element[i])
-            }
-          }
-          const emailData = new Mailer({
-            to: [Element["email"]],
-            from: from,
-            subject: subject,
-            html: temp,
-            attachments: Allattachments
-          });
-          emailData.sendMail()
-        }))
-          .then(resp => {
-            saveEmailTemplate(obj)
-              .then((data) => {
-                systemFolder
-                  .findByIdAndUpdate(folderId, { $push: { template: data._id } }, (err, data) => {
-                    if (err) {
-                      res.send({ msg: err, success: false })
-                    }
-                    return res.send({ msg: "Email send Successfully!", success: true })
-
-                  })
-              })
-              .catch((ex) => {
-                res.send({
-                  success: false,
-                  msg: ex
-                });
-              });
-          })
-          .catch(err => {
-            res.send({ error: err.message.replace(/\"/g, ""), success: false })
-          })
-      }
       const emailData = new Mailer({
         to,
         from,
@@ -394,7 +264,7 @@ exports.add_template = async (req, res) => {
         promises.push(filterSmartlist(element.criteria, userId))
       })
       let data = await Promise.all(promises)
-      rest = data.reduce(function (a, b) {
+     var rest = data.reduce(function (a, b) {
         return b.map(function (e, i) { return a[i] instanceof Object ? a[i] : e; });
       }, []);
       if (!rest.length) {
@@ -456,53 +326,20 @@ exports.add_template = async (req, res) => {
     obj.attachments = Allattachments;
     if (JSON.parse(immediately)) {
       if (JSON.parse(isPlaceHolders)) {
-        let [mapObj] = await smartlist.aggregate([
-          {
-            $match: {
-              _id: { $in: smartLists }
-            }
-          },
-          {
-            $lookup: {
-              from: "members",
-              localField: "smartlists",
-              foreignField: "_id",
-              as: "data"
-            }
-          },
-          {
-            $project: {
-              _id: 0,
-              data: 1
-            }
-          },
-          { $unwind: "$data" },
-          {
-            $group: {
-              _id: "data",
-              data: { $push: "$data" }
-            }
-          },
-          {
-            $project: {
-              _id: 0
-            }
-
-          }
-
-
-        ])
+        let mapObj = await students.find({
+          email: { $in: rest },
+          userId: userId
+        })
 
         mapObj = mapObj ? mapObj : []
-
-        if (!mapObj.data.length) {
+        if (!mapObj.length) {
           return res.send({
             msg: `No Smartlist exist!`,
             success: false,
           });
         }
 
-        Promise.all((mapObj.data).map(Element => {
+        Promise.all(mapObj.map(Element => {
           let temp = template;
 
           for (i in Element) {
