@@ -264,9 +264,10 @@ exports.add_template = async (req, res) => {
         promises.push(filterSmartlist(element.criteria, userId))
       })
       let data = await Promise.all(promises)
-     var rest = data.reduce(function (a, b) {
+      var rest = data.reduce(function (a, b) {
         return b.map(function (e, i) { return a[i] instanceof Object ? a[i] : e; });
       }, []);
+      rest = removeEmptyString(rest)
       if (!rest.length) {
         return res.send({
           msg: `No Smartlist exist!`,
@@ -723,4 +724,7 @@ exports.multipal_temp_remove = (req, res) => {
       res.json({ success: true, msg: "template is remove successfully" });
     }
   });
+}
+function removeEmptyString(arr) {
+  return arr.filter(v => v != '')
 }

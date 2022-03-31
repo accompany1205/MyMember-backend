@@ -798,7 +798,6 @@ exports.filterSmartlist = async (criteria, userId) => {
         }
     }
     Promise.all(promises);
-    console.log(userId)
     if (promises.length) {
         var [leadData] = await member.aggregate([{
             $match: {
