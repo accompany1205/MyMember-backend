@@ -75,23 +75,27 @@ exports.access_school = async (req, res) => {
 
 
 exports.updateLocation = (req, res) => {
-    User.updateOne({ _id: req.params.locationId }, req.body)
-        .then((result) => {
-            res.send({ msg: 'location updated successfully', success: true })
-        }).catch((err) => {
-            res.send({ msg: 'location is not update', success: false })
-        })
+    try {
+        location.updateOne({ _id: req.params.locationId }, req.body)
+            .then((result) => {
+                res.send({ msg: 'location updated successfully', success: true })
+            }).catch((err) => {
+                res.send({ msg: 'location is not update', success: false })
+            })
+    } catch (err) {
+        return res.send({ msg: 'location is not update', success: false });
+    }
 }
 
 exports.removeLocation = (req, res) => {
     let locationId = req.params.locationId;
-    User.findByIdAndRemove(locationId)
+    location.findByIdAndRemove(locationId)
         .exec((err, delLoc) => {
             if (err) {
                 res.send({ msg: 'location not removed ', success: false })
             }
             else {
-                User.updateOne({ locations: locationId }, { $pull: { default_location: locationId } })
+                User.updateOne({ default_location: locationId }, { $pull: { default_location: locationId } })
                     .exec((err, data) => {
                         if (err) {
                             res.send({ msg: 'location not removed ', success: false })
