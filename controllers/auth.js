@@ -987,7 +987,6 @@ exports.searchUser = async (req, res) => {
 				{ firstname: { $regex: search, $options: 'i' } },
 			],
 		})
-			.populate('locations')
 			.populate('default_location')
 
 		res.send({ data: data, success: true });
