@@ -40,7 +40,6 @@ exports.sendTextMessage = async (req, res) => {
   let { twilio } = await user.findOne({ _id: req.params.userId });
   console.log("twilo", twilio)
   let { primaryPhone } = await member.findOne({ _id: req.body.uid });
-  console.log("student ->", primaryPhone)
   const twilioFormat = phoneNumber => {
     if (phoneNumber.charAt(0) !== '+') {
       return '+1' + phoneNumber;
@@ -64,7 +63,7 @@ exports.sendTextMessage = async (req, res) => {
           res.send({ error: 'message not stored' });
         } else {
           await member.findOneAndUpdate({ _id: uid }, { $set: { time: new Date(), textContent: textContent } })
-          res.send({ textMessage: data });
+          res.send({ textMessage: data, success:true, msg:"Message Successfuly sent!" });
         }
       });
       console.log('Message: ', message);
