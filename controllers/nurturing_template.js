@@ -1,4 +1,5 @@
 const all_temp = require("../models/emailSentSave");
+const students = require("../models/addmember");
 const nurturingFolderModal = require("../models/email_nurturing_folder");
 const smartlist = require("../models/smartlists");
 const Template = require('../models/emailTemplates')
@@ -136,7 +137,7 @@ exports.add_template = async (req, res) => {
         promises.push(filterSmartlist(element.criteria, userId))
       })
       let data = await Promise.all(promises)
-      rest = data.reduce(function (a, b) {
+      var rest = data.reduce(function (a, b) {
         return b.map(function (e, i) { return a[i] instanceof Object ? a[i] : e; });
       }, []);
       if (!rest.length) {
@@ -219,53 +220,20 @@ exports.add_template = async (req, res) => {
     }
     else {
       if (JSON.parse(isPlaceHolders)) {
-        let [mapObj] = await smartlist.aggregate([
-          {
-            $match: {
-              _id: { $in: smartLists }
-            }
-          },
-          {
-            $lookup: {
-              from: "members",
-              localField: "smartlists",
-              foreignField: "_id",
-              as: "data"
-            }
-          },
-          {
-            $project: {
-              _id: 0,
-              data: 1
-            }
-          },
-          { $unwind: "$data" },
-          {
-            $group: {
-              _id: "data",
-              data: { $push: "$data" }
-            }
-          },
-          {
-            $project: {
-              _id: 0
-            }
-
-          }
-
-
-        ])
+        let mapObj = await students.find({
+          email: { $in: rest },
+          userId: userId
+        })
 
         mapObj = mapObj ? mapObj : []
-
-        if (!mapObj.data.length) {
+        if (!mapObj.length) {
           return res.send({
             msg: `No Smartlist exist!`,
             success: false,
           });
         }
 
-        Promise.all((mapObj.data).map(Element => {
+        Promise.all(mapObj.map(Element => {
           let temp = template;
 
           for (i in Element) {
@@ -308,39 +276,40 @@ exports.add_template = async (req, res) => {
             res.sen({ msg: Err, success: false })
           })
       }
+      else {
+        let emailData = new Mailer({
+          to,
+          from,
+          subject,
+          html: template,
+          attachments: Allattachments
+        })
+        emailData.sendMail()
+          .then(resp => {
+            obj.email_type = 'sent'
+            obj.is_Sent = true
+            saveEmailTemplate(obj)
+              .then((data) => {
+                nurturingFolderModal
+                  .findByIdAndUpdate(folderId, { $push: { template: data._id } }, (err, data) => {
+                    if (err) {
+                      res.send({ msg: err, success: false })
+                    }
+                  return  res.send({ msg: "Email send Successfully!", success: true })
 
-      let emailData = new Mailer({
-        to,
-        from,
-        subject,
-        html: template,
-        attachments: Allattachments
-      })
-      emailData.sendMail()
-        .then(resp => {
-          obj.email_type = 'sent'
-          obj.is_Sent = true
-          saveEmailTemplate(obj)
-            .then((data) => {
-              nurturingFolderModal
-                .findByIdAndUpdate(folderId, { $push: { template: data._id } }, (err, data) => {
-                  if (err) {
-                    res.send({ msg: err, success: false })
-                  }
-                  res.send({ msg: "Email send Successfully!", success: true })
-
-                })
-            })
-            .catch((ex) => {
-              res.send({
-                success: false,
-                msg: ex
+                  })
+              })
+              .catch((ex) => {
+                res.send({
+                  success: false,
+                  msg: ex
+                });
               });
-            });
-        })
-        .catch(Err => {
-          res.sen({ msg: Err, success: false })
-        })
+          })
+          .catch(Err => {
+            res.sen({ msg: Err, success: false })
+          })
+      }
     }
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false })

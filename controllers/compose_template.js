@@ -469,53 +469,21 @@ exports.sendEmail = async (req, res) => {
     }
     if (JSON.parse(emailBody.immediately)) {
       if (JSON.parse(emailBody.isPlaceHolders)) {
-        let [mapObj] = await smartlist.aggregate([
-          {
-            $match: {
-              _id: { $in: smartLists }
-            }
-          },
-          {
-            $lookup: {
-              from: "members",
-              localField: "smartlists",
-              foreignField: "_id",
-              as: "data"
-            }
-          },
-          {
-            $project: {
-              _id: 0,
-              data: 1
-            }
-          },
-          { $unwind: "$data" },
-          {
-            $group: {
-              _id: "data",
-              data: { $push: "$data" }
-            }
-          },
-          {
-            $project: {
-              _id: 0
-            }
 
-          }
-
-
-        ])
+        let mapObj = await students.find({
+          email: { $in: rest },
+          userId: userId
+        })
 
         mapObj = mapObj ? mapObj : []
-
-        if (!mapObj.data.length) {
+        if (!mapObj.length) {
           return res.send({
             msg: `No Smartlist exist!`,
             success: false,
           });
         }
 
-        Promise.all((mapObj.data).map(Element => {
+        Promise.all(mapObj.map(Element => {
           let temp = emailBody.template;
 
           for (i in Element) {
@@ -556,39 +524,38 @@ exports.sendEmail = async (req, res) => {
           .catch(Err => {
             res.sen({ msg: Err, success: false })
           })
-      }
+      } else {
 
-      const emailData = new Mailer({
-        to: emailBody.to,
-        from: emailBody.from,
-        subject: emailBody.subject,
-        html: emailBody.template,
-        attachments: attachments
-      });
-      emailData.sendMail()
-        .then(resp => {
-          let emailDetail = new all_temp(emailBody)
-          emailDetail.save((err, emailSave) => {
-            if (err) {
-              res.send({ msg: err, success: false })
-            }
-            else {
-              all_temp.findByIdAndUpdate(emailSave._id, { is_Sent: true, email_type: "sent" })
-                .exec((err, emailUpdate) => {
-                  if (err) {
-                    res.send({ msg: err, success: false })
-                  }
-                  else {
+        const emailData = new Mailer({
+          to: emailBody.to,
+          from: emailBody.from,
+          subject: emailBody.subject,
+          html: emailBody.template,
+          attachments: attachments
+        });
+        emailData.sendMail()
+          .then(resp => {
+            let emailDetail = new all_temp(emailBody)
+            emailDetail.save((err, emailSave) => {
+              if (err) {
+                res.send({ msg: err, success: false })
+              }
+              else {
+                all_temp.findByIdAndUpdate(emailSave._id, { is_Sent: true, email_type: "sent" })
+                  .exec((err, emailUpdate) => {
+                    if (err) {
+                      res.send({ msg: err, success: false })
+                    }
                     return res.send({ msg: "Email Sent Successfully", success: true })
 
-                  }
-                })
-            }
+                  })
+              }
+            })
           })
-        })
-        .catch(Err => {
-          res.sen({ msg: Err, success: false })
-        })
+          .catch(Err => {
+            res.sen({ msg: Err, success: false })
+          })
+      }
     } else {
       if (!JSON.parse(emailBody.immediately)) {
         let sent_date = moment(emailBody.sent_date).format("YYYY-MM-DD");
@@ -732,7 +699,8 @@ exports.add_template = async (req, res) => {
       days_type,
       content_type,
       days,
-      createdBy
+      createdBy,
+      isPlaceHolders
     } = req.body;
     if (!to) {
 
@@ -815,9 +783,9 @@ exports.add_template = async (req, res) => {
       adminId,
       folderId,
       smartLists,
-      createdBy
+      createdBy,
+      isPlaceHolders
     };
-    console.log(obj)
     let attachments = []
     if (req.files) {
       (req.files).map((file) => {
