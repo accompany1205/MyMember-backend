@@ -161,6 +161,7 @@ exports.membershipUpdate = async (req, res) => {
                 res.send({ msg: 'thumbnail not uploaded!', success: false });
               });
           } else {
+            membershipData.membershipDocName = file.originalname;
             promises.push(cloudUrl.imageUrl(file));
           }
         });
