@@ -166,7 +166,7 @@ exports.membershipUpdate = async (req, res) => {
         });
       });
       var docs = await Promise.all(promises);
-      membershipData.membershipDoc = docs;
+      membershipData.membershipDoc = docs[0];
     }
     membershipModal
       .updateOne(
