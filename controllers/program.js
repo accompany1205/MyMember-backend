@@ -36,7 +36,10 @@ exports.read = (req, res) => {
 					model: 'psubcategory',
 				},
 			})
-			.populate('program_rank')
+			.populate({
+				path: 'program_rank',
+				options: { sort: { 'rank_order': 1 } } // DESCENDING SORT
+			})
 			.exec((err, programdata) => {
 				if (err) {
 					res.send({ error: 'program is not found' });

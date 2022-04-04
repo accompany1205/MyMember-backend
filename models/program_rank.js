@@ -12,28 +12,28 @@ const programSchema = new mongoose.Schema(
         },
         rank_name: {
             type: String,
-            
+
         },
         day_to_ready: {
             type: String,
-            required:true
+            required: true
         },
         lession_to_ready: {
             type: String,
             required: true
         },
         rank_order: {
-            type: String,
-            required:true
+            type: Number,
+            required: true
         },
         rank_image: {
             type: String,
         },
-        userId:{
-            type:String
+        userId: {
+            type: String
         },
-        adminId:{
-            type:String
+        adminId: {
+            type: String
         }
     },
     { timestamps: true }
