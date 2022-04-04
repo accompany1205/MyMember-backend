@@ -88,6 +88,9 @@ const addmemberSchema = new schema(
       type: String,
       default: "No Belt",
     },
+    rank_order: {
+      type: Number,
+    },
     current_rank_img: {
       type: String,
     },
@@ -273,8 +276,8 @@ const addmemberSchema = new schema(
       type: Date,
       default: Date.now()
     },
-    textContent : {
-      type:String
+    textContent: {
+      type: String
     }
   },
 

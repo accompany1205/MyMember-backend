@@ -458,7 +458,6 @@ exports.sendEmail = async (req, res) => {
       rest = data.reduce(function (a, b) {
         return b.map(function (e, i) { return a[i] instanceof Object ? a[i] : e; });
       }, []);
-      rest = removeEmptyString(rest)
       if (!rest.length) {
         return res.send({
           msg: `No Smartlist exist!`,
@@ -718,7 +717,6 @@ exports.add_template = async (req, res) => {
       rest = data.reduce(function (a, b) {
         return b.map(function (e, i) { return a[i] instanceof Object ? a[i] : e; });
       }, []);
-      rest = removeEmptyString(rest)
 
       if (!rest.length) {
         return res.send({
@@ -802,7 +800,7 @@ function saveEmailTemplate(obj) {
 }
 
 
-var emailCronFucntionality = async () => {
+async function emailCronFucntionality() {
   let promises = [];
   let scheduledListing = await all_temp.find({ is_Sent: false, email_type: "scheduled" });
   scheduledListing.forEach(async (ele, i) => {
@@ -823,7 +821,6 @@ var emailCronFucntionality = async () => {
         rest = data.reduce(function (a, b) {
           return b.map(function (e, i) { return a[i] instanceof Object ? a[i] : e; });
         }, []);
-        rest = removeEmptyString(rest)
         if (ele.isPlaceHolders) {
           let mapObj = await students.find({
             email: { $in: rest },

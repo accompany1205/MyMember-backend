@@ -802,7 +802,8 @@ exports.filterSmartlist = async (criteria, userId) => {
         var [leadData] = await member.aggregate([{
             $match: {
                 userId: userId,
-                $and: promises
+                $and: promises,
+                email: { $ne: '' }
             }
         },
         {
