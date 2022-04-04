@@ -161,12 +161,13 @@ exports.membershipUpdate = async (req, res) => {
                 res.send({ msg: 'thumbnail not uploaded!', success: false });
               });
           } else {
+            membershipData.membershipDocName = file.originalname;
             promises.push(cloudUrl.imageUrl(file));
           }
         });
       });
       var docs = await Promise.all(promises);
-      membershipData.membershipDoc = docs;
+      membershipData.membershipDoc = docs[0];
     }
     membershipModal
       .updateOne(

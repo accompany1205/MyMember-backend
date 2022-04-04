@@ -38,9 +38,7 @@ exports.sendTextMessage = async (req, res) => {
 
   // Please uncomment code below in production once we are setting correct twilio number for user
   let { twilio } = await user.findOne({ _id: req.params.userId });
-  console.log("twilo", twilio)
   let { primaryPhone } = await member.findOne({ _id: req.body.uid });
-  console.log("student ->", primaryPhone)
   const twilioFormat = phoneNumber => {
     if (phoneNumber.charAt(0) !== '+') {
       return '+1' + phoneNumber;
@@ -55,7 +53,6 @@ exports.sendTextMessage = async (req, res) => {
       to: twilioFormat(primaryPhone),
       from: twilioFormat(twilio) // This is registered number for Twilio
     }).then((message) => {
-      console.log('Text Message sent : ', message);
       let textMsg = new textMessage(req.body);
       let uid = req.body.uid;
       let textContent = req.body.textContent;
@@ -64,16 +61,14 @@ exports.sendTextMessage = async (req, res) => {
           res.send({ error: 'message not stored' });
         } else {
           await member.findOneAndUpdate({ _id: uid }, { $set: { time: new Date(), textContent: textContent } })
-          res.send({ textMessage: data });
+          res.send({ textMessage: data, success:true, msg:"Message Successfully sent!" });
         }
       });
-      console.log('Message: ', message);
     }).catch((error) => {
       res.send({ error: 'Failed to send text message to ' + primaryPhone });
       console.log('Error: ', error);
     }).done();
   } else {
-    console.log('Error sending message');
     res.send({ error: 'message not sent' });
   }
 };
@@ -94,7 +89,6 @@ exports.seenContactTextMessages = (req, res) => {
 exports.searchTextContact = async (req, res) => {
   //let userId = req.params.userId;
   const search = req.query.search;
-  console.log(search)
   try {
     const data = await member.find({
       $or: [
@@ -102,7 +96,6 @@ exports.searchTextContact = async (req, res) => {
         { firstName: { $regex: search, $options: 'i' } }
       ]
     });
-    console.log(data)
     res.send({ data: data, success: true })
 
   } catch (err) {
@@ -133,13 +126,11 @@ exports.getTextMessages = (req, res) => {
   uidObj.time = date;
   uidObj.textContent = textContent;
   uidObj.uid = uid;
-  console.log(uidObj);
   const socketIo = io("http://localhost:3001", { transports: ['websocket'] })
   socketIo.on("connect_error", (err) => {
     console.log(`connect_error due to - ${err.message}`);
   });
   socketIo.emit("textAlertWebhook", uidObj);
-  console.log(socketIo);
   // socketIo.on("connect_error", (err) => {
   //   console.log(`connect_error due to - ${err.message}`);
   // });
@@ -183,14 +174,12 @@ exports.getTextContactsDetails = (req, res) => {
 exports.listenIncomingSMS = async (req, res) => {
   const msg = req.body.Body;
   const from = req.body.From;
-  console.log(msg, from)
   // Pass twilio number as parameter in webhooks
 
   // Uncomment this code in production when web hooks is placed for production twilio number
   let to = req.params.twilio;
   const getUid = phoneNumber => {
     let phonen = phoneNumber.slice(2)
-    console.log(phonen)
     return member.findOne({ primaryPhone: phonen }).then(data => {
       return data._id;
     }).catch(err => {
@@ -201,7 +190,6 @@ exports.listenIncomingSMS = async (req, res) => {
   const getUserId = phoneNumber => {
     // Find userid of user with twilio number
     let phonen = '+' + phoneNumber;
-    console.log('to', phonen)
     // Uncomment this in production once twilio number is added
     return user.findOne({ twilio: phonen }).then(data => {
       return data._id;
@@ -218,7 +206,6 @@ exports.listenIncomingSMS = async (req, res) => {
     textContent: msg,
     isSent: false,
   };
-  console.log("Message Objects", obj)
   uidObj = {};
   let stuid = await getUid(from);
   uidObj.uid = stuid
