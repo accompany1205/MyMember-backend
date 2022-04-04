@@ -1410,98 +1410,78 @@ exports.multipleFilter = async (req, res) => {
 };
 
 //need to cha
-collectionModify = async (req, res) => {
-	try {
-		function getUserId() {
-			return new Promise((resolve, reject) => {
-				User.find({}, { _id: 1 })
-					.then(data => resolve(data))
-					.catch(err => reject(err))
+function getUserId() {
+	return new Promise((resolve, reject) => {
+		User.find({ role: 0, isEmailverify: true }, { _id: 1 })
+			.then(data => resolve(data))
+			.catch(err => reject(err))
 
-			})
-		}
+	})
+}
+
+async function collectionModify() {
+	try {
+
 		const allUsers = await getUserId()
 		const promise = [];
-		await Promise.all(allUsers.map(async (userId, i) => {
+		var time = 0;
 
-			const data = await addmemberModal.aggregate([
-				{ $match: { 'userId': userId._id.toString() } },
-				{
-					'$lookup': {
-						'from': 'class_schedules',
-						'localField': '_id',
-						'foreignField': 'class_attendanceArray.studentInfo',
-						'as': 'data'
-					}
-				}, {
-					'$project': {
-						'last_attended_date': {
-							'$toDate': {
-								'$arrayElemAt': [
-									'$data.start_date', -1
-								]
+		var interval = setInterval(async function () {
+			if (time < allUsers.lenght) {
+				const data = await addmemberModal.aggregate([
+					{ $match: { 'userId': allUsers[time]._id.toString() } },
+					{
+						'$lookup': {
+							'from': 'class_schedules',
+							'localField': '_id',
+							'foreignField': 'class_attendanceArray.studentInfo',
+							'as': 'data'
+						}
+					}, {
+						'$project': {
+							'last_attended_date': {
+								'$toDate': {
+									$max: '$data.start_date'
+								}
+							}
+						}
+					},
+					{
+						'$addFields': {
+							'rating': {
+								'$floor': {
+									'$divide': [
+										{
+											'$subtract': [
+												new Date(), '$last_attended_date'
+											]
+										}, 1000 * 60 * 60 * 24
+									]
+								}
 							}
 						}
 					}
-				},
-				{
-					'$addFields': {
-						'rating': {
-							'$floor': {
-								'$divide': [
-									{
-										'$subtract': [
-											new Date(), '$last_attended_date'
-										]
-									}, 1000 * 60 * 60 * 24
-								]
-							}
-						}
-					}
+				])
+				for (let member of data) {
+					console.log(member)
+					updateRating(member)
+						.then(resp => {
+
+						})
+						.catch(err => {
+							console.log(err)
+						})
 				}
-			])
-			// console.log(userId, i)
-			for (let member of data) {
-				updateRating(member)
-					.then(resp => {
-						// console.log(resp)
-						// console.log('done Rating')
-
-					})
-					.catch(err => {
-						console.log(err)
-					})
+				time++;
 			}
-			// await Promise.all(data.map(async (member) => {
+			else {
+				clearInterval(interval);
+				console.log({ msg: 'rating updated successfully' })
+
+			}
+		}, 30000);
 
 
-			// }))
-
-		}))
-		console.log('_____-____finish..')
-
-		async function updateRating(member) {
-			let { _id, rating } = member
-			// console.log(_id.toString())
-			rating = rating == null ? 0 : rating;
-			return new Promise((resolve, reject) => {
-				addmemberModal.findOneAndUpdate({ _id: _id.toString() }, { $set: { rating: rating.toString() } })
-					.then(resp => resolve(resp))
-					.catch(err => reject(err))
-
-			})
-		}
-		// const promise = users.map(async (member) => {
-		// 	await addmemberModal.findOneAndUpdate({ _id: member._id }, { $set: { rating: (member.rating == null ? 60 : member.rating) } }, { $upsert: true })
-		// });
-		// console.log(promise)
-		// Promise.all(promise)
-		// 	.then(resp => {
-		// 		console.log('updated')
-
-		// 	}).catch(err => {
-		// 		console.log(err)
-		// 	})
 
 	} catch (err) {
 		console.log({ msg: err.message.replace(/\"/g, ''), success: false });
@@ -2686,4 +2666,4 @@ exports.leads_past3_month = async (req, res) => {
 	}
 };
 
-// cron.schedule("*/30 * * * *", () => collectionModify())
+cron.schedule("0 0 * * *", () => collectionModify())
