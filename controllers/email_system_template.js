@@ -267,7 +267,6 @@ exports.add_template = async (req, res) => {
       var rest = data.reduce(function (a, b) {
         return b.map(function (e, i) { return a[i] instanceof Object ? a[i] : e; });
       }, []);
-      rest = removeEmptyString(rest)
       if (!rest.length) {
         return res.send({
           msg: `No Smartlist exist!`,
