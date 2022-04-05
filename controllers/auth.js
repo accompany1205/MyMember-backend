@@ -533,7 +533,7 @@ exports.signin = async (req, res) => {
 								let current_locationData = await User.findOne({ locationName: req.body.locationName });
 								token = jwt.sign(
 									{
-										id: current_locationData._id,
+										id: data._id,
 										auth_key: data.auth_key,
 										app_id: data.app_id,
 										epi: data.epi,
