@@ -533,7 +533,7 @@ exports.signin = async (req, res) => {
 								let current_locationData = await User.findOne({ locationName: req.body.locationName });
 								token = jwt.sign(
 									{
-										id: current_locationData._id,
+										id: data._id,
 										auth_key: data.auth_key,
 										app_id: data.app_id,
 										epi: data.epi,
@@ -546,6 +546,7 @@ exports.signin = async (req, res) => {
 									expire: new Date() + 9999,
 								});
 								const {
+									_id,
 									username,
 									password,
 									name,
@@ -561,7 +562,7 @@ exports.signin = async (req, res) => {
 									success: true,
 									token,
 									data: {
-										_id: current_locationData._id,
+										_id,
 										locationName: current_locationData.locationName,
 										default_locationData,
 										locations: [...locationData, ...default_locationData],
