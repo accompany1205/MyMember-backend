@@ -379,40 +379,41 @@ exports.add_template = async (req, res) => {
             res.send({ error: err.message.replace(/\"/g, ""), success: false })
           })
       }
-      const emailData = new Mailer({
-        to,
-        from,
-        subject,
-        html: template,
-        attachments: Allattachments
-      })
+      else {
+        const emailData = new Mailer({
+          to,
+          from,
+          subject,
+          html: template,
+          attachments: Allattachments
+        })
 
-      emailData.sendMail()
-        .then(resp => {
-          obj.email_type = 'sent'
-          obj.is_Sent = true
-          saveEmailTemplate(obj)
-            .then((data) => {
-              systemFolder
-                .findByIdAndUpdate(folderId, { $push: { template: data._id } }, (err, data) => {
-                  if (err) {
-                    res.send({ msg: err, success: false })
-                  }
-                  res.send({ msg: "Email send Successfully!", success: true })
+        emailData.sendMail()
+          .then(resp => {
+            obj.email_type = 'sent'
+            obj.is_Sent = true
+            saveEmailTemplate(obj)
+              .then((data) => {
+                systemFolder
+                  .findByIdAndUpdate(folderId, { $push: { template: data._id } }, (err, data) => {
+                    if (err) {
+                      return res.send({ msg: err, success: false })
+                    }
+                    res.send({ msg: "Email send Successfully!", success: true })
 
-                })
-            })
-            .catch((ex) => {
-              res.send({
-                success: false,
-                msg: ex
+                  })
+              })
+              .catch((ex) => {
+                return res.send({
+                  success: false,
+                  msg: ex
+                });
               });
-            });
-        })
-        .catch(err => {
-          res.send({ error: err.message.replace(/\"/g, ""), success: false })
-        })
-
+          })
+          .catch(err => {
+            return res.send({ error: err.message.replace(/\"/g, ""), success: false })
+          })
+      }
     } else if (!JSON.parse(immediately) && days) {
       saveEmailTemplate(obj)
         .then((data) => {
@@ -706,24 +707,27 @@ exports.swapAndUpdate_template = async (req, res) => {
 exports.multipal_temp_remove = (req, res) => {
   let folderId = req.params.folderId;
   let templateIds = req.body.templateId;
-  template.remove({ _id: { $in: templateIds } }).exec((err, resp) => {
-    if (err) {
-      res.json({ code: 400, msg: "templates not remove" });
-    } else {
-      for (let id of templateIds) {
+  addTemp.remove({ _id: { $in: templateIds } })
+    .exec((err, resp) => {
+      if (err) {
+        res.json({ success: false, msg: "templates not remove" });
+      } else {
+
         systemFolder.updateOne(
           { _id: folderId },
-          { $pull: { template: ObjectId(id) } }
-        ).then((err, res) => {
+          { $pull: { template: { $in: templateIds } } }
+        ).exec((err, resp) => {
           if (err) {
-            throw new Error(err);
+            res.json({ success: false, msg: "templates not remove" });
+          } else {
+
+            res.json({ success: true, msg: "template is remove successfully" });
           }
         })
       }
-      res.json({ success: true, msg: "template is remove successfully" });
-    }
-  });
+    });
 }
+
 function removeEmptyString(arr) {
   return arr.filter(v => v != '')
 }

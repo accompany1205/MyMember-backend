@@ -140,7 +140,7 @@ exports.add_template = async (req, res) => {
       var rest = data.reduce(function (a, b) {
         return b.map(function (e, i) { return a[i] instanceof Object ? a[i] : e; });
       }, []);
-      
+
       if (!rest.length) {
         return res.send({
           msg: `No Smartlist exist!`,
@@ -296,7 +296,7 @@ exports.add_template = async (req, res) => {
                     if (err) {
                       res.send({ msg: err, success: false })
                     }
-                  return  res.send({ msg: "Email send Successfully!", success: true })
+                    return res.send({ msg: "Email send Successfully!", success: true })
 
                   })
               })
@@ -658,29 +658,32 @@ exports.status_update_template = (req, res) => {
 
 exports.multipal_temp_remove = (req, res) => {
   let folderId = req.params.folderId;
-  let templateIds = req.body.templateIds;
+  let templateIds = req.body.templateId;
 
   if (!templateIds.length) {
-    res.send({ msg: "templates not selected", success: false });
+    return res.send({ msg: "please selecte Template", success: false });
 
   }
-  all_temp.remove({ _id: { $in: templateIds } }).exec((err, resp) => {
-    if (err) {
-      res.json({ success: false, msg: "templates not remove" });
-    } else {
-      for (let id of templateIds) {
+  all_temp.remove({ _id: { $in: templateIds } })
+    .exec((err, resp) => {
+      if (err) {
+        res.json({ success: false, msg: "templates not remove" });
+      } else {
+        console.log(templateIds)
         folderNur.updateOne(
           { _id: folderId },
-          { $pull: { template: ObjectId(id) } }
-        ).then((err, res) => {
+          { $pull: { template: { $in: templateIds } } }
+        ).exec((err, resp) => {
           if (err) {
-            throw new Error(err);
+            res.json({ success: false, msg: "templates not remove" });
+          }
+          else {
+            res.json({ success: true, msg: "template  removed successfully" });
+
           }
         })
       }
-      res.json({ success: true, msg: "template  removed successfully" });
-    }
-  });
+    })
 };
 
 function removeEmptyString(arr) {

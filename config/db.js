@@ -34,7 +34,7 @@ async function main() {
             }
         }
     ];
-    await monitorListingsUsingEventEmitter(pipeline);
+    // await monitorListingsUsingEventEmitter(pipeline);
     // let data = await filterSmartlist({
     //     "studentType": ["Active Trial"],
     //     "program": ["Taekwondo"],
@@ -69,15 +69,20 @@ async function monitorListingsUsingEventEmitter(pipeline = []) {
                     console.log('an update happened...');
                     const { fullDocument, updateDescription } = next;
                     let { current_rank_name, current_stripe, program, studentType } = updateDescription.updatedFields
-                    console.log(updateDescription, fullDocument._id, current_rank_name)
+                    // console.log(updateDescription, fullDocument._id, current_rank_name)
                     let { userId, email } = fullDocument;
-                    let adminScheduleMails = await Template.find({ is_Sent: false, email_type: "scheduled", adminId: process.env.ADMINID })
+                    let adminScheduleMails = await adminScheduledMails()
+
+
                     if (adminScheduleMails && current_rank_name) {
+
                         (adminScheduleMails).map(async (element) => {
 
                             if (element.smartLists.length) {
+
                                 let smartData = await (smartlist.find({ _id: { $in: element.smartLists } }))
                                 smartData.map(async (smartlist1) => {
+                                    console.log(smartlist1);
                                     [current_rank_name1] = smartlist1.criteria.current_rank_name;
                                     if (current_rank_name1 == [current_rank_name]) {
                                         console.log(current_rank_name1, [current_rank_name])
@@ -143,3 +148,19 @@ function replace(strig, old_word, new_word) {
     return strig.replace('{' + old_word + '}', new_word)
 
 }
+
+function adminScheduledMails() {
+    return new Promise((resolve, reject) => {
+        Template.find({ is_Sent: false, email_type: "scheduled", adminId: process.env.ADMINID })
+            .exec((err, resp) => {
+                if (err) {
+                    reject(err)
+                }
+                resolve(resp)
+            })
+    })
+
+
+}
+
+// console.log(adminScheduledMails())
