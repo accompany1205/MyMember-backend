@@ -216,7 +216,7 @@ exports.listenIncomingSMS = async (req, res) => {
     text.save().then(async (textMessage) => {
       const socketIo = io("https://mymember.com", { transports: ['websocket'] })
       socketIo.on("connect_error", (err) => {
-        console.log(`connect_error due to - ${err.message}`);
+        console.log(`connect_error due to - ${err}`);
       });
       socketIo.emit("textAlertWebhook", uidObj);
       await member.findOneAndUpdate({ _id: stuid }, { $set: { time: Date.now(), textContent: msg } })
