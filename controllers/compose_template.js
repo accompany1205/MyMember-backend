@@ -821,6 +821,7 @@ async function emailCronFucntionality() {
         rest = data.reduce(function (a, b) {
           return b.map(function (e, i) { return a[i] instanceof Object ? a[i] : e; });
         }, []);
+        rest = removeEmptyString(rest)
         if (ele.isPlaceHolders) {
           let mapObj = await students.find({
             email: { $in: rest },
