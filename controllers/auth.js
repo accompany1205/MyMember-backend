@@ -528,9 +528,11 @@ exports.signin = async (req, res) => {
 					if (data.isEmailverify) {
 						if (data.status == 'Active') {
 							let locationData = await User.find({ _id: data.locations }).populate('default_location')
+							console.log(locationData)
 							let default_locationData = await location.find({ _id: data.default_location });
 							if (isAccessLocations) {
 								let current_locationData = await User.findOne({ locationName: req.body.locationName });
+								console.log(current_locationData);
 								token = jwt.sign(
 									{
 										id: current_locationData._id,
@@ -546,6 +548,7 @@ exports.signin = async (req, res) => {
 									expire: new Date() + 9999,
 								});
 								const {
+									_id,
 									username,
 									password,
 									name,
@@ -561,7 +564,7 @@ exports.signin = async (req, res) => {
 									success: true,
 									token,
 									data: {
-										_id: current_locationData._id,
+										_id,
 										locationName: current_locationData.locationName,
 										default_locationData,
 										locations: [...locationData, ...default_locationData],

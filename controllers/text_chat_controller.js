@@ -126,7 +126,7 @@ exports.getTextMessages = (req, res) => {
   uidObj.time = date;
   uidObj.textContent = textContent;
   uidObj.uid = uid;
-  const socketIo = io("http://localhost:3001", { transports: ['websocket'] })
+  const socketIo = io("https://mymember.com", { transports: ['websocket'] })
   socketIo.on("connect_error", (err) => {
     console.log(`connect_error due to - ${err.message}`);
   });
@@ -214,7 +214,7 @@ exports.listenIncomingSMS = async (req, res) => {
   if (obj.userId !== '' && obj.uid !== '') {
     let text = new textMessage(obj);
     text.save().then(async (textMessage) => {
-      const socketIo = io("http://localhost:3001", { transports: ['websocket'] })
+      const socketIo = io("https://mymember.com", { transports: ['websocket'] })
       socketIo.on("connect_error", (err) => {
         console.log(`connect_error due to - ${err.message}`);
       });
