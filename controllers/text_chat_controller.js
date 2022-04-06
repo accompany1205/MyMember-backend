@@ -212,14 +212,14 @@ exports.listenIncomingSMS = async (req, res) => {
   uidObj.time = new Date();
   uidObj.textContent = msg;
   if (obj.userId !== '' && obj.uid !== '') {
-    let text = new textMessage(obj);
+    let text = new textMessage(Object.assign({}, obj, { time: new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }) }));
     text.save().then(async (textMessage) => {
       const socketIo = io("https://mymember.com", { transports: ['websocket'] })
       socketIo.on("connect_error", (err) => {
         console.log(`connect_error due to - ${err}`);
       });
       socketIo.emit("textAlertWebhook", uidObj);
-      await member.findOneAndUpdate({ _id: stuid }, { $set: { time: Date.now(), textContent: msg } })
+      await member.findOneAndUpdate({ _id: stuid }, { $set: { time: new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }), textContent: msg } })
       res.send({ msg: 'text sms sent successfully' })
     }).catch(error => {
       res.send({ error: 'txt msg not send' })
