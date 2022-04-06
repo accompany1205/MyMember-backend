@@ -60,7 +60,7 @@ exports.sendTextMessage = async (req, res) => {
         if (err) {
           res.send({ error: 'message not stored' });
         } else {
-          await member.findOneAndUpdate({ _id: uid }, { $set: { time: new Date(), textContent: textContent } })
+          await member.findOneAndUpdate({ _id: uid }, { $set: { time: new Date().toISOString('en-US', {  timeZone: 'America/New_York'}), textContent: textContent } })
           res.send({ textMessage: data, success:true, msg:"Message Successfully sent!" });
         }
       });

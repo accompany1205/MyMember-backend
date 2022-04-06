@@ -21,7 +21,7 @@ const TextMessageSchema = schema({
   },
   time: {
     type: Date,
-    default: new Date()
+    default: new Date().toISOString('en-US', {  timeZone: 'America/New_York'})
   }
 });
 
