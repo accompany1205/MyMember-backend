@@ -248,7 +248,7 @@ exports.registerdStudent = async (req, res) => {
 
 }
 const updateRecommendedStudentsByIdForRegister = async (studentId) => {
-    return RecommendedForTest.find({ studentId: studentId }, { "isDeleted": true })
+    return RecommendedForTest.updateOne({ studentId: studentId }, { "isDeleted": true })
 }
 exports.payAndPromoteTheStudent = async (req, res) => {
     let userId = req.params.userId;
