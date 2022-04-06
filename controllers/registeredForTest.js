@@ -13,7 +13,8 @@ const mergeMultipleFiles = require("../Services/mergeMultipleFiles");
 
 
 
-
+exports.payforPromotedstudens = async (req, res) => { 
+}
 exports.promoteStudentRank = async (req, res) => {
     try {
         const studentData = req.body;
