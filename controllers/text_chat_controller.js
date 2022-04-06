@@ -53,15 +53,15 @@ exports.sendTextMessage = async (req, res) => {
       to: twilioFormat(primaryPhone),
       from: twilioFormat(twilio) // This is registered number for Twilio
     }).then((message) => {
-      let textMsg = new textMessage(req.body);
+      let textMsg = new textMessage(Object.assign({}, req.body, { time: new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }) }));
       let uid = req.body.uid;
       let textContent = req.body.textContent;
       textMsg.save(async (err, data) => {
         if (err) {
           res.send({ error: 'message not stored' });
         } else {
-          await member.findOneAndUpdate({ _id: uid }, { $set: { time: new Date(), textContent: textContent } })
-          res.send({ textMessage: data, success:true, msg:"Message Successfully sent!" });
+          await member.findOneAndUpdate({ _id: uid }, { $set: { time: new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }), textContent: textContent } })
+          res.send({ textMessage: data, success: true, msg: "Message Successfully sent!" });
         }
       });
     }).catch((error) => {

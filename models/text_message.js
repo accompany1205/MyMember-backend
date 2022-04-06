@@ -20,8 +20,8 @@ const TextMessageSchema = schema({
     require:true
   },
   time: {
-    type: Date,
-    default: new Date()
+    type:String,
+    default: new Date().toLocaleString('en-US', {  timeZone: 'America/New_York'})
   }
 });
 
