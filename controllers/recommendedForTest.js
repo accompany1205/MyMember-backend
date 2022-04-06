@@ -67,7 +67,33 @@ exports.getRecommededForTest = async (req, res) => {
         data: students,
     })
 }
+exports.getPromoted = async (req, res) => {
+    let userId = req.params.userId;
 
+    if (!userId) {
+        res.json({
+            success: false,
+            msg: "Please include the userId in the parameters!"
+        })
+    }
+
+    let students = await RecommendedForTest.find({
+        "userId": userId,
+        "isDeleted": true
+    })
+
+    if (!students.length) {
+        res.json({
+            success: false,
+            msg: "data not found"
+        })
+    }
+    res.json({
+        success: true,
+        data: students,
+    })
+
+}
 exports.getRegisteredForTest = async (req, res) => {
     let userId = req.params.userId;
     // let sortBy = req.query.sortBy || "fistName"
@@ -233,7 +259,6 @@ exports.payAndPromoteTheStudent = async (req, res) => {
                 msg: "Having some issue while register!"
             })
         } else {
-            console.log('1')
             let history = {
                 "current_rank_name": current_rank_name,
                 "program": program,
@@ -256,7 +281,6 @@ exports.payAndPromoteTheStudent = async (req, res) => {
                         })
 
                     } else {
-                        console.log('2')
 
                         RecommendedForTest.updateMany({
                             "studentId": studentId
