@@ -44,12 +44,12 @@ exports.create = async (req, res) => {
     let epochTime = new Date()
     var schdule_data = await schedule.findOne({ _id: req.params.scheduleId, "class_attendanceArray.studentInfo": { $nin: [objId] } });
     if (schdule_data) {
-      let start_date = moment(schdule_data.start_date, ["DD-MM-YYYY", "MM-DD-YYYY"])
-      if (moment().isSameOrBefore(start_date)) {
+      // let start_date = moment(schdule_data.start_date, ["DD-MM-YYYY", "MM-DD-YYYY"])
+      // if (moment().isSameOrBefore(start_date)) {
 
-        return res.send({ msg: "unable to mark attendence", success: false });
+      //   return res.send({ msg: "unable to mark attendence", success: false });
 
-      }
+      // }
       student.findOne({ _id: studentId }).exec((err, stdData) => {
         if (err || stdData == null) {
           res.send({ msg: "student data not find", success: false });
