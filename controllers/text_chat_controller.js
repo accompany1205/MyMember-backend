@@ -4,7 +4,13 @@ const textContact = require("../models/text_contact");
 const member = require("../models/addmember");
 const user = require("../models/user");
 const mongoose = require("mongoose");
-
+//const Socket = require("../Services/scoket.io")
+//var soc = Socket();
+const socketIo = io("http://localhost:3001", { transports: ['websocket'] })
+console.log(socketIo)
+socketIo.on("connect_error", (err) => {
+  console.log(`connect_error due to - ${err.message}`);
+});
 // Adding member in text contact list
 exports.addTextContact = (req, res) => {
   let contact = new textContact(req.body);
@@ -126,10 +132,7 @@ exports.getTextMessages = (req, res) => {
   uidObj.time = date;
   uidObj.textContent = textContent;
   uidObj.uid = uid;
-  const socketIo = io("https://mymember.com", { transports: ['websocket'] })
-  socketIo.on("connect_error", (err) => {
-    console.log(`connect_error due to - ${err.message}`);
-  });
+  console.log(socketIo)
   socketIo.emit("textAlertWebhook", uidObj);
   // socketIo.on("connect_error", (err) => {
   //   console.log(`connect_error due to - ${err.message}`);
@@ -214,10 +217,7 @@ exports.listenIncomingSMS = async (req, res) => {
   if (obj.userId !== '' && obj.uid !== '') {
     let text = new textMessage(Object.assign({}, obj, { time: new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }) }));
     text.save().then(async (textMessage) => {
-      const socketIo = io("https://mymember.com", { transports: ['websocket'] })
-      socketIo.on("connect_error", (err) => {
-        console.log(`connect_error due to - ${err}`);
-      });
+      console.log(socketIo)
       socketIo.emit("textAlertWebhook", uidObj);
       await member.findOneAndUpdate({ _id: stuid }, { $set: { time: new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }), textContent: msg } })
       res.send({ msg: 'text sms sent successfully' })
