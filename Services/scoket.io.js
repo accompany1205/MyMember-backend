@@ -14,14 +14,18 @@ class SocketEngine {
         this.sConnection.on('connection', function (socket) {
 
             socket.on('joinTextChatRoom', async (room) => {
-                socket.join(room)
+                socket.join(room);
+            })
+
+            socket.on('leaveTextChatRoom', async (room)=>{
+                socket.leave(room);
             })
 
             socket.on("alertGetTexts", async (getText) => {
                 try {
-                    const { userId } = getText;
+                    const { userId, uid } = getText;
                     const textList = await textMessage.find(getText);
-                    io.to(userId).emit('getText', textList)
+                    io.to(`${userId}${uid}`).emit('getText', textList)
                 } catch (err) {
                     console.log(err);
                 }
