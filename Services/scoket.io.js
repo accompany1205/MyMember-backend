@@ -21,7 +21,7 @@ class SocketEngine {
                 try {
                     const { userId } = getText;
                     const textList = await textMessage.find(getText);
-                    io.to(userId).emit('getText', textList)
+                    io.emit('getText', textList)
                 } catch (err) {
                     console.log(err);
                 }
