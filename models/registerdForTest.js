@@ -49,6 +49,7 @@ const registerdForTest = new mongoose.Schema({
     },
     method: {
         type: String,
+        default: 'unpaid',
         enum: ["Cash", "Check", "Credit Card"]
     },
     phone: {
