@@ -50,7 +50,7 @@ const registerdForTest = new mongoose.Schema({
     method: {
         type: String,
         default: 'unpaid',
-        enum: ["Cash", "Check", "Credit Card"]
+        enum: ["Cash", "Check", "Credit Card", 'unpaid']
     },
     phone: {
         type: String
