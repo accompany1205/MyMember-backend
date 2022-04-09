@@ -84,7 +84,7 @@ class SocketEngine {
                                 country,
                                 state,
                                 city,
-                                isAccessLocations,
+                                isAccessLocations:true,
                             },
                         };
                         console.log(updatedData)
