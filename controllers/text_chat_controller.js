@@ -7,7 +7,6 @@ const mongoose = require("mongoose");
 //const Socket = require("../Services/scoket.io")
 //var soc = Socket();
 const socketIo = io("http://localhost:3001", { transports: ['websocket'] })
-console.log(socketIo)
 socketIo.on("connect_error", (err) => {
   console.log(`connect_error due to - ${err.message}`);
 });
