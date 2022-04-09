@@ -1,6 +1,7 @@
 const textMessage = require("../models/text_message");
 const member = require("../models/addmember");
 const User = require("../models/user");
+const jwt = require('jsonwebtoken');
 
 
 class SocketEngine {
@@ -46,7 +47,7 @@ class SocketEngine {
                     let { userId, access_location_list } = locationObj;
                     await User.updateOne({ _id: userId }, { $set: { isAccessLocations: true, locations: access_location_list } })
                     User.findOne({ _id: userId }, async (err, data) => {
-                        if(err){
+                        if (err) {
                             console.log(err)
                         }
                         let locationData = await User.find({ _id: data.locations }).populate('default_location')
@@ -79,7 +80,7 @@ class SocketEngine {
                             state,
                             city,
                         } = data;
-                        let updatedData = {
+                        var updatedData = {
                             success: true,
                             token,
                             data: {
@@ -100,9 +101,10 @@ class SocketEngine {
                                 isAccessLocations,
                             },
                         };
+                        console.log(updatedData)
+                        io.to(userId).emit("localStorageData", updatedData)
                     })
-                    console.log(updatedData)
-                    io.to(userId).emit("localStorageData", updatedData)
+
 
                 } catch (err) {
                     console.log(err)
