@@ -54,20 +54,6 @@ class SocketEngine {
                         let locationData = await User.find({ _id: data.locations }).populate('default_location')
                         let default_locationData = await location.find({ _id: data.default_location });
                         //let current_locationData = await User.findOne({ locationName: req.body.locationName });
-                        token = jwt.sign(
-                            {
-                                id: data._id,
-                                auth_key: data.auth_key,
-                                app_id: data.app_id,
-                                epi: data.epi,
-                                descriptor: data.descriptor,
-                                product_description: data.product_description,
-                            },
-                            process.env.JWT_SECRET
-                        );
-                        res.cookie('t', token, {
-                            expire: new Date() + 9999,
-                        });
                         const {
                             _id,
                             username,
@@ -83,7 +69,6 @@ class SocketEngine {
                         } = data;
                         var updatedData = {
                             success: true,
-                            token,
                             data: {
                                 _id,
                                 //locationName: current_locationData.locationName,
