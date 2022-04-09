@@ -59,8 +59,6 @@ exports.access_school = async (req, res) => {
         {
             $set: {
                 isAccessLocations: true,
-            },
-            $addToSet: {
                 locations: access_location_list,
             },
         }
