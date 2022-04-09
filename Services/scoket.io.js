@@ -1,6 +1,7 @@
 const textMessage = require("../models/text_message");
 const member = require("../models/addmember");
 const User = require("../models/user");
+const location = require("../models/admin/settings/location")
 const jwt = require('jsonwebtoken');
 
 
