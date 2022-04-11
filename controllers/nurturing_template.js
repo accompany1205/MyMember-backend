@@ -136,10 +136,16 @@ exports.add_template = async (req, res) => {
       smartlists.forEach((element, index) => {
         promises.push(filterSmartlist(element.criteria, userId))
       })
-      let data = await Promise.all(promises)
-      var rest = data.reduce(function (a, b) {
-        return b.map(function (e, i) { return a[i] instanceof Object ? a[i] : e; });
-      }, []);
+      var data = await Promise.all(promises)
+
+      data = [].concat.apply([], data);
+      let mapObj = await students.find({
+        _id: { $in: data },
+        userId: userId,
+        email: { $nin: [undefined, ''] }
+      }, { email: 1, _id: 0 })
+
+      let rest = [...new Set(mapObj.map(element => element.email))];
 
       if (!rest.length) {
         return res.send({
@@ -222,10 +228,9 @@ exports.add_template = async (req, res) => {
     else {
       if (JSON.parse(isPlaceHolders)) {
         let mapObj = await students.find({
-          email: { $in: rest },
+          _id: { $in: data },
           userId: userId
         })
-
         mapObj = mapObj ? mapObj : []
         if (!mapObj.length) {
           return res.send({
@@ -278,6 +283,8 @@ exports.add_template = async (req, res) => {
           })
       }
       else {
+        
+        console.log("to")
         let emailData = new Mailer({
           to,
           from,

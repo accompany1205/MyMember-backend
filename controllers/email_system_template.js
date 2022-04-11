@@ -30,64 +30,6 @@ function timefun(sd, st) {
   return (curdat = new Date(y, mo, d, h, mi, se, mil));
 }
 
-// exports.add_template = async (req, res) => {
-//   const counts = await addTemp
-//     .find({ folderId: req.params.folderId })
-//     .countDocuments();
-//   let templete_Id = counts + 1;
-
-//   try {
-//     let adminId = req.params.adminId;
-//     let userData = await user.findById(adminId);
-//     if (userData.role === 1) {
-//       var obj = {
-//         title: req.body.title,
-//         subject: req.body.subject,
-//         template: req.body.template,
-//         email_type: "schedule",
-//         category: "system",
-//         createdBy: "admin",
-//         email_status: true,
-//         adminId: adminId,
-//         folderId: req.params.folderId,
-//         templete_Id,
-//       };
-
-//       var emailDetail = new addTemp(obj);
-//       emailDetail.save((err, emailSave) => {
-//         if (err) {
-//           res.send(err);
-//         } else {
-//           systemFolder
-//             .findByIdAndUpdate(req.params.folderId, {
-//               $push: { template: emailSave._id },
-//             })
-//             .exec((err) => {
-//               if (err) {
-//                 res.send({
-//                   Error: "system template details is not add in folder",
-//                   error: err,
-//                 });
-//               } else {
-//                 res.send({
-//                   msg: "system template details is add in folder",
-//                   result: emailSave,
-//                 });
-//               }
-//             });
-//         }
-//       });
-//     } else {
-//       res.json({
-//         msg: "not an Admin, not authorized to create sys template.",
-//         success: false,
-//         code: 403,
-//       });
-//     }
-//   } catch (error) {
-//     throw new Error(error)
-//   }
-// };
 exports.admin_add_template = async (req, res) => {
   try {
     let adminId = req.params.adminId;
@@ -263,10 +205,15 @@ exports.add_template = async (req, res) => {
       smartlists.forEach((element, index) => {
         promises.push(filterSmartlist(element.criteria, userId))
       })
-      let data = await Promise.all(promises)
-      var rest = data.reduce(function (a, b) {
-        return b.map(function (e, i) { return a[i] instanceof Object ? a[i] : e; });
-      }, []);
+      var data = await Promise.all(promises)
+      data = [].concat.apply([], data);
+      let mapObj = await students.find({
+        _id: { $in: data },
+        userId: userId,
+        email: { $nin: [undefined, ''] }
+      }, { email: 1, _id: 0 })
+      let rest = [...new Set(mapObj.map(element => element.email))];
+
       if (!rest.length) {
         return res.send({
           msg: `No Smartlist exist!`,
@@ -327,7 +274,7 @@ exports.add_template = async (req, res) => {
     if (JSON.parse(immediately)) {
       if (JSON.parse(isPlaceHolders)) {
         let mapObj = await students.find({
-          email: { $in: rest },
+          _id: { $in: data },
           userId: userId
         })
 

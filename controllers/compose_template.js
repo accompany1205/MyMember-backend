@@ -454,10 +454,16 @@ exports.sendEmail = async (req, res) => {
       smartlists.forEach((element, index) => {
         promises.push(filterSmartlist(element.criteria, userId))
       })
-      let data = await Promise.all(promises)
-      rest = data.reduce(function (a, b) {
-        return b.map(function (e, i) { return a[i] instanceof Object ? a[i] : e; });
-      }, []);
+      var data = await Promise.all(promises)
+      console.log(data)
+      data = [].concat.apply([], data);
+      let mapObj = await students.find({
+        _id: { $in: data },
+        userId: userId,
+        email: { $nin: [undefined, ''] }
+      }, { email: 1, _id: 0 })
+
+      let rest = [...new Set(mapObj.map(element => element.email))];
       if (!rest.length) {
         return res.send({
           msg: `No Smartlist exist!`,
@@ -468,20 +474,10 @@ exports.sendEmail = async (req, res) => {
     }
     if (JSON.parse(emailBody.immediately)) {
       if (JSON.parse(emailBody.isPlaceHolders)) {
-
         let mapObj = await students.find({
-          email: { $in: rest },
+          _id: { $in: data },
           userId: userId
         })
-
-        mapObj = mapObj ? mapObj : []
-        if (!mapObj.length) {
-          return res.send({
-            msg: `No Smartlist exist!`,
-            success: false,
-          });
-        }
-
         Promise.all(mapObj.map(Element => {
           let temp = emailBody.template;
 
@@ -714,10 +710,15 @@ exports.add_template = async (req, res) => {
         promises.push(filterSmartlist(element.criteria, userId))
       })
       let data = await Promise.all(promises)
-      rest = data.reduce(function (a, b) {
-        return b.map(function (e, i) { return a[i] instanceof Object ? a[i] : e; });
-      }, []);
+      data = [].concat.apply([], data);
+      let mapObj = await students.find({
+        _id: { $in: data },
+        userId: userId,
+        email: { $nin: [undefined, ''] }
+      }, { email: 1, _id: 0 })
 
+
+      let rest = [...new Set(mapObj.map(element => element.email))];
       if (!rest.length) {
         return res.send({
           msg: `No Smartlist exist!`,
@@ -818,13 +819,18 @@ async function emailCronFucntionality() {
           promises.push(filterSmartlist(element.criteria, ele.userId))
         })
         let data = await Promise.all(promises)
-        rest = data.reduce(function (a, b) {
-          return b.map(function (e, i) { return a[i] instanceof Object ? a[i] : e; });
-        }, []);
-        rest = removeEmptyString(rest)
+        data = [].concat.apply([], data);
+        let mapObj = await students.find({
+          _id: { $in: data },
+          userId: ele.userId,
+          email: { $nin: [undefined, ''] }
+        }, { email: 1, _id: 0 })
+
+
+        let rest = [...new Set(mapObj.map(element => element.email))];
         if (ele.isPlaceHolders) {
           let mapObj = await students.find({
-            email: { $in: rest },
+            _id: { $in: rest },
             userId: ele.userId
           })
 
