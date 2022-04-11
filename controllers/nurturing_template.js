@@ -229,6 +229,7 @@ exports.add_template = async (req, res) => {
       if (JSON.parse(isPlaceHolders)) {
         let mapObj = await students.find({
           _id: { $in: data },
+          email: { $nin: [undefined, ''] },
           userId: userId
         })
         mapObj = mapObj ? mapObj : []
@@ -283,7 +284,7 @@ exports.add_template = async (req, res) => {
           })
       }
       else {
-        
+
         console.log("to")
         let emailData = new Mailer({
           to,
@@ -325,7 +326,7 @@ exports.add_template = async (req, res) => {
 
 };
 function replace(strig, old_word, new_word) {
-  return strig.replace('{' + old_word + '}', new_word)
+  return strig.replace(new RegExp(`{${old_word}}`, 'g'), new_word)
 
 }
 

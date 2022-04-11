@@ -476,6 +476,7 @@ exports.sendEmail = async (req, res) => {
       if (JSON.parse(emailBody.isPlaceHolders)) {
         let mapObj = await students.find({
           _id: { $in: data },
+          email: { $nin: [undefined, ''] },
           userId: userId
         })
         Promise.all(mapObj.map(Element => {
@@ -584,8 +585,7 @@ exports.sendEmail = async (req, res) => {
 }
 
 function replace(strig, old_word, new_word) {
-  return strig.replace('{' + old_word + '}', new_word)
-
+  return strig.replace(new RegExp(`{${old_word}}`, 'g'), new_word)
 }
 exports.admin_add_template = async (req, res) => {
   try {
@@ -840,7 +840,9 @@ async function emailCronFucntionality() {
 
             for (i in Element) {
               if (temp.includes(i)) {
+
                 temp = replace(temp, i, Element[i])
+                console.log(temp)
               }
             }
             const emailData = new Mailer({

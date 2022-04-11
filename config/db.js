@@ -29,7 +29,7 @@ async function main() {
         {
             '$match': {
                 $or: [{ operationType: 'insert' }, { operationType: 'update' }],
-                "fullDocument.current_rank_name": { $exists: true }
+                // "fullDocument.current_rank_name": { $exists: true }
 
             }
         }
@@ -71,67 +71,77 @@ async function monitorListingsUsingEventEmitter(pipeline = []) {
                     let { current_rank_name, current_stripe, program, studentType } = updateDescription.updatedFields
                     // console.log(updateDescription, fullDocument._id, current_rank_name)
                     let { userId, email } = fullDocument;
-                    let adminScheduleMails = await adminScheduledMails()
+                    const adminScheduleMails = await adminScheduledMails()
 
 
-                    if (adminScheduleMails && current_rank_name) {
+                    // if (adminScheduleMails && current_rank_name) {
 
-                        (adminScheduleMails).map(async (element) => {
+                    adminScheduleMails.map(async (element) => {
 
-                            if (element.smartLists.length) {
+                        //     if (element.smartLists.length) {
 
-                                let smartData = await (smartlist.find({ _id: { $in: element.smartLists } }))
-                                smartData.map(async (smartlist1) => {
-                                    console.log(smartlist1);
-                                    [current_rank_name1] = smartlist1.criteria.current_rank_name;
-                                    if (current_rank_name1 == [current_rank_name]) {
-                                        console.log(current_rank_name1, [current_rank_name])
-
-                                        smartlist1.criteria.email = [email];
-                                        let smartEmails = await filterSmartlist(smartlist1.criteria, userId)
-                                        if (element.isPlaceHolders) {
-                                            for (i in fullDocument) {
-                                                if (element.template.includes(i)) {
-                                                    temp = replace(element.template, i, fullDocument[i])
-                                                }
-                                            }
-                                            const emailData = new Mailer({
-                                                to: smartEmails,
-                                                from: element.from,
-                                                subject: element.subject,
-                                                html: temp,
-                                                attachments: element.attachments
-                                            });
-                                            emailData.sendMail()
-                                                .then(resp => console.log('mail sended'))
-                                                .catch(err => console.log(err))
-                                        }
-
-                                    }
-
-
-                                })
+                        let smartData = await (smartlist.find({ _id: { $in: element.smartLists } }))
+                        smartData.map(async (smartlist1) => {
+                            let smartEmails = await filterSmartlist(smartlist1.criteria, userId)
+                            if (smartEmails.length) {
+                                console.log(smartEmails, )
+                                let matchDoc = smartEmails.filter(match => console.log(match))
+                                console.log(matchDoc)
+                                // if (smartEmails.includes(fullDocument._id)) {
+                                //     console.log(smartEmails)
+                                // }
                             }
+
+                            //             console.log(smartlist1);
+                            //             [current_rank_name1] = smartlist1.criteria.current_rank_name;
+                            //             if (current_rank_name1 == [current_rank_name]) {
+                            //                 console.log(current_rank_name1, [current_rank_name])
+
+                            //                 smartlist1.criteria.email = [email];
+                            //                 let smartEmails = await filterSmartlist(smartlist1.criteria, userId)
+                            //                 if (element.isPlaceHolders) {
+                            //                     for (i in fullDocument) {
+                            //                         if (element.template.includes(i)) {
+                            //                             temp = replace(element.template, i, fullDocument[i])
+                            //                         }
+                            //                     }
+                            //                     const emailData = new Mailer({
+                            //                         to: smartEmails,
+                            //                         from: element.from,
+                            //                         subject: element.subject,
+                            //                         html: temp,
+                            //                         attachments: element.attachments
+                            //                     });
+                            //                     emailData.sendMail()
+                            //                         .then(resp => console.log('mail sended'))
+                            //                         .catch(err => console.log(err))
+                            // }
+
+                            //             }
+
+
                         })
-                    }
-                    // const smartId = await smartlist.find({ 'criteria.current_rank_name': [current_rank_name], userId: userId })
-                    // console.log(smartId)
-                    // const emailData = new Mailer({
-                    //     to: [Element["email"]],
-                    //     from: emailBody.from,
-                    //     subject: emailBody.subject,
-                    //     html: temp,
-                    //     attachments: emailBody.attachments
-                    //   });
-                    //   emailData.sendMail()
-                    break;
+                        // }
+                    })
+                // }
+                // const smartId = await smartlist.find({ 'criteria.current_rank_name': [current_rank_name], userId: userId })
+                // console.log(smartId)
+                // const emailData = new Mailer({
+                //     to: [Element["email"]],
+                //     from: emailBody.from,
+                //     subject: emailBody.subject,
+                //     html: temp,
+                //     attachments: emailBody.attachments
+                //   });
+                //   emailData.sendMail()
+                //     break;
 
-                case 'delete':
-                    console.log('a delete happened...');
-                    break;
+                // case 'delete':
+                //     console.log('a delete happened...');
+                //     break;
 
-                default:
-                    break;
+                // default:
+                //     break;
             }
         }
         catch (err) {
@@ -145,7 +155,7 @@ async function monitorListingsUsingEventEmitter(pipeline = []) {
 }
 
 function replace(strig, old_word, new_word) {
-    return strig.replace('{' + old_word + '}', new_word)
+    return strig.replace(new RegExp(`{${old_word}}`, 'g'), new_word)
 
 }
 

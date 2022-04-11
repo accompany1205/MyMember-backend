@@ -163,7 +163,7 @@ exports.admin_add_template = async (req, res) => {
 
 };
 function replace(strig, old_word, new_word) {
-  return strig.replace('{' + old_word + '}', new_word)
+  return strig.replace(new RegExp(`{${old_word}}`, 'g'), new_word)
 
 }
 
@@ -275,6 +275,7 @@ exports.add_template = async (req, res) => {
       if (JSON.parse(isPlaceHolders)) {
         let mapObj = await students.find({
           _id: { $in: data },
+          email: { $nin: [undefined, ''] },
           userId: userId
         })
 
