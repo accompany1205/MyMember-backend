@@ -534,13 +534,13 @@ exports.sendEmail = async (req, res) => {
             let emailDetail = new all_temp(emailBody)
             emailDetail.save((err, emailSave) => {
               if (err) {
-                res.send({ msg: err, success: false })
+                return res.send({ msg: err, success: false })
               }
               else {
                 all_temp.findByIdAndUpdate(emailSave._id, { is_Sent: true, email_type: "sent" })
                   .exec((err, emailUpdate) => {
                     if (err) {
-                      res.send({ msg: err, success: false })
+                      return res.send({ msg: err, success: false })
                     }
                     return res.send({ msg: "Email Sent Successfully", success: true })
 
@@ -549,7 +549,7 @@ exports.sendEmail = async (req, res) => {
             })
           })
           .catch(Err => {
-            res.sen({ msg: Err, success: false })
+            res.send({ msg: Err, success: false })
           })
       }
     } else {
