@@ -803,7 +803,7 @@ function saveEmailTemplate(obj) {
 
 async function emailCronFucntionality() {
   let promises = [];
-  let scheduledListing = await all_temp.find({ is_Sent: false, email_type: "scheduled" });
+  let scheduledListing = await all_temp.find({ is_Sent: false, email_type: "scheduled", adminId: { $exists: false } });
   scheduledListing.forEach(async (ele, i) => {
     let sentDate = moment(ele.sent_date).format("YYYY-MM-DD");
     let currentDate = moment().format("YYYY-MM-DD");
@@ -1137,7 +1137,7 @@ var emailCronFucntionalityfor30DaysBirthday = async () => {
   await Promise.all(promises);
 };
 
-cron.schedule("0 0 * * *", () => emailCronFucntionalityfor30DaysBirthday())
+// cron.schedule("0 0 * * *", () => emailCronFucntionalityfor30DaysBirthday())
 
 function removeEmptyString(arr) {
   return arr.filter(v => v != '')
