@@ -842,7 +842,6 @@ async function emailCronFucntionality() {
               if (temp.includes(i)) {
 
                 temp = replace(temp, i, Element[i])
-                console.log(temp)
               }
             }
             const emailData = new Mailer({
