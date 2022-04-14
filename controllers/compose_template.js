@@ -443,7 +443,7 @@ exports.sendEmail = async (req, res) => {
     emailBody.attachments = Allattachments;
     emailBody.category = "compose";
     emailBody.to = emailBody.to ? JSON.parse(emailBody.to) : undefined
-    if (!emailBody.to) {
+    if (!emailBody.to && JSON.parse(emailBody.immediately)) {
       emailBody.smartLists = emailBody.smartLists ? JSON.parse(emailBody.smartLists) : []
       smartLists = emailBody.smartLists.map(s => ObjectId(s));
       let smartlists = await smartlist.aggregate([
@@ -554,6 +554,9 @@ exports.sendEmail = async (req, res) => {
       }
     } else {
       if (!JSON.parse(emailBody.immediately)) {
+        if (!emailBody.to.length) {
+          emailBody.smartLists = emailBody.smartLists ? JSON.parse(emailBody.smartLists) : []
+        }
         let sent_date = moment(emailBody.sent_date).format("YYYY-MM-DD");
         emailBody.is_Sent = false;
         emailBody.email_type = "scheduled";
@@ -818,7 +821,7 @@ async function emailCronFucntionality() {
         smartlists.forEach((element, index) => {
           promises.push(filterSmartlist(element.criteria, ele.userId))
         })
-        let data = await Promise.all(promises)
+        var data = await Promise.all(promises)
         data = [].concat.apply([], data);
         let mapObj = await students.find({
           _id: { $in: data },
@@ -830,17 +833,15 @@ async function emailCronFucntionality() {
         let rest = [...new Set(mapObj.map(element => element.email))];
         if (ele.isPlaceHolders) {
           let mapObj = await students.find({
-            _id: { $in: rest },
+            _id: { $in: data },
             userId: ele.userId
           })
 
 
           Promise.all(mapObj.map(Element => {
             let temp = ele.template;
-
             for (i in Element) {
               if (temp.includes(i)) {
-
                 temp = replace(temp, i, Element[i])
               }
             }
@@ -855,7 +856,7 @@ async function emailCronFucntionality() {
           }))
 
             .then(async (resp) => {
-              const update = await all_temp.findOneAndUpdate({ _id: ele._id }, { $set: { is_Sent: true } });
+              Promise.all([await all_temp.findOneAndUpdate({ _id: ele._id }, { $set: { is_Sent: true } })]);
             })
             .catch((err) => {
               throw new Error(err);
@@ -870,7 +871,7 @@ async function emailCronFucntionality() {
           })
           emailData.sendMail()
             .then(async (resp) => {
-              const update = await all_temp.findOneAndUpdate({ _id: ele._id }, { $set: { is_Sent: true } });
+              Promise.all([await all_temp.findOneAndUpdate({ _id: ele._id }, { $set: { is_Sent: true } })]);
             })
             .catch((err) => {
               throw new Error(err);
@@ -878,26 +879,28 @@ async function emailCronFucntionality() {
 
         }
 
-      }
-      const emailData = new Mailer({
-        // sendgrid_key: process.env.SENDGRID_API_KEY,
-        to: ele.to,
-        from: ele.from,
-        //from_name: "noreply@gmail.com",
-        subject: ele.subject,
-        html: ele.template,
-        attachments: ele.attachments
-      })
-      emailData.sendMail()
-        .then(async (resp) => {
-          const update = await all_temp.findOneAndUpdate({ _id: ele._id }, { $set: { is_Sent: true } });
+      } else {
+
+        const emailData = new Mailer({
+          // sendgrid_key: process.env.SENDGRID_API_KEY,
+          to: ele.to,
+          from: ele.from,
+          //from_name: "noreply@gmail.com",
+          subject: ele.subject,
+          html: ele.template,
+          attachments: ele.attachments
         })
-        .catch((err) => {
-          throw new Error(err);
-        });
+        emailData.sendMail()
+          .then((resp) => {
+            Promise.all([all_temp.findOneAndUpdate({ _id: ele._id }, { $set: { is_Sent: true } })]);
+          })
+          .catch((err) => {
+            throw new Error(err);
+          });
+      }
     }
   });
-  await Promise.all(promises);
+  // await Promise.all(promises);
 };
 
 cron.schedule(`*/5 * * * *`, () => {

@@ -147,27 +147,12 @@ exports.membershipUpdate = async (req, res) => {
     const new_folderId = req.body.folderId;
     const old_folderId = req.body.old_folderId;
     membershipData.folderId = new_folderId;
-    const promises = [];
-    if (req.files) {
-      Object.entries(req.files).forEach(([key, value]) => {
-        value.map((file) => {
-          if (file.fieldname === 'thumbnail') {
-            cloudUrl
-              .imageUrl(file)
-              .then((data) => {
-                membershipData.membershipThumbnail = data;
-              })
-              .catch((err) => {
-                res.send({ msg: 'thumbnail not uploaded!', success: false });
-              });
-          } else {
-            membershipData.membershipDocName = file.originalname;
-            promises.push(cloudUrl.imageUrl(file));
-          }
-        });
-      });
-      var docs = await Promise.all(promises);
-      membershipData.membershipDoc = docs[0];
+    //const promises = [];
+    if (req.file) {
+      membershipData.membershipDocName = req.file.originalname;
+      
+      var docs = await cloudUrl.imageUrl(req.file);
+      membershipData.membershipDoc = docs;
     }
     membershipModal
       .updateOne(
