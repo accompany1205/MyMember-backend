@@ -9,7 +9,7 @@ exports.createNote = async (req, res) => {
     let memberId = req.params.memberId;
     if (!memberId) {
         res.send({
-            status: true,
+            success: true,
             "msg": "Member Id not found in the params!!"
         })
     }
@@ -20,9 +20,9 @@ exports.createNote = async (req, res) => {
     }
     let studentInfo = await student.findById(filter).exec();
     if (!studentInfo) {
-        res.send({
-            status: true,
-            "msg": "Data not exists into the collection!!"
+        return res.send({
+            success: false,
+            "msg": "member not exists!!"
         })
     }
     createNotePayload.firstName = studentInfo.firstName;
@@ -33,7 +33,7 @@ exports.createNote = async (req, res) => {
     let createdNote = await followUpNotes.create(createNotePayload);
     if (!createdNote) {
         res.send({
-            status: false,
+            success: false,
             "msg": "Error while createign the note"
         })
     }
@@ -47,12 +47,12 @@ exports.createNote = async (req, res) => {
     })
     if (!updateNoteIdIntoStudent) {
         res.send({
-            status: false,
+            success: false,
             "msg": "Error while updating into member"
         })
     }
     res.send({
-        status: true,
+        success: true,
         msg: "Followup note has been created for the student",
         data: createdNote
     })
@@ -62,7 +62,7 @@ exports.getNotesByUserId = async (req, res) => {
     var userId = req.params.userId;
     if (!userId) {
         res.send({
-            status: true,
+            success: true,
             msg: "Member Id not found in the params!!"
         })
     }
@@ -72,12 +72,12 @@ exports.getNotesByUserId = async (req, res) => {
     let notes = await followUpNotes.find(filter);
     if (!notes) {
         res.send({
-            status: true,
+            success: true,
             msg: "Data not exists for this query!!"
         })
     }
     res.send({
-        status: true,
+        success: true,
         msg: "Please find the notes with userId",
         data: notes
     })
@@ -100,7 +100,7 @@ exports.filterByNotes = async (req, res) => {
         }
         if (!userId) {
             res.send({
-                status: true,
+                success: true,
                 msg: "Member Id not found in the params!!"
             })
         }
@@ -110,9 +110,9 @@ exports.filterByNotes = async (req, res) => {
                     { $match: filter },
                     {
                         $project: {
-                            firstName:1,
-                            lastName:1,
-                            status:1,
+                            firstName: 1,
+                            lastName: 1,
+                            status: 1,
                             noteType: 1,
                             followupType: 1,
                             note: 1,
@@ -127,7 +127,7 @@ exports.filterByNotes = async (req, res) => {
                             $expr: {
                                 $and: [
                                     { $eq: [{ $dayOfMonth: '$date' }, { $dayOfMonth: "$$NOW" }] },
-                                    { $eq: [{ $month: '$date' }, { $month: "$$NOW"}] },
+                                    { $eq: [{ $month: '$date' }, { $month: "$$NOW" }] },
                                 ],
                             },
                         }
@@ -165,9 +165,9 @@ exports.filterByNotes = async (req, res) => {
                     { $match: filter },
                     {
                         $project: {
-                            firstName:1,
-                            lastName:1,
-                            status:1,
+                            firstName: 1,
+                            lastName: 1,
+                            status: 1,
                             noteType: 1,
                             followupType: 1,
                             note: 1,
@@ -232,9 +232,9 @@ exports.filterByNotes = async (req, res) => {
                     { $match: filter },
                     {
                         $project: {
-                            firstName:1,
-                            lastName:1,
-                            status:1,
+                            firstName: 1,
+                            lastName: 1,
+                            status: 1,
                             noteType: 1,
                             followupType: 1,
                             note: 1,
@@ -285,9 +285,9 @@ exports.filterByNotes = async (req, res) => {
                     { $match: filter },
                     {
                         $project: {
-                            firstName:1,
-                            lastName:1,
-                            status:1,
+                            firstName: 1,
+                            lastName: 1,
+                            status: 1,
                             noteType: 1,
                             followupType: 1,
                             note: 1,
@@ -340,9 +340,9 @@ exports.filterByNotes = async (req, res) => {
                     { $match: filter },
                     {
                         $project: {
-                            firstName:1,
-                            lastName:1,
-                            status:1,
+                            firstName: 1,
+                            lastName: 1,
+                            status: 1,
                             noteType: 1,
                             followupType: 1,
                             note: 1,
@@ -404,7 +404,7 @@ exports.getNotesByMemberId = async (req, res) => {
     var memberId = req.params.memberId;
     if (!memberId) {
         res.send({
-            status: true,
+            success: true,
             msg: "Member Id not found in the params!!"
         })
     }
@@ -414,12 +414,12 @@ exports.getNotesByMemberId = async (req, res) => {
     let notes = await followUpNotes.find(filter);
     if (!notes) {
         res.send({
-            status: true,
+            success: true,
             msg: "Data not exists for this query!!"
         })
     }
     res.send({
-        status: true,
+        success: true,
         msg: "Please find the notes with userId",
         data: notes
     })
@@ -430,7 +430,7 @@ exports.getNotesByNoteType = async (req, res) => {
     var memberId = req.params.memberId;
     if (!memberId) {
         res.send({
-            status: true,
+            success: true,
             msg: "Member Id not found in the params!!"
         })
     }
@@ -440,12 +440,12 @@ exports.getNotesByNoteType = async (req, res) => {
     let notes = await followUpNotes.find(filter);
     if (!notes) {
         res.send({
-            status: true,
+            success: true,
             msg: "Data not exists for this query!!"
         })
     }
     res.send({
-        status: true,
+        success: true,
         msg: "Please find the notes with userId",
         data: notes
     })
@@ -458,25 +458,25 @@ exports.updateNote = async (req, res) => {
     let { body: payload } = req;
     if (!payload) {
         res.json({
-            status: false,
+            success: false,
             msg: "Please check your input details!!"
         })
     }
     if (!noteId) {
         res.send({
-            status: true,
+            success: true,
             msg: "Note id not found in the params!!"
         })
     }
     let updatedNote = await followUpNotes.findByIdAndUpdate(noteId, payload, { new: true });
     if (!updatedNote) {
         res.send({
-            status: true,
+            success: true,
             msg: "Data not exists for this query!!"
         })
     }
     res.send({
-        status: true,
+        success: true,
         msg: "The note has been updated!!",
         data: updatedNote
     })
@@ -487,19 +487,19 @@ exports.removeNote = async (req, res) => {
     let noteId = req.params.noteId;
     if (!noteId) {
         res.send({
-            status: true,
+            success: true,
             msg: "Note id not found in the params!!"
         })
     }
     let deletedNote = await followUpNotes.findByIdAndDelete(noteId);
     if (!deletedNote) {
         res.send({
-            status: true,
+            success: true,
             msg: "Data not exists for this query!!"
         })
     }
     res.send({
-        status: true,
+        success: true,
         msg: "The note has been removed!!",
         data: {}
     })

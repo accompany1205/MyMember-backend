@@ -17,6 +17,9 @@ const registerdForTest = new mongoose.Schema({
     lastName: {
         type: String
     },
+    email: {
+        type: String
+    },
     rating: {
         type: String
     },
@@ -52,7 +55,7 @@ const registerdForTest = new mongoose.Schema({
         default: 'unpaid',
         enum: ["Cash", "Check", "Credit Card", 'unpaid']
     },
-    phone: {
+    primaryPhone: {
         type: String
     },
     cheque_no: {
@@ -66,6 +69,13 @@ const registerdForTest = new mongoose.Schema({
         default: new Date()
     },
     program: {
+        type: String
+    },
+    time: {
+        type: Date,
+        default: Date.now()
+    },
+    textContent: {
         type: String
     }
 
