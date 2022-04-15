@@ -856,7 +856,7 @@ async function emailCronFucntionality() {
           }))
 
             .then(async (resp) => {
-              Promise.all([await all_temp.findOneAndUpdate({ _id: ele._id }, { $set: { is_Sent: true } })]);
+              return Promise.all([await all_temp.findOneAndUpdate({ _id: ele._id }, { $set: { is_Sent: true } })]);
             })
             .catch((err) => {
               throw new Error(err);
@@ -871,7 +871,7 @@ async function emailCronFucntionality() {
           })
           emailData.sendMail()
             .then(async (resp) => {
-              Promise.all([await all_temp.findOneAndUpdate({ _id: ele._id }, { $set: { is_Sent: true } })]);
+              return Promise.all([await all_temp.findOneAndUpdate({ _id: ele._id }, { $set: { is_Sent: true } })]);
             })
             .catch((err) => {
               throw new Error(err);
@@ -892,7 +892,7 @@ async function emailCronFucntionality() {
         })
         emailData.sendMail()
           .then((resp) => {
-            Promise.all([all_temp.findOneAndUpdate({ _id: ele._id }, { $set: { is_Sent: true } })]);
+            return Promise.all([all_temp.findOneAndUpdate({ _id: ele._id }, { $set: { is_Sent: true } })]);
           })
           .catch((err) => {
             throw new Error(err);
