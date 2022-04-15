@@ -3,7 +3,8 @@ const mongoose = require("mongoose");
 const registerdForTest = new mongoose.Schema({
 
     studentId: {
-        type: String
+        type: String,
+        ref: "member"
     },
     userId: {
         type: String

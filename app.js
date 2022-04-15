@@ -153,7 +153,8 @@ const user_smartlistFolder = require('./routes/admin/smartlist_management/admin_
 const user_leads_tracking = require('./routes/admin/leads_tracking_manage/admin_leads_tracking');
 const user_after_camp = require('./routes/admin/after_camp_manage/admin_after_camp');
 const user_expense_category = require('./routes/admin/finance_manage/admin_expenses_category');
-
+const user_tutorial = require('./routes/admin/tut_manage/admin_tutorials');
+const user_tutFolder = require('./routes/admin/tut_manage/admin_tutFolder');
 //menu routes
 const student_menu = require('./routes/menu/std_menu/all_student_menu');
 
@@ -208,7 +209,7 @@ app.use(expressValidator());
 var corsOptions = {
 	Origin: "['http://localhost:3000, 'https://mymember.com']",
 	optionsSuccessStatus: 200 // For legacy browser support
-  }
+}
 app.use(cors(corsOptions));
 
 app.use('/api', TTL);
@@ -342,6 +343,9 @@ app.use('/api', user_leads_tracking);
 app.use('/api', user_after_camp);
 app.use('/api', statictics);
 app.use('/api', user_expense_category)
+app.use('/api', user_tutorial)
+app.use('/api', user_tutFolder)
+
 
 // school auth key middleware
 app.use('/api', emailKey);

@@ -6,7 +6,7 @@ const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 router.get('/tutorial/tutorial_list/:userId', verifySchool, read)
 router.get('/tutorial/info_tutorial/:userId/:tutorialId', requireSignin, tutorialInfo)
 router.post('/tutorial/add_tutorial/:userId/:folderId', verifySchool, create)
-router.put('/tutorial/update_tutorial/:userId/:tutorialId', requireSignin, tutorialUpdate)
-router.delete('/tutorial/delete_tutorial/:userId/:tutorialId', requireSignin, remove)
+router.put('/tutorial/update_tutorial/:userId/:tutorialId', verifySchool, tutorialUpdate)
+router.delete('/tutorial/delete_tutorial/:userId/:tutorialId', verifySchool, remove)
 
 module.exports = router;

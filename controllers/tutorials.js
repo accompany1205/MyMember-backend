@@ -1,8 +1,5 @@
 const tutorialModal = require('../models/tutorials');
 const tutorialFolder = require('../models/tutFolder');
-const cloudUrl = require('../gcloud/imageUrl');
-const Student = require('../models/addmember');
-
 
 exports.create = async (req, res) => {
     try {

@@ -4,7 +4,9 @@ const recommendedForTest = new mongoose.Schema({
 
     studentId: {
         type: String,
-        required: true
+        required: true,
+        ref: "member"
+
     },
     userId: {
         type: String
