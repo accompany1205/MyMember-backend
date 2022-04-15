@@ -13,7 +13,57 @@ const mergeMultipleFiles = require("../Services/mergeMultipleFiles");
 
 
 
+exports.payforPromotedstudens = async (req, res) => {
+    let promtedId = req.params.promtedId;
+    promotedBody = req.body
+    let registerd = {
+        "testId": promotedBody.testId,
+        "method": promotedBody.method,
+        "cheque_no": promotedBody.cheque_no,
+        "isPaid": promotedBody.isPaid
+    };
+    RegisterdForTest.findOneAndUpdate({ _id: promtedId }, { $set: registerd },
+        (err, data) => {
+            if (err) {
+                return res.send({
+                    success: false,
+                    msg: "Having some issue while register!"
+                })
+            }
+            else {
+                let history = {
+                    "current_rank_name": promotedBody.current_rank_name,
+                    "program": promotedBody.program,
+                    "current_rank_img": promotedBody.current_rank_img,
+                    "testPaid": new Date(),
+                    "promoted": new Date()
+                }
+                Member.findOneAndUpdate({ _id: promotedBody.studentId },
+                    {
+                        $push: {
+                            test_purchasing: promotedBody.testId,
+                            rank_update_test_history: history
+                        }
+                    }, (err, data) => {
+                        if (err) {
+                            return res.send({
+                                success: false,
+                                msg: "Having some issue while register!!"
+                            })
+                        }
+                        else {
 
+                            return res.send({
+                                success: true,
+                                msg: "payment done Successfully!",
+                            })
+                        }
+                    })
+
+            }
+
+        })
+}
 exports.promoteStudentRank = async (req, res) => {
     try {
         const studentData = req.body;

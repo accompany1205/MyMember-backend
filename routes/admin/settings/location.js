@@ -5,7 +5,7 @@ const { addLocation, access_school, listLocation, updateLocation, removeLocation
 
 router.get("/list_location/:adminId", isAdmin, listLocation)
 router.post("/add_location/:adminId/:userId", isAdmin, addLocation)
-router.post('/access_school/:adminId/:userId', isAdmin, access_school);
+router.put('/access_school/:adminId/:userId', isAdmin, access_school);
 router.put("/update_location/:adminId/:locationId", isAdmin, updateLocation)
 router.delete("/remove_location/:adminId/:locationId", isAdmin, removeLocation)
 

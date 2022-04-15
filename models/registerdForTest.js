@@ -3,13 +3,14 @@ const mongoose = require("mongoose");
 const registerdForTest = new mongoose.Schema({
 
     studentId: {
-        type: String
+        type: String,
+        ref: "member"
     },
     userId: {
-        type:String
+        type: String
     },
     testId: {
-        type:String
+        type: String
     },
     firstName: {
         type: String
@@ -17,52 +18,66 @@ const registerdForTest = new mongoose.Schema({
     lastName: {
         type: String
     },
+    email: {
+        type: String
+    },
     rating: {
         type: String
     },
-    current_rank_name:{
+    current_rank_name: {
         type: String
     },
-    next_rank_name:{
-        type:String
+    next_rank_name: {
+        type: String
     },
-    current_rank_img:{
-        type:String
+    current_rank_img: {
+        type: String
     },
-    next_rank_img:{
-        type:String
+    next_rank_img: {
+        type: String
     },
     date: {
         type: Date,
         default: new Date()
     },
-    testId:{
-        type:String
+    testId: {
+        type: String
     },
-    isDeleted:{
+    isDeleted: {
         type: Boolean,
-        default:false
+        default: false
     },
-    method:{
-        type:String,
-        default: "Cash",
-        enum: ["Cash", "Check", "Credit Card"]
+    isPaid: {
+        type: Boolean,
+        default: false
     },
-    phone:{
-        type:String
+    method: {
+        type: String,
+        default: 'unpaid',
+        enum: ["Cash", "Check", "Credit Card", 'unpaid']
+    },
+    primaryPhone: {
+        type: String
     },
     cheque_no: {
         type: String
     },
-    memberprofileImage:{
-        type:String
+    memberprofileImage: {
+        type: String
     },
-    lastPromotedDate:{
-        type:Date,
+    lastPromotedDate: {
+        type: Date,
         default: new Date()
     },
-    program:{
-        type:String
+    program: {
+        type: String
+    },
+    time: {
+        type: Date,
+        default: Date.now()
+    },
+    textContent: {
+        type: String
     }
 
 });

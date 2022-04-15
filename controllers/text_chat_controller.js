@@ -4,7 +4,12 @@ const textContact = require("../models/text_contact");
 const member = require("../models/addmember");
 const user = require("../models/user");
 const mongoose = require("mongoose");
-
+//const Socket = require("../Services/scoket.io")
+//var soc = Socket();
+const socketIo = io("http://localhost:3001", { transports: ['websocket'] })
+socketIo.on("connect_error", (err) => {
+  console.log(`connect_error due to - ${err.message}`);
+});
 // Adding member in text contact list
 exports.addTextContact = (req, res) => {
   let contact = new textContact(req.body);
@@ -117,7 +122,7 @@ exports.pinContact = (req, res) => {
 };
 
 // Get message list for user
-exports.getTextMessages = (req, res) => {
+exports.getTextMessages = async (req, res) => {
   //const io = req.app.get('socketio');
   uidObj = {};
   let date = new Date();
@@ -126,11 +131,18 @@ exports.getTextMessages = (req, res) => {
   uidObj.time = date;
   uidObj.textContent = textContent;
   uidObj.uid = uid;
-  const socketIo = io("https://mymember.com", { transports: ['websocket'] })
-  socketIo.on("connect_error", (err) => {
-    console.log(`connect_error due to - ${err.message}`);
-  });
-  socketIo.emit("textAlertWebhook", uidObj);
+  //console.log(socketIo)
+  //socketIo.emit("textAlertWebhook", uidObj);
+
+  const getUid = (phoneNumber, userId) => {
+    return member.findOne({$and:[ {userId:userId},{primaryPhone: phoneNumber }]}).then(data => {
+      return data._id;
+    }).catch(err => {
+      return '';
+    });
+  };
+  let val = await getUid("9891943414", "606aea95a145ea2d26e0f1ab");
+  console.log("UID --> ",val)
   // socketIo.on("connect_error", (err) => {
   //   console.log(`connect_error due to - ${err.message}`);
   // });
@@ -174,18 +186,9 @@ exports.getTextContactsDetails = (req, res) => {
 exports.listenIncomingSMS = async (req, res) => {
   const msg = req.body.Body;
   const from = req.body.From;
-  // Pass twilio number as parameter in webhooks
-
-  // Uncomment this code in production when web hooks is placed for production twilio number
   let to = req.params.twilio;
-  const getUid = phoneNumber => {
-    let phonen = phoneNumber.slice(2)
-    return member.findOne({ primaryPhone: phonen }).then(data => {
-      return data._id;
-    }).catch(err => {
-      return '';
-    });
-  };
+
+  // Pass twilio number as parameter in webhooks
 
   const getUserId = phoneNumber => {
     // Find userid of user with twilio number
@@ -197,27 +200,34 @@ exports.listenIncomingSMS = async (req, res) => {
       return '';
     });
   };
+  // Uncomment this code in production when web hooks is placed for production twilio number
+  let userId = await getUserId(to)
 
+  const getUid = (phoneNumber, userId) => {
+    let phonen = phoneNumber.slice(2)
+    return member.findOne({$and:[ {userId:userId},{primaryPhone: phonen }]}).then(data => {
+      return data._id;
+    }).catch(err => {
+      return '';
+    });
+  };
 
 
   const obj = {
     userId: await getUserId(to),
-    uid: await getUid(from),
+    uid: await getUid(from, userId),
     textContent: msg,
     isSent: false,
   };
   uidObj = {};
-  let stuid = await getUid(from);
+  let stuid = await getUid(from, userId);
   uidObj.uid = stuid
   uidObj.time = new Date();
   uidObj.textContent = msg;
   if (obj.userId !== '' && obj.uid !== '') {
     let text = new textMessage(Object.assign({}, obj, { time: new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }) }));
     text.save().then(async (textMessage) => {
-      const socketIo = io("https://mymember.com", { transports: ['websocket'] })
-      socketIo.on("connect_error", (err) => {
-        console.log(`connect_error due to - ${err}`);
-      });
+      console.log(socketIo)
       socketIo.emit("textAlertWebhook", uidObj);
       await member.findOneAndUpdate({ _id: stuid }, { $set: { time: new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }), textContent: msg } })
       res.send({ msg: 'text sms sent successfully' })

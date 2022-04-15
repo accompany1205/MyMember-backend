@@ -52,12 +52,12 @@ exports.getRecommededForTest = async (req, res) => {
     let students = await RecommendedForTest.find({
         "userId": userId,
         "isDeleted": false
-    })
+    }).populate('studentId')
     // .skip(pagination.skip)
     // .limit(pagination.limit)
     // .sort({ [sortBy]: order });
     if (!students.length) {
-        res.json({
+        return res.json({
             success: false,
             msg: "There was no data found!"
         })
@@ -67,7 +67,6 @@ exports.getRecommededForTest = async (req, res) => {
         data: students,
     })
 }
-
 exports.getRegisteredForTest = async (req, res) => {
     let userId = req.params.userId;
     // let sortBy = req.query.sortBy || "fistName"
@@ -84,15 +83,51 @@ exports.getRegisteredForTest = async (req, res) => {
     // var pagination = { limit: per_page, skip: per_page * page_no, };
     if (!userId) { res.json({ success: false, msg: "Please include the userId in the parameters!" }) }
 
-    let students = await RegisterdForTest.find({ "userId": userId, "isDeleted": false })
+    let students = await RegisterdForTest.find(
+        {
+            "userId": userId,
+            "isDeleted": false
+        }).populate('studentId')
     // .skip(pagination.skip)
     // .limit(pagination.limit)
     // .sort({ [sortBy]: order });
-    if (!students.length) { res.json({ success: false, msg: "There was no data found!", data: students }) }
+    if (!students.length) {
+        return res.json({
+            success: false, msg: "There was no data found!",
+            data: students
+        })
+    }
     res.json({ success: true, data: students })
 
 }
 
+exports.getPromoted = async (req, res) => {
+    let userId = req.params.userId;
+
+    if (!userId) {
+        res.json({
+            success: false,
+            msg: "Please include the userId in the parameters!"
+        })
+    }
+
+    let students = await RegisterdForTest.find({
+        "userId": userId,
+        "isDeleted": true
+    }).populate('studentId')
+
+    if (!students.length) {
+        return res.json({
+            success: false,
+            msg: "data not found"
+        })
+    }
+    res.json({
+        success: true,
+        data: students,
+    })
+
+}
 
 exports.recomendStudent = async (req, res) => {
 
@@ -103,7 +138,10 @@ exports.recomendStudent = async (req, res) => {
         firstName: Joi.string().required(),
         lastName: Joi.string().required(),
         memberprofileImage: Joi.string(),
-        phone: Joi.string(),
+        primaryPhone: Joi.string(),
+        // email: Joi.string(),
+        // time: Joi.string(),
+        // textContent: Joi.string(),
         program: Joi.string().required(),
         status: Joi.string().required(),
         rating: Joi.number().required(),
@@ -140,7 +178,7 @@ exports.recomendStudent = async (req, res) => {
         await Promise.all(promises);
         await RecommendedForTest.insertMany(recommendedStudentsForTest);
         if (alredyRecomend) {
-            res.send({
+            return res.send({
                 recommendedStudentsForTest,
                 success: false,
                 msg: `${alredyRecomend} These students are already on the recommended list!`
@@ -161,6 +199,70 @@ const updateStudentsById = async (studentId) => {
 }
 
 
+exports.registerdStudent = async (req, res) => {
+    let students = req.body;
+    let userId = req.params.userId;
+    let registeredFortestSchema = Joi.object({
+        studentId: Joi.string().required(),
+        firstName: Joi.string().required(),
+        lastName: Joi.string().required(),
+        memberprofileImage: Joi.string(),
+        primaryPhone: Joi.string(),
+        // email: Joi.string(),
+        // time: Joi.string(),
+        // textContent: Joi.string(),
+        program: Joi.string().required(),
+        rating: Joi.number().required(),
+        current_rank_name: Joi.string(),
+        userId: Joi.string().required(),
+        next_rank_name: Joi.string(),
+        current_rank_img: Joi.string(),
+        next_rank_img: Joi.string(),
+        isPaid: Joi.boolean().required()
+    })
+
+    try {
+        if (!students.length) {
+            res.json({
+                success: false,
+                msg: "You haven't selected any student!"
+            })
+        }
+        const regesteredStudentsForTest = [];
+        var alredyRegisterd = "";
+        const promises = [];
+        for (let student of students) {
+            if (!student.isPaid && student.program) {
+                student.userId = userId;
+                await registeredFortestSchema.validateAsync(student);
+                regesteredStudentsForTest.push(student)
+                let studentId = student.studentId
+                promises.push(updateRecommendedStudentsByIdForRegister(studentId))
+            } else {
+                alredyRegisterd += `${student.firstName} ${student.lastName}, `
+            }
+        }
+        await Promise.all(promises);
+        await RegisterdForTest.insertMany(regesteredStudentsForTest);
+        if (alredyRegisterd) {
+            res.send({
+                success: false,
+                msg: `${alredyRegisterd} These students are already on the recommended list!`
+            })
+        }
+        res.send({
+            success: true,
+            msg: "Selected students got registered successfully!"
+        })
+
+    } catch (error) {
+        res.send({ msg: error.message.replace(/\"/g, ""), success: false })
+    }
+
+}
+const updateRecommendedStudentsByIdForRegister = async (studentId) => {
+    return RecommendedForTest.updateOne({ studentId: studentId }, { "isDeleted": true })
+}
 exports.payAndPromoteTheStudent = async (req, res) => {
     let userId = req.params.userId;
     // let { cardDetails, paidAmount, studentId, financeId } = req.body;
@@ -201,12 +303,16 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         current_rank_img,
         next_rank_img,
         method,
-        phone,
+        primaryPhone,
+        email,
+        time,
+        textContent,
         firstName,
         lastName,
         memberprofileImage,
         program,
-        cheque_no
+        cheque_no,
+        isPaid
     } = req.body;
 
     let registerd = new RegisterdForTest({
@@ -222,9 +328,13 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         "method": method,
         "memberprofileImage": memberprofileImage,
         "next_rank_img": next_rank_img,
-        "phone": phone,
+        "primaryPhone": primaryPhone,
+        // "email": email,
+        // "textContent": textContent,
+        // "time": time,
         "program": program,
-        "cheque_no": cheque_no
+        "cheque_no": cheque_no,
+        isPaid: isPaid
     });
     registerd.save((err, data) => {
         if (err) {
@@ -233,7 +343,6 @@ exports.payAndPromoteTheStudent = async (req, res) => {
                 msg: "Having some issue while register!"
             })
         } else {
-            console.log('1')
             let history = {
                 "current_rank_name": current_rank_name,
                 "program": program,
@@ -256,7 +365,6 @@ exports.payAndPromoteTheStudent = async (req, res) => {
                         })
 
                     } else {
-                        console.log('2')
 
                         RecommendedForTest.updateMany({
                             "studentId": studentId
@@ -407,14 +515,16 @@ exports.deleteAll = async (req, res) => {
     let promise = [];
     for (let id in recommendIds) {
         let { studentId } = RecommendedForTest.findById(recommendIds[id]);
-        await Member.updateOne({ _id: studentId }, { $set: { isRecommended: false } }).then(async data => {
-            await RecommendedForTest.deleteOne({ _id: recommendIds[id] }, function (err, datas) {
-                if (err) { res.send({ msg: "The recommended student was not removed!", success: false }) }
-                promise.push(datas)
+        await Member.updateOne({ _id: studentId }, { $set: { isRecommended: false } })
+            .then(async data => {
+                await RecommendedForTest.deleteOne({ _id: recommendIds[id] },
+                    function (err, datas) {
+                        if (err) { res.send({ msg: "The recommended student was not removed!", success: false }) }
+                        promise.push(datas)
+                    })
+            }).catch(err => {
+                res.send({ msg: err.message.replace(/\"/g, ""), success: false })
             })
-        }).catch(err => {
-            res.send({ msg: err.message.replace(/\"/g, ""), success: false })
-        })
     }
     Promise.all(promise);
     res.send({ msg: "Selected Students Have Been Successfully Deleted!", success: true })
@@ -431,6 +541,8 @@ exports.removeFromRecomended = async (req, res) => {
     }
     recon = await RecommendedForTest.findById(recommededId);
     let studentId = recon.studentId;
+
+
     let deleteRecommended = await Member.findOneAndUpdate(studentId, { isRecommended: false })
     if (!deleteRecommended) {
         res.json({
@@ -439,6 +551,58 @@ exports.removeFromRecomended = async (req, res) => {
         })
     }
     let isDeleted = await RecommendedForTest.findByIdAndDelete(recommededId);
+    if (!isDeleted) {
+        res.json({
+            success: false,
+            msg: "The student cannot be removed!"
+        })
+    } else {
+        res.json({
+            success: true,
+            msg: "The recommended student was successfully removed from the list!"
+        })
+
+    }
+}
+exports.deleteAll_for_register = async (req, res) => {
+    let regesterIds = req.body.registeredIds;
+    let promise = [];
+    for (let id in regesterIds) {
+        let { studentId } = RegisterdForTest.findById(regesterIds[id]);
+        await Member.updateOne({ _id: studentId }, { $set: { isRecommended: false } })
+            .then(async data => {
+                await RegisterdForTest.deleteOne({ _id: regesterIds[id] },
+                    function (err, datas) {
+                        if (err) { res.send({ msg: "The recommended student was not removed!", success: false }) }
+                        promise.push(datas)
+                    })
+            }).catch(err => {
+                res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+            })
+    }
+    Promise.all(promise);
+    res.send({ msg: "Selected Students Have Been Successfully Deleted!", success: true })
+}
+exports.removeFromRegister = async (req, res) => {
+    let regesterId = req.params.regesterId;
+    if (!regesterId) {
+        res.json({
+            success: false,
+            msg: "Please give the recomended id in params!"
+        })
+    }
+    recon = await RegisterdForTest.findById(regesterId);
+    let studentId = recon.studentId;
+
+
+    let deleteRecommended = await Member.findOneAndUpdate(studentId, { isRecommended: false })
+    if (!deleteRecommended) {
+        res.json({
+            success: false,
+            msg: "The student cannot be removed!"
+        })
+    }
+    let isDeleted = await RegisterdForTest.findByIdAndDelete(regesterId);
     if (!isDeleted) {
         res.json({
             success: false,

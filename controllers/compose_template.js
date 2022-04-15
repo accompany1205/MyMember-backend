@@ -443,7 +443,7 @@ exports.sendEmail = async (req, res) => {
     emailBody.attachments = Allattachments;
     emailBody.category = "compose";
     emailBody.to = emailBody.to ? JSON.parse(emailBody.to) : undefined
-    if (!emailBody.to) {
+    if (!emailBody.to && JSON.parse(emailBody.immediately)) {
       emailBody.smartLists = emailBody.smartLists ? JSON.parse(emailBody.smartLists) : []
       smartLists = emailBody.smartLists.map(s => ObjectId(s));
       let smartlists = await smartlist.aggregate([
@@ -454,10 +454,16 @@ exports.sendEmail = async (req, res) => {
       smartlists.forEach((element, index) => {
         promises.push(filterSmartlist(element.criteria, userId))
       })
-      let data = await Promise.all(promises)
-      rest = data.reduce(function (a, b) {
-        return b.map(function (e, i) { return a[i] instanceof Object ? a[i] : e; });
-      }, []);
+      var data = await Promise.all(promises)
+      console.log(data)
+      data = [].concat.apply([], data);
+      let mapObj = await students.find({
+        _id: { $in: data },
+        userId: userId,
+        email: { $nin: [undefined, ''] }
+      }, { email: 1, _id: 0 })
+
+      let rest = [...new Set(mapObj.map(element => element.email))];
       if (!rest.length) {
         return res.send({
           msg: `No Smartlist exist!`,
@@ -468,20 +474,11 @@ exports.sendEmail = async (req, res) => {
     }
     if (JSON.parse(emailBody.immediately)) {
       if (JSON.parse(emailBody.isPlaceHolders)) {
-
         let mapObj = await students.find({
-          email: { $in: rest },
+          _id: { $in: data },
+          email: { $nin: [undefined, ''] },
           userId: userId
         })
-
-        mapObj = mapObj ? mapObj : []
-        if (!mapObj.length) {
-          return res.send({
-            msg: `No Smartlist exist!`,
-            success: false,
-          });
-        }
-
         Promise.all(mapObj.map(Element => {
           let temp = emailBody.template;
 
@@ -537,13 +534,13 @@ exports.sendEmail = async (req, res) => {
             let emailDetail = new all_temp(emailBody)
             emailDetail.save((err, emailSave) => {
               if (err) {
-                res.send({ msg: err, success: false })
+                return res.send({ msg: err, success: false })
               }
               else {
                 all_temp.findByIdAndUpdate(emailSave._id, { is_Sent: true, email_type: "sent" })
                   .exec((err, emailUpdate) => {
                     if (err) {
-                      res.send({ msg: err, success: false })
+                      return res.send({ msg: err, success: false })
                     }
                     return res.send({ msg: "Email Sent Successfully", success: true })
 
@@ -552,11 +549,14 @@ exports.sendEmail = async (req, res) => {
             })
           })
           .catch(Err => {
-            res.sen({ msg: Err, success: false })
+            res.send({ msg: Err, success: false })
           })
       }
     } else {
       if (!JSON.parse(emailBody.immediately)) {
+        if (!emailBody.to.length) {
+          emailBody.smartLists = emailBody.smartLists ? JSON.parse(emailBody.smartLists) : []
+        }
         let sent_date = moment(emailBody.sent_date).format("YYYY-MM-DD");
         emailBody.is_Sent = false;
         emailBody.email_type = "scheduled";
@@ -588,8 +588,7 @@ exports.sendEmail = async (req, res) => {
 }
 
 function replace(strig, old_word, new_word) {
-  return strig.replace('{' + old_word + '}', new_word)
-
+  return strig.replace(new RegExp(`{${old_word}}`, 'g'), new_word)
 }
 exports.admin_add_template = async (req, res) => {
   try {
@@ -714,10 +713,15 @@ exports.add_template = async (req, res) => {
         promises.push(filterSmartlist(element.criteria, userId))
       })
       let data = await Promise.all(promises)
-      rest = data.reduce(function (a, b) {
-        return b.map(function (e, i) { return a[i] instanceof Object ? a[i] : e; });
-      }, []);
+      data = [].concat.apply([], data);
+      let mapObj = await students.find({
+        _id: { $in: data },
+        userId: userId,
+        email: { $nin: [undefined, ''] }
+      }, { email: 1, _id: 0 })
 
+
+      let rest = [...new Set(mapObj.map(element => element.email))];
       if (!rest.length) {
         return res.send({
           msg: `No Smartlist exist!`,
@@ -802,7 +806,7 @@ function saveEmailTemplate(obj) {
 
 async function emailCronFucntionality() {
   let promises = [];
-  let scheduledListing = await all_temp.find({ is_Sent: false, email_type: "scheduled" });
+  let scheduledListing = await all_temp.find({ is_Sent: false, email_type: "scheduled", adminId: { $exists: false } });
   scheduledListing.forEach(async (ele, i) => {
     let sentDate = moment(ele.sent_date).format("YYYY-MM-DD");
     let currentDate = moment().format("YYYY-MM-DD");
@@ -817,21 +821,25 @@ async function emailCronFucntionality() {
         smartlists.forEach((element, index) => {
           promises.push(filterSmartlist(element.criteria, ele.userId))
         })
-        let data = await Promise.all(promises)
-        rest = data.reduce(function (a, b) {
-          return b.map(function (e, i) { return a[i] instanceof Object ? a[i] : e; });
-        }, []);
-        rest = removeEmptyString(rest)
+        var data = await Promise.all(promises)
+        data = [].concat.apply([], data);
+        let mapObj = await students.find({
+          _id: { $in: data },
+          userId: ele.userId,
+          email: { $nin: [undefined, ''] }
+        }, { email: 1, _id: 0 })
+
+
+        let rest = [...new Set(mapObj.map(element => element.email))];
         if (ele.isPlaceHolders) {
           let mapObj = await students.find({
-            email: { $in: rest },
+            _id: { $in: data },
             userId: ele.userId
           })
 
 
           Promise.all(mapObj.map(Element => {
             let temp = ele.template;
-
             for (i in Element) {
               if (temp.includes(i)) {
                 temp = replace(temp, i, Element[i])
@@ -848,7 +856,7 @@ async function emailCronFucntionality() {
           }))
 
             .then(async (resp) => {
-              const update = await all_temp.findOneAndUpdate({ _id: ele._id }, { $set: { is_Sent: true } });
+              return Promise.all([await all_temp.findOneAndUpdate({ _id: ele._id }, { $set: { is_Sent: true } })]);
             })
             .catch((err) => {
               throw new Error(err);
@@ -863,7 +871,7 @@ async function emailCronFucntionality() {
           })
           emailData.sendMail()
             .then(async (resp) => {
-              const update = await all_temp.findOneAndUpdate({ _id: ele._id }, { $set: { is_Sent: true } });
+              return Promise.all([await all_temp.findOneAndUpdate({ _id: ele._id }, { $set: { is_Sent: true } })]);
             })
             .catch((err) => {
               throw new Error(err);
@@ -871,26 +879,28 @@ async function emailCronFucntionality() {
 
         }
 
-      }
-      const emailData = new Mailer({
-        // sendgrid_key: process.env.SENDGRID_API_KEY,
-        to: ele.to,
-        from: ele.from,
-        //from_name: "noreply@gmail.com",
-        subject: ele.subject,
-        html: ele.template,
-        attachments: ele.attachments
-      })
-      emailData.sendMail()
-        .then(async (resp) => {
-          const update = await all_temp.findOneAndUpdate({ _id: ele._id }, { $set: { is_Sent: true } });
+      } else {
+
+        const emailData = new Mailer({
+          // sendgrid_key: process.env.SENDGRID_API_KEY,
+          to: ele.to,
+          from: ele.from,
+          //from_name: "noreply@gmail.com",
+          subject: ele.subject,
+          html: ele.template,
+          attachments: ele.attachments
         })
-        .catch((err) => {
-          throw new Error(err);
-        });
+        emailData.sendMail()
+          .then((resp) => {
+            return Promise.all([all_temp.findOneAndUpdate({ _id: ele._id }, { $set: { is_Sent: true } })]);
+          })
+          .catch((err) => {
+            throw new Error(err);
+          });
+      }
     }
   });
-  await Promise.all(promises);
+  // await Promise.all(promises);
 };
 
 cron.schedule(`*/5 * * * *`, () => {
@@ -1129,7 +1139,7 @@ var emailCronFucntionalityfor30DaysBirthday = async () => {
   await Promise.all(promises);
 };
 
-cron.schedule("0 0 * * *", () => emailCronFucntionalityfor30DaysBirthday())
+// cron.schedule("0 0 * * *", () => emailCronFucntionalityfor30DaysBirthday())
 
 function removeEmptyString(arr) {
   return arr.filter(v => v != '')
