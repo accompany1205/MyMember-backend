@@ -118,6 +118,8 @@ const upload_doc = require('./routes/doc_upload');
 const finance_list = require('./routes/finance_list');
 const student_email = require('./routes/std_temp_list');
 const student_text = require('./routes/std_text_list');
+const tutorial = require('./routes/tutorials');
+const tutFolder = require('./routes/tutFolder');
 
 //docuSign
 const signStates = require('./routes/signStates');
@@ -305,6 +307,9 @@ app.use('/api', textChatRoutes);
 app.use('/api', finance_list);
 app.use('/api', student_email);
 app.use('/api', student_text);
+app.use('/api', tutorial);
+app.use('/api', tutFolder);
+
 //admin middleware
 app.use('/api', manage_user);
 app.use('/api', admin_email_system_cat);
