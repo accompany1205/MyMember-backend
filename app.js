@@ -151,6 +151,7 @@ const user_smartlistFolder = require('./routes/admin/smartlist_management/admin_
 const user_leads_tracking = require('./routes/admin/leads_tracking_manage/admin_leads_tracking');
 const user_after_camp = require('./routes/admin/after_camp_manage/admin_after_camp');
 const user_expense_category = require('./routes/admin/finance_manage/admin_expenses_category');
+const permission_of_sub_users = require('./routes/permissionsOfSubUsers');
 
 //menu routes
 const student_menu = require('./routes/menu/std_menu/all_student_menu');
@@ -337,6 +338,9 @@ app.use('/api', user_leads_tracking);
 app.use('/api', user_after_camp);
 app.use('/api', statictics);
 app.use('/api', user_expense_category)
+
+// permission sub users
+app.use('/api', permission_of_sub_users)
 
 // school auth key middleware
 app.use('/api', emailKey);
