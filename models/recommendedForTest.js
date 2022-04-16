@@ -4,9 +4,11 @@ const recommendedForTest = new mongoose.Schema({
 
     studentId: {
         type: String,
-        required:true
-        },
-    userId:{
+        required: true,
+        ref: "member"
+
+    },
+    userId: {
         type: String
     },
     firstName: {
@@ -15,41 +17,51 @@ const recommendedForTest = new mongoose.Schema({
     lastName: {
         type: String
     },
-    memberprofileImage:{
-        type:String
+    email: {
+        type: String
     },
-    phone:{
-        type:String
+    memberprofileImage: {
+        type: String
     },
-    program:{
-        type:String
+    primaryPhone: {
+        type: String
     },
-    lastPromotedDate:{
-        type:Date,
+    program: {
+        type: String
+    },
+    lastPromotedDate: {
+        type: Date,
         default: new Date(),
     },
-    status:{
-        type:String
+    status: {
+        type: String
     },
     rating: {
         type: String
     },
-    current_rank_name:{
+    current_rank_name: {
         type: String
     },
-    next_rank_name:{
-        type:String
+    next_rank_name: {
+        type: String
     },
-    next_rank_img:{
-        type:String
+    next_rank_img: {
+        type: String
     },
-    isDeleted:{
+    isDeleted: {
         type: Boolean,
         default: false
     },
-    current_rank_img:{
-        type:String
-        }
+    current_rank_img: {
+        type: String
+    },
+    time: {
+        type: Date,
+        default: Date.now()
+    },
+    textContent: {
+        type: String
+    }
 
 });
 

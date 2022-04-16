@@ -52,7 +52,7 @@ exports.getRecommededForTest = async (req, res) => {
     let students = await RecommendedForTest.find({
         "userId": userId,
         "isDeleted": false
-    })
+    }).populate('studentId')
     // .skip(pagination.skip)
     // .limit(pagination.limit)
     // .sort({ [sortBy]: order });
@@ -83,7 +83,11 @@ exports.getRegisteredForTest = async (req, res) => {
     // var pagination = { limit: per_page, skip: per_page * page_no, };
     if (!userId) { res.json({ success: false, msg: "Please include the userId in the parameters!" }) }
 
-    let students = await RegisterdForTest.find({ "userId": userId, "isDeleted": false })
+    let students = await RegisterdForTest.find(
+        {
+            "userId": userId,
+            "isDeleted": false
+        }).populate('studentId')
     // .skip(pagination.skip)
     // .limit(pagination.limit)
     // .sort({ [sortBy]: order });
@@ -110,7 +114,7 @@ exports.getPromoted = async (req, res) => {
     let students = await RegisterdForTest.find({
         "userId": userId,
         "isDeleted": true
-    })
+    }).populate('studentId')
 
     if (!students.length) {
         return res.json({
@@ -134,7 +138,10 @@ exports.recomendStudent = async (req, res) => {
         firstName: Joi.string().required(),
         lastName: Joi.string().required(),
         memberprofileImage: Joi.string(),
-        phone: Joi.string(),
+        primaryPhone: Joi.string(),
+        // email: Joi.string(),
+        // time: Joi.string(),
+        // textContent: Joi.string(),
         program: Joi.string().required(),
         status: Joi.string().required(),
         rating: Joi.number().required(),
@@ -200,7 +207,10 @@ exports.registerdStudent = async (req, res) => {
         firstName: Joi.string().required(),
         lastName: Joi.string().required(),
         memberprofileImage: Joi.string(),
-        phone: Joi.string(),
+        primaryPhone: Joi.string(),
+        // email: Joi.string(),
+        // time: Joi.string(),
+        // textContent: Joi.string(),
         program: Joi.string().required(),
         rating: Joi.number().required(),
         current_rank_name: Joi.string(),
@@ -293,7 +303,10 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         current_rank_img,
         next_rank_img,
         method,
-        phone,
+        primaryPhone,
+        email,
+        time,
+        textContent,
         firstName,
         lastName,
         memberprofileImage,
@@ -315,7 +328,10 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         "method": method,
         "memberprofileImage": memberprofileImage,
         "next_rank_img": next_rank_img,
-        "phone": phone,
+        "primaryPhone": primaryPhone,
+        // "email": email,
+        // "textContent": textContent,
+        // "time": time,
         "program": program,
         "cheque_no": cheque_no,
         isPaid: isPaid

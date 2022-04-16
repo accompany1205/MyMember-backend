@@ -118,6 +118,8 @@ const upload_doc = require('./routes/doc_upload');
 const finance_list = require('./routes/finance_list');
 const student_email = require('./routes/std_temp_list');
 const student_text = require('./routes/std_text_list');
+const tutorial = require('./routes/tutorials');
+const tutFolder = require('./routes/tutFolder');
 
 //docuSign
 const signStates = require('./routes/signStates');
@@ -151,7 +153,8 @@ const user_smartlistFolder = require('./routes/admin/smartlist_management/admin_
 const user_leads_tracking = require('./routes/admin/leads_tracking_manage/admin_leads_tracking');
 const user_after_camp = require('./routes/admin/after_camp_manage/admin_after_camp');
 const user_expense_category = require('./routes/admin/finance_manage/admin_expenses_category');
-
+const user_tutorial = require('./routes/admin/tut_manage/admin_tutorials');
+const user_tutFolder = require('./routes/admin/tut_manage/admin_tutFolder');
 //menu routes
 const student_menu = require('./routes/menu/std_menu/all_student_menu');
 
@@ -206,7 +209,7 @@ app.use(expressValidator());
 var corsOptions = {
 	Origin: "['http://localhost:3000, 'https://mymember.com']",
 	optionsSuccessStatus: 200 // For legacy browser support
-  }
+}
 app.use(cors(corsOptions));
 
 app.use('/api', TTL);
@@ -305,6 +308,9 @@ app.use('/api', textChatRoutes);
 app.use('/api', finance_list);
 app.use('/api', student_email);
 app.use('/api', student_text);
+app.use('/api', tutorial);
+app.use('/api', tutFolder);
+
 //admin middleware
 app.use('/api', manage_user);
 app.use('/api', admin_email_system_cat);
@@ -337,6 +343,9 @@ app.use('/api', user_leads_tracking);
 app.use('/api', user_after_camp);
 app.use('/api', statictics);
 app.use('/api', user_expense_category)
+app.use('/api', user_tutorial)
+app.use('/api', user_tutFolder)
+
 
 // school auth key middleware
 app.use('/api', emailKey);

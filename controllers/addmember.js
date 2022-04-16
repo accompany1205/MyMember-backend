@@ -909,7 +909,6 @@ exports.studentinfo = (req, res) => {
 					success: false,
 				});
 			} else {
-				success: false;
 				res.send({
 					data: data,
 					success: true,

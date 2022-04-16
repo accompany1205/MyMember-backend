@@ -3,7 +3,8 @@ const mongoose = require("mongoose");
 const registerdForTest = new mongoose.Schema({
 
     studentId: {
-        type: String
+        type: String,
+        ref: "member"
     },
     userId: {
         type: String
@@ -15,6 +16,9 @@ const registerdForTest = new mongoose.Schema({
         type: String
     },
     lastName: {
+        type: String
+    },
+    email: {
         type: String
     },
     rating: {
@@ -52,7 +56,7 @@ const registerdForTest = new mongoose.Schema({
         default: 'unpaid',
         enum: ["Cash", "Check", "Credit Card", 'unpaid']
     },
-    phone: {
+    primaryPhone: {
         type: String
     },
     cheque_no: {
@@ -66,6 +70,13 @@ const registerdForTest = new mongoose.Schema({
         default: new Date()
     },
     program: {
+        type: String
+    },
+    time: {
+        type: Date,
+        default: Date.now()
+    },
+    textContent: {
         type: String
     }
 
