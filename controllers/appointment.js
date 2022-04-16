@@ -73,9 +73,52 @@ String.prototype.replaceAt = function (index, replacement) {
   return this.substring(0, index) + replacement + this.substring(index + replacement.length);
 }
 
+exports.getInvitees = async (req, res) => {
+  let userId = req.params.userId;
+  let eventId = req.params.eventId;
+
+  let invitees = await Invitee.find({
+    "userId": userId, "eventId": eventId, "isDeleted": false
+  });
+  if (!invitees.length) {
+    return res.json({
+      success: false,
+      msg: "There is no data found!"
+    })
+  }
+  res.json({
+    success: true,
+    data: invitees,
+  })
+}
+
+exports.registerInvitee = async (req, res) => {
+  let students = req.body;
+  let userId = req.params.userId;
+  let eventId = req.params.eventId;
+  try {
+    if (!students.length) {
+      return res.json({
+        success: false,
+        msg: "You haven't selected any student!"
+      })
+    }
+    let registerInvitee = [];
+    let alredyregistered = "";
+    const promises = [];
+    for(let student of students){
+      return "yo!"
+    }
+
+  } catch (err) {
+    console.log(err)
+  }
+}
+
+
 exports.addInvitee = async (req, res) => {
   let students = req.body;
-  let eventName = req.params.eventName;
+  let eventId = req.params.eventId;
   let userId = req.params.userId;
   try {
     if (!students.length) {
@@ -90,7 +133,7 @@ exports.addInvitee = async (req, res) => {
     for (let student of students) {
       if (!student.isInvitee) {
         student.userId = userId;
-        student.eventName = eventName;
+        student.eventId = eventId;
         InviteeforEvent.push(student);
         promises.push(updateStudentsById(student.studentId))
       } else {
