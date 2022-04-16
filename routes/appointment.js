@@ -12,5 +12,6 @@ router.put("/appointment/update_all_appointment/:userId/:oldcategoryname", requi
 router.delete("/delete_appointment/:userId/:appointId", requireSignin, appointment.remove);
 router.get("/appointmentFilter/:catType/:userId/:page_no/:per_page", verifySchool, appointment.appointmentFilter);
 router.delete("/appointment/delete_all/:userId/:oldcategoryname", verifySchool, appointment.deleteAll)
+router.post("/addInvitee/:userId/:eventName", verifySchool, appointment.addInvitee);
 
 module.exports = router;

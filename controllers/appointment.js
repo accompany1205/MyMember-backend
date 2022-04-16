@@ -1,5 +1,8 @@
 const appoint = require("../models/appointment");
 const _ = require("lodash");
+const Invitee = require("../models/eventInvitee")
+const Member = require('../models/addmember');
+
 // const todo = require("../models/todo_schema")
 
 exports.Create = async (req, res) => {
@@ -70,6 +73,53 @@ String.prototype.replaceAt = function (index, replacement) {
   return this.substring(0, index) + replacement + this.substring(index + replacement.length);
 }
 
+exports.addInvitee = async (req, res) => {
+  let students = req.body;
+  let eventName = req.params.eventName;
+  let userId = req.params.userId;
+  try {
+    if (!students.length) {
+      res.json({
+        success: false,
+        msg: "You haven't selected any student!"
+      })
+    }
+    let InviteeforEvent = [];
+    const promises = [];
+    var alredyInvitee = "";
+    for (let student of students) {
+      if (!student.isInvitee) {
+        student.userId = userId;
+        student.eventName = eventName;
+        InviteeforEvent.push(student);
+        promises.push(updateStudentsById(student.studentId))
+      } else {
+        alredyInvitee += `${student.firstName} ${student.lastName}, `
+      }
+    }
+    await Promise.all(promises);
+    console.log(InviteeforEvent)
+    await Invitee.insertMany(InviteeforEvent);
+    if (alredyInvitee) {
+      return res.send({
+        msg: `${alredyInvitee} These students are already on the event!`,
+        InviteeforEvent,
+        success: false
+      })
+    }
+    res.send({
+      success: true,
+      msg: "Selected students added successfully!"
+    })
+  } catch (err) {
+    res.send({ error: error.message.replace(/\"/g, ""), success: false })
+  }
+}
+
+const updateStudentsById = async (studentId) => {
+  return Member.findByIdAndUpdate({ _id: studentId }, { isInvitee: true })
+}
+
 exports.read = async (req, res) => {
   let startDate = req.params.dates;
   let newMonth = startDate.slice(0, 2)
@@ -87,7 +137,7 @@ exports.read = async (req, res) => {
 
   appoint.find({
     $and: [{ userId: req.params.userId },
-      { start: { $gte: (startDate), $lt: (finalDate) } }
+    { start: { $gte: (startDate), $lt: (finalDate) } }
     ]
   })
     .then((result) => {
