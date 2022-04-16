@@ -5,9 +5,8 @@ const eventRegistered = new mongoose.Schema({
         type: String,
         required: true
     },
-    eventName: {
-        type: String,
-        required: true
+    eventId:{
+        type:String,
     },
     userId: {
         type: String
@@ -32,3 +31,5 @@ const eventRegistered = new mongoose.Schema({
         default: false
     }
 })
+
+module.exports = mongoose.model('eventRegistered', eventRegistered);

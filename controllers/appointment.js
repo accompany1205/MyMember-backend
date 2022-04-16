@@ -1,6 +1,7 @@
 const appoint = require("../models/appointment");
 const _ = require("lodash");
 const Invitee = require("../models/eventInvitee")
+const EventRegistered = require("../models/eventRegistered");
 const Member = require('../models/addmember');
 
 // const todo = require("../models/todo_schema")
@@ -92,6 +93,23 @@ exports.getInvitees = async (req, res) => {
   })
 }
 
+exports.getRegisteredInvitees = async (req, res) => {
+  let userId = req.params.userId;
+  let eventId = req.params.eventId;
+
+  let registeredInvitee = await EventRegistered.find({ "userId": userId, "eventId": eventId, "isDeleted": false });
+  if (!registeredInvitee.length) {
+    return res.json({
+      success: false,
+      msg: "There is no data found!"
+    })
+  }
+  res.json({
+    success:true,
+    data:registeredInvitee
+  })
+}
+
 exports.registerInvitee = async (req, res) => {
   let students = req.body;
   let userId = req.params.userId;
@@ -104,17 +122,27 @@ exports.registerInvitee = async (req, res) => {
       })
     }
     let registerInvitee = [];
-    let alredyregistered = "";
     const promises = [];
-    for(let student of students){
-      return "yo!"
+    for (let student of students) {
+      student.userId = userId;
+      student.eventId = eventId;
+      registerInvitee.push(student)
+      promises.push(updateInviteeByIdForRegistered(student.studentId))
     }
-
+    await Promise.all(promises);
+    await EventRegistered.insertMany(registerInvitee);
+    res.send({
+      success: true,
+      msg: "Selected students got registered successfully!"
+    })
   } catch (err) {
-    console.log(err)
+    res.send({ error: error.message.replace(/\"/g, ""), success: false })
   }
 }
 
+const updateInviteeByIdForRegistered = async (studentId) => {
+  return Invitee.updateOne({ studentId: studentId }, { "isDeleted": true })
+}
 
 exports.addInvitee = async (req, res) => {
   let students = req.body;

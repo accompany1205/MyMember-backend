@@ -5,7 +5,7 @@ const eventInvitee = new mongoose.Schema({
         type: String,
         required: true
     },
-    eventName:{
+    eventId:{
         type:String,
     },
     userId: {
