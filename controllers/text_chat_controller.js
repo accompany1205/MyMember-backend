@@ -134,15 +134,15 @@ exports.getTextMessages = async (req, res) => {
   //console.log(socketIo)
   //socketIo.emit("textAlertWebhook", uidObj);
 
-  const getUid = (phoneNumber, userId) => {
-    return member.findOne({$and:[ {userId:userId},{primaryPhone: phoneNumber }]}).then(data => {
-      return data._id;
-    }).catch(err => {
-      return '';
-    });
-  };
-  let val = await getUid("9891943414", "606aea95a145ea2d26e0f1ab");
-  console.log("UID --> ",val)
+  // const getUid = (phoneNumber, userId) => {
+  //   return member.findOne({$and:[ {userId:userId},{primaryPhone: phoneNumber }]}).then(data => {
+  //     return data._id;
+  //   }).catch(err => {
+  //     return '';
+  //   });
+  // };
+  // let val = await getUid("9891943414", "606aea95a145ea2d26e0f1ab");
+  // console.log("UID --> ",val)
   // socketIo.on("connect_error", (err) => {
   //   console.log(`connect_error due to - ${err.message}`);
   // });

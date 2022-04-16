@@ -12,5 +12,9 @@ router.put("/appointment/update_all_appointment/:userId/:oldcategoryname", requi
 router.delete("/delete_appointment/:userId/:appointId", requireSignin, appointment.remove);
 router.get("/appointmentFilter/:catType/:userId/:page_no/:per_page", verifySchool, appointment.appointmentFilter);
 router.delete("/appointment/delete_all/:userId/:oldcategoryname", verifySchool, appointment.deleteAll)
+router.post("/addInvitee/:userId/:eventId", verifySchool, appointment.addInvitee);
+router.get("/getInvitee/:userId/:eventId",verifySchool, appointment.getInvitees);
+router.post("/registerInvitee/:userId/:eventId", verifySchool, appointment.registerInvitee);
+router.get("/getRegisteredInvitee/:userId/:eventId", verifySchool, appointment.getRegisteredInvitees);
 
 module.exports = router;

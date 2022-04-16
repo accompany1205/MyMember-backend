@@ -1,5 +1,9 @@
 const appoint = require("../models/appointment");
 const _ = require("lodash");
+const Invitee = require("../models/eventInvitee")
+const EventRegistered = require("../models/eventRegistered");
+const Member = require('../models/addmember');
+
 // const todo = require("../models/todo_schema")
 
 exports.Create = async (req, res) => {
@@ -70,6 +74,123 @@ String.prototype.replaceAt = function (index, replacement) {
   return this.substring(0, index) + replacement + this.substring(index + replacement.length);
 }
 
+exports.getInvitees = async (req, res) => {
+  let userId = req.params.userId;
+  let eventId = req.params.eventId;
+
+  let invitees = await Invitee.find({
+    "userId": userId, "eventId": eventId, "isDeleted": false
+  });
+  if (!invitees.length) {
+    return res.json({
+      success: false,
+      msg: "There is no data found!"
+    })
+  }
+  res.json({
+    success: true,
+    data: invitees,
+  })
+}
+
+exports.getRegisteredInvitees = async (req, res) => {
+  let userId = req.params.userId;
+  let eventId = req.params.eventId;
+
+  let registeredInvitee = await EventRegistered.find({ "userId": userId, "eventId": eventId, "isDeleted": false });
+  if (!registeredInvitee.length) {
+    return res.json({
+      success: false,
+      msg: "There is no data found!"
+    })
+  }
+  res.json({
+    success:true,
+    data:registeredInvitee
+  })
+}
+
+exports.registerInvitee = async (req, res) => {
+  let students = req.body;
+  let userId = req.params.userId;
+  let eventId = req.params.eventId;
+  try {
+    if (!students.length) {
+      return res.json({
+        success: false,
+        msg: "You haven't selected any student!"
+      })
+    }
+    let registerInvitee = [];
+    const promises = [];
+    for (let student of students) {
+      student.userId = userId;
+      student.eventId = eventId;
+      registerInvitee.push(student)
+      promises.push(updateInviteeByIdForRegistered(student.studentId))
+    }
+    await Promise.all(promises);
+    await EventRegistered.insertMany(registerInvitee);
+    res.send({
+      success: true,
+      msg: "Selected students got registered successfully!"
+    })
+  } catch (err) {
+    res.send({ error: error.message.replace(/\"/g, ""), success: false })
+  }
+}
+
+const updateInviteeByIdForRegistered = async (studentId) => {
+  return Invitee.updateOne({ studentId: studentId }, { "isDeleted": true })
+}
+
+exports.addInvitee = async (req, res) => {
+  let students = req.body;
+  let eventId = req.params.eventId;
+  let userId = req.params.userId;
+  try {
+    if (!students.length) {
+      res.json({
+        success: false,
+        msg: "You haven't selected any student!"
+      })
+    }
+    let InviteeforEvent = [];
+    const promises = [];
+    var alredyInvitee = "";
+    for (let student of students) {
+      if (!student.isInvitee) {
+        student.userId = userId;
+        student.eventId = eventId;
+        InviteeforEvent.push(student);
+        promises.push(updateStudentsById(student.studentId))
+      } else {
+        alredyInvitee += `${student.firstName} ${student.lastName}, `
+      }
+    }
+    await Promise.all(promises);
+    console.log(InviteeforEvent)
+    await Invitee.insertMany(InviteeforEvent);
+    if (alredyInvitee) {
+      return res.send({
+        msg: `${alredyInvitee} These students are already on the event!`,
+        InviteeforEvent,
+        success: false
+      })
+    }
+    res.send({
+      success: true,
+      msg: "Selected students added successfully!"
+    })
+  } catch (err) {
+    res.send({ error: error.message.replace(/\"/g, ""), success: false })
+  }
+}
+
+const updateStudentsById = async (studentId) => {
+  return Member.findByIdAndUpdate({ _id: studentId }, { isInvitee: true })
+}
+
 exports.read = async (req, res) => {
   let startDate = req.params.dates;
   let newMonth = startDate.slice(0, 2)
@@ -87,7 +208,7 @@ exports.read = async (req, res) => {
 
   appoint.find({
     $and: [{ userId: req.params.userId },
-      { start: { $gte: (startDate), $lt: (finalDate) } }
+    { start: { $gte: (startDate), $lt: (finalDate) } }
     ]
   })
     .then((result) => {
