@@ -2,21 +2,23 @@ const mongoose = require("mongoose");
 const schema = mongoose.Schema
 
 const templateUpload = new schema({
-  text:{
-    type:String,
-    require:true
+  text: {
+    type: String,
   },
-  template_name:{
-    type:String,
-    require:true
+  template_name: {
+    type: String,
   },
-  subFolderId:{
-    type:String,
-    require:true
+  subFolderId: {
+    type: String,
   },
-  rootFolderId:{
-    type:String,
-    require:true
+  rootFolderId: {
+    type: String,
+  },
+  userId: {
+    type: String,
+  },
+  adminId: {
+    type: String,
   }
 })
 

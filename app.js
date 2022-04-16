@@ -136,25 +136,26 @@ const admin_email_system_template = require('./routes/admin/email_manage/system/
 const admin_email_compose_template = require('./routes/admin/email_manage/compose/admin_compose_template');
 const admin_email_nurturing_template = require('./routes/admin/email_manage/nurturing/admin_nurturing_template');
 const location = require('./routes/admin/settings/location');
-const user_membership = require('./routes/admin/membership_management/admin_membership');
-const user_membershipFolder = require('./routes/admin/membership_management/admin_membershipFolder');
-const user_product = require('./routes/admin/product_manage/admin_product');
-const user_productFolder = require('./routes/admin/product_manage/admin_productFolder');
-const user_program = require('./routes/admin/program_manage/admin_program');
-const user_programCategory = require('./routes/admin/program_manage/admin_programCategory');
-const user_programRanks = require('./routes/admin/program_manage/admin_programRanks');
-const user_candidate = require('./routes/admin/candidate_manage/admin_candidate');
-const user_document_folder = require('./routes/admin/document_manage/admin_doc_folder');
-const user_document_subFolder = require('./routes/admin/document_manage/admin_doc_subfolder');
-const user_upload_doc = require('./routes/admin/document_manage/admin_doc_upload');
-const user_candidateStripes = require('./routes/admin/candidate_manage/admin_candidatesStripes');
-const user_smartlists = require('./routes/admin/smartlist_management/admin_smartlist');
-const user_smartlistFolder = require('./routes/admin/smartlist_management/admin_smartlist_folders');
-const user_leads_tracking = require('./routes/admin/leads_tracking_manage/admin_leads_tracking');
-const user_after_camp = require('./routes/admin/after_camp_manage/admin_after_camp');
-const user_expense_category = require('./routes/admin/finance_manage/admin_expenses_category');
-const user_tutorial = require('./routes/admin/tut_manage/admin_tutorials');
-const user_tutFolder = require('./routes/admin/tut_manage/admin_tutFolder');
+const admin_membership = require('./routes/admin/membership_management/admin_membership');
+const admin_membershipFolder = require('./routes/admin/membership_management/admin_membershipFolder');
+const admin_product = require('./routes/admin/product_manage/admin_product');
+const admin_productFolder = require('./routes/admin/product_manage/admin_productFolder');
+const admin_program = require('./routes/admin/program_manage/admin_program');
+const admin_programCategory = require('./routes/admin/program_manage/admin_programCategory');
+const admin_programRanks = require('./routes/admin/program_manage/admin_programRanks');
+const admin_candidate = require('./routes/admin/candidate_manage/admin_candidate');
+const admin_document_folder = require('./routes/admin/document_manage/admin_doc_folder');
+const admin_document_subFolder = require('./routes/admin/document_manage/admin_doc_subfolder');
+const admin_upload_doc = require('./routes/admin/document_manage/admin_doc_upload');
+const admin_candidateStripes = require('./routes/admin/candidate_manage/admin_candidatesStripes');
+const admin_smartlists = require('./routes/admin/smartlist_management/admin_smartlist');
+const admin_smartlistFolder = require('./routes/admin/smartlist_management/admin_smartlist_folders');
+const admin_leads_tracking = require('./routes/admin/leads_tracking_manage/admin_leads_tracking');
+const admin_after_camp = require('./routes/admin/after_camp_manage/admin_after_camp');
+const admin_expense_category = require('./routes/admin/finance_manage/admin_expenses_category');
+const admin_tutorial = require('./routes/admin/tut_manage/admin_tutorials');
+const admin_tutFolder = require('./routes/admin/tut_manage/admin_tutFolder');
+const admin_text_template = require('./routes/admin/text_temp_manage/admin_text_templates');
 //menu routes
 const student_menu = require('./routes/menu/std_menu/all_student_menu');
 
@@ -312,6 +313,10 @@ app.use('/api', tutorial);
 app.use('/api', tutFolder);
 
 //admin middleware
+app.use('/api', location);
+app.use('/api', sample_doc);
+app.use('/api', statictics);
+app.use('/api', purchaseMembership);
 app.use('/api', manage_user);
 app.use('/api', admin_email_system_cat);
 app.use('/api', admin_email_compose_cat);
@@ -322,29 +327,26 @@ app.use('/api', admin_email_nurturing_folder);
 app.use('/api', admin_email_system_template);
 app.use('/api', admin_email_compose_template);
 app.use('/api', admin_email_nurturing_template);
-app.use('/api', location);
-app.use('/api', user_membership);
-app.use('/api', user_membershipFolder);
-app.use('/api', user_product);
-app.use('/api', user_productFolder);
-app.use('/api', user_program);
-app.use('/api', user_programCategory);
-app.use('/api', user_programRanks);
-app.use('/api', user_candidate);
-app.use('/api', user_candidateStripes);
-app.use('/api', purchaseMembership);
-app.use('/api', sample_doc);
-app.use('/api', user_document_folder);
-app.use('/api', user_document_subFolder);
-app.use('/api', user_upload_doc);
-app.use('/api', user_smartlists);
-app.use('/api', user_smartlistFolder);
-app.use('/api', user_leads_tracking);
-app.use('/api', user_after_camp);
-app.use('/api', statictics);
-app.use('/api', user_expense_category)
-app.use('/api', user_tutorial)
-app.use('/api', user_tutFolder)
+app.use('/api', admin_membership);
+app.use('/api', admin_membershipFolder);
+app.use('/api', admin_product);
+app.use('/api', admin_productFolder);
+app.use('/api', admin_program);
+app.use('/api', admin_programCategory);
+app.use('/api', admin_programRanks);
+app.use('/api', admin_candidate);
+app.use('/api', admin_candidateStripes);
+app.use('/api', admin_document_folder);
+app.use('/api', admin_document_subFolder);
+app.use('/api', admin_upload_doc);
+app.use('/api', admin_smartlists);
+app.use('/api', admin_smartlistFolder);
+app.use('/api', admin_leads_tracking);
+app.use('/api', admin_after_camp);
+app.use('/api', admin_expense_category)
+app.use('/api', admin_tutorial)
+app.use('/api', admin_tutFolder)
+app.use('/api', admin_text_template)
 
 
 // school auth key middleware
