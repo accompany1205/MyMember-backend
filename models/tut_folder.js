@@ -4,13 +4,13 @@ const tutFolderSchema = schema(
   {
     folderName: {
       type: String,
-      unique: true,
+      // unique: true,
       required: true,
     },
-    tutorial: [
+    subFolder: [
       {
         type: schema.Types.ObjectId,
-        ref: "tutorial",
+        ref: "tutSubFolder",
       },
     ],
     userId: {
