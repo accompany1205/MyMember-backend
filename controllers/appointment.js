@@ -93,6 +93,24 @@ exports.getInvitees = async (req, res) => {
   })
 }
 
+exports.getAttended = async (req, res) => {
+  let userId = req.params.userId;
+  let eventId = req.params.eventId;
+  let attendee = await EventRegistered.find({
+    "userId": userId, "eventId": eventId, "isDeleted": true
+  });
+  if (!attendee.length) {
+    return res.json({
+      success: false,
+      msg: "There is no data found!"
+    })
+  }
+  res.json({
+    success: true,
+    data: attendee
+  })
+}
+
 exports.getRegisteredInvitees = async (req, res) => {
   let userId = req.params.userId;
   let eventId = req.params.eventId;
@@ -105,9 +123,37 @@ exports.getRegisteredInvitees = async (req, res) => {
     })
   }
   res.json({
-    success:true,
-    data:registeredInvitee
+    success: true,
+    data: registeredInvitee
   })
+}
+
+exports.addToAttended = async (req, res) => {
+  let studentIds = req.body.studentIds;
+  let eventId = req.params.eventId;
+  try {
+    if (!studentIds.length) {
+      return res.json({
+        success: false,
+        msg: "You haven't selected any student!"
+      })
+    }
+    const promises = [];
+    for (let student of studentIds) {
+      promises.push(updateRegisterdInviteeByIdForAttended(student, eventId));
+    }
+    await Promise.all(promises);
+    res.json({
+      success: true,
+      msg: "Selected students moved to attended!"
+    })
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
+}
+
+const updateRegisterdInviteeByIdForAttended = async (studentId, eventId) => {
+  return EventRegistered.updateOne({ studentId: studentId, eventId: eventId }, { "isDeleted": true });
 }
 
 exports.registerInvitee = async (req, res) => {
@@ -136,7 +182,7 @@ exports.registerInvitee = async (req, res) => {
       msg: "Selected students got registered successfully!"
     })
   } catch (err) {
-    res.send({ error: error.message.replace(/\"/g, ""), success: false })
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
   }
 }
 
@@ -159,17 +205,17 @@ exports.addInvitee = async (req, res) => {
     const promises = [];
     var alredyInvitee = "";
     for (let student of students) {
-      if (!student.isInvitee) {
+      let appt = await Invitee.findOne({ "eventId": eventId, "isDeleted": false, "studentId": student.studentId });
+      if (appt) {
+        alredyInvitee += `${student.firstName} , `
+      } else {
         student.userId = userId;
         student.eventId = eventId;
         InviteeforEvent.push(student);
         promises.push(updateStudentsById(student.studentId))
-      } else {
-        alredyInvitee += `${student.firstName} ${student.lastName}, `
       }
     }
     await Promise.all(promises);
-    console.log(InviteeforEvent)
     await Invitee.insertMany(InviteeforEvent);
     if (alredyInvitee) {
       return res.send({
@@ -183,7 +229,7 @@ exports.addInvitee = async (req, res) => {
       msg: "Selected students added successfully!"
     })
   } catch (err) {
-    res.send({ error: error.message.replace(/\"/g, ""), success: false })
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
   }
 }
 
