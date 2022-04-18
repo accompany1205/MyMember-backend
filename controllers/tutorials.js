@@ -1,19 +1,19 @@
 const tutorialModal = require('../models/tutorials');
-const tutorialFolder = require('../models/tutFolder');
+const tutorialSubFolder = require('../models/tut_subfolder');
 
 exports.create = async (req, res) => {
     try {
         const tutorialDetails = await req.body;
         tutorialDetails.userId = req.params.userId;
         tutorialDetails.adminId = req.params.adminId;
-        tutorialDetails.folderId = req.params.folderId;
+        tutorialDetails.subfolderId = req.params.subfolderId;
         const tutorialObj = new tutorialModal(tutorialDetails);
         await tutorialObj.save((err, data) => {
             if (err) {
                 res.send({ msg: 'tutorial not created', success: err });
             } else {
-                tutorialFolder.findByIdAndUpdate(
-                    req.params.folderId,
+                tutorialSubFolder.findByIdAndUpdate(
+                    req.params.subfolderId,
                     {
                         $push: { tutorial: data._id },
                     },
@@ -80,7 +80,7 @@ exports.remove = (req, res) => {
                             success: false,
                         });
                     }
-                    tutorialFolder.updateOne(
+                    tutorialSubFolder.updateOne(
                         { tutorial: data._id },
                         { $pull: { tutorial: data._id } },
                         function (err, temp) {
@@ -134,10 +134,10 @@ exports.tutorialUpdate = async (req, res) => {
                             success: false,
                         });
                     }
-                    await tutorialFolder.findByIdAndUpdate(new_folderId, {
+                    await tutorialSubFolder.findByIdAndUpdate(new_folderId, {
                         $addToSet: { tutorial: tutorialId },
                     });
-                    await tutorialFolder
+                    await tutorialSubFolder
                         .findByIdAndUpdate(old_folderId, {
                             $pull: { tutorial: tutorialId },
                         })

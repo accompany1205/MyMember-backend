@@ -1,4 +1,5 @@
-const tutFolder = require("../models/tutFolder");
+const tutFolder = require("../models/tut_folder");
+const tutSubFolder = require("../models/tut_folder");
 const tutorial = require('../models/tutorials')
 
 exports.create_folder = async (req, res) => {
@@ -26,7 +27,11 @@ exports.getFolders = async (req, res) => {
     await tutFolder
         .find({ $or: [{ userId: userId }, { adminId: adminId }] })
         .populate({
-            path: "tutorial"
+            path: "subFolder",
+            populate: {
+                path: 'tutorial',
+                model: 'tutorial',
+            },
         })
         .sort({ folderName: 1 })
         .exec((err, folder) => {
@@ -46,10 +51,10 @@ exports.getadminFolders = async (req, res) => {
     await tutFolder
         .find({ adminId: adminId })
         .populate({
-            path: "tutorial",
-            sort: {
-                tutorial_name: 1
-            }
+            path: "subFolder",
+            // sort: {
+            //     tutorial_name: 1
+            // }
         })
         .sort({ folderName: 1 })
         .exec((err, folder) => {
@@ -81,7 +86,7 @@ exports.update_folder = async (req, res) => {
                     });
                 }
                 res.send({
-                    msg: "Folder is update successfully",
+                    msg: "Folder updated successfully",
                     success: true,
                 });
             }
@@ -98,16 +103,16 @@ exports.delete_folder = async (req, res) => {
             if (err) {
                 res.send({ msg: "Folder is not remove", success: false });
             } else {
-                // console.log(delFolder)
+
                 // if (!delFolder) {
                 //     return res.send({
                 //         msg: "This is system generated folder Only admin can delete",
                 //         success: false,
                 //     });
                 // }
-                tutorial.deleteMany(
-                    { folderId: req.params.folderId },
-                    (err, delFolder) => {
+                tutSubFolder.deleteMany({ folderId: folderId })
+                tutorial.deleteMany({ rootFolderId: folderId })
+                    .exec((err, delFolder) => {
                         if (err) {
                             res.send({ msg: "Folder is not remove", success: false });
                         } else {
@@ -117,7 +122,6 @@ exports.delete_folder = async (req, res) => {
                             })
                         }
                     })
-
             }
         })
 }
