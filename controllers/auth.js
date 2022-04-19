@@ -1,5 +1,6 @@
 require('dotenv').config();
 const User = require('../models/user');
+const SubUsersRole = require('../models/sub_user_roles');
 const _ = require('lodash');
 const jwt = require('jsonwebtoken'); // to generate signed token
 const expressJwt = require('express-jwt'); // for authorization check
@@ -513,14 +514,96 @@ exports.signin = async (req, res) => {
 		req.body;
 	if (req.body.access_school) {
 	}
-
 	await User.findOne({
 		$or: [{ username: username }, { email: email }],
 	}).exec(async (err, data) => {
-		if (err || !data) {
-			return res.status(400).json({
-				msg: 'User with that email does not exist. Please signup',
-				success: false,
+		if (!data) {
+			await SubUsersRole.findOne({
+				$or: [{ 'username': username }, { 'email': email }],
+			}).exec(async (err, data) => {
+				if (err || !data) {
+					return res.status(400).json({
+						msg: 'User with that email does not exist. Please signup',
+						success: false,
+					});
+				} else {
+					if (data.password == req.body.password) {
+						if (data.status == 'Active') {
+							const subUserData = data;
+							const { userId, roles } = data;
+							await User.findOne({ '_id': userId }).exec(async (err, data) => {
+								if (err || !data) {
+									return res.status(400).json({
+										msg: 'Sub-user does not exist. Please signup',
+										success: false,
+									});
+								} else {
+									token = jwt.sign(
+										{
+											id: data._id,
+											auth_key: data.auth_key,
+											app_id: data.app_id,
+											epi: data.epi,
+											descriptor: data.descriptor,
+											product_description: data.product_description,
+										},
+										process.env.JWT_SECRET
+									);
+									res.cookie('t', token, {
+										expire: new Date() + 9999,
+									});
+
+									const {
+										_id,
+										logo,
+										bussinessAddress,
+										country,
+										state,
+										city,
+										twilio,
+									} = data;
+
+									const { username, password, email, phone, role } = subUserData;
+									let default_location = await location.find({ _id: data.default_location });
+									return res.json({
+										success: true,
+										token,
+										data: {
+											_id,
+											locationName: data.locationName,
+											username,
+											phone,
+											role,
+											password,
+											email,
+											logo,
+											bussinessAddress,
+											country,
+											state,
+											city,
+											default_location,
+											twilio,
+										},
+										roles
+									});
+
+								}
+							});
+
+						} else {
+							return res.json({
+								msg: 'Your account is deactivate!',
+								success: false,
+							});
+						}
+
+					} else {
+						res.send({
+							msg: 'Incorrect email/password!',
+							success: false,
+						});
+					}
+				}
 			});
 		} else {
 			if (data.password == req.body.password) {
@@ -673,8 +756,9 @@ exports.signin = async (req, res) => {
 				}
 			} else {
 				res.send({
-					msg: 'Incorrect email/password!',
-					success: { d: data.password, p: req.body.password },
+					msg: `Incorrect email/password!`,
+					success: false,
+
 				});
 			}
 		}
