@@ -1,4 +1,4 @@
-const goals = require("../models/goal_schema");
+const goals = require("../models/goals");
 const { errorHandler } = require('../helpers/dbErrorHandler');
 const url = require('url')
 

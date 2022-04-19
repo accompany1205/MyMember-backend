@@ -4,36 +4,88 @@ const mongoosePaginate = require('mongoose-paginate-v2');
 
 const taskSchema = schema(
 	{
-		type: {
-			type: String,
-			trim: true,
-			required: true,
-			maxlength: 32,
-			enum: ['personal', 'mymember'],
-		},
 		name: {
 			type: String,
-			trim: true,
 			required: true,
-			maxlength: 32,
+		},
+		type: {
+			type: String,
+			required: true,
+			enum: ['One Time', 'Ongoing'],
+		},
+		interval: {
+			type: String
+		},
+		range: {
+			type: String
+		},
+		start: {
+			type: String,
+			required: true
+		},
+		end: {
+			type: String,
+			required: true
+		},
+		start_time: {
+			type: String,
+			required: true
+		},
+		end_time: {
+			type: String,
+			required: true
+		},
+		repeatedDates: {
+			type: Array
+		},
+		repeatedConcurrence: {
+			type: String
 		},
 		label: {
 			type: String,
+			enum: ['Event', 'Office', 'Home', 'Personal']
 		},
 		due_date: {
 			type: Date,
 		},
 		priority: {
-			type: Number,
+			type: String,
+			enum: ['Clear', 'Low', 'Normal', 'High', 'Urgent']
 		},
-		status: {
-			type: Number,
-			required: true,
+		isproof: {
+			type: Boolean,
+		},
+		document: {
+			type: Array,
+		},
+		isEnterData: {
+			type: Boolean,
 		},
 		description: {
 			type: String,
 		},
+		isRating: {
+			type: Boolean,
+		},
+		rating: {
+			type: Number,
+		},
+		isYesOrNo: {
+			type: Boolean,
+		},
+		yesOrNo: {
+			type: String,
+			enum: ["Yes", "No"]
+		},
+		status: {
+			type: String,
+			required: true,
+			enum: ['Due', 'Completed', 'Past Due', 'Pending']
+		},
 		userId: {
+			type: String,
+		},
+		subfolderId: {
 			type: String,
 		},
 	},

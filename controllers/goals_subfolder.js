@@ -1,11 +1,11 @@
-const taskSubFolder = require("../models/task_subfolder");
-const taskFolder = require('../models/task_folder')
+const goalsSubFolder = require("../models/goals_subfolder");
+const goalsFolder = require('../models/goals_folder')
 
 exports.create_SubFolder = async (req, res) => {
     let userId = req.params.userId;
     let adminId = req.params.adminId;
     let folderId = req.params.folderId;
-    let SubFolderObj = await new taskSubFolder({
+    let SubFolderObj = await new goalsSubFolder({
         subFolderName: req.body.subFolderName,
         userId: userId,
         adminId: adminId,
@@ -15,7 +15,7 @@ exports.create_SubFolder = async (req, res) => {
         if (err) {
             res.send({ msg: "subFolder name already exist!", success: err });
         } else {
-            taskFolder.updateOne({ _id: folderId }, { $push: { subFolder: subfolder._id } })
+            goalsFolder.updateOne({ _id: folderId }, { $push: { subFolder: subfolder._id } })
                 .exec((err, updteFolder) => {
                     if (err) {
                         res.send({ msg: 'subfolder not added in Folder', success: false })
@@ -37,7 +37,7 @@ exports.update_SubFolder = async (req, res) => {
     const adminId = req.params.adminId
     const userId = req.params.userId;
     const subfolderId = req.params.subfolderId
-    await taskSubFolder
+    await goalsSubFolder
         .updateOne({ _id: subfolderId, $and: [{ userId: userId }, { adminId: adminId }] }, { $set: req.body })
         .exec((err, updateFolder) => {
             if (err) {
@@ -61,7 +61,7 @@ exports.delete_SubFolder = async (req, res) => {
     const adminId = req.params.adminId
     const userId = req.params.userId;
     const subfolderId = req.params.subfolderId;
-    await taskSubFolder.findOneAndRemove(
+    await goalsSubFolder.findOneAndRemove(
         { _id: subfolderId, $and: [{ userId: userId }, { adminId: adminId }] },
         (err, delFolder) => {
             if (err) {
@@ -74,7 +74,7 @@ exports.delete_SubFolder = async (req, res) => {
                 //         success: false,
                 //     });
                 // }
-                taskFolder.updateOne({ "subFolder": subfolderId }, { $pull: { "subFolder": subfolderId } },
+                goalsFolder.updateOne({ "subFolder": subfolderId }, { $pull: { "subFolder": subfolderId } },
                     (err, delFolder) => {
                         if (err) {
                             res.send({ msg: "subFolder is not remove", success: false });
