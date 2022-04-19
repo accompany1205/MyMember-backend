@@ -156,6 +156,32 @@ const updateRegisterdInviteeByIdForAttended = async (studentId, eventId) => {
   return EventRegistered.updateOne({ studentId: studentId, eventId: eventId }, { "isDeleted": true });
 }
 
+exports.payForRegister = async (req, res) => {
+  let userId = req.params.userId;
+  try {
+    let eventRegisterData = req.body;
+    eventRegisterData.userId = userId;
+    let eventRegister = new EventRegistered(eventRegisterData);
+    console.log("-->>",eventRegister)
+    eventRegister.save(async (err, data) => {
+      console.log(data)
+      if (err) {
+        return res.send({
+          success: false,
+          msg: "Having some issue while register, put all fields"
+        })
+      }
+      updateInviteeByIdForRegistered(req.body.studentId, req.body.eventId);
+    });
+    res.send({
+      success: true,
+      msg: "Student has been promoted to the register list!"
+    })
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
+}
+
 exports.registerInvitee = async (req, res) => {
   let students = req.body;
   let userId = req.params.userId;
@@ -170,10 +196,12 @@ exports.registerInvitee = async (req, res) => {
     let registerInvitee = [];
     const promises = [];
     for (let student of students) {
-      student.userId = userId;
-      student.eventId = eventId;
-      registerInvitee.push(student)
-      promises.push(updateInviteeByIdForRegistered(student.studentId))
+      if (student.program) {
+        student.userId = userId;
+        student.eventId = eventId;
+        registerInvitee.push(student)
+        promises.push(updateInviteeByIdForRegistered(student.studentId, eventId))
+      }
     }
     await Promise.all(promises);
     await EventRegistered.insertMany(registerInvitee);
@@ -186,8 +214,8 @@ exports.registerInvitee = async (req, res) => {
   }
 }
 
-const updateInviteeByIdForRegistered = async (studentId) => {
-  return Invitee.updateOne({ studentId: studentId }, { "isDeleted": true })
+const updateInviteeByIdForRegistered = async (studentId, eventId) => {
+  return Invitee.updateOne({ studentId: studentId, eventId: eventId }, { "isDeleted": true })
 }
 
 exports.addInvitee = async (req, res) => {

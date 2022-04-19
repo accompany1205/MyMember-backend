@@ -5,10 +5,28 @@ const eventRegistered = new mongoose.Schema({
         type: String,
         required: true
     },
-    eventId:{
-        type:String,
+    eventId: {
+        type: String,
     },
     userId: {
+        type: String
+    },
+    testId: {
+        type: String
+    }, 
+    isPaid: {
+        type: Boolean,
+        default: false
+    },
+    method: {
+        type: String,
+        default: 'unpaid',
+        enum: ["Cash", "Check", "Credit Card", 'unpaid']
+    },
+    cheque_no: {
+        type: String
+    },
+    program: {
         type: String
     },
     firstName: {

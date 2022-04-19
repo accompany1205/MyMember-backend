@@ -18,5 +18,6 @@ router.post("/registerInvitee/:userId/:eventId", verifySchool, appointment.regis
 router.get("/getRegisteredInvitee/:userId/:eventId", verifySchool, appointment.getRegisteredInvitees);
 router.post("/addToAttended/:userId/:eventId",verifySchool, appointment.addToAttended);
 router.get("/getAttendee/:userId/:eventId", verifySchool, appointment.getAttended);
+router.post("/payAndRegister/:userId", verifySchool, appointment.payForRegister);
 
 module.exports = router;

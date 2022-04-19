@@ -20,6 +20,9 @@ const eventInvitee = new mongoose.Schema({
     memberprofileImage: {
         type: String
     },
+    program: {
+        type: String
+    },
     phone: {
         type: String
     },
