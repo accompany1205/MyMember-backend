@@ -5,7 +5,7 @@ const { readfolder,createfolder,editFolder,removeFolder } = require("../controll
 
 router.get("/task_folder/read_folder/:userId",verifySchool,readfolder)
 router.post("/task_folder/create_folder/:userId",verifySchool,createfolder)
-router.put("/task_folder/edit_folder/:userId/:docfolderId",requireSignin,editFolder)
-router.delete("/task_folder/delete_folder/:userId/:docfolderId",requireSignin,removeFolder)
+router.put("/task_folder/update_folder/:userId/:folderId",verifySchool,editFolder)
+router.delete("/task_folder/delete_folder/:userId/:folderId",verifySchool,removeFolder)
 
 module.exports = router

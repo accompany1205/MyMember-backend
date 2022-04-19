@@ -1,43 +1,10 @@
 const mongoose = require("mongoose");
+const schema = mongoose.Schema;
 const mongoosePaginate = require("mongoose-paginate-v2");
 
-// const todoSchema = new mongoose.Schema(
-//     {
-//         subject: {
-//             type: String,
-//             trim: true,
-//             required: true,
-//             maxlength: 32
-//         },
-
-//         goal_category: {type: String, required: true},
-
-//         compeleting_Date: {
-//             type: String,
-//             required: true
-//         },
-//          reminder_Date: {
-//             type: String,
-//             required: true
-//         }, 
-//         tag: {
-//             type: String,
-//             required: true
-//         },
-//          goal_status: {
-//             type: String,
-//             required: true
-//         },
-//         notes:{ type: String, required: true },
-//         userId:{
-//             type:String
-//         }
-//     },
-//     { timestamps: true }
-// );
-const goalSchema = new mongoose.Schema(
+const goalSchema = new schema(
     {
-        parent: { type: mongoose.Schema.Types.ObjectId, ref: 'goals' },
+        parent: { type: schema.Types.ObjectId, ref: 'goals' },
         name: {
             type: String,
             trim: true,
@@ -53,12 +20,12 @@ const goalSchema = new mongoose.Schema(
         type: {
             type: String,
             trim: true,
-            enum : ['personal','mymember'],
+            enum: ['personal', 'mymember'],
         },
-        goal_type : {
+        goal_type: {
             type: String,
             trim: true,
-            enum : ['daily','fixed'],
+            enum: ['daily', 'fixed'],
         },
         start_date: {
             type: Date,
@@ -67,7 +34,7 @@ const goalSchema = new mongoose.Schema(
             type: Date,
         },
         complete_days: {
-           type : Array,
+            type: Array,
         },
         current: {
             type: Number,
@@ -81,7 +48,7 @@ const goalSchema = new mongoose.Schema(
         status: {
             type: Number,
             required: true,
-            default : 1
+            default: 1
         },
         label: {
             type: String,
