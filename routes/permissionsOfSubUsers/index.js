@@ -13,7 +13,7 @@ router.delete("/sub-users/permissions/:subUserId", permissionsOfSubUsers.deleteS
 
 // ***** Roles List API's *****
 
-router.get("/roles-list/info", permissionsOfSubUsers.getRolesList);
+router.get("/roles-list/info/:userId", permissionsOfSubUsers.getRolesList);
 router.post("/roles-list/create", permissionsOfSubUsers.createRolesList);
 router.put("/roles-list/update/:RolesList", permissionsOfSubUsers.updateRolesList);
 

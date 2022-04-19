@@ -35,6 +35,22 @@ exports.update = (req, res) => {
     }
 }
 
+exports.updateByUserId = (req,res)=>{
+    try{
+        SubUsersRole.findByIdAndUpdate({ userId: req.params.userId }, req.body)
+        .exec((err, data) => {
+            if (err) {
+                res.send({ 'msg': 'sub-users info is not update', 'success': false })
+            }
+            else {
+                res.send({ 'msg': 'permission of sub user info is update successfully', 'success': true })
+            }
+        })
+    }catch(error){
+        res.send({ 'msg': error.message, 'success': false });
+    }
+}
+
 exports.getList = (req, res) => {
     try {
         SubUsersRole.find()
@@ -43,7 +59,7 @@ exports.getList = (req, res) => {
                     res.send({ "msg": "sub-users list not found", "success": false });
                 }
                 else {
-                    res.send({ "data": data, "success": false });
+                    res.send({ "data": data, "success": true });
                 }
             })
     } catch (error) {
@@ -53,7 +69,7 @@ exports.getList = (req, res) => {
 
 exports.readByUserId = (req, res) => {
     try {
-        SubUsersRole.find({ user_id: req.params.userId })
+        SubUsersRole.find({ userId: req.params.userId })
             .exec((err, data) => {
                 if (err) {
                     res.send({ "msg": `${req.params.userId} Info Not Found!`, "success": false });
@@ -137,13 +153,13 @@ exports.updateRolesList = (req, res) => {
 
 exports.getRolesList = (req, res) => {
     try {
-        RolesList.find()
+        RolesList.find({ userId: req.params.userId })
             .exec((err, data) => {
                 if (err) {
                     res.send({ "msg": "Roles list not found", "success": false });
                 }
                 else {
-                    res.send({ "data": data, "success": false });
+                    res.send({ "data": data, "success": true });
                 }
             })
     } catch (error) {

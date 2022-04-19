@@ -17,8 +17,8 @@ const userSchema = new schema(
             type: String,
             unique: true,
         },
-        userId:{
-            type:String
+        userId: {
+            type: String
         },
         phone: {
             type: String,
@@ -31,16 +31,27 @@ const userSchema = new schema(
             unique: true,
             maxlength: 100
         },
+        status: {
+            type: String,
+            default: 'Inactive' // school status active and diactive by admin
+        },
+        sub_user_type: {
+            type: Boolean,
+            default: true
+        },
         email: {
             type: String,
             trim: true,
             unique: true
         },
-
+        role: {
+            type: String,
+            trim: true,
+            maxlength: 100
+        },
         password: {
             type: String,
         },
-
         default_location: {
             type: String,
             trim: true,
