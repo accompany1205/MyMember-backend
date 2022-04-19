@@ -162,7 +162,7 @@ exports.payForRegister = async (req, res) => {
     let eventRegisterData = req.body;
     eventRegisterData.userId = userId;
     let eventRegister = new EventRegistered(eventRegisterData);
-    console.log("-->>",eventRegister)
+    console.log("-->>", eventRegister)
     eventRegister.save(async (err, data) => {
       console.log(data)
       if (err) {
@@ -264,6 +264,39 @@ exports.addInvitee = async (req, res) => {
 const updateStudentsById = async (studentId) => {
   return Member.findByIdAndUpdate({ _id: studentId }, { isInvitee: true })
 }
+
+exports.deleteInvitee = async (req, res) => {
+  let inviteeIds = req.body.inviteeIds;
+  try {
+    for (let invitee of inviteeIds) {
+      console.log(invitee)
+      await Invitee.deleteOne(({ _id: invitee }));
+    }
+    res.send({
+      msg: "delete successfully!",
+      success: true,
+    })
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
+}
+
+exports.deleteRegister = async (req, res) => {
+  let RegisteredIds = req.body.RegisteredIds;
+  try {
+    for (let registered of RegisteredIds) {
+      await EventRegistered.deleteOne(({ _id: registered }));
+    }
+    res.send({
+      msg: "delete successfully!",
+      success: true,
+    })
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
+}
+
+
 
 exports.read = async (req, res) => {
   let startDate = req.params.dates;

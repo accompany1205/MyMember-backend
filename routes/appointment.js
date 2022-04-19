@@ -19,5 +19,7 @@ router.get("/getRegisteredInvitee/:userId/:eventId", verifySchool, appointment.g
 router.post("/addToAttended/:userId/:eventId",verifySchool, appointment.addToAttended);
 router.get("/getAttendee/:userId/:eventId", verifySchool, appointment.getAttended);
 router.post("/payAndRegister/:userId", verifySchool, appointment.payForRegister);
+router.delete("/deleteInvitee/:userId", verifySchool, appointment.deleteInvitee);
+router.delete("/deleteRegistered/:userId", verifySchool, appointment.deleteRegister);
 
 module.exports = router;
