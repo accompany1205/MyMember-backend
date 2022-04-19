@@ -47,7 +47,7 @@ const studentINfoRank = require('./routes/student_info_Rank');
 const candidateStripe = require('./routes/candidate_stripe');
 const manage_stripe = require('./routes/stripe');
 const todo_api = require('./routes/todo_apis');
-const Tasks = require('./routes/Tasks');
+const Tasks = require('./routes/tasks');
 const Goals = require('./routes/Gloals');
 const Dashboard = require('./routes/dashboard');
 
@@ -119,7 +119,8 @@ const finance_list = require('./routes/finance_list');
 const student_email = require('./routes/std_temp_list');
 const student_text = require('./routes/std_text_list');
 const tutorial = require('./routes/tutorials');
-const tutFolder = require('./routes/tutFolder');
+const tutFolder = require('./routes/tut_folder');
+const tutSubFolder = require('./routes/tut_subfolder');
 
 //docuSign
 const signStates = require('./routes/signStates');
@@ -154,7 +155,8 @@ const admin_leads_tracking = require('./routes/admin/leads_tracking_manage/admin
 const admin_after_camp = require('./routes/admin/after_camp_manage/admin_after_camp');
 const admin_expense_category = require('./routes/admin/finance_manage/admin_expenses_category');
 const admin_tutorial = require('./routes/admin/tut_manage/admin_tutorials');
-const admin_tutFolder = require('./routes/admin/tut_manage/admin_tutFolder');
+const admin_tutFolder = require('./routes/admin/tut_manage/admin_tut_folder');
+const admin_tutsubFolder = require('./routes/admin/tut_manage/admin_tut_subfolder');
 const admin_text_template = require('./routes/admin/text_temp_manage/admin_text_templates');
 //menu routes
 const student_menu = require('./routes/menu/std_menu/all_student_menu');
@@ -311,6 +313,7 @@ app.use('/api', student_email);
 app.use('/api', student_text);
 app.use('/api', tutorial);
 app.use('/api', tutFolder);
+app.use('/api', tutSubFolder);
 
 //admin middleware
 app.use('/api', location);
@@ -346,6 +349,7 @@ app.use('/api', admin_after_camp);
 app.use('/api', admin_expense_category)
 app.use('/api', admin_tutorial)
 app.use('/api', admin_tutFolder)
+app.use('/api', admin_tutsubFolder)
 app.use('/api', admin_text_template)
 
 

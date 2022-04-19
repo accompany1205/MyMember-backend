@@ -41,4 +41,4 @@ const taskSchema = schema(
 );
 taskSchema.plugin(mongoosePaginate);
 
-module.exports = mongoose.model('Tasks', taskSchema);
+module.exports = mongoose.model('Task', taskSchema);

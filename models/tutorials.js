@@ -9,7 +9,7 @@ const tutorialSchema = schema(
         description: {
             type: String,
         },
-        folderId: {
+        subfolderId: {
             type: String,
         },
         userId: {

@@ -1,7 +1,7 @@
 const express = require('express');
 const Router = express.Router();
 const fs = require('fs');
-const model = require('../models/task_schema');
+const model = require('../models/task');
 const moment = require('moment');
 
 const STATUS_DICT = {
