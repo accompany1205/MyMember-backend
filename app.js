@@ -162,6 +162,9 @@ const admin_tutorial = require('./routes/admin/tut_manage/admin_tutorials');
 const admin_tutFolder = require('./routes/admin/tut_manage/admin_tut_folder');
 const admin_tutsubFolder = require('./routes/admin/tut_manage/admin_tut_subfolder');
 const admin_text_template = require('./routes/admin/text_temp_manage/admin_text_templates');
+const permission_of_sub_users = require('./routes/permissionsOfSubUsers');
+
+
 //menu routes
 const student_menu = require('./routes/menu/std_menu/all_student_menu');
 
@@ -360,6 +363,9 @@ app.use('/api', admin_tutFolder)
 app.use('/api', admin_tutsubFolder)
 app.use('/api', admin_text_template)
 
+
+// permission sub users
+app.use('/api', permission_of_sub_users)
 
 // school auth key middleware
 app.use('/api', emailKey);
