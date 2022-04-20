@@ -124,3 +124,204 @@ exports.tasksUpdate = async (req, res) => {
         res.send({ msg: err.message.replace(/\"/g, ''), success: false });
     }
 };
+
+exports.taskFilter = async (req, res) => {
+    const userId = req.params.userId;
+
+
+    const { filter, byTime } = req.body;
+    filter.userId = userId
+    const date = new Date
+
+    try {
+        if (byTime === "Today") {
+            let cDate = ("0" + (date.getDate())).slice(-2);
+            let cMonth = ("0" + (date.getMonth() + 1)).slice(-2);
+            let cYear = date.getFullYear();
+            let currentDate = `${cMonth}-${cDate}-${cYear}`;
+            filter.start = currentDate;
+            console.log(filter)
+
+            // const totalCount = await tasks.find({
+            //     $and: [
+            //         { userId: userId },
+            //         { start: currentDate }
+            //     ]
+            // }).countDocuments();
+            // $and: [
+            //     filter,
+            //     { start: currentDate }
+            // ]
+            taskFolder.find({
+                subFolder: { $ne: [] }
+            })
+                .populate({
+                    path: 'subFolder',
+                    populate: {
+                        path: 'tasks',
+                        model: 'Task',
+                        match: filter
+                    },
+                })
+                .then((result) => {
+                    res.send({ success: true, data: result })
+                }).catch((err) => {
+                    res.send(err)
+                })
+        } else if (byTime === "Tomorrow") {
+            let cDate = ("0" + (date.getDate() + 1)).slice(-2);
+            let cMonth = ("0" + (date.getMonth() + 1)).slice(-2);
+            let cYear = date.getFullYear();
+            let currentDate = `${cMonth}-${cDate}-${cYear}`;
+            filter.start = currentDate;
+            console.log(filter)
+            taskFolder.find({
+                subFolder: { $ne: [] }
+            })
+                .populate({
+                    path: 'subFolder',
+                    populate: {
+                        path: 'tasks',
+                        model: 'Task',
+                        match: filter
+                    },
+                })
+                .then((result) => {
+                    res.send({ success: true, data: result })
+                }).catch((err) => {
+                    res.send(err)
+                })
+
+        } else if (byTime === "This Week") {
+            taskFolder
+                .aggregate([
+                    {
+                        $match: {
+                            userId: userId
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: "tasksubfolders",
+                            localField: "subFolder",
+                            foreignField: "_id",
+                            as: "subFolder"
+                        }
+                    },
+                    // {
+                    //     $unwind: {
+                    //         path: "$subFolder",
+                    //         preserveNullAndEmptyArrays: true
+                    //     }
+                    // },
+                    {
+                        $lookup: {
+                            from: "tasks",
+                            localField: "subFolder.tasks",
+                            foreignField: "_id",
+                            as: "subFolder.taskss"
+                        }
+                    },
+
+                    // {
+                    //     $match: {
+                    //         $expr:
+                    //             { $eq: [{ $week: '$date' }, { $week: "$$NOW" }] }
+                    //     }
+                    // },
+
+                ])
+                .exec((err, memberdata) => {
+                    if (err) {
+                        res.send({
+                            error: err,
+                        });
+                    } else {
+
+                        res.send({ success: true, memberdata });
+
+
+                    }
+                })
+        } else if (byTime === "This Month") {
+            tasks.
+                aggregate([
+                    {
+                        $match: {
+                            category: catType,
+                            userId: userId
+                        }
+                    },
+                    {
+                        $project: {
+                            status: 1,
+                            repeatedDates: 1,
+                            groupInfoList: 1,
+                            studentInfo: 1,
+                            end_time: 1,
+                            start_time: 1,
+                            app_color: 1,
+                            end: 1,
+                            repeatedConcurrence: 1,
+                            interval: 1,
+                            range: 1,
+                            appointment_type: 1,
+                            title: 1,
+                            category: 1,
+                            notes: 1,
+                            start: 1,
+                            date: {
+                                "$dateFromString": {
+                                    "dateString": "$start",
+                                    "format": "%m-%d-%Y"
+                                }
+                            }
+
+                        },
+                    },
+                    {
+                        $match: {
+                            $expr: {
+                                $eq: [
+                                    {
+                                        $month: "$date",
+                                    },
+                                    {
+                                        $month: "$$NOW",
+                                    },
+                                ]
+                            }
+                        },
+                    },
+                    {
+                        $facet: {
+                            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+                            totalCount: [
+                                {
+                                    $count: 'count'
+                                }
+                            ]
+                        }
+                    }
+                ])
+                .exec((err, memberdata) => {
+                    if (err) {
+                        res.send({
+                            error: err,
+                        });
+                    } else {
+                        let data = memberdata[0].paginatedResults
+                        if (data.length > 0) {
+                            res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
+
+                        } else {
+                            res.send({ msg: 'data not found', success: false });
+                        }
+                    }
+                })
+        }
+    }
+    catch (err) {
+        res.send({ error: err.message.replace(/\"/g, ""), success: false })
+    }
+};

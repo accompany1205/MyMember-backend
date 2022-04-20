@@ -52,9 +52,10 @@ exports.getadminFolders = async (req, res) => {
         .find({ adminId: adminId })
         .populate({
             path: "subFolder",
-            // sort: {
-            //     tutorial_name: 1
-            // }
+            populate: {
+                path: 'tutorial',
+                model: 'tutorial',
+            },
         })
         .sort({ folderName: 1 })
         .exec((err, folder) => {
