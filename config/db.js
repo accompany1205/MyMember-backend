@@ -193,7 +193,7 @@ function replace(strig, old_word, new_word) {
 
 function adminScheduledMails() {
     return new Promise((resolve, reject) => {
-        Template.find({ is_Sent: false, email_type: "scheduled", adminId: process.env.ADMINID })
+        Template.find({ is_Sent: false, email_type: "scheduled", adminId: { $exists: true } })
             .exec((err, resp) => {
                 if (err) {
                     reject(err)
