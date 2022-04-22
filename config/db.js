@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const members = require('../models/addmember')
+const User = require('../models/user')
 const Mailer = require("../helpers/Mailer");
 const Template = require('../models/emailSentSave')
 const smartlist = require("../models/smartlists");
@@ -71,6 +72,7 @@ async function monitorListingsUsingEventEmitter(pipeline = []) {
                     let { current_rank_name, current_stripe, program, studentType } = updateDescription.updatedFields
                     let { userId, email } = fullDocument;
                     const adminScheduleMails = await adminScheduledMails()
+                    const bussinessEmail = await userMailAddress(userId)
 
 
                     let promise = []
@@ -95,7 +97,7 @@ async function monitorListingsUsingEventEmitter(pipeline = []) {
                                                 }
                                                 const emailData = new Mailer({
                                                     to: [fullDocument.email],
-                                                    from: element.from,
+                                                    from: bussinessEmail,
                                                     subject: element.subject,
                                                     html: temp,
                                                     attachments: element.attachments
@@ -108,7 +110,7 @@ async function monitorListingsUsingEventEmitter(pipeline = []) {
 
                                                 const emailData = new Mailer({
                                                     to: [fullDocument.email],
-                                                    from: element.from,
+                                                    from: bussinessEmail,
                                                     subject: element.subject,
                                                     html: element.template,
                                                     attachments: element.attachments
@@ -124,29 +126,29 @@ async function monitorListingsUsingEventEmitter(pipeline = []) {
                                 }
                                 const promises = await Promise.all(promise)
 
-                                //             console.log(smartlist1);
-                                //             [current_rank_name1] = smartlist1.criteria.current_rank_name;
-                                //             if (current_rank_name1 == [current_rank_name]) {
-                                //                 console.log(current_rank_name1, [current_rank_name])
+                                // console.log(smartlist1);
+                                // [current_rank_name1] = smartlist1.criteria.current_rank_name;
+                                // if (current_rank_name1 == [current_rank_name]) {
+                                //     console.log(current_rank_name1, [current_rank_name])
 
-                                //                 smartlist1.criteria.email = [email];
-                                //                 let smartEmails = await filterSmartlist(smartlist1.criteria, userId)
-                                //                 if (element.isPlaceHolders) {
-                                //                     for (i in fullDocument) {
-                                //                         if (element.template.includes(i)) {
-                                //                             temp = replace(element.template, i, fullDocument[i])
-                                //                         }
-                                //                     }
-                                //                     const emailData = new Mailer({
-                                //                         to: smartEmails,
-                                //                         from: element.from,
-                                //                         subject: element.subject,
-                                //                         html: temp,
-                                //                         attachments: element.attachments
-                                //                     });
-                                //                     emailData.sendMail()
-                                //                         .then(resp => console.log('mail sended'))
-                                //                         .catch(err => console.log(err))
+                                //     smartlist1.criteria.email = [email];
+                                //     let smartEmails = await filterSmartlist(smartlist1.criteria, userId)
+                                //     if (element.isPlaceHolders) {
+                                //         for (i in fullDocument) {
+                                //             if (element.template.includes(i)) {
+                                //                 temp = replace(element.template, i, fullDocument[i])
+                                //             }
+                                //         }
+                                //         const emailData = new Mailer({
+                                //             to: smartEmails,
+                                //             from: element.from,
+                                //             subject: element.subject,
+                                //             html: temp,
+                                //             attachments: element.attachments
+                                //         });
+                                //         emailData.sendMail()
+                                //             .then(resp => console.log('mail sended'))
+                                //             .catch(err => console.log(er
                                 // }
 
                                 //             }
@@ -201,7 +203,17 @@ function adminScheduledMails() {
                 resolve(resp)
             })
     })
+}
 
+function userMailAddress(userId) {
+    return new Promise((resolve, reject) => {
+        User.findOne({ _id: userId }, { _id: 0, email: 1 }, ((err, data) => {
+            if (err) {
+                reject(err)
+            }
+            resolve(data.email)
+        }))
+    })
 
 }
 
