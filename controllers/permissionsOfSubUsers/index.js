@@ -137,7 +137,8 @@ exports.createRolesList = (req, res) => {
 
 exports.updateRolesList = (req, res) => {
     try {
-        RolesList.findByIdAndUpdate(req.params.RolesListId, req.body)
+        let id = req.params.RolesListId;
+        RolesList.findByIdAndUpdate(id, { $set: req.body })
             .exec((err, data) => {
                 if (err) {
                     res.send({ 'msg': 'Role-List info is not update', 'success': false })
