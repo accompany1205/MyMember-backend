@@ -14,8 +14,9 @@ const userSchema = new schema(
             maxlength: 100
         },
         twilio: {
+            trim: true,
             type: String,
-            unique: true,
+            
         },
         userId: {
             type: String
