@@ -83,6 +83,27 @@ exports.readByUserId = (req, res) => {
     }
 }
 
+exports.GetListByRoleId = (req, res) =>{
+    try {
+        SubUsersRole.find({
+            $and: [
+              { userId: req.params.userId },
+              { role: req.params.roleId },
+            ],
+          })
+            .exec((err, data) => {
+                if (err) {
+                    res.send({ "msg": `Info Not Found!`, "success": false });
+                }
+                else {
+                    res.send({ "data": data, "success": true });
+                }
+            })
+    } catch (error) {
+        res.send({ 'msg': error.message, 'success': false });
+    }
+}
+
 exports.readById = (req, res) => {
     try {
         SubUsersRole.findById(req.params.subUserId)
