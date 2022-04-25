@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const { isAuth, isAdmin } = require("../../../controllers/auth");
-const { getadminFolders, createfolder, editFolder, addCredits,  removeFolder, createSubFolder, editSubFolder, removeSubFolder, templateList, templateUpload, templateRemove,
+const { getadminFolders, createfolder, editFolder,updateCredit, addCredits,  removeFolder, createSubFolder, editSubFolder, removeSubFolder, templateList, templateUpload, templateRemove,
   editTemplate
 } = require("../../../controllers/text_template_controller")
 
 router.post("/admin/addCredit/:adminId/:userId", isAdmin, addCredits);
+router.put("/admin/addCredit/:adminId/:userId/:creditHistoryId", isAdmin, updateCredit);
 router.get("/admin/template_folder/read_folder/:adminId", isAdmin, getadminFolders)
 router.post("/admin/template_folder/create_folder/:adminId", isAdmin, createfolder)
 router.put("/admin/template_folder/edit_folder/:adminId/:docfolderId", isAdmin, editFolder)

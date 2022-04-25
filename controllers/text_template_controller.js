@@ -48,6 +48,30 @@ exports.readfolder = (req, res) => {
     })
 }
 
+exports.updateCredit = async (req, res) => {
+  let creditHistoryId = req.params.creditHistoryId;
+  let userId = req.params.userId;
+  let updatedCredit = req.body.updatedCredit
+  let lastCredit = req.body.lastCredit;
+  try {
+    let { textCredit } = await User.findOne({ _id: userId });
+    let creditUpdate = textCredit - lastCredit + updatedCredit;
+    try {
+      await User.updateOne(
+        { _id: userId, 'textCreditHistory._id': creditHistoryId },
+        {
+          $set: { 'textCreditHistory.$.credits': updatedCredit, textCredit: creditUpdate }
+        }
+      );
+      res.send({ msg: "updated!", success: true });
+    } catch (err) {
+      res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+    }
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+  }
+}
+
 exports.addCredits = async (req, res) => {
   let userId = req.params.userId;
   let textCredits = req.body.textCredits;
