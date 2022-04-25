@@ -87,12 +87,12 @@ async function monitorListingsUsingEventEmitter(pipeline = []) {
                                     let [current_rank_name1] = smartlist1.criteria.current_rank_name ? smartlist1.criteria.current_rank_name : false
                                     if (JSON.stringify(smartEmails).includes(fullDocument._id.toString())) {
                                         if (current_rank_name1 == [current_rank_name]) {
-                                            console.log(smartEmails, smartlist1._id)
+                                            let temp = element.template;
 
                                             if (element.isPlaceHolders) {
                                                 for (i in fullDocument) {
-                                                    if (element.template.includes(i)) {
-                                                        temp = replace(element.template, i, fullDocument[i])
+                                                    if (temp.includes(i)) {
+                                                        temp = replace(temp, i, fullDocument[i])
                                                     }
                                                 }
                                                 const emailData = new Mailer({
