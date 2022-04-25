@@ -15,7 +15,7 @@ router.delete("/sub-users/permissions/:subUserId", permissionsOfSubUsers.deleteS
 
 router.get("/roles-list/info/:userId", permissionsOfSubUsers.getRolesList);
 router.post("/roles-list/create", permissionsOfSubUsers.createRolesList);
-router.put("/roles-list/update/:RolesList", permissionsOfSubUsers.updateRolesList);
+router.put("/roles-list/update/:RolesListId", permissionsOfSubUsers.updateRolesList);
 
 
 module.exports = router
