@@ -144,7 +144,18 @@ exports.updateRolesList = (req, res) => {
                     res.send({ 'msg': 'Role-List info is not update', 'success': false })
                 }
                 else {
-                    res.send({ 'msg': 'Roles List info is update successfully', 'success': true })
+                    const {roles, _id} = data;
+                    SubUsersRole.updateOne({ role: _id }, { roles })
+                    .exec((err, data) => {
+                        if (err) {
+                            console.log(err.message)
+                            res.send({ 'msg': 'sub-users roles is not update!', 'success': false })
+                        }
+                        else {
+                            res.send({ 'msg': 'Roles List info is update successfully', 'success': true })
+                        }
+                    })
+                    
                 }
             })
     } catch (error) {
