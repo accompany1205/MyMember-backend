@@ -1,6 +1,7 @@
 const templateFolder = require("../models/text_template_folder");
 const templateSubFolder = require("../models/text_template_subfolder");
 const UploadFiles = require("../models/text_template_upload");
+const User = require("../models/user");
 
 //folder
 exports.createfolder = async (req, res) => {
@@ -46,6 +47,31 @@ exports.readfolder = (req, res) => {
       }
     })
 }
+
+exports.addCredits = async (req, res) => {
+  let userId = req.params.userId;
+  let textCredits = req.body.textCredits;
+  try {
+    let { textCredit } = await User.findOne({ _id: userId });
+    if (textCredit > 0) {
+      let creditObj = {};
+      creditObj.creaditedDate = new Date();
+      creditObj.credits = textCredits;
+      let newCredits = textCredit + textCredits;
+      await User.updateOne({ _id: userId }, { $set: { textCredit: newCredits }, $push: { textCreditHistory: creditObj } });
+      res.send({ msg: "credited!", success: true })
+    } else {
+      let creditObj = {};
+      creditObj.creaditedDate = new Date();
+      creditObj.credits = textCredits;
+      await User.updateOne({ _id: userId }, { $set: { textCredit: textCredits }, $push: { textCreditHistory: creditObj } })
+      res.send({ msg: "credited!", success: true })
+    }
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+  }
+}
+
 exports.getadminFolders = async (req, res) => {
   const adminId = req.params.adminId;
   await templateFolder

@@ -42,39 +42,45 @@ exports.sendTextMessage = async (req, res) => {
   const authToken = process.env.authkey;
 
   // Please uncomment code below in production once we are setting correct twilio number for user
-  let { twilio } = await user.findOne({ _id: req.params.userId });
-  let { primaryPhone } = await member.findOne({ _id: req.body.uid });
-  const twilioFormat = phoneNumber => {
-    if (phoneNumber.charAt(0) !== '+') {
-      return '+1' + phoneNumber;
-    } else {
-      return phoneNumber;
+  let { twilio, textCredit } = await user.findOne({ _id: req.params.userId });
+  if (textCredit > 0) {
+    let { primaryPhone } = await member.findOne({ _id: req.body.uid });
+    const twilioFormat = phoneNumber => {
+      if (phoneNumber.charAt(0) !== '+') {
+        return '+1' + phoneNumber;
+      } else {
+        return phoneNumber;
+      }
     }
-  }
-  const client = await require('twilio')(accountSid, authToken);
-  if (primaryPhone) {
-    await client.messages.create({
-      body: req.body.textContent,
-      to: twilioFormat(primaryPhone),
-      from: twilioFormat(twilio) // This is registered number for Twilio
-    }).then((message) => {
-      let textMsg = new textMessage(Object.assign({}, req.body, { time: new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }) }));
-      let uid = req.body.uid;
-      let textContent = req.body.textContent;
-      textMsg.save(async (err, data) => {
-        if (err) {
-          res.send({ error: 'message not stored' });
-        } else {
-          await member.findOneAndUpdate({ _id: uid }, { $set: { time: new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }), textContent: textContent } })
-          res.send({ textMessage: data, success: true, msg: "Message Successfully sent!" });
-        }
-      });
-    }).catch((error) => {
-      res.send({ error: 'Failed to send text message to ' + primaryPhone });
-      console.log('Error: ', error);
-    }).done();
+    const client = await require('twilio')(accountSid, authToken);
+    if (primaryPhone) {
+      await client.messages.create({
+        body: req.body.textContent,
+        to: twilioFormat(primaryPhone),
+        from: twilioFormat(twilio) // This is registered number for Twilio
+      }).then((message) => {
+        let textMsg = new textMessage(Object.assign({}, req.body, { time: new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }) }));
+        let uid = req.body.uid;
+        let textContent = req.body.textContent;
+        textMsg.save(async (err, data) => {
+          if (err) {
+            res.send({ error: 'message not stored' });
+          } else {
+            let remainingCredit = textCredit - 1;
+            await member.findOneAndUpdate({ _id: uid }, { $set: { time: new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }), textContent: textContent } })
+            await user.findOneAndUpdate({_id:req.params.userId}, {$set:{textCredit:remainingCredit}})
+            res.send({ textMessage: data, success: true, msg: "Message Successfully sent!" });
+          }
+        });
+      }).catch((error) => {
+        res.send({ error: 'Failed to send text message to ' + primaryPhone });
+        console.log('Error: ', error);
+      }).done();
+    } else {
+      res.send({ error: 'message not sent' });
+    }
   } else {
-    res.send({ error: 'message not sent' });
+    res.send({ msg: "No Text Credit Availabe, contact Admin! " })
   }
 };
 
@@ -205,7 +211,7 @@ exports.listenIncomingSMS = async (req, res) => {
 
   const getUid = (phoneNumber, userId) => {
     let phonen = phoneNumber.slice(2)
-    return member.findOne({$and:[ {userId:userId},{primaryPhone: phonen }]}).then(data => {
+    return member.findOne({ $and: [{ userId: userId }, { primaryPhone: phonen }] }).then(data => {
       return data._id;
     }).catch(err => {
       return '';
