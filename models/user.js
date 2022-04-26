@@ -247,6 +247,17 @@ const userSchema = new schema(
             type: String,
             default: ''
         },
+        textCredit: {
+            type: Number
+        },
+        textCreditHistory: [{
+            creaditedDate: {
+                type: String
+            },
+            credits: {
+                type: Number
+            }
+        }],
         sendgridVerification: [{
             isVerified: {
                 type: Boolean,

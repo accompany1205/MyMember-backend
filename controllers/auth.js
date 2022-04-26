@@ -689,7 +689,9 @@ exports.signin = async (req, res) => {
 								country,
 								state,
 								city,
+								twilio,
 							} = data;
+							
 							return res.json({
 								success: true,
 								token,
@@ -707,6 +709,7 @@ exports.signin = async (req, res) => {
 									city,
 									state,
 									country,
+									twilio,
 								},
 							});
 						} else {

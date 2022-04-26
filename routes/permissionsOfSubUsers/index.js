@@ -7,6 +7,7 @@ router.put("/sub-users/permissions/update/:SubUserId", permissionsOfSubUsers.upd
 
 router.get("/sub-users/permissions/list", permissionsOfSubUsers.getList);
 router.get("/sub-users/permissions/:userId", permissionsOfSubUsers.readByUserId);
+router.get("/sub-users/permissions/:userId/role_id/:roleId", permissionsOfSubUsers.GetListByRoleId);
 router.get("/sub-users/permissions/:subUserId", permissionsOfSubUsers.readById);
 
 router.delete("/sub-users/permissions/:subUserId", permissionsOfSubUsers.deleteSubUserInfo);
