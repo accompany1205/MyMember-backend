@@ -809,10 +809,11 @@ async function emailCronFucntionality() {
   scheduledListing.forEach(async (ele, i) => {
     let hours = parseInt(ele.sent_time.split(':')[0])
     let mins = parseInt(ele.sent_time.split(':')[1])
-    let sentDate = new Date(ele.sent_date).setHours(hours, mins).toString().slice(0, 9)
-    let currentDate = new Date().setHours(new Date().getHours(), new Date().getMinutes(), 0).toString().slice(0, 9)
+    let sentDate = new Date(ele.sent_date).setHours(hours, mins).toString().slice(0, 10)
+    let currentDate = new Date().setHours(new Date().getHours(), new Date().getMinutes(), 0).toString().slice(0, 10)
     if (sentDate === currentDate) {
       if (!ele.to.length) {
+        let smartLists = ele.smartLists
         smartLists = ele.smartLists.map(s => ObjectId(s));
         let smartlists = await smartlist.aggregate([
           { $match: { _id: { $in: smartLists } } },
@@ -864,7 +865,6 @@ async function emailCronFucntionality() {
               throw new Error(err);
             });
         } else if (rest.length) {
-          console.log('im here 2')
           const emailData = new Mailer({
             to: rest,
             from: ele.from,
