@@ -21,5 +21,6 @@ router.get("/getAttendee/:userId/:eventId", verifySchool, appointment.getAttende
 router.post("/payAndRegister/:userId", verifySchool, appointment.payForRegister);
 router.delete("/deleteInvitee/:userId", verifySchool, appointment.deleteInvitee);
 router.delete("/deleteRegistered/:userId", verifySchool, appointment.deleteRegister);
+router.post("/eventManager/filterEvent/:userId", verifySchool, appointment.filterEvents);
 
 module.exports = router;
