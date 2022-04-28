@@ -1,7 +1,8 @@
 const corn = require('node-cron')
 const addmemberModal = require('../models/addmember')
 const class_schedule = require("../models/class_schedule");
-const {missclasses}=require('../controllers/misucall_notes')
+const {tommarrow } = require("../controllers/birthday_notes")
+// const {missclasses}=require('../controllers/misucall_notes')
 // const emailsentsave = require('../models/emailSentSave')
 // const textSentSave = require("../models/textSentSave")
 // const sgMail = require('sendgrid-v3-node');
@@ -16,7 +17,7 @@ missClassesCount = async (payload) => {
       throw new Error(ex);
     }
   }
-module.exports = corn.schedule("0 0 * * *", missclasses)
+// module.exports = corn.schedule("* * * * *", tommarrow)
 
 // //update student expire status
 // module.exports = corn.schedule("00 02 17 * * 0-6", function(){

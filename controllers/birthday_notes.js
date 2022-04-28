@@ -561,6 +561,52 @@ exports.moreThirty = async (req, res) => {
 	}
 };
 
+exports.tommarrow = async (req, res) => {
+
+	let todays = new Date();
+	try {
+		await student
+			.aggregate([
+				{ $match: { dob: { $exists: true } } },
+				{
+					$project: {
+						firstName: 1,
+						lastName: 1,
+						dob: 1,
+						email: 1
+
+					},
+				},
+				{
+					$match: {
+						$expr: {
+							$and: [
+								{
+									$eq: [{ $dayOfMonth: '$dob' }, { $subtract: [{ $dayOfMonth: "$$NOW" }, 1] }]
+								},
+								{ $eq: [{ $month: '$dob' }, { $month: "$$NOW" }] },
+							],
+						},
+					}
+				},
+			])
+			.exec((err, memberdata) => {
+				if (err) {
+					console.log({
+						error: err,
+						success: false,
+					});
+				} else {
+					console.log({
+						memberdata,
+					});
+
+				}
+			});
+	} catch (er) {
+		throw new Error(er);
+	}
+};
 exports.this_month = async (req, res) => {
 	var per_page = parseInt(req.params.per_page) || 5;
 	var page_no = parseInt(req.params.page_no) || 0;

@@ -419,7 +419,7 @@ exports.update_template = async (req, res) => {
 exports.sendEmail = async (req, res) => {
   let userId = req.params.userId;
   try {
-    if (!req.body.subject || !req.body.template) {
+    if (!req.body.template) {
       res.send({ error: "invalid input", success: false })
     }
     emailBody = req.body;
