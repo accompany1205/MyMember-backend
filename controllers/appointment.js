@@ -292,7 +292,9 @@ exports.deleteRegister = async (req, res) => {
   }
 }
 
-
+exports.filterEvents = async (req, res) => {
+  return "Hello!"
+}
 
 exports.read = async (req, res) => {
   let startDate = req.params.dates;
