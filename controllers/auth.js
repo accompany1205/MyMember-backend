@@ -528,7 +528,7 @@ exports.signin = async (req, res) => {
 					});
 				} else {
 					if (data.password == req.body.password) {
-						if (data.status == 'Active') {
+						// if (data.status == 'Active') {
 							const subUserData = data;
 							const { userId, roles } = data;
 							await User.findOne({ '_id': userId }).exec(async (err, data) => {
@@ -590,12 +590,12 @@ exports.signin = async (req, res) => {
 								}
 							});
 
-						} else {
-							return res.json({
-								msg: 'Your account is deactivate!',
-								success: false,
-							});
-						}
+						// } else {
+						// 	return res.json({
+						// 		msg: 'Your account is deactivate!',
+						// 		success: false,
+						// 	});
+						// }
 
 					} else {
 						res.send({
