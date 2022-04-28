@@ -455,7 +455,6 @@ exports.sendEmail = async (req, res) => {
         promises.push(filterSmartlist(element.criteria, userId))
       })
       var data = await Promise.all(promises)
-      console.log(data)
       data = [].concat.apply([], data);
       let mapObj = await students.find({
         _id: { $in: data },
@@ -808,10 +807,13 @@ async function emailCronFucntionality() {
   let promises = [];
   let scheduledListing = await all_temp.find({ is_Sent: false, email_type: "scheduled", adminId: { $exists: false } });
   scheduledListing.forEach(async (ele, i) => {
-    let sentDate = moment(ele.sent_date).format("YYYY-MM-DD");
-    let currentDate = moment().format("YYYY-MM-DD");
-    if (sentDate === currentDate && !ele.is_Sent) {
+    let hours = parseInt(ele.sent_time.split(':')[0])
+    let mins = parseInt(ele.sent_time.split(':')[1])
+    let sentDate = new Date(ele.sent_date).setHours(hours, mins).toString().slice(0, 10)
+    let currentDate = new Date().setHours(new Date().getHours(), new Date().getMinutes(), 0).toString().slice(0, 10)
+    if (sentDate === currentDate) {
       if (!ele.to.length) {
+        let smartLists = ele.smartLists
         smartLists = ele.smartLists.map(s => ObjectId(s));
         let smartlists = await smartlist.aggregate([
           { $match: { _id: { $in: smartLists } } },
@@ -832,6 +834,7 @@ async function emailCronFucntionality() {
 
         let rest = [...new Set(mapObj.map(element => element.email))];
         if (ele.isPlaceHolders) {
+          console.log('im here 1')
           let mapObj = await students.find({
             _id: { $in: data },
             userId: ele.userId
@@ -903,7 +906,7 @@ async function emailCronFucntionality() {
   // await Promise.all(promises);
 };
 
-cron.schedule(`*/5 * * * *`, () => {
+cron.schedule(`*/1 * * * *`, () => {
   emailCronFucntionality();
 });
 
