@@ -2,19 +2,22 @@ const mongoose = require("mongoose");
 const schema = mongoose.Schema
 
 const templateFolder = new schema({
-  folderName:{
-    type:String,
-    required:true
+  folderName: {
+    type: String,
+    required: true
   },
-  subFolder:[{
-    type:schema.Types.ObjectId,
-    ref:'templateSubFolder'
+  subFolder: [{
+    type: schema.Types.ObjectId,
+    ref: 'templateSubFolder'
   }],
-  userId:{
-    type:String
+  userId: {
+    type: String
   },
-  createdBy:{
-    type:String
+  adminId: {
+    type: String
+  },
+  createdBy: {
+    type: String
   }
 })
 

@@ -6,10 +6,13 @@ const tutorialSchema = schema(
             type: String,
             unique: true,
         },
+        title: {
+            type: String,
+        },
         description: {
             type: String,
         },
-        folderId: {
+        subfolderId: {
             type: String,
         },
         userId: {

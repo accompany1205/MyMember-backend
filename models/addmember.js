@@ -276,6 +276,10 @@ const addmemberSchema = new schema(
       type: Date,
       default: Date.now()
     },
+    isInvitee: {
+      type: Boolean,
+      default: false
+    },
     textContent: {
       type: String
     }

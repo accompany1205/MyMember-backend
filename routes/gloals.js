@@ -1,7 +1,7 @@
 const express = require('express')
 const Router = express.Router();
 const fs = require('fs');
-const model = require("../models/goal_schema");
+const model = require("../models/goals");
 const moment = require('moment');
 var mongo = require("mongoose")
 

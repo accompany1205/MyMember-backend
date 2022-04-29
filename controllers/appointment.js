@@ -1,5 +1,9 @@
 const appoint = require("../models/appointment");
 const _ = require("lodash");
+const Invitee = require("../models/eventInvitee")
+const EventRegistered = require("../models/eventRegistered");
+const Member = require('../models/addmember');
+
 // const todo = require("../models/todo_schema")
 
 exports.Create = async (req, res) => {
@@ -66,8 +70,288 @@ exports.updateAll = async (req, res) => {
   }
 }
 
-String.prototype.replaceAt = function (index, replacement) {
-  return this.substring(0, index) + replacement + this.substring(index + replacement.length);
+exports.getInvitees = async (req, res) => {
+  let userId = req.params.userId;
+  let eventId = req.params.eventId;
+
+  let invitees = await Invitee.find({
+    "userId": userId, "eventId": eventId, "isDeleted": false
+  });
+  if (!invitees.length) {
+    return res.json({
+      success: false,
+      msg: "There is no data found!"
+    })
+  }
+  res.json({
+    success: true,
+    data: invitees,
+  })
+}
+
+exports.getAttended = async (req, res) => {
+  let userId = req.params.userId;
+  let eventId = req.params.eventId;
+  let attendee = await EventRegistered.find({
+    "userId": userId, "eventId": eventId, "isDeleted": true
+  });
+  if (!attendee.length) {
+    return res.json({
+      success: false,
+      msg: "There is no data found!"
+    })
+  }
+  res.json({
+    success: true,
+    data: attendee
+  })
+}
+
+exports.getRegisteredInvitees = async (req, res) => {
+  let userId = req.params.userId;
+  let eventId = req.params.eventId;
+
+  let registeredInvitee = await EventRegistered.find({ "userId": userId, "eventId": eventId, "isDeleted": false });
+  if (!registeredInvitee.length) {
+    return res.json({
+      success: false,
+      msg: "There is no data found!"
+    })
+  }
+  res.json({
+    success: true,
+    data: registeredInvitee
+  })
+}
+
+exports.addToAttended = async (req, res) => {
+  let studentIds = req.body.studentIds;
+  let eventId = req.params.eventId;
+  try {
+    if (!studentIds.length) {
+      return res.json({
+        success: false,
+        msg: "You haven't selected any student!"
+      })
+    }
+    const promises = [];
+    for (let student of studentIds) {
+      promises.push(updateRegisterdInviteeByIdForAttended(student, eventId));
+    }
+    await Promise.all(promises);
+    res.json({
+      success: true,
+      msg: "Selected students moved to attended!"
+    })
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
+}
+
+const updateRegisterdInviteeByIdForAttended = async (studentId, eventId) => {
+  return EventRegistered.updateOne({ studentId: studentId, eventId: eventId }, { "isDeleted": true });
+}
+
+exports.payForRegister = async (req, res) => {
+  let userId = req.params.userId;
+  try {
+    let eventRegisterData = req.body;
+    eventRegisterData.userId = userId;
+    let eventRegister = new EventRegistered(eventRegisterData);
+    console.log("-->>", eventRegister)
+    eventRegister.save(async (err, data) => {
+      console.log(data)
+      if (err) {
+        return res.send({
+          success: false,
+          msg: "Having some issue while register, put all fields"
+        })
+      }
+      updateInviteeByIdForRegistered(req.body.studentId, req.body.eventId);
+    });
+    res.send({
+      success: true,
+      msg: "Student has been promoted to the register list!"
+    })
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
+}
+
+exports.registerInvitee = async (req, res) => {
+  let students = req.body;
+  let userId = req.params.userId;
+  let eventId = req.params.eventId;
+  try {
+    if (!students.length) {
+      return res.json({
+        success: false,
+        msg: "You haven't selected any student!"
+      })
+    }
+    let registerInvitee = [];
+    const promises = [];
+    for (let student of students) {
+      if (student.program) {
+        student.userId = userId;
+        student.eventId = eventId;
+        registerInvitee.push(student)
+        promises.push(updateInviteeByIdForRegistered(student.studentId, eventId))
+      }
+    }
+    await Promise.all(promises);
+    await EventRegistered.insertMany(registerInvitee);
+    res.send({
+      success: true,
+      msg: "Selected students got registered successfully!"
+    })
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
+}
+
+const updateInviteeByIdForRegistered = async (studentId, eventId) => {
+  return Invitee.updateOne({ studentId: studentId, eventId: eventId }, { "isDeleted": true })
+}
+
+exports.addInvitee = async (req, res) => {
+  let students = req.body;
+  let eventId = req.params.eventId;
+  let userId = req.params.userId;
+  try {
+    if (!students.length) {
+      res.json({
+        success: false,
+        msg: "You haven't selected any student!"
+      })
+    }
+    let InviteeforEvent = [];
+    const promises = [];
+    var alredyInvitee = "";
+    for (let student of students) {
+      let appt = await Invitee.findOne({ "eventId": eventId, "isDeleted": false, "studentId": student.studentId });
+      if (appt) {
+        alredyInvitee += `${student.firstName} , `
+      } else {
+        student.userId = userId;
+        student.eventId = eventId;
+        InviteeforEvent.push(student);
+        promises.push(updateStudentsById(student.studentId))
+      }
+    }
+    await Promise.all(promises);
+    await Invitee.insertMany(InviteeforEvent);
+    if (alredyInvitee) {
+      return res.send({
+        msg: `${alredyInvitee} These students are already on the event!`,
+        InviteeforEvent,
+        success: false
+      })
+    }
+    res.send({
+      success: true,
+      msg: "Selected students added successfully!"
+    })
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
+}
+
+const updateStudentsById = async (studentId) => {
+  return Member.findByIdAndUpdate({ _id: studentId }, { isInvitee: true })
+}
+
+exports.deleteInvitee = async (req, res) => {
+  let inviteeIds = req.body.inviteeIds;
+  try {
+    for (let invitee of inviteeIds) {
+      console.log(invitee)
+      await Invitee.deleteOne(({ _id: invitee }));
+    }
+    res.send({
+      msg: "delete successfully!",
+      success: true,
+    })
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
+}
+
+exports.deleteRegister = async (req, res) => {
+  let RegisteredIds = req.body.RegisteredIds;
+  try {
+    for (let registered of RegisteredIds) {
+      await EventRegistered.deleteOne(({ _id: registered }));
+    }
+    res.send({
+      msg: "delete successfully!",
+      success: true,
+    })
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
+}
+
+exports.filterEvents = async (req, res) => {
+  let userId = req.params.userId;
+  let apptType = req.body.appttype;
+  let startDate = req.body.startDate;
+  let endDate = req.body.endDate;
+  try {
+    if (startDate) {
+      const data = await appoint.aggregate([
+        {
+          $match: {
+            $and: [
+              { userId: userId },
+              { appointment_type: apptType },
+              { start: { $gte: (startDate), $lt: (endDate) } }
+            ]
+          }
+        },
+        {
+          $project: {
+            title: 1,
+            start: 1,
+            appointment_type: 1,
+            end: 1
+          }
+        }
+      ]);
+      res.send({
+        msg: "data!",
+        data: data,
+        success: true
+      });
+    } else {
+      const data = await appoint.aggregate([
+        {
+          $match: {
+            $and: [
+              { userId: userId },
+              { appointment_type: apptType }
+            ]
+          }
+        },
+        {
+          $project: {
+            title: 1,
+            start: 1,
+            appointment_type: 1,
+            end: 1
+          }
+        }
+      ]);
+      res.send({
+        msg: "data!",
+        data: data,
+        success: true
+      });
+    }
+
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
 }
 
 exports.read = async (req, res) => {
@@ -87,7 +371,7 @@ exports.read = async (req, res) => {
 
   appoint.find({
     $and: [{ userId: req.params.userId },
-      { start: { $gte: (startDate), $lt: (finalDate) } }
+    { start: { $gte: (startDate), $lt: (finalDate) } }
     ]
   })
     .then((result) => {
