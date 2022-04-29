@@ -293,7 +293,65 @@ exports.deleteRegister = async (req, res) => {
 }
 
 exports.filterEvents = async (req, res) => {
-  return "Hello!"
+  let userId = req.params.userId;
+  let apptType = req.body.appttype;
+  let startDate = req.body.startDate;
+  let endDate = req.body.endDate;
+  try {
+    if (startDate) {
+      const data = await appoint.aggregate([
+        {
+          $match: {
+            $and: [
+              { userId: userId },
+              { appointment_type: apptType },
+              { start: { $gte: (startDate), $lt: (endDate) } }
+            ]
+          }
+        },
+        {
+          $project: {
+            title: 1,
+            start: 1,
+            appointment_type: 1,
+            end: 1
+          }
+        }
+      ]);
+      res.send({
+        msg: "data!",
+        data: data,
+        success: true
+      });
+    } else {
+      const data = await appoint.aggregate([
+        {
+          $match: {
+            $and: [
+              { userId: userId },
+              { appointment_type: apptType }
+            ]
+          }
+        },
+        {
+          $project: {
+            title: 1,
+            start: 1,
+            appointment_type: 1,
+            end: 1
+          }
+        }
+      ]);
+      res.send({
+        msg: "data!",
+        data: data,
+        success: true
+      });
+    }
+
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
 }
 
 exports.read = async (req, res) => {
