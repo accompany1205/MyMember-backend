@@ -202,10 +202,8 @@ exports.updateAll = async (req, res) => {
     let repeat_weekly_on = reqBody.repeat_weekly_on
     let startTimeH = moment(reqBody.start_time).format('hh')
     let startTimeM = moment(reqBody.start_time).format('mm')
-    console.log(startTimeH, startTimeM)
     let endTimeH = moment(reqBody.end_time).format('hh')
     let endTimeM = moment(reqBody.end_time).format('mm')
-    console.log(endTimeH,endTimeM)
 
 
     const dates = dateRange(start_time, end_time);
@@ -213,7 +211,6 @@ exports.updateAll = async (req, res) => {
     let allAttendance = []
     for (let index in dates) {
         let d = moment(dates[index], "MM/DD/YYYY").format();
-        console.log(d)
         let date = new Date(moment(d).set({ hour: Number(startTimeH), minute: Number(startTimeM) }));
         let dateE = new Date(moment(d).set({ hour: Number(endTimeH), minute: Number(endTimeM) }));
         let dayName = moment(new Date(date)).format('dddd').toLowerCase()
@@ -260,7 +257,6 @@ exports.updateAll = async (req, res) => {
             }
             else {
                 const res1 = await class_schedule.insertMany(allAttendance);
-                console.log(res1)
                 res.status(200).json({
                     message: 'All class schedule has been updated Successfully',
                     success: true
