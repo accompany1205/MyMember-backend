@@ -293,7 +293,24 @@ exports.deleteRegister = async (req, res) => {
 }
 
 exports.filterEvents = async (req, res) => {
-  return "Hello!"
+  let userId = req.params.userId;
+  let apptType = req.body.appttype;
+  let startDate = req.body.startDate;
+  let endDate = req.body.endDate;
+  try {
+    const data = await appoint.find({
+      $and: [{ userId:userId }, { appointment_type: apptType },
+      { start: { $gte: (startDate), $lt: (endDate) } }
+      ]
+    });
+    res.send({
+      msg:"data!",
+      data:data,
+      success:true
+    });
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
 }
 
 exports.read = async (req, res) => {
