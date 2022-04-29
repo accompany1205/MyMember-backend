@@ -10,7 +10,7 @@ exports.create = async (req, res) => {
         const tutorialObj = new tutorialModal(tutorialDetails);
         await tutorialObj.save((err, data) => {
             if (err) {
-                res.send({ msg: 'tutorial not created', success: err });
+                res.send({ msg: 'url already exists!', success: err });
             } else {
                 tutorialSubFolder.findByIdAndUpdate(
                     req.params.subfolderId,
