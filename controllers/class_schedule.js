@@ -6,7 +6,7 @@ const { errorHandler } = require('../helpers/dbErrorHandler');
 var mongo = require("mongoose")
 
 exports.Create = async (req, res) => {
-    var proDetail = await Prog.find({ programName: req.body.program_name })
+    var proDetail = await Prog.find({ userId:req.params.userId, programName: req.body.program_name })
     if (proDetail) {
         let reqBody = req.body
         let startDate = moment(reqBody.start_date, 'MM/DD/YYYY').format('MM/DD/YYYY')
