@@ -382,6 +382,19 @@ exports.read = async (req, res) => {
     });
 };
 
+exports.allEvents = async (req, res) => {
+  let userId = req.params.userId;
+  try {
+    let data = await appoint.find({ userId: userId });
+    if(!data){
+      return res.send({msg:"no data", success:false});
+    }
+    res.send({msg:"data!", data:data, success:true});
+  } catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false })
+  }
+}
+
 exports.catRead = async (req, res) => {
   let userId = req.params.userId
   let catType = req.params.catType;
