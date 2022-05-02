@@ -15,6 +15,7 @@ const docSubFolder = new schema({
     ],
     folderId: {
         type: String,
+        ref:"taskfolder"
     },
     userId: {
         type: String
