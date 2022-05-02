@@ -528,74 +528,74 @@ exports.signin = async (req, res) => {
 					});
 				} else {
 					if (data.password == req.body.password) {
-						if (data.status == 'Active') {
-							const subUserData = data;
-							const { userId, roles } = data;
-							await User.findOne({ '_id': userId }).exec(async (err, data) => {
-								if (err || !data) {
-									return res.status(400).json({
-										msg: 'Sub-user does not exist. Please signup',
-										success: false,
-									});
-								} else {
-									token = jwt.sign(
-										{
-											id: data._id,
-											auth_key: data.auth_key,
-											app_id: data.app_id,
-											epi: data.epi,
-											descriptor: data.descriptor,
-											product_description: data.product_description,
-										},
-										process.env.JWT_SECRET
-									);
-									res.cookie('t', token, {
-										expire: new Date() + 9999,
-									});
+						// if (data.status == 'Active') {
+						const subUserData = data;
+						const { userId, roles } = data;
+						await User.findOne({ '_id': userId }).exec(async (err, data) => {
+							if (err || !data) {
+								return res.status(400).json({
+									msg: 'Sub-user does not exist. Please signup',
+									success: false,
+								});
+							} else {
+								token = jwt.sign(
+									{
+										id: data._id,
+										auth_key: data.auth_key,
+										app_id: data.app_id,
+										epi: data.epi,
+										descriptor: data.descriptor,
+										product_description: data.product_description,
+									},
+									process.env.JWT_SECRET
+								);
+								res.cookie('t', token, {
+									expire: new Date() + 9999,
+								});
 
-									const {
+								const {
+									_id,
+									logo,
+									bussinessAddress,
+									country,
+									state,
+									city,
+									twilio,
+								} = data;
+
+								const { username, password, email, phone, role } = subUserData;
+								let default_location = await location.find({ _id: data.default_location });
+								return res.json({
+									success: true,
+									token,
+									data: {
 										_id,
+										locationName: data.locationName,
+										username,
+										phone,
+										rolename: role,
+										role: 0,
+										email,
 										logo,
 										bussinessAddress,
 										country,
 										state,
 										city,
+										default_locationData: default_location,
 										twilio,
-									} = data;
+									},
+									roles
+								});
 
-									const { username, password, email, phone, role } = subUserData;
-									let default_location = await location.find({ _id: data.default_location });
-									return res.json({
-										success: true,
-										token,
-										data: {
-											_id,
-											locationName: data.locationName,
-											username,
-											phone,
-											rolename: role,
-											role: 0,
-											email,
-											logo,
-											bussinessAddress,
-											country,
-											state,
-											city,
-											default_locationData: default_location,
-											twilio,
-										},
-										roles
-									});
+							}
+						});
 
-								}
-							});
-
-						} else {
-							return res.json({
-								msg: 'Your account is deactivate!',
-								success: false,
-							});
-						}
+						// } else {
+						// 	return res.json({
+						// 		msg: 'Your account is deactivate!',
+						// 		success: false,
+						// 	});
+						// }
 
 					} else {
 						res.send({
@@ -691,7 +691,7 @@ exports.signin = async (req, res) => {
 								city,
 								twilio,
 							} = data;
-							
+
 							return res.json({
 								success: true,
 								token,
@@ -750,6 +750,7 @@ exports.signin = async (req, res) => {
 							name,
 							role,
 						},
+						success: true
 					});
 				} else {
 					res.json({

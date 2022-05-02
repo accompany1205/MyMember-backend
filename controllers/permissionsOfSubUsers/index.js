@@ -35,18 +35,18 @@ exports.update = (req, res) => {
     }
 }
 
-exports.updateByUserId = (req,res)=>{
-    try{
+exports.updateByUserId = (req, res) => {
+    try {
         SubUsersRole.findByIdAndUpdate({ userId: req.params.userId }, req.body)
-        .exec((err, data) => {
-            if (err) {
-                res.send({ 'msg': 'sub-users info is not update', 'success': false })
-            }
-            else {
-                res.send({ 'msg': 'permission of sub user info is update successfully', 'success': true })
-            }
-        })
-    }catch(error){
+            .exec((err, data) => {
+                if (err) {
+                    res.send({ 'msg': 'sub-users info is not update', 'success': false })
+                }
+                else {
+                    res.send({ 'msg': 'permission of sub user info is update successfully', 'success': true })
+                }
+            })
+    } catch (error) {
         res.send({ 'msg': error.message, 'success': false });
     }
 }
@@ -83,14 +83,14 @@ exports.readByUserId = (req, res) => {
     }
 }
 
-exports.GetListByRoleId = (req, res) =>{
+exports.GetListByRoleId = (req, res) => {
     try {
         SubUsersRole.find({
             $and: [
-              { userId: req.params.userId },
-              { role: req.params.roleId },
+                { userId: req.params.userId },
+                { role: req.params.roleId },
             ],
-          })
+        })
             .exec((err, data) => {
                 if (err) {
                     res.send({ "msg": `Info Not Found!`, "success": false });
@@ -165,18 +165,18 @@ exports.updateRolesList = (req, res) => {
                     res.send({ 'msg': 'Role-List info is not update', 'success': false })
                 }
                 else {
-                    const {roles, _id} = data;
+                    const { roles, _id } = data;
                     SubUsersRole.updateOne({ role: _id }, { roles })
-                    .exec((err, data) => {
-                        if (err) {
-                            console.log(err.message)
-                            res.send({ 'msg': 'sub-users roles is not update!', 'success': false })
-                        }
-                        else {
-                            res.send({ 'msg': 'Roles List info is update successfully', 'success': true })
-                        }
-                    })
-                    
+                        .exec((err, data) => {
+                            if (err) {
+                                console.log(err.message)
+                                res.send({ 'msg': 'sub-users roles is not update!', 'success': false })
+                            }
+                            else {
+                                res.send({ 'msg': 'Roles List info is update successfully', 'success': true })
+                            }
+                        })
+
                 }
             })
     } catch (error) {
@@ -195,6 +195,21 @@ exports.getRolesList = (req, res) => {
                     res.send({ "data": data, "success": true });
                 }
             })
+    } catch (error) {
+        res.send({ 'msg': error.message, 'success': false });
+    }
+}
+
+exports.deleteRoleInfo = (req, res) => {
+    try {
+        RolesList.findByIdAndRemove(req.params.RoleInfoId, (err, data) => {
+            if (err) {
+                res.send({ "msg": `${req.params.RoleInfoId} is not remove`, "success": false });
+            }
+            else {
+                res.send({ "msg": `${req.params.RoleInfoId} is remove successfully`, "success": true });
+            }
+        })
     } catch (error) {
         res.send({ 'msg': error.message, 'success': false });
     }
