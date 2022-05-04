@@ -87,6 +87,7 @@ const taskSchema = schema(
 		},
 		subfolderId: {
 			type: String,
+			ref: "tasksubfolder",
 		},
 	},
 	{ timestamps: true }

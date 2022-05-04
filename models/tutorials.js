@@ -4,7 +4,7 @@ const tutorialSchema = schema(
     {
         url: {
             type: String,
-            unique: true,
+            // unique: true,
         },
         title: {
             type: String,

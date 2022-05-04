@@ -373,7 +373,7 @@ exports.read = async (req, res) => {
     $and: [{ userId: req.params.userId },
     { start: { $gte: (startDate), $lt: (finalDate) } }
     ]
-  })
+  }).sort({ start: 1 })
     .then((result) => {
       res.send({ success: true, data: result });
     })
@@ -381,6 +381,19 @@ exports.read = async (req, res) => {
       res.send({ msg: "No data!", success: false });
     });
 };
+
+exports.allEvents = async (req, res) => {
+  let userId = req.params.userId;
+  try {
+    let data = await appoint.find({ userId: userId });
+    if (!data) {
+      return res.send({ msg: "no data", success: false });
+    }
+    res.send({ msg: "data!", data: data, success: true });
+  } catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false })
+  }
+}
 
 exports.catRead = async (req, res) => {
   let userId = req.params.userId

@@ -129,7 +129,8 @@ exports.taskFilter = async (req, res) => {
     const userId = req.params.userId;
 
 
-    const { filter, byTime } = req.body;
+    let { filter, byTime } = req.body;
+    filter = filter ? filter : {}
     filter.userId = userId
     const date = new Date
 
@@ -141,28 +142,18 @@ exports.taskFilter = async (req, res) => {
             let currentDate = `${cMonth}-${cDate}-${cYear}`;
             filter.start = currentDate;
             console.log(filter)
+            tasks.find(
+                filter
+            ).populate({
+                path: "subfolderId",
+                select: "subFolderName",
 
-            // const totalCount = await tasks.find({
-            //     $and: [
-            //         { userId: userId },
-            //         { start: currentDate }
-            //     ]
-            // }).countDocuments();
-            // $and: [
-            //     filter,
-            //     { start: currentDate }
-            // ]
-            taskFolder.find({
-                subFolder: { $ne: [] }
+                populate: {
+                    select: "folderName",
+                    path: "folderId",
+                    model: "taskfolder"
+                }
             })
-                .populate({
-                    path: 'subFolder',
-                    populate: {
-                        path: 'tasks',
-                        model: 'Task',
-                        match: filter
-                    },
-                })
                 .then((result) => {
                     res.send({ success: true, data: result })
                 }).catch((err) => {
@@ -175,17 +166,9 @@ exports.taskFilter = async (req, res) => {
             let currentDate = `${cMonth}-${cDate}-${cYear}`;
             filter.start = currentDate;
             console.log(filter)
-            taskFolder.find({
-                subFolder: { $ne: [] }
-            })
-                .populate({
-                    path: 'subFolder',
-                    populate: {
-                        path: 'tasks',
-                        model: 'Task',
-                        match: filter
-                    },
-                })
+            tasks.find({
+                filter
+            }).populate("subfolderId", "subFolderName ")
                 .then((result) => {
                     res.send({ success: true, data: result })
                 }).catch((err) => {
@@ -193,42 +176,17 @@ exports.taskFilter = async (req, res) => {
                 })
 
         } else if (byTime === "This Week") {
-            taskFolder
+            tasks
                 .aggregate([
+
                     {
                         $match: {
                             userId: userId
+                            ,
+                            $expr:
+                                { $eq: [{ $week: { $dateFromString: '$start' } }, { $week: "$$NOW" }] }
                         }
                     },
-                    {
-                        $lookup: {
-                            from: "tasksubfolders",
-                            localField: "subFolder",
-                            foreignField: "_id",
-                            as: "subFolder"
-                        }
-                    },
-                    // {
-                    //     $unwind: {
-                    //         path: "$subFolder",
-                    //         preserveNullAndEmptyArrays: true
-                    //     }
-                    // },
-                    {
-                        $lookup: {
-                            from: "tasks",
-                            localField: "subFolder.tasks",
-                            foreignField: "_id",
-                            as: "subFolder.taskss"
-                        }
-                    },
-
-                    // {
-                    //     $match: {
-                    //         $expr:
-                    //             { $eq: [{ $week: '$date' }, { $week: "$$NOW" }] }
-                    //     }
-                    // },
 
                 ])
                 .exec((err, memberdata) => {
@@ -319,6 +277,17 @@ exports.taskFilter = async (req, res) => {
                         }
                     }
                 })
+        }
+        else {
+            tasks.find(
+                filter
+            ).populate("subfolderId")
+                .then((result) => {
+                    res.send({ success: true, data: result })
+                }).catch((err) => {
+                    res.send(err)
+                })
+
         }
     }
     catch (err) {
