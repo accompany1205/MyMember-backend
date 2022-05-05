@@ -296,27 +296,34 @@ exports.filterEvents = async (req, res) => {
   let userId = req.params.userId;
   let apptType = req.body.appttype;
   let startDate = req.body.startDate;
+  let Year = startDate.split('-')[2]
   let endDate = req.body.endDate;
   try {
     if (startDate) {
       const data = await appoint.aggregate([
         {
-          $match: {
-            $and: [
-              { userId: userId },
-              { appointment_type: apptType },
-              { start: { $gte: (startDate), $lt: (endDate) } }
-            ]
-          }
-        },
-        {
           $project: {
             title: 1,
             start: 1,
             appointment_type: 1,
-            end: 1
+            end: 1,
+            userId: 1,
+            year: { $substr: ["$start", 6, 10] },
+
           }
-        }
+        },
+        {
+          $match: {
+            $and: [
+              { userId: userId },
+              { year: Year },
+              { appointment_type: apptType },
+              { start: { $gte: (startDate), $lt: (endDate) } }
+
+            ]
+          }
+        },
+
       ]);
       res.send({
         msg: "data!",
@@ -373,7 +380,7 @@ exports.read = async (req, res) => {
     $and: [{ userId: req.params.userId },
     { start: { $gte: (startDate), $lt: (finalDate) } }
     ]
-  })
+  }).sort({ start: 1 })
     .then((result) => {
       res.send({ success: true, data: result });
     })
@@ -386,10 +393,10 @@ exports.allEvents = async (req, res) => {
   let userId = req.params.userId;
   try {
     let data = await appoint.find({ userId: userId });
-    if(!data){
-      return res.send({msg:"no data", success:false});
+    if (!data) {
+      return res.send({ msg: "no data", success: false });
     }
-    res.send({msg:"data!", data:data, success:true});
+    res.send({ msg: "data!", data: data, success: true });
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false })
   }

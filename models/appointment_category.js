@@ -20,6 +20,9 @@ const appointCategorySchema = new schema(
         },
         userId: {
             type: schema.Types.ObjectId
+        },
+        adminId: {
+            type: schema.Types.ObjectId
         }
     },
     { timestamps: true }
