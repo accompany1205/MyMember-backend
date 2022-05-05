@@ -67,6 +67,34 @@ exports.getList = (req, res) => {
     }
 }
 
+exports.roleAggregateValue = (req, res) => {
+    try {
+        SubUsersRole.aggregate([
+            { $match: { userId: req.params.userId } },
+            {
+                $group: {
+                    _id: `$role`,
+                    info_List: {
+                        $push: {
+                            firstname: '$firstname',
+                            lastname: '$lastname',
+                        },
+                    },
+                    "count": {"$sum":1}
+                },
+            },
+        ]).exec((err, info) => {
+            if (err) {
+                res.send({ 'msg': 'Info not found!', 'success': false });
+            } else {
+                res.send({ 'data': info, 'success': true });
+            }
+        });
+    } catch (error) {
+        res.send({ 'msg': error.message, 'success': false });
+    }
+}
+
 exports.readByUserId = (req, res) => {
     try {
         SubUsersRole.find({ userId: req.params.userId })
