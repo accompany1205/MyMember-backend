@@ -3,8 +3,9 @@ const _ = require("lodash");
 
 exports.create = (req, res) => {
   const payload = req.body;
-  const App = _.extend(payload, req.params);
-  const appointEvent = new appointmetEvent(App);
+  payload.userId = req.params.userId;
+  payload.adminId = req.params.adminId;
+  const appointEvent = new appointmetEvent(payload);
   appointEvent.save((err, appdata) => {
     if (err) {
       res.send({ msg: "Appoinment is not created!", success: false });
@@ -36,7 +37,7 @@ exports.update = (req, res) => {
 exports.getAllEvents = async (req, res) => {
   let userId = req.params.userId
   await appointmetEvent
-    .find({ userId: userId })
+    .find({ $or: [{ userId: userId }, { adminId: { $exists: true } }] })
     .then((result) => {
       res.send({ success: true, data: result });
     })

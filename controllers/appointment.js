@@ -296,27 +296,34 @@ exports.filterEvents = async (req, res) => {
   let userId = req.params.userId;
   let apptType = req.body.appttype;
   let startDate = req.body.startDate;
+  let Year = startDate.split('-')[2]
   let endDate = req.body.endDate;
   try {
     if (startDate) {
       const data = await appoint.aggregate([
         {
-          $match: {
-            $and: [
-              { userId: userId },
-              { appointment_type: apptType },
-              { start: { $gte: (startDate), $lt: (endDate) } }
-            ]
-          }
-        },
-        {
           $project: {
             title: 1,
             start: 1,
             appointment_type: 1,
-            end: 1
+            end: 1,
+            userId: 1,
+            year: { $substr: ["$start", 6, 10] },
+
           }
-        }
+        },
+        {
+          $match: {
+            $and: [
+              { userId: userId },
+              { year: Year },
+              { appointment_type: apptType },
+              { start: { $gte: (startDate), $lt: (endDate) } }
+
+            ]
+          }
+        },
+
       ]);
       res.send({
         msg: "data!",

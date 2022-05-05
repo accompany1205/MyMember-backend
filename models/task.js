@@ -8,6 +8,10 @@ const taskSchema = schema(
 			type: String,
 			required: true,
 		},
+		assign: {
+			type: String,
+			required: true,
+		},
 		type: {
 			type: String,
 			required: true,

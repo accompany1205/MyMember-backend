@@ -166,9 +166,21 @@ exports.taskFilter = async (req, res) => {
             let currentDate = `${cMonth}-${cDate}-${cYear}`;
             filter.start = currentDate;
             console.log(filter)
-            tasks.find({
-                filter
-            }).populate("subfolderId", "subFolderName ")
+            tasks.find(
+                filter,
+                {
+                    start: 1
+                }
+            ).populate({
+                path: "subfolderId",
+                select: "subFolderName",
+
+                populate: {
+                    select: "folderName",
+                    path: "folderId",
+                    model: "taskfolder"
+                }
+            })
                 .then((result) => {
                     res.send({ success: true, data: result })
                 }).catch((err) => {
