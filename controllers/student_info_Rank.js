@@ -92,7 +92,7 @@ exports.updateRank = async (req, res) => {
             throw new Error("Either Current-Rank or Next-Rank don't have rank Image")
         }
         await student_info_Rank.findOneAndUpdate({ _id: rankId, studentId: studentId }, { $set: { rank_name: cRank, rank_image: data1.rank_image, programName: program } })
-        await Member.findByIdAndUpdate(studentId, { current_rank_name: cRank, rank_order: data1.rank_order, current_rank_img: data1.rank_image, program: program, });
+        await Member.findByIdAndUpdate(studentId, { current_rank_name: cRank, next_rank_name: nRank, rank_order: data1.rank_order, current_rank_img: data1.rank_image, next_rank_img: data2.rank_image, program: program, });
         const recommedtTest = await RecommendedForTest.findOne({ "studentId": studentId, isDeleted: false })
         if (recommedtTest !== null) {
             await RecommendedForTest.findOneAndUpdate({ "studentId": studentId, isDeleted: false }, { "current_rank_name": cRank, "next_rank_name": nRank, "current_rank_img": data1.rank_image, "next_rank_img": data2.rank_image, "program": program })
