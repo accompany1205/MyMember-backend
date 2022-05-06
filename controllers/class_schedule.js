@@ -221,37 +221,39 @@ exports.updateAll = async (req, res) => {
             allAttendance.push(NewEvent)
         }
     }
-    console.log(reqBody.defaultprogram_name, reqBody.defaultclass_name)
-    class_schedule.deleteMany({
-        $and:
-            [{ userId: userId },
-            { program_name: reqBody.defaultprogram_name },
-            { class_name: reqBody.defaultclass_name }]
-    }).then(async (update_resp) => {
-        console.log(update_resp);
-        if (update_resp.n < 1) {
-            return res.status(403).json({
-                message: 'class_name/program_name not found',
-                success: false
-            })
+    class_schedule.deleteMany(
+        {
+            $and:
+                [{ userId: userId },
+                { program_name: reqBody.defaultprogram_name },
+                { class_name: reqBody.defaultclass_name }]
         }
-        else {
-            const res1 = await class_schedule.insertMany(allAttendance);
-            res.status(200).json({
-                message: 'All class schedule has been updated Successfully',
-                success: true
-            })
-        }
-        // else {
-        //     const res1 = await class_schedule.insertMany({ $and:[{ userId: req.params.userId },allAttendance]});
-        //     res.status(200).json({
-        //         message: 'All class schedule has been updated Successfully',
-        //         success: true
-        //     })
-        // }
-    }).catch((error) => {
-        res.send({ error: error.message.replace(/\"/g, ""), success: false })
-    })
+    )
+        .then(async (update_resp) => {
+            console.log(update_resp);
+            if (update_resp.deletedCount < 1) {
+                return res.status(403).json({
+                    message: 'class_name/program_name not found',
+                    success: false
+                })
+            }
+            else {
+                const res1 = await class_schedule.insertMany(allAttendance);
+                res.status(200).json({
+                    message: 'All class schedule has been updated Successfully',
+                    success: true
+                })
+            }
+            // else {
+            //     const res1 = await class_schedule.insertMany({ $and:[{ userId: req.params.userId },allAttendance]});
+            //     res.status(200).json({
+            //         message: 'All class schedule has been updated Successfully',
+            //         success: true
+            //     })
+            // }
+        }).catch((error) => {
+            res.send({ error: error.message.replace(/\"/g, ""), success: false })
+        })
 }
 
 
