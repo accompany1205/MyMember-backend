@@ -27,7 +27,7 @@ const supportSchema = new mongoose.Schema(
         status: {
             type: String,
             default: "Open",
-            enum: ["Open", "Closed", "Archived", "OnHold", "All"] 
+            enum: ["Open", "Closed", "Archived", "OnHold", "Pending"] 
         },
         userId:{
             type:String

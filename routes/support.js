@@ -4,7 +4,7 @@ const { create,read,closeList,count_ticket,remove_ticket,updateTicket } = requir
 const { requireSignin,isAuth,verifySchool } = require("../controllers/auth");
 const upload = require('../handler/multer');
 
-router.get('/supprot/viewticket/:userId',verifySchool,read)
+router.get('/support/viewticket/:userId',verifySchool,read)
 router.get('/support/close_view_ticket/:userId',verifySchool,closeList)
 router.get('/support/ticket_count/:userId',verifySchool,count_ticket)
 router.post('/support/create_ticket/:userId',verifySchool,upload.single('ticket_image'),create)

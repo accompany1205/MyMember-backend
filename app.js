@@ -164,6 +164,7 @@ const admin_tutsubFolder = require('./routes/admin/tut_manage/admin_tut_subfolde
 const admin_text_template = require('./routes/admin/text_temp_manage/admin_text_templates');
 const permission_of_sub_users = require('./routes/permissionsOfSubUsers');
 const admin_appointment_cat = require('./routes/admin/appointment_event_manage/admin_appointment_event');
+const admin_support = require('./routes/admin/support_manage/admin_support');
 
 
 //menu routes
@@ -364,6 +365,8 @@ app.use('/api', admin_tutFolder)
 app.use('/api', admin_tutsubFolder)
 app.use('/api', admin_text_template)
 app.use('/api', admin_appointment_cat)
+app.use('/api', admin_support)
+
 
 
 

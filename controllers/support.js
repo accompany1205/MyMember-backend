@@ -5,124 +5,157 @@ var cloudUrl = require("../gcloud/imageUrl")
 
 exports.create = (req, res) => {
     var supportObj = new supportModal(req.body);
-    supportObj.save((err,ticket)=>{
-        if(err){
+    supportObj.save((err, ticket) => {
+        if (err) {
             res.send(err)
         }
-        else{
-            if(req.file){
-              cloudUrl.imageUrl(req.file).then((ticketImgUrl)=>{
-                   supportModal.findByIdAndUpdate(ticket._id,{$set:{ticket_image:ticketImgUrl,userId:req.params.userId}})
-                   .then((response) => {
-                           res.send(response)
+        else {
+            if (req.file) {
+                cloudUrl.imageUrl(req.file).then((ticketImgUrl) => {
+                    supportModal.findByIdAndUpdate(ticket._id, { $set: { ticket_image: ticketImgUrl, userId: req.params.userId } })
+                        .then((response) => {
+                            res.send(response)
                         }).catch((err) => {
                             res.send(err)
-                     })   
-             }).catch((error)=>{
-                   res.send({error: "image url is not create"})
-          })
-        }
-            else{
-                supportModal.findByIdAndUpdate({_id:ticket._id},{$set:{userId:req.params.userId}})
-                .exec((err,data)=>{
-                    if(err){
-                        res.send({error:'user id is not add in ticket'})
-                    }
-                    else{
-                        res.send(data)
-                    }
+                        })
+                }).catch((error) => {
+                    res.send({ error: "image url is not create" })
                 })
             }
-        }
-    })
-    
-}
-
-exports.read=(req,res)=>{
-    supportModal.find({ userId: req.params.userId }).exec((err,data)=>{
-        if(err){
-            res.send({ error : 'ticket list not found' })
-        }
-        else{
-            if(data.length > 0){
-                res.send(data) 
-            }
-            else{
-                res.send({ msg:'list is empty' })
+            else {
+                supportModal.findByIdAndUpdate({ _id: ticket._id }, { $set: { userId: req.params.userId } })
+                    .exec((err, data) => {
+                        if (err) {
+                            res.send({ error: 'user id is not add in ticket' })
+                        }
+                        else {
+                            res.send(data)
+                        }
+                    })
             }
         }
     })
+
 }
 
-
-
-exports.closeList=(req,res)=>{
-    supportModal.find({$and:[{userId:req.params.userId},{status:'Closed'}]})
-    .exec((err,ticket_status)=>{
-        if(err){
-            res.send(err)
+exports.read = (req, res) => {
+    supportModal.find({ userId: req.params.userId }).exec((err, data) => {
+        if (err) {
+            res.send({ error: 'ticket list not found' })
         }
-        else{
-            res.send(ticket_status)
+        else {
+            if (data.length > 0) {
+                res.send(data)
+            }
+            else {
+                res.send({ msg: 'list is empty' })
+            }
         }
     })
 }
 
-exports.count_ticket=(req,res)=>{
+
+exports.admin_read = (req, res) => {
+    supportModal.find({ status: 'Open' })
+        .exec((err, data) => {
+            if (err) {
+                res.send({ error: 'ticket list not found' })
+            }
+            else {
+                if (data.length > 0) {
+                    res.send(data)
+                }
+                else {
+                    res.send({ msg: 'list is empty' })
+                }
+            }
+        })
+}
+
+
+exports.closeList = (req, res) => {
+    supportModal.find({ $and: [{ userId: req.params.userId }, { status: 'Closed' }] })
+        .exec((err, ticket_status) => {
+            if (err) {
+                res.send(err)
+            }
+            else {
+                res.send(ticket_status)
+            }
+        })
+}
+
+exports.count_ticket = (req, res) => {
     supportModal.aggregate([
-        {"$match":{userId:req.params.userId}},
-        {"$group":{
-            _id:"$status",
-            "count":{"$sum":1},
-        }},
-    ]).
-    exec((err,countTicket)=>{
-        if(err){
-            res.send(err)
-        }
-        else{
-            var total_ticket=0
-            countTicket.forEach(element => {
-                total_ticket=total_ticket+element.count
-            });
-            res.send({Ticket_Count:countTicket,Total_Ticket:total_ticket})
-        }
-    })
-}
-
-exports.remove_ticket=(req,res)=>{
-    supportModal.remove({_id:req.params.ticketId},(err,removeTicket)=>{
-        if(err){
-            res.send(err)
-        }
-        else{
-            res.send(removeTicket)
-        }
-    })
-}
-
-exports.updateTicket=(req,res)=>{
-    supportModal.findByIdAndUpdate({_id:req.params.ticketId},req.body)
-    .exec((err,ticketUpdate)=>{
-        if(err){
-            res.send(err)
-        }
-        else{
-            if(req.file){
-            cloudUrl.imageUrl(req.file).then((ticketImgUrl)=>{
-                 supportModal.updateOne({_id:ticketUpdate._id},{$set:{ticket_image:ticketImgUrl}})
-                    .then((response) => {
-                            res.send(response)
-                         }).catch((err) => {
-                             res.send(err)
-                      })   
-              }).catch((error)=>{
-                    res.send({error: "image url is not create"})
-           })
-          }
-            else{
-                res.send(ticketUpdate)
+        { "$match": { userId: req.params.userId } },
+        {
+            "$group": {
+                _id: "$status",
+                "count": { "$sum": 1 },
             }
+        },
+
+    ]).
+        exec((err, countTicket) => {
+            if (err) {
+                res.send(err)
+            }
+            else {
+                var total_ticket = 0
+                countTicket.forEach(element => {
+                    total_ticket = total_ticket + element.count
+                });
+                res.send({ Ticket_Count: countTicket, Total_Ticket: total_ticket })
+            }
+        })
+}
+
+exports.remove_ticket = (req, res) => {
+    supportModal.remove({ _id: req.params.ticketId }, (err, removeTicket) => {
+        if (err) {
+            res.send({ success: false, msg: err })
+        }
+        else {
+            res.send({ success: true, msg: "ticket deleted successfully" })
         }
     })
+}
+
+exports.updateTicket = (req, res) => {
+    supportModal.findByIdAndUpdate({ _id: req.params.ticketId }, req.body)
+        .exec((err, ticketUpdate) => {
+            if (err) {
+                res.send(err)
+            }
+            else {
+                if (req.file) {
+                    cloudUrl.imageUrl(req.file).then((ticketImgUrl) => {
+                        supportModal.updateOne({ _id: ticketUpdate._id }, { $set: { ticket_image: ticketImgUrl } })
+                            .then((response) => {
+                                res.send(response)
+                            }).catch((err) => {
+                                res.send(err)
+                            })
+                    }).catch((error) => {
+                        res.send({ error: "image url is not create" })
+                    })
+                }
+                else {
+                    res.send({ success: true, msg: "ticket updated successfully" })
+                }
+            }
+        })
+}
+
+exports.updateStatus = (req, res) => {
+    supportModal.findOneAndUpdate({ _id: req.params.ticketId }, { status: req.body.status })
+        .exec((err, ticketUpdate) => {
+            if (err) {
+                res.send({ success: true, msg: err })
+            }
+            else {
+
+                res.send({ success: true, msg: "ticket updated successfully" })
+            }
+        })
 }
