@@ -5,8 +5,8 @@ const eventInvitee = new mongoose.Schema({
         type: String,
         required: true
     },
-    eventId:{
-        type:String,
+    eventId: {
+        type: String,
     },
     userId: {
         type: String
@@ -27,6 +27,15 @@ const eventInvitee = new mongoose.Schema({
         type: String
     },
     current_rank_name: {
+        type: String
+    },
+    next_rank_name: {
+        type: String
+    },
+    current_rank_img: {
+        type: String
+    },
+    next_rank_img: {
         type: String
     },
     isDeleted: {

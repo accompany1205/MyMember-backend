@@ -44,6 +44,15 @@ const eventRegistered = new mongoose.Schema({
     current_rank_name: {
         type: String
     },
+    next_rank_name: {
+        type: String
+    },
+    current_rank_img: {
+        type: String
+    },
+    next_rank_img: {
+        type: String
+    },
     isDeleted: {
         type: Boolean,
         default: false
