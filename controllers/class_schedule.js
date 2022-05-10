@@ -230,7 +230,6 @@ exports.updateAll = async (req, res) => {
         }
     )
         .then(async (update_resp) => {
-            console.log(update_resp);
             if (update_resp.deletedCount < 1) {
                 return res.status(403).json({
                     message: 'class_name/program_name not found',

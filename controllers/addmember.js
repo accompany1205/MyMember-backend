@@ -1426,7 +1426,7 @@ async function collectionModify() {
 		var time = 0;
 
 		var interval = setInterval(async function () {
-			if (time < allUsers.lenght) {
+			if (time < allUsers.length) {
 				const data = await addmemberModal.aggregate([
 					{ $match: { 'userId': allUsers[time]._id.toString() } },
 					{
@@ -1462,7 +1462,6 @@ async function collectionModify() {
 					}
 				])
 				for (let member of data) {
-					console.log(member)
 					updateRating(member)
 						.then(resp => {
 
@@ -1496,52 +1495,52 @@ async function updateRating(member) {
 
 	})
 }
-exports.updateRating = async (req, res) => {
-	const userId = req.params.userId;
-	const data = await addmemberModal.aggregate([
-		{ $match: { 'userId': userId } },
-		{
-			'$lookup': {
-				'from': 'class_schedules',
-				'localField': '_id',
-				'foreignField': 'class_attendanceArray.studentInfo',
-				'as': 'data'
-			}
-		}, {
-			'$project': {
-				'last_attended_date': {
-					'$toDate': {
-						$max: '$data.start_date'
-					}
-				}
-			}
-		},
-		{
-			'$addFields': {
-				'rating': {
-					'$floor': {
-						'$divide': [
-							{
-								'$subtract': [
-									new Date(), '$last_attended_date'
-								]
-							}, 1000 * 60 * 60 * 24
-						]
-					}
-				}
-			}
-		}
-	])
-	for (let member of data) {
-		updateRating(member)
-			.then(resp => {
-			})
-			.catch(err => {
-				console.log(err)
-			})
-	}
-	res.send({ msg: 'rating updated successfully' })
-}
+// exports.updateRating = async (req, res) => {
+// 	const userId = req.params.userId;
+// 	const data = await addmemberModal.aggregate([
+// 		{ $match: { 'userId': userId } },
+// 		{
+// 			'$lookup': {
+// 				'from': 'class_schedules',
+// 				'localField': '_id',
+// 				'foreignField': 'class_attendanceArray.studentInfo',
+// 				'as': 'data'
+// 			}
+// 		}, {
+// 			'$project': {
+// 				'last_attended_date': {
+// 					'$toDate': {
+// 						$max: '$data.start_date'
+// 					}
+// 				}
+// 			}
+// 		},
+// 		{
+// 			'$addFields': {
+// 				'rating': {
+// 					'$floor': {
+// 						'$divide': [
+// 							{
+// 								'$subtract': [
+// 									new Date(), '$last_attended_date'
+// 								]
+// 							}, 1000 * 60 * 60 * 24
+// 						]
+// 					}
+// 				}
+// 			}
+// 		}
+// 	])
+// 	for (let member of data) {
+// 		updateRating(member)
+// 			.then(resp => {
+// 			})
+// 			.catch(err => {
+// 				console.log(err)
+// 			})
+// 	}
+// 	res.send({ msg: 'rating updated successfully' })
+// }
 exports.birth_next_month = (req, res) => {
 	var curDate = new Date();
 	var next_month = new Date(
