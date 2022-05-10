@@ -1,11 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { Create, read, tasksInfo, remove, tasksUpdate, taskFilter } = require('../controllers/tasks')
+const { Create, read, tasksInfo, remove, tasksUpdate, taskFilter, todayTask } = require('../controllers/tasks')
 const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
+const upload = require('../handler/multer')
 
 router.post('/tasks/add_tasks/:userId/:subfolderId', verifySchool, Create)
 router.post('/tasks/filter/:userId', verifySchool, taskFilter)
-router.put('/tasks/update_tasks/:userId/:taskId', verifySchool, tasksUpdate)
+router.get('/tasks/today_tasks/:userId', verifySchool, todayTask)
+router.put('/tasks/update_tasks/:userId/:taskId', upload.array('docs'), verifySchool, tasksUpdate)
 router.delete('/tasks/delete_tasks/:userId/:taskId', verifySchool, remove)
 
 module.exports = router;
