@@ -59,7 +59,6 @@ exports.Create = async (req, res) => {
 exports.read = async (req, res) => {
     try {
         let result = await class_schedule.find({ userId: req.params.userId })
-        console.log(result)
         res.send({ data: result, success: true })
     } catch (error) {
         res.send({ error: error.message.replace(/\"/g, ""), success: false })

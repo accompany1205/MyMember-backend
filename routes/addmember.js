@@ -51,7 +51,8 @@ const { addmember,
     collectionModify,
     mergeMultipleDoc,
     multipleFilter,
-    // updateRating
+    // updateRating,
+    test
 
 } = require("../controllers/addmember")
 
@@ -90,6 +91,8 @@ router.get('/member/this_month_birth/:userId', verifySchool, birth_this_month);
 router.get('/member/next_month_birth/:userId', verifySchool, birth_next_month);
 // router.get("/member/collectionModify", collectionModify)
 // router.get("/member/updateRating/:userId", updateRating)
+router.get("/test", test)
+
 
 router.get('/member/lead_this_month/:userId', verifySchool, this_month_lead)
 router.get('/member/lead_past_three_month/:userId', verifySchool, last_three_month)

@@ -1,5 +1,6 @@
 const { functions, add } = require('lodash');
 var addmemberModal = require('../models/addmember');
+const class_schedule = require("../models/class_schedule");
 const moment = require('moment');
 const ObjectId = require('mongodb').ObjectId;
 const smartList = require('../models/smartlists');
@@ -1416,6 +1417,26 @@ function getUserId() {
 			.catch(err => reject(err))
 
 	})
+}
+exports.test = async (req, res) => {
+	let promises = []
+
+	const data = await class_schedule.find({ start_date: { $regex: "(Coordinated Universal Time)", $options: 'i' } },
+		{ start_date: 1, end_date: 1 })
+
+
+	for (let member of data) {
+		startDate = moment(new Date(member.start_date), 'MM/DD/YYYY').format('MM/DD/YYYY')
+		promises.push(updateStudentsById(member._id, startDate))
+
+	}
+
+	Promise.all(promises)
+}
+
+const updateStudentsById = async (studentId, start_date) => {
+
+	return class_schedule.findByIdAndUpdate({ _id: studentId }, { start_date: start_date, end_date: start_date })
 }
 
 async function collectionModify() {
