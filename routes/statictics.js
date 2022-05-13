@@ -7,10 +7,12 @@ const {
 	getRanksByProgram,
 	getMemberByProgram,
 	getRanksReportByProgram,
+	statisticsFilter
 } = require('../controllers/statictics');
 const { requireSignin, verifySchool } = require('../controllers/auth');
 router.get('/statictics/all-program/:userId', requireSignin, getAllProgram);
 router.get('/statictics/state-by-type/:userId', requireSignin, getStateByType);
+router.post('/statictics/graphFetch/:userId', requireSignin, statisticsFilter);
 router.get(
 	'/statictics/yearly-join-quit-data/:userId',
 	requireSignin, verifySchool,
