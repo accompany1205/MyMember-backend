@@ -59,7 +59,6 @@ exports.Create = async (req, res) => {
 exports.read = async (req, res) => {
     try {
         let result = await class_schedule.find({ userId: req.params.userId })
-        console.log(result)
         res.send({ data: result, success: true })
     } catch (error) {
         res.send({ error: error.message.replace(/\"/g, ""), success: false })
@@ -212,11 +211,12 @@ exports.updateAll = async (req, res) => {
     let allAttendance = []
     for (let index in dates) {
         let d = moment(dates[index], "MM/DD/YYYY").format();
+        let start_date = moment(dates[index], 'MM/DD/YYYY').format('MM/DD/YYYY')
         let date = new Date(moment(d).set({ hour: Number(startTimeH), minute: Number(startTimeM) }));
         let dateE = new Date(moment(d).set({ hour: Number(endTimeH), minute: Number(endTimeM) }));
         let dayName = moment(new Date(date)).format('dddd').toLowerCase()
         if (repeat_weekly_on.includes(dayName)) {
-            let NewEvent = { ...reqBody, start_time: date, end_time: dateE, start_date: date, end_date: dateE, wholeSeriesEndDate: end_time, wholeSeriesStartDate: start_time }
+            let NewEvent = { ...reqBody, start_time: date, end_time: dateE, start_date: start_date, end_date: start_date, wholeSeriesEndDate: end_time, wholeSeriesStartDate: start_time }
             // delete NewEvent['repeat_weekly_on']
             allAttendance.push(NewEvent)
         }
@@ -230,7 +230,6 @@ exports.updateAll = async (req, res) => {
         }
     )
         .then(async (update_resp) => {
-            console.log(update_resp);
             if (update_resp.deletedCount < 1) {
                 return res.status(403).json({
                     message: 'class_name/program_name not found',

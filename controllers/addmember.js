@@ -1,5 +1,6 @@
 const { functions, add } = require('lodash');
 var addmemberModal = require('../models/addmember');
+const class_schedule = require("../models/class_schedule");
 const moment = require('moment');
 const ObjectId = require('mongodb').ObjectId;
 const smartList = require('../models/smartlists');
@@ -1417,6 +1418,26 @@ function getUserId() {
 
 	})
 }
+exports.test = async (req, res) => {
+	let promises = []
+
+	const data = await class_schedule.find({ start_date: { $regex: "(Coordinated Universal Time)", $options: 'i' } },
+		{ start_date: 1, end_date: 1 })
+
+
+	for (let member of data) {
+		startDate = moment(new Date(member.start_date), 'MM/DD/YYYY').format('MM/DD/YYYY')
+		promises.push(updateStudentsById(member._id, startDate))
+
+	}
+
+	Promise.all(promises)
+}
+
+const updateStudentsById = async (studentId, start_date) => {
+
+	return class_schedule.findByIdAndUpdate({ _id: studentId }, { start_date: start_date, end_date: start_date })
+}
 
 async function collectionModify() {
 	try {
@@ -1426,7 +1447,7 @@ async function collectionModify() {
 		var time = 0;
 
 		var interval = setInterval(async function () {
-			if (time < allUsers.lenght) {
+			if (time < allUsers.length) {
 				const data = await addmemberModal.aggregate([
 					{ $match: { 'userId': allUsers[time]._id.toString() } },
 					{
@@ -1462,7 +1483,6 @@ async function collectionModify() {
 					}
 				])
 				for (let member of data) {
-					console.log(member)
 					updateRating(member)
 						.then(resp => {
 
@@ -1496,52 +1516,52 @@ async function updateRating(member) {
 
 	})
 }
-exports.updateRating = async (req, res) => {
-	const userId = req.params.userId;
-	const data = await addmemberModal.aggregate([
-		{ $match: { 'userId': userId } },
-		{
-			'$lookup': {
-				'from': 'class_schedules',
-				'localField': '_id',
-				'foreignField': 'class_attendanceArray.studentInfo',
-				'as': 'data'
-			}
-		}, {
-			'$project': {
-				'last_attended_date': {
-					'$toDate': {
-						$max: '$data.start_date'
-					}
-				}
-			}
-		},
-		{
-			'$addFields': {
-				'rating': {
-					'$floor': {
-						'$divide': [
-							{
-								'$subtract': [
-									new Date(), '$last_attended_date'
-								]
-							}, 1000 * 60 * 60 * 24
-						]
-					}
-				}
-			}
-		}
-	])
-	for (let member of data) {
-		updateRating(member)
-			.then(resp => {
-			})
-			.catch(err => {
-				console.log(err)
-			})
-	}
-	res.send({ msg: 'rating updated successfully' })
-}
+// exports.updateRating = async (req, res) => {
+// 	const userId = req.params.userId;
+// 	const data = await addmemberModal.aggregate([
+// 		{ $match: { 'userId': userId } },
+// 		{
+// 			'$lookup': {
+// 				'from': 'class_schedules',
+// 				'localField': '_id',
+// 				'foreignField': 'class_attendanceArray.studentInfo',
+// 				'as': 'data'
+// 			}
+// 		}, {
+// 			'$project': {
+// 				'last_attended_date': {
+// 					'$toDate': {
+// 						$max: '$data.start_date'
+// 					}
+// 				}
+// 			}
+// 		},
+// 		{
+// 			'$addFields': {
+// 				'rating': {
+// 					'$floor': {
+// 						'$divide': [
+// 							{
+// 								'$subtract': [
+// 									new Date(), '$last_attended_date'
+// 								]
+// 							}, 1000 * 60 * 60 * 24
+// 						]
+// 					}
+// 				}
+// 			}
+// 		}
+// 	])
+// 	for (let member of data) {
+// 		updateRating(member)
+// 			.then(resp => {
+// 			})
+// 			.catch(err => {
+// 				console.log(err)
+// 			})
+// 	}
+// 	res.send({ msg: 'rating updated successfully' })
+// }
 exports.birth_next_month = (req, res) => {
 	var curDate = new Date();
 	var next_month = new Date(

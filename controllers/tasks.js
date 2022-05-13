@@ -1,6 +1,7 @@
 const taskSubFolder = require("../models/task_subfolder");
 const taskFolder = require('../models/task_folder')
 const tasks = require('../models/task')
+const cloudUrl = require("../gcloud/imageUrl");
 
 exports.Create = async (req, res) => {
     const Task = req.body;
@@ -103,10 +104,17 @@ exports.tasksUpdate = async (req, res) => {
     try {
         var taskData = req.body;
         const taskId = req.params.taskId;
-        await tasks.updateOne(
+        const promises = []
+        if (req.files) {
+            (req.files).map(file => {
+                promises.push(cloudUrl.imageUrl(file))
+            });
+        }
+        const docs = await Promise.all(promises);
+        taskData.document = docs;
+        tasks.updateOne(
             { _id: taskId },
-            { $set: taskData }
-        )
+            { $set: taskData })
             .exec(async (err, data) => {
                 if (err) {
                     res.send({
@@ -124,6 +132,41 @@ exports.tasksUpdate = async (req, res) => {
         res.send({ msg: err.message.replace(/\"/g, ''), success: false });
     }
 };
+
+exports.todayTask = async (req, res) => {
+    const userId = req.params.userId;
+    const date = new Date
+
+    try {
+
+        let cDate = ("0" + (date.getDate())).slice(-2);
+        let cMonth = ("0" + (date.getMonth() + 1)).slice(-2);
+        let cYear = date.getFullYear();
+        let currentDate = `${cMonth}-${cDate}-${cYear}`;
+
+        tasks.find(
+            { start: currentDate }
+        ).populate({
+            path: "subfolderId",
+            select: "subFolderName",
+
+            populate: {
+                select: "folderName",
+                path: "folderId",
+                model: "taskfolder"
+            }
+        })
+            .then((result) => {
+                res.send({ success: true, data: result })
+            }).catch((err) => {
+                res.send(err)
+            })
+
+    }
+    catch (err) {
+        res.send({ error: err.message.replace(/\"/g, ""), success: false })
+    }
+}
 
 exports.taskFilter = async (req, res) => {
     const userId = req.params.userId;
