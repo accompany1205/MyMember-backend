@@ -10,7 +10,7 @@ const {
 	statisticsFilter,
 	statisticsFilterMember
 } = require('../controllers/statictics');
-const { requireSignin } = require('../controllers/auth');
+const { requireSignin, verifySchool } = require('../controllers/auth');
 router.get('/statictics/all-program/:userId', requireSignin, getAllProgram);
 router.get('/statictics/state-by-type/:userId', requireSignin, getStateByType);
 router.post('/statictics/graphFetch/:userId', requireSignin, statisticsFilter);
@@ -18,22 +18,22 @@ router.post('/statictics/graphFetchMember/:userId', requireSignin, statisticsFil
 
 router.get(
 	'/statictics/yearly-join-quit-data/:userId',
-	requireSignin,
+	requireSignin, verifySchool,
 	getJoinDataByYear
 );
 router.get(
 	'/statictics/get-ranks-by-program/:userId',
-	requireSignin,
+	requireSignin, verifySchool,
 	getRanksByProgram
 );
 router.get(
 	'/statictics/get-ranks-report-by-program/:userId',
-	requireSignin,
+	
 	getRanksReportByProgram
 );
 router.get(
 	'/statictics/get-member-by-program/:userId',
-	requireSignin,
+	requireSignin, verifySchool,
 	getMemberByProgram
 );
 module.exports = router;

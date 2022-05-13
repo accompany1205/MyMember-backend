@@ -12,6 +12,7 @@ const Joi = require('@hapi/joi')
 exports.addRank = async (req, res) => {
 
     try {
+        const userId = req.params.userId
         const studentId = req.params.studentId
         const Crank = req.body.current_rank_name
         const Nrank = req.body.next_rank_name
@@ -43,7 +44,8 @@ exports.addRank = async (req, res) => {
             rank_name: Crank,
             day_to_ready: data.day_to_ready,
             rank_image: data.rank_image,
-            studentId: studentId
+            studentId: studentId,
+            userId: userId
         })
         resp.save(async (er, data) => {
             if (er) {

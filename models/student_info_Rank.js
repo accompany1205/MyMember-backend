@@ -14,8 +14,8 @@ const programSchema = new mongoose.Schema(
             type: String,
 
         },
-        studentId : {
-            type:String
+        studentId: {
+            type: String
         },
         day_to_ready: {
             type: String,
@@ -31,7 +31,10 @@ const programSchema = new mongoose.Schema(
         // },
         rank_image: {
             type: String,
-        }
+        },
+        userId: {
+            type: String
+        },
     },
     { timestamps: true }
 );
