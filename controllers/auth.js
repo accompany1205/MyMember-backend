@@ -516,10 +516,12 @@ exports.signin = async (req, res) => {
 	}
 	await User.findOne({
 		$or: [{ username: username }, { email: email }],
+		email: { $nin: [undefined, ''] }, username: { $nin: [undefined, ''] }
 	}).exec(async (err, data) => {
 		if (!data) {
 			await SubUsersRole.findOne({
 				$or: [{ 'username': username }, { 'email': email }],
+				email: { $nin: [undefined, ''] }, username: { $nin: [undefined, ''] }
 			}).exec(async (err, data) => {
 				if (err || !data) {
 					return res.status(400).json({

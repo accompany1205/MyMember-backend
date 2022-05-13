@@ -829,7 +829,7 @@ exports.buyMembership = async (req, res) => {
 		} else {
 			if (
 				!membershipData.isEMI &&
-				membershipData.balance == 0 
+				membershipData.balance == 0
 				// && membershipData.payment_type == 'pif'
 			) {
 				membershipData.due_status = 'paid';
@@ -958,7 +958,7 @@ function createMemberShipDocument(membershipData, studentId) {
 				resolve({ msg: 'membership not buy', success: false });
 			} else {
 				update = {
-					$set: { status: 'active' },
+					$set: { status: 'active', membership_expiry: data.expiry_date },
 					$push: { membership_details: data._id },
 				};
 				AddMember.findOneAndUpdate(

@@ -187,6 +187,9 @@ const addmemberSchema = new schema(
     rankFromRecomendedTest: {
       type: Array,
     },
+    membership_expiry: {
+      type: Date,
+    },
     membership_details: [
       {
         type: schema.Types.ObjectId,

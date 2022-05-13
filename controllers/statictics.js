@@ -268,7 +268,7 @@ exports.getMemberByProgram = async (req, res) => {
 exports.getRanksReportByProgram = async (req, res) => {
 	try {
 		let { programID, month, year } = req.query;
-
+		const userId = req.params.userId;
 		month = parseInt(month);
 		year = parseInt(year);
 
@@ -316,6 +316,7 @@ exports.getRanksReportByProgram = async (req, res) => {
 					pipeline: [
 						{
 							$project: {
+								// userId: "$userId",
 								month: { $month: '$createdAt' },
 								year: { $year: '$createdAt' },
 							},
@@ -324,6 +325,7 @@ exports.getRanksReportByProgram = async (req, res) => {
 							$match: {
 								month,
 								year,
+								// userId
 							},
 						},
 						{
@@ -343,6 +345,7 @@ exports.getRanksReportByProgram = async (req, res) => {
 					pipeline: [
 						{
 							$project: {
+								// userId: "$userId",
 								month: { $month: '$createdAt' },
 								year: { $year: '$createdAt' },
 							},
@@ -351,6 +354,7 @@ exports.getRanksReportByProgram = async (req, res) => {
 							$match: {
 								month: lastMonth,
 								year: lastYear,
+								// userId: userId
 							},
 						},
 						{
