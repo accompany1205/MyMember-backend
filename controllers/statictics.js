@@ -138,11 +138,11 @@ exports.statisticsFilter = async (req, res) => {
 		}
 		// let responseData = await Promise.all(promises);
 		
-		if (responseData.length == 0) {
+		if (promises.length == 0) {
 			return res.send({msg:"no data!", success:false})
 		}
-		console.log(responseData);
-		return res.send({msg: "data", success:true, responseData});
+		//console.log(responseData);
+		return res.send({msg: "data", success:true, data : promises});
 
 	} catch (err) {
 		res.send({ msg: err.message.replace(/\"/g, ""), success: false })
