@@ -113,7 +113,7 @@ exports.statisticsFilter = async (req, res) => {
 				{
 					$and: [
 						{ userId: userId },
-						{ studentType: { $in: ["Active Student", "Active Trial"] } },
+						{ studentType: "Active Trial" },
 						{ createdAt: { $gte: (date), $lt: (finalDate) } }
 					]
 				}
@@ -122,13 +122,11 @@ exports.statisticsFilter = async (req, res) => {
 				{
 					$and: [
 						{ userId: userId },
-						{ studentType: { $in: ["Former Trial", "Former Student"] } },
+						{ studentType: "Former Trial" },
 						{ createdAt: { $gte: (date), $lt: (finalDate) } }
 					]
 				}
 			);
-			console.log(join);
-			console.log(join.length, quite.length);
 
 			dataObj.month = count;
 			dataObj.join = join.length;
@@ -141,7 +139,64 @@ exports.statisticsFilter = async (req, res) => {
 		if (promises.length == 0) {
 			return res.send({msg:"no data!", success:false})
 		}
-		//console.log(responseData);
+		return res.send({msg: "data", success:true, data : promises});
+
+	} catch (err) {
+		res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+	}
+}
+
+exports.statisticsFilterMember = async (req, res) => {
+	const userId = req.params.userId;
+	let date = req.body.dates;
+	//let newMonth = date.slice(0, 2)
+	let newDate = date.slice(3, 5)
+	let newYear = date.slice(-4);
+	let updateY = ("" + (parseInt(newYear) + 1))
+	let finalDate;
+	//let updateM = ("0" + (parseInt(newMonth) + 1)).slice(-2);
+	try {
+		let count = 1;
+		let promises = [];
+		while (count <= 12) {
+			let month = ("0" + count).slice(-2);
+			finalDate = `${month}-${newDate}-${updateY}`;
+			date = `${month}-${newDate}-${newYear}`
+			let dataObj = {
+				month: 0,
+				join: 0,
+				quite: 0
+			};
+			let join = await Member.find(
+				{
+					$and: [
+						{ userId: userId },
+						{ studentType: "Active Student" },
+						{ createdAt: { $gte: (date), $lt: (finalDate) } }
+					]
+				}
+			);
+			let quite = await Member.find(
+				{
+					$and: [
+						{ userId: userId },
+						{ studentType: "Former Student" },
+						{ createdAt: { $gte: (date), $lt: (finalDate) } }
+					]
+				}
+			);
+
+			dataObj.month = count;
+			dataObj.join = join.length;
+			dataObj.quite = quite.length;
+			promises.push(dataObj);
+			count += 1;
+		}
+		// let responseData = await Promise.all(promises);
+		
+		if (promises.length == 0) {
+			return res.send({msg:"no data!", success:false})
+		}
 		return res.send({msg: "data", success:true, data : promises});
 
 	} catch (err) {
