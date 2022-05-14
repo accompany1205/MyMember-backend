@@ -1422,9 +1422,26 @@ function getUserId() {
 exports.test = async (req, res) => {
 
 	const data = await student_info_ranks.find({},
-		{ studentId: 1 }).populate("studentId")
+		{ studentId: 1 })
+	.populate("studentId")
+	// var time = 0;
+	// const allUsers = await getUserId()
+	// console.log(allUsers)
 
-res.send(data)
+	// var interval = setInterval(async function () {
+	// 	if (time < allUsers.length) {
+
+	// 		console.log(allUsers[time]._id)
+	// 		time++
+	// 	}
+	// 	else {
+	// 		clearInterval(interval);
+	// 		console.log({ msg: 'student info rank updated successfully' })
+
+	// 	}
+	// }, 5000);
+
+	res.send(data)
 	// for (let member of data) {
 	// 	startDate = moment(new Date(member.start_date), 'MM/DD/YYYY').format('MM/DD/YYYY')
 	// 	promises.push(updateStudentsById(member._id, startDate))

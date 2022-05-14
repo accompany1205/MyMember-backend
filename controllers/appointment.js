@@ -160,7 +160,7 @@ exports.payForRegister = async (req, res) => {
     let eventRegister = new EventRegistered(eventRegisterData);
     console.log("-->>", eventRegister)
     eventRegister.save(async (err, data) => {
-      console.log(data)
+      // console.log(data)
       if (err) {
         return res.send({
           success: false,
@@ -265,7 +265,7 @@ exports.deleteInvitee = async (req, res) => {
   let inviteeIds = req.body.inviteeIds;
   try {
     for (let invitee of inviteeIds) {
-      console.log(invitee)
+      // console.log(invitee)
       await Invitee.deleteOne(({ _id: invitee }));
     }
     res.send({
