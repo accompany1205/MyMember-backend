@@ -492,13 +492,6 @@ exports.getRanksReportByProgram = async (req, res) => {
 					last_month: { $arrayElemAt: ['$last-month', 0] },
 				},
 			},
-			{
-				$match: {
-					this_month: { $exists: true },
-					this_month: { $exists: true },
-
-				}
-			},
 			{ $sort: { programName: 1 } }
 			// Ranks
 		]);
