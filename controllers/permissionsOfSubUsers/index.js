@@ -1,9 +1,14 @@
 const SubUsersRole = require("../../models/sub_user_roles");
 const RolesList = require("../../models/rolesList")
+const cloudUrl = require('../../gcloud/imageUrl');
 
-exports.create = (req, res) => {
+exports.create = async (req, res) => {
     try {
-        var subUserObj = new SubUsersRole(req.body)
+        let subUserBody = req.body
+        if (req.file) {
+            subUserBody.profile_img = await cloudUrl.imageUrl(req.file);
+        }
+        var subUserObj = new SubUsersRole(subUserBody)
         subUserObj.save((err, data) => {
             if (err) {
                 res.send({ 'msg': err.message, 'success': false })
@@ -19,9 +24,13 @@ exports.create = (req, res) => {
 }
 
 
-exports.update = (req, res) => {
+exports.update = async (req, res) => {
     try {
-        SubUsersRole.findByIdAndUpdate(req.params.SubUserId, req.body)
+        let subUserBody = req.body
+        if (req.file) {
+            subUserBody.profile_img = await cloudUrl.imageUrl(req.file);
+        }
+        SubUsersRole.findByIdAndUpdate(req.params.SubUserId, subUserBody)
             .exec((err, data) => {
                 if (err) {
                     res.send({ 'msg': 'sub-users info is not update', 'success': false })
@@ -80,7 +89,7 @@ exports.roleAggregateValue = (req, res) => {
                             lastname: '$lastname',
                         },
                     },
-                    "count": {"$sum":1}
+                    "count": { "$sum": 1 }
                 },
             },
         ]).exec((err, info) => {
@@ -197,7 +206,6 @@ exports.updateRolesList = (req, res) => {
                     SubUsersRole.updateOne({ role: _id }, { roles })
                         .exec((err, data) => {
                             if (err) {
-                                console.log(err.message)
                                 res.send({ 'msg': 'sub-users roles is not update!', 'success': false })
                             }
                             else {
