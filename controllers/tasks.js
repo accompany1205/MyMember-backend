@@ -109,9 +109,9 @@ exports.tasksUpdate = async (req, res) => {
             (req.files).map(file => {
                 promises.push(cloudUrl.imageUrl(file))
             });
+            const docs = await Promise.all(promises);
+            taskData.document = docs;
         }
-        const docs = await Promise.all(promises);
-        taskData.document = docs;
         tasks.updateOne(
             { _id: taskId },
             { $set: taskData })
@@ -143,7 +143,7 @@ exports.todayTask = async (req, res) => {
         let cMonth = ("0" + (date.getMonth() + 1)).slice(-2);
         let cYear = date.getFullYear();
         let currentDate = `${cMonth}-${cDate}-${cYear}`;
-
+        console.log(currentDate)
         tasks.find(
             { start: currentDate }
         ).populate({
@@ -210,10 +210,7 @@ exports.taskFilter = async (req, res) => {
             filter.start = currentDate;
             console.log(filter)
             tasks.find(
-                filter,
-                {
-                    start: 1
-                }
+                filter
             ).populate({
                 path: "subfolderId",
                 select: "subFolderName",
@@ -237,9 +234,13 @@ exports.taskFilter = async (req, res) => {
                     {
                         $match: {
                             userId: userId
-                            ,
+
+                        }
+                    },
+                    {
+                        $match: {
                             $expr:
-                                { $eq: [{ $week: { $dateFromString: '$start' } }, { $week: "$$NOW" }] }
+                                { $eq: [{ $week: '$start' }, { $week: "$$NOW" }] }
                         }
                     },
 

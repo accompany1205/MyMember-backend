@@ -135,11 +135,11 @@ exports.statisticsFilter = async (req, res) => {
 			count += 1;
 		}
 		// let responseData = await Promise.all(promises);
-		
+
 		if (promises.length == 0) {
-			return res.send({msg:"no data!", success:false})
+			return res.send({ msg: "no data!", success: false })
 		}
-		return res.send({msg: "data", success:true, data : promises});
+		return res.send({ msg: "data", success: true, data: promises });
 
 	} catch (err) {
 		res.send({ msg: err.message.replace(/\"/g, ""), success: false })
@@ -193,11 +193,11 @@ exports.statisticsFilterMember = async (req, res) => {
 			count += 1;
 		}
 		// let responseData = await Promise.all(promises);
-		
+
 		if (promises.length == 0) {
-			return res.send({msg:"no data!", success:false})
+			return res.send({ msg: "no data!", success: false })
 		}
-		return res.send({msg: "data", success:true, data : promises});
+		return res.send({ msg: "data", success: true, data: promises });
 
 	} catch (err) {
 		res.send({ msg: err.message.replace(/\"/g, ""), success: false })
@@ -420,6 +420,7 @@ exports.getRanksReportByProgram = async (req, res) => {
 					programName: 1,
 					rank_name: '$program.rank_name',
 					rank_image: '$program.rank_image',
+					rank_order: '$program.rank_order',
 				},
 			},
 			// Get Current Month Data
@@ -432,7 +433,7 @@ exports.getRanksReportByProgram = async (req, res) => {
 					pipeline: [
 						{
 							$project: {
-								// userId: "$userId",
+								userId: "$userId",
 								month: { $month: '$createdAt' },
 								year: { $year: '$createdAt' },
 							},
@@ -441,7 +442,7 @@ exports.getRanksReportByProgram = async (req, res) => {
 							$match: {
 								month,
 								year,
-								// userId
+								userId
 							},
 						},
 						{
@@ -461,16 +462,16 @@ exports.getRanksReportByProgram = async (req, res) => {
 					pipeline: [
 						{
 							$project: {
-								// userId: "$userId",
-								month: { $month: '$createdAt' },
-								year: { $year: '$createdAt' },
+								userId: "$userId",
+								lastMonth: { $month: '$createdAt' },
+								lastYear: { $year: '$createdAt' },
 							},
 						},
 						{
 							$match: {
-								month: lastMonth,
-								year: lastYear,
-								// userId: userId
+								lastMonth,
+								lastYear,
+								userId
 							},
 						},
 						{
@@ -486,10 +487,12 @@ exports.getRanksReportByProgram = async (req, res) => {
 					programName: 1,
 					rank_name: 1,
 					rank_image: 1,
+					rank_order: 1,
 					this_month: { $arrayElemAt: ['$this-month', 0] },
 					last_month: { $arrayElemAt: ['$last-month', 0] },
 				},
 			},
+			{ $sort: { programName: 1 } }
 			// Ranks
 		]);
 
