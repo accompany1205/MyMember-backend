@@ -66,7 +66,7 @@ exports.admin_read = (req, res) => {
                     res.send(data)
                 }
                 else {
-                    res.send({ msg: 'list is empty' })
+                    res.send({ msg: 'list is empty' ,data: [] })
                 }
             }
         })

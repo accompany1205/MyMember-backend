@@ -1423,7 +1423,7 @@ exports.test = async (req, res) => {
 
 	const data = await student_info_ranks.find({},
 		{ studentId: 1 })
-	.populate("studentId")
+		.populate("studentId")
 	// var time = 0;
 	// const allUsers = await getUserId()
 	// console.log(allUsers)
@@ -1511,7 +1511,7 @@ async function collectionModify() {
 						})
 
 				}))
-				console.log(time, allUsers[time]._id,data)
+				console.log(time, allUsers[time]._id, data)
 				time++;
 			}
 			else {
@@ -1538,56 +1538,64 @@ async function update_Rating(member) {
 	})
 }
 exports.updateRating = async (req, res) => {
-	const userId = req.params.userId;
-	const [data] = await Promise.all([addmemberModal.aggregate([
-		{ $match: { 'userId': userId } },
-		{
-			'$lookup': {
-				'from': 'class_schedules',
-				'localField': '_id',
-				'foreignField': 'class_attendanceArray.studentInfo',
-				'as': 'data'
-			}
-		}, {
-			'$project': {
-				'last_attended_date': {
-					'$toDate': {
-						$max: '$data.start_date'
+	try {
+		const userId = req.params.userId;
+		const [data] = await Promise.all([addmemberModal.aggregate([
+			{ $match: { 'userId': userId } },
+			{
+				'$lookup': {
+					'from': 'class_schedules',
+					'localField': '_id',
+					'foreignField': 'class_attendanceArray.studentInfo',
+					'as': 'data'
+				}
+			}, {
+				'$project': {
+					'last_attended_date': {
+						'$toDate': {
+							$max: '$data.start_date'
+						}
 					}
 				}
-			}
-		},
-		{
-			'$addFields': {
-				'rating': {
-					'$floor': {
-						'$divide': [
-							{
-								'$subtract': [
-									new Date(), '$last_attended_date'
-								]
-							}, 1000 * 60 * 60 * 24
-						]
+			},
+			{
+				'$addFields': {
+					'rating': {
+						'$floor': {
+							'$divide': [
+								{
+									'$subtract': [
+										new Date(), '$last_attended_date'
+									]
+								}, 1000 * 60 * 60 * 24
+							]
+						}
 					}
 				}
+			},
+			{
+				$match: { rating: { $nin: ['', null] } }
 			}
-		},
-		{
-			$match: { rating: { $nin: ['', null] } }
-		}
-	])])
+		])])
+		console.log(data)
 
+		Promise.all(data.map(member => {
+			console.log(member)
+			update_Rating(member)
+				.then(resp => {
+				})
+				.catch(err => {
+					console.log(err)
+				})
 
-	Promise.all(data.map(member => {
-		update_Rating(member)
-			.then(resp => {
-			})
-			.catch(err => {
-				console.log(err)
-			})
+		}))
+		res.send({ msg: 'rating updated successfully', data })
 
-	}))
-	res.send({ msg: 'rating updated successfully', data })
+	}
+	catch (err) {
+		res.send({ msg: err.message.replace(/\"/g, ''), success: false });
+
+	} 
 }
 exports.birth_next_month = (req, res) => {
 	var curDate = new Date();
