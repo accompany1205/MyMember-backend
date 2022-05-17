@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const permissionsOfSubUsers = require("../../controllers/permissionsOfSubUsers");
+const upload = require('../../handler/multer')
 
-router.post("/sub-users/permissions/create", permissionsOfSubUsers.create);
-router.put("/sub-users/permissions/update/:SubUserId", permissionsOfSubUsers.update);
+router.post("/sub-users/permissions/create", upload.single('profile_img'), permissionsOfSubUsers.create);
+router.put("/sub-users/permissions/update/:SubUserId", upload.single('profile_img'), permissionsOfSubUsers.update);
 
 router.get("/sub-users/permissions/list", permissionsOfSubUsers.getList);
 router.get("/sub-users/role/aggregate/:userId", permissionsOfSubUsers.roleAggregateValue);
