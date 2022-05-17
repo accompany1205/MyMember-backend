@@ -1465,7 +1465,7 @@ async function collectionModify() {
 
 		var interval = setInterval(async function () {
 			if (time < allUsers.length) {
-				const data = await addmemberModal.aggregate([
+				const [data] = await Promise.all([addmemberModal.aggregate([
 					{ $match: { 'userId': allUsers[time]._id.toString() } },
 					{
 						'$lookup': {
@@ -1497,17 +1497,21 @@ async function collectionModify() {
 								}
 							}
 						}
+					},
+					{
+						$match: { rating: { $nin: ['', null] } }
 					}
-				])
-				for (let member of data) {
-					updateRating(member)
+				])])
+				Promise.all(data.map(member => {
+					update_Rating(member)
 						.then(resp => {
-
 						})
 						.catch(err => {
 							console.log(err)
 						})
-				}
+
+				}))
+				console.log(time, allUsers[time]._id,data)
 				time++;
 			}
 			else {
@@ -1523,7 +1527,7 @@ async function collectionModify() {
 		console.log({ msg: err.message.replace(/\"/g, ''), success: false });
 	}
 };
-async function updateRating(member) {
+async function update_Rating(member) {
 	let { _id, rating } = member
 	rating = rating == null ? 0 : rating;
 	return new Promise((resolve, reject) => {
@@ -1533,52 +1537,58 @@ async function updateRating(member) {
 
 	})
 }
-// exports.updateRating = async (req, res) => {
-// 	const userId = req.params.userId;
-// 	const data = await addmemberModal.aggregate([
-// 		{ $match: { 'userId': userId } },
-// 		{
-// 			'$lookup': {
-// 				'from': 'class_schedules',
-// 				'localField': '_id',
-// 				'foreignField': 'class_attendanceArray.studentInfo',
-// 				'as': 'data'
-// 			}
-// 		}, {
-// 			'$project': {
-// 				'last_attended_date': {
-// 					'$toDate': {
-// 						$max: '$data.start_date'
-// 					}
-// 				}
-// 			}
-// 		},
-// 		{
-// 			'$addFields': {
-// 				'rating': {
-// 					'$floor': {
-// 						'$divide': [
-// 							{
-// 								'$subtract': [
-// 									new Date(), '$last_attended_date'
-// 								]
-// 							}, 1000 * 60 * 60 * 24
-// 						]
-// 					}
-// 				}
-// 			}
-// 		}
-// 	])
-// 	for (let member of data) {
-// 		updateRating(member)
-// 			.then(resp => {
-// 			})
-// 			.catch(err => {
-// 				console.log(err)
-// 			})
-// 	}
-// 	res.send({ msg: 'rating updated successfully' })
-// }
+exports.updateRating = async (req, res) => {
+	const userId = req.params.userId;
+	const [data] = await Promise.all([addmemberModal.aggregate([
+		{ $match: { 'userId': userId } },
+		{
+			'$lookup': {
+				'from': 'class_schedules',
+				'localField': '_id',
+				'foreignField': 'class_attendanceArray.studentInfo',
+				'as': 'data'
+			}
+		}, {
+			'$project': {
+				'last_attended_date': {
+					'$toDate': {
+						$max: '$data.start_date'
+					}
+				}
+			}
+		},
+		{
+			'$addFields': {
+				'rating': {
+					'$floor': {
+						'$divide': [
+							{
+								'$subtract': [
+									new Date(), '$last_attended_date'
+								]
+							}, 1000 * 60 * 60 * 24
+						]
+					}
+				}
+			}
+		},
+		{
+			$match: { rating: { $nin: ['', null] } }
+		}
+	])])
+
+
+	Promise.all(data.map(member => {
+		update_Rating(member)
+			.then(resp => {
+			})
+			.catch(err => {
+				console.log(err)
+			})
+
+	}))
+	res.send({ msg: 'rating updated successfully', data })
+}
 exports.birth_next_month = (req, res) => {
 	var curDate = new Date();
 	var next_month = new Date(
@@ -2702,4 +2712,4 @@ exports.leads_past3_month = async (req, res) => {
 	}
 };
 
-cron.schedule("0 0 * * *", () => collectionModify())
+// cron.schedule("0 0 * * *", () => collectionModify())

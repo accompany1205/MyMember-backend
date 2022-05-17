@@ -56,7 +56,7 @@ exports.read = (req, res) => {
 
 
 exports.admin_read = (req, res) => {
-    supportModal.find({ status: 'Open' })
+    supportModal.find({ status: { $in: ['Open', "Closed", "Pending"] } }).sort({ _id: -1 })
         .exec((err, data) => {
             if (err) {
                 res.send({ error: 'ticket list not found' })
