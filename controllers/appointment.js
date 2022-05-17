@@ -124,6 +124,24 @@ exports.getRegisteredInvitees = async (req, res) => {
   })
 }
 
+exports.eventPay = async (req, res) => {
+  let eventRegistered = req.params.eventRegisteredId;
+  try {
+    let registerd = {
+      "testId": req.body.testId,
+      "method": req.body.method,
+      "cheque_no": req.body.cheque_no,
+      "isPaid": req.body.isPaid
+    };
+     EventRegistered.findOneAndUpdate({_id:eventRegistered}, { $set: registerd })
+     .then((data) =>{
+      return res.send({msg: "payment done!", success:true});
+     })
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
+}
+
 exports.addToAttended = async (req, res) => {
   let studentIds = req.body.studentIds;
   let eventId = req.params.eventId;
