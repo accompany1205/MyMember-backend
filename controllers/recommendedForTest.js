@@ -168,7 +168,8 @@ exports.recomendStudent = async (req, res) => {
         const promises = [];
         for (let student of students) {
             const program_rank  = Program.findOne({ programName: student.program });
-            if (!student.isRecommended && student.program && program_rank.lenght) {
+            console.log(program_rank.length);
+            if (!student.isRecommended && student.program && program_rank.length > 1) {
                 student.userId = userId;
                 await recommendedFortestSchema.validateAsync(student);
                 recommendedStudentsForTest.push(student)
