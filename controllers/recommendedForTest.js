@@ -167,6 +167,7 @@ exports.recomendStudent = async (req, res) => {
         var alredyRecomend = "";
         const promises = [];
         for (let student of students) {
+            console.log(student.program)
             const programs = Program.findOne({ programName: student.program });
             console.log(programs);
             console.log((programs.program_rank).length);
