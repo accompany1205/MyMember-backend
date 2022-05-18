@@ -9,6 +9,7 @@ const { valorTechPaymentGateWay } = require("./valorTechPaymentGateWay");
 const mergeFile = require("../Services/mergeFile")
 const cloudUrl = require("../gcloud/imageUrl");
 const mergeMultipleFiles = require("../Services/mergeMultipleFiles");
+const Program = require("../models/program");
 
 
 
@@ -161,11 +162,13 @@ exports.recomendStudent = async (req, res) => {
                 msg: "You haven't selected any student!"
             })
         }
+
         const recommendedStudentsForTest = [];
         var alredyRecomend = "";
         const promises = [];
         for (let student of students) {
-            if (!student.isRecommended && student.program) {
+            const program_rank  = Program.findOne({ programName: student.program });
+            if (!student.isRecommended && student.program && program_rank.lenght) {
                 student.userId = userId;
                 await recommendedFortestSchema.validateAsync(student);
                 recommendedStudentsForTest.push(student)
@@ -181,7 +184,7 @@ exports.recomendStudent = async (req, res) => {
             return res.send({
                 recommendedStudentsForTest,
                 success: false,
-                msg: `${alredyRecomend} These students are already on the recommended list!`
+                msg: `${alredyRecomend} already recommneded or No Rank available for promte! `
             })
         }
         res.send({
@@ -223,7 +226,7 @@ exports.registerdStudent = async (req, res) => {
 
     try {
         if (!students.length) {
-            res.json({
+            return res.json({
                 success: false,
                 msg: "You haven't selected any student!"
             })
@@ -232,6 +235,7 @@ exports.registerdStudent = async (req, res) => {
         var alredyRegisterd = "";
         const promises = [];
         for (let student of students) {
+            
             if (!student.isPaid && student.program) {
                 student.userId = userId;
                 await registeredFortestSchema.validateAsync(student);
@@ -261,7 +265,7 @@ exports.registerdStudent = async (req, res) => {
 
 }
 const updateRecommendedStudentsByIdForRegister = async (studentId) => {
-    return RecommendedForTest.updateOne({ studentId: studentId }, { "isDeleted": true })
+    return RecommendedForTest.deleteOne({ studentId: studentId })
 }
 exports.payAndPromoteTheStudent = async (req, res) => {
     let userId = req.params.userId;
@@ -568,7 +572,7 @@ exports.deleteAll_for_register = async (req, res) => {
     let regesterIds = req.body.registeredIds;
     let promise = [];
     for (let id in regesterIds) {
-        let { studentId } = RegisterdForTest.findById(regesterIds[id]);
+        let { studentId } = await RegisterdForTest.findOne({ _id: regesterIds[id] });
         await Member.updateOne({ _id: studentId }, { $set: { isRecommended: false } })
             .then(async data => {
                 await RegisterdForTest.deleteOne({ _id: regesterIds[id] },

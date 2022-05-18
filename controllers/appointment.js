@@ -79,11 +79,12 @@ exports.getInvitees = async (req, res) => {
   });
   if (!invitees.length) {
     return res.json({
+      data: [],
       success: false,
       msg: "There is no data found!"
     })
   }
-  res.json({
+  return res.json({
     success: true,
     data: invitees,
   })
@@ -97,11 +98,12 @@ exports.getAttended = async (req, res) => {
   });
   if (!attendee.length) {
     return res.json({
+      data:[],
       success: false,
       msg: "There is no data found!"
     })
   }
-  res.json({
+  return res.json({
     success: true,
     data: attendee
   })
@@ -114,11 +116,12 @@ exports.getRegisteredInvitees = async (req, res) => {
   let registeredInvitee = await EventRegistered.find({ "userId": userId, "eventId": eventId, "isDeleted": false });
   if (!registeredInvitee.length) {
     return res.json({
+      data: [],
       success: false,
       msg: "There is no data found!"
     })
   }
-  res.json({
+  return res.json({
     success: true,
     data: registeredInvitee
   })
@@ -136,6 +139,8 @@ exports.eventPay = async (req, res) => {
      EventRegistered.findOneAndUpdate({_id:eventRegistered}, { $set: registerd })
      .then((data) =>{
       return res.send({msg: "payment done!", success:true});
+     }).catch(err => {
+       return res.send({msg: err.message.replace(/\"/g, ""), success: false, })
      })
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false })
@@ -167,7 +172,7 @@ exports.addToAttended = async (req, res) => {
 }
 
 const updateRegisterdInviteeByIdForAttended = async (studentId, eventId) => {
-  return EventRegistered.updateOne({ studentId: studentId, eventId: eventId }, { "isDeleted": true });
+  return await EventRegistered.updateOne({ studentId: studentId, eventId: eventId }, { "isDeleted": true });
 }
 
 exports.payForRegister = async (req, res) => {
@@ -176,7 +181,6 @@ exports.payForRegister = async (req, res) => {
     let eventRegisterData = req.body;
     eventRegisterData.userId = userId;
     let eventRegister = new EventRegistered(eventRegisterData);
-    console.log("-->>", eventRegister)
     eventRegister.save(async (err, data) => {
       // console.log(data)
       if (err) {
