@@ -5,6 +5,8 @@ const cloudUrl = require('../../gcloud/imageUrl');
 exports.create = async (req, res) => {
     try {
         let subUserBody = req.body
+        subUserBody.roles = req.body.roles ? JSON.parse(req.body.roles) : []
+
         if (req.file) {
             subUserBody.profile_img = await cloudUrl.imageUrl(req.file);
         }
@@ -27,6 +29,7 @@ exports.create = async (req, res) => {
 exports.update = async (req, res) => {
     try {
         let subUserBody = req.body
+        subUserBody.roles = req.body.roles ? JSON.parse(req.body.roles) : []
         if (req.file) {
             subUserBody.profile_img = await cloudUrl.imageUrl(req.file);
         }
