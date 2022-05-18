@@ -90,6 +90,7 @@ exports.roleAggregateValue = (req, res) => {
                         $push: {
                             firstname: '$firstname',
                             lastname: '$lastname',
+                            profile_img: '$profile_img',
                         },
                     },
                     "count": { "$sum": 1 }
