@@ -168,7 +168,7 @@ exports.recomendStudent = async (req, res) => {
         const promises = [];
         for (let student of students) {
             console.log(student.program)
-            const programs = Program.findOne({ programName: student.program });
+            const programs = await Program.findOne({ programName: student.program });
             console.log(programs);
             console.log((programs.program_rank).length);
             if (!student.isRecommended && student.program && programs.program_rank.length > 1) {
