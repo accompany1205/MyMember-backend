@@ -243,13 +243,6 @@ exports.updateAll = async (req, res) => {
                     success: true
                 })
             }
-            // else {
-            //     const res1 = await class_schedule.insertMany({ $and:[{ userId: req.params.userId },allAttendance]});
-            //     res.status(200).json({
-            //         message: 'All class schedule has been updated Successfully',
-            //         success: true
-            //     })
-            // }
         }).catch((error) => {
             res.send({ error: error.message.replace(/\"/g, ""), success: false })
         })

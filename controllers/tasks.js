@@ -228,23 +228,21 @@ exports.taskFilter = async (req, res) => {
                 })
 
         } else if (byTime === "This Week") {
-            tasks
-                .aggregate([
-
-                    {
-                        $match: {
-                            userId: userId
-
+            tasks.aggregate([
+                {
+                    $match: filter
+                },
+                {
+                    $match: {
+                        $expr: {
+                            $eq: [
+                                { $week: { $toDate: "$start" } }, { $week: "$$NOW" }
+                            ]
                         }
-                    },
-                    {
-                        $match: {
-                            $expr:
-                                { $eq: [{ $week: '$start' }, { $week: "$$NOW" }] }
-                        }
-                    },
+                    }
+                },
 
-                ])
+            ])
                 .exec((err, memberdata) => {
                     if (err) {
                         res.send({
@@ -261,62 +259,18 @@ exports.taskFilter = async (req, res) => {
             tasks.
                 aggregate([
                     {
-                        $match: {
-                            category: catType,
-                            userId: userId
-                        }
-                    },
-                    {
-                        $project: {
-                            status: 1,
-                            repeatedDates: 1,
-                            groupInfoList: 1,
-                            studentInfo: 1,
-                            end_time: 1,
-                            start_time: 1,
-                            app_color: 1,
-                            end: 1,
-                            repeatedConcurrence: 1,
-                            interval: 1,
-                            range: 1,
-                            appointment_type: 1,
-                            title: 1,
-                            category: 1,
-                            notes: 1,
-                            start: 1,
-                            date: {
-                                "$dateFromString": {
-                                    "dateString": "$start",
-                                    "format": "%m-%d-%Y"
-                                }
-                            }
+                        $match: filter
 
-                        },
                     },
                     {
                         $match: {
                             $expr: {
                                 $eq: [
-                                    {
-                                        $month: "$date",
-                                    },
-                                    {
-                                        $month: "$$NOW",
-                                    },
+                                    { $month: { $toDate: "$start" } }, { $month: "$$NOW" }
                                 ]
                             }
                         },
                     },
-                    {
-                        $facet: {
-                            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
-                            totalCount: [
-                                {
-                                    $count: 'count'
-                                }
-                            ]
-                        }
-                    }
                 ])
                 .exec((err, memberdata) => {
                     if (err) {
@@ -324,12 +278,12 @@ exports.taskFilter = async (req, res) => {
                             error: err,
                         });
                     } else {
-                        let data = memberdata[0].paginatedResults
-                        if (data.length > 0) {
-                            res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
-
+                        if (err) {
+                            res.send({
+                                error: err,
+                            });
                         } else {
-                            res.send({ msg: 'data not found', success: false });
+                            res.send({ success: true, memberdata });
                         }
                     }
                 })
@@ -337,7 +291,16 @@ exports.taskFilter = async (req, res) => {
         else {
             tasks.find(
                 filter
-            ).populate("subfolderId")
+            ).populate({
+                path: "subfolderId",
+                select: "subFolderName",
+
+                populate: {
+                    select: "folderName",
+                    path: "folderId",
+                    model: "taskfolder"
+                }
+            })
                 .then((result) => {
                     res.send({ success: true, data: result })
                 }).catch((err) => {
