@@ -72,7 +72,8 @@ exports.promoteStudentRank = async (req, res) => {
             let registerdId = resgister.registerdId;
             let current_rank_name = resgister.current_rank_name;
             let next_rank_name = resgister.next_rank_name;
-            promises.push(promoteStudents(registerdId, current_rank_name, next_rank_name))
+            console.log(registerdId, current_rank_name, next_rank_name)
+            promises.push(await promoteStudents(registerdId, current_rank_name, next_rank_name))
         }
         await Promise.all(promises);
         res.json({

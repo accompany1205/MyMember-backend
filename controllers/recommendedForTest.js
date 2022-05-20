@@ -201,7 +201,7 @@ exports.recomendStudent = async (req, res) => {
 };
 
 const updateStudentsById = async (studentId) => {
-    return Member.findByIdAndUpdate({ _id: studentId }, { isRecommended: true })
+    return await Member.findByIdAndUpdate({ _id: studentId }, { isRecommended: true })
 }
 
 
@@ -268,7 +268,7 @@ exports.registerdStudent = async (req, res) => {
 
 }
 const updateRecommendedStudentsByIdForRegister = async (studentId) => {
-    return RecommendedForTest.deleteOne({ studentId: studentId })
+    return await RecommendedForTest.deleteOne({ studentId: studentId })
 }
 exports.payAndPromoteTheStudent = async (req, res) => {
     let userId = req.params.userId;
