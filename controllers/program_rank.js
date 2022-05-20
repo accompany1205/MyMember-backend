@@ -77,6 +77,7 @@ exports.update = async (req, res) => {
     const userId = req.params.userId;
 
     const rankBody = req.body
+    console.log(program_rank_id + " " + adminId + " "+ userId + " " + rankBody);
     let isExist = await program.find({ programName: rankBody.programName })
     try {
         if (isExist.length) {
@@ -95,6 +96,7 @@ exports.update = async (req, res) => {
                         res.send({ msg: err, success: false })
                     }
                     else {
+                        console.log(data.n)
                         if (data.n < 1) {
                             return res.send({
                                 msg: "This is system generated Rank Only admin can update",
