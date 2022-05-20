@@ -77,7 +77,8 @@ exports.update = async (req, res) => {
     const userId = req.params.userId;
 
     const rankBody = req.body
-    console.log(program_rank_id + " " + adminId + " "+ userId + " " + rankBody);
+    console.log(rankBody)
+    console.log(program_rank_id + " " + adminId + " " + userId);
     let isExist = await program.find({ programName: rankBody.programName })
     try {
         if (isExist.length) {
