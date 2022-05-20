@@ -148,9 +148,10 @@ exports.removeFromRegisterd = async (req, res) => {
     let {
         studentId
     } = await RegisterdForTest.findById(registeredId);
-    let deleteForRegistered = await Member.findOneAndUpdate(studentId, { isRecommended: false })
+    let deleteForRegistered = await Member.findOneAndUpdate({ _id: studentId }, { isRecommended: false })
+    console.log(deleteForRegistered);
     if (!deleteForRegistered) {
-        res.json({
+        return res.json({
             status: false,
             msg: "Unable to remove from Registered list"
         })
@@ -175,18 +176,25 @@ exports.removeFromRegisterd = async (req, res) => {
 
 exports.deleteAll = async (req, res) => {
     let registeredIds = req.body.registeredIds;
+    console.log(registeredIds)
     let promise = [];
-    for (let id in registeredIds) {
-        await RegisterdForTest.updateOne({ _id: registeredIds[id] }, { $set: { isDeleted: true } }).then(async data => {
-            let { studentId } = await RegisterdForTest.findById(registeredIds[id]);
-            await Member.updateOne({ _id: studentId }, { $set: { isRecommended: false } }, function (err, data) {
-                if (err) { res.send({ msg: "Registered Student Not Deleted!", success: false }) }
-                promise.push(data);
+    try {
+        for (let id in registeredIds) {
+            await RegisterdForTest.updateOne({ _id: registeredIds[id] }, { $set: { isDeleted: true } }).then(async data => {
+                let { studentId } = await RegisterdForTest.findById(registeredIds[id]);
+                await Member.updateOne({ _id: studentId }, { $set: { isRecommended: false } }, function (err, datas) {
+                    if (err) { res.send({ msg: "Registered Student Not Deleted!", success: false }) }
+                    console.log(datas);
+                    promise.push(datas);
+                })
             })
-        })
+        }
+        Promise.all(promise);
+        res.send({ msg: "Selected Students Deleted Succesfully!", success: true })
+    } catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
     }
-    Promise.all(promise);
-    res.send({ msg: "Selected Students Deleted Succesfully!", success: true })
+
 }
 
 exports.multipleDocMerge = async (req, res) => {
