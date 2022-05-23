@@ -4,53 +4,31 @@ const dateRange = require('../Services/dateRange')
 var moment = require("moment");
 const { errorHandler } = require('../helpers/dbErrorHandler');
 var mongo = require("mongoose")
+const { v4: uuidv4 } = require('uuid');
+
 
 exports.Create = async (req, res) => {
-    var proDetail = await Prog.find({ userId: req.params.userId, programName: req.body.program_name })
-    if (proDetail) {
-        let reqBody = req.body
-        let startDate = moment(reqBody.start_date, 'MM/DD/YYYY').format('MM/DD/YYYY')
-        let endDate = moment(reqBody.end_date, 'MM/DD/YYYY').format('MM/DD/YYYY')
-        let repeat_weekly_on = reqBody.repeat_weekly_on
+    let reqBody = req.body
+    let startDate = moment(reqBody.start_date, 'MM/DD/YYYY').format('MM/DD/YYYY')
+    let endDate = moment(reqBody.end_date, 'MM/DD/YYYY').format('MM/DD/YYYY')
+    let repeat_weekly_on = reqBody.repeat_weekly_on
 
-        try {
-
-            const dates = dateRange(startDate, endDate);
-
-            let allAttendance = []
-            for (let index in dates) {
-                let date = moment(dates[index], 'MM/DD/YYYY').format('MM/DD/YYYY')
-                let dayName = moment(new Date(date)).format('dddd').toLowerCase()
-                if (repeat_weekly_on.includes(dayName)) {
-                    let NewEvent = { ...reqBody, start_date: date, end_date: date, wholeSeriesEndDate: endDate, wholeSeriesStartDate: startDate }
-                    // delete NewEvent['repeat_weekly_on']
-                    allAttendance.push(NewEvent)
-                }
+    try {
+        const dates = dateRange(startDate, endDate);
+        let allAttendance = []
+        series_id = mongo.Types.ObjectId();
+        for (let index in dates) {
+            let date = moment(dates[index], 'MM/DD/YYYY').format('MM/DD/YYYY')
+            let dayName = moment(new Date(date)).format('dddd').toLowerCase()
+            if (repeat_weekly_on.includes(dayName)) {
+                let NewEvent = { ...reqBody, series_id, start_date: date, end_date: date, wholeSeriesEndDate: endDate, wholeSeriesStartDate: startDate }
+                allAttendance.push(NewEvent)
             }
-            await class_schedule.insertMany(allAttendance)
-            res.send({ msg: 'Class schedule succefully!', success: true })
-        } catch (error) {
-            res.send({ error: error.message.replace(/\"/g, ""), success: false })
         }
-        // return
-        // task.save((err, data) => {
-        //     if (err) {
-        //         res.send({ error: 'class schedule is not add', Error: err })
-        //     }
-        //     else {
-        //         class_schedule.findByIdAndUpdate({ _id: data._id }, { $set: { userId: req.params.userId } })
-        //             .exec((err, scheduleData) => {
-        //                 if (err) {
-        //                     res.send({ error: 'userId is not add in student' })
-        //                 }
-        //                 else {
-        //                     res.send({ msg: 'class schedule is add successfully', data: scheduleData })
-        //                 }
-        //             })
-        //     }
-        // });
-    } else {
-        res.send({ msg: 'Somthing went wrong!', success: false })
+        await class_schedule.insertMany(allAttendance)
+        res.send({ msg: 'Class schedule succefully!', success: true })
+    } catch (error) {
+        res.send({ error: error.message.replace(/\"/g, ""), success: false })
     }
 };
 
@@ -58,7 +36,7 @@ exports.Create = async (req, res) => {
 
 exports.read = async (req, res) => {
     try {
-        let result = await class_schedule.find({ userId: req.params.userId })
+        let result = await class_schedule.find({ userId: req.params.userId, isActive: true })
         res.send({ data: result, success: true })
     } catch (error) {
         res.send({ error: error.message.replace(/\"/g, ""), success: false })
@@ -193,59 +171,69 @@ exports.update = (req, res) => {
 //         return event;
 
 exports.updateAll = async (req, res) => {
-    // var proDetail = await Prog.find({ programName: req.body.program_name })
-    // if (proDetail) {
-    let userId = req.params.userId;
-    let reqBody = req.body
-    let start_time = moment(reqBody.start_time).format("MM/DD/YYYY")
-    let end_time = moment(reqBody.end_time).format("MM/DD/YYYY")
-    let repeat_weekly_on = reqBody.repeat_weekly_on
-    let startTimeH = moment(reqBody.start_time).format('hh')
-    let startTimeM = moment(reqBody.start_time).format('mm')
-    let endTimeH = moment(reqBody.end_time).format('hh')
-    let endTimeM = moment(reqBody.end_time).format('mm')
+    try {
+        let reqBody = req.body
+        if (reqBody.isResetTimeline) {
+            let start_time = moment(reqBody.start_time).format("MM/DD/YYYY")
+            let end_time = moment(reqBody.end_time).format("MM/DD/YYYY")
+            let repeat_weekly_on = reqBody.repeat_weekly_on
+            let startTimeH = moment(reqBody.start_time).format('hh')
+            let startTimeM = moment(reqBody.start_time).format('mm')
+            let endTimeH = moment(reqBody.end_time).format('hh')
+            let endTimeM = moment(reqBody.end_time).format('mm')
+            const dates = dateRange(start_time, end_time);
 
+            let allAttendance = []
+            for (let index in dates) {
+                let d = moment(dates[index], "MM/DD/YYYY").format();
+                let start_date = moment(dates[index], 'MM/DD/YYYY').format('MM/DD/YYYY')
+                let date = new Date(moment(d).set({ hour: Number(startTimeH), minute: Number(startTimeM) }));
+                let dateE = new Date(moment(d).set({ hour: Number(endTimeH), minute: Number(endTimeM) }));
+                let dayName = moment(new Date(date)).format('dddd').toLowerCase()
+                if (repeat_weekly_on.includes(dayName)) {
+                    let NewEvent = { ...reqBody, start_time: date, end_time: dateE, start_date: start_date, end_date: start_date, wholeSeriesEndDate: end_time, wholeSeriesStartDate: start_time }
+                    allAttendance.push(NewEvent)
+                }
+            }
+            class_schedule.updateMany({
+                series_id: reqBody.series_id
+            }, { isActive: false })
+                .then(async (update_resp) => {
+                    if (update_resp.deletedCount < 1) {
+                        return res.status(403).json({
+                            message: 'class_name not found',
+                            success: false
+                        })
+                    }
+                    else {
+                        const res1 = await class_schedule.insertMany(allAttendance);
+                        res.status(200).json({
+                            message: 'All class schedule has been updated Successfully',
+                            success: true
+                        })
+                    }
+                }).catch((err) => {
+                    res.send({ err: err.message.replace(/\"/g, ""), success: false })
+                })
+        } else {
+            await class_schedule.updateMany({ series_id: reqBody.series_id }, {
+                program_name: req.body.program_name,
+                class_name: req.body.class_name
+            })
+                .exec((err, updateFolder) => {
+                    if (err) {
+                        res.send({ msg: 'Classes not updated!', success: false })
+                    }
+                    else {
 
-    const dates = dateRange(start_time, end_time);
-
-    let allAttendance = []
-    for (let index in dates) {
-        let d = moment(dates[index], "MM/DD/YYYY").format();
-        let start_date = moment(dates[index], 'MM/DD/YYYY').format('MM/DD/YYYY')
-        let date = new Date(moment(d).set({ hour: Number(startTimeH), minute: Number(startTimeM) }));
-        let dateE = new Date(moment(d).set({ hour: Number(endTimeH), minute: Number(endTimeM) }));
-        let dayName = moment(new Date(date)).format('dddd').toLowerCase()
-        if (repeat_weekly_on.includes(dayName)) {
-            let NewEvent = { ...reqBody, start_time: date, end_time: dateE, start_date: start_date, end_date: start_date, wholeSeriesEndDate: end_time, wholeSeriesStartDate: start_time }
-            // delete NewEvent['repeat_weekly_on']
-            allAttendance.push(NewEvent)
+                        res.send({ msg: 'All class schedule has been updated Successfully', success: true })
+                    }
+                });
         }
     }
-    class_schedule.deleteMany(
-        {
-            $and:
-                [{ userId: userId },
-                { program_name: reqBody.defaultprogram_name },
-                { class_name: reqBody.defaultclass_name }]
-        }
-    )
-        .then(async (update_resp) => {
-            if (update_resp.deletedCount < 1) {
-                return res.status(403).json({
-                    message: 'class_name/program_name not found',
-                    success: false
-                })
-            }
-            else {
-                const res1 = await class_schedule.insertMany(allAttendance);
-                res.status(200).json({
-                    message: 'All class schedule has been updated Successfully',
-                    success: true
-                })
-            }
-        }).catch((error) => {
-            res.send({ error: error.message.replace(/\"/g, ""), success: false })
-        })
+    catch (err) {
+        res.send({ err: err.message.replace(/\"/g, ""), success: false })
+    }
 }
 
 

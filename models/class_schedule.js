@@ -14,7 +14,18 @@ const scheduleSchema = new schema(
 		program_color: {
 			type: String,
 		},
-		class_name: { type: String, required: true },
+		class_name: {
+			type: String,
+			required: true
+		},
+		series_id: {
+			type: ObjectId,
+			required: true
+		},
+		isActive: {
+			type: Boolean,
+			default: true
+		},
 		start_date: {
 			type: String,
 			required: true,
@@ -39,7 +50,9 @@ const scheduleSchema = new schema(
 			type: String,
 			required: true,
 		},
-		repeat_weekly_on: { type: Array },
+		repeat_weekly_on: {
+			type: Array
+		},
 		userId: {
 			type: String,
 		},

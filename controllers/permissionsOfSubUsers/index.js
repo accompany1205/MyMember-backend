@@ -13,7 +13,7 @@ exports.create = async (req, res) => {
         var subUserObj = new SubUsersRole(subUserBody)
         subUserObj.save((err, data) => {
             if (err) {
-                res.send({ 'msg': err.message, 'success': false })
+                res.send({ 'msg': "subUser already exists!", 'success': false })
             }
             else {
                 res.send({ 'msg': 'permission of sub user info add successfully.', 'success': true })
