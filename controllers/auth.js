@@ -567,8 +567,7 @@ exports.signin = async (req, res) => {
 									lastName
 								} = data;
 
-								const { username, password, email, phone, role, firstName,
-									lastName } = subUserData;
+								const { username, password, email, phone, role } = subUserData;
 								let default_location = await location.find({ _id: data.default_location });
 								return res.json({
 									success: true,
