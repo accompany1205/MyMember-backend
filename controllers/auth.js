@@ -563,8 +563,8 @@ exports.signin = async (req, res) => {
 									state,
 									city,
 									twilio,
-									firstName,
-									lastName
+									firstname,
+									lastname
 								} = data;
 
 								const { username, password, email, phone, role } = subUserData;
@@ -587,8 +587,8 @@ exports.signin = async (req, res) => {
 										city,
 										default_locationData: default_location,
 										twilio,
-										firstName,
-										lastName
+										firstname,
+										lastname
 									},
 									roles
 								});
@@ -646,8 +646,8 @@ exports.signin = async (req, res) => {
 									country,
 									state,
 									city,
-									firstName,
-									lastName
+									firstname,
+									lastname
 								} = data;
 								return res.json({
 									success: true,
@@ -668,8 +668,8 @@ exports.signin = async (req, res) => {
 										state,
 										city,
 										isAccessLocations,
-										firstName,
-										lastName
+										firstname,
+										lastname
 									},
 								});
 							}
@@ -700,8 +700,8 @@ exports.signin = async (req, res) => {
 								state,
 								city,
 								twilio,
-								firstName,
-								lastName
+								firstname,
+								lastname
 							} = data;
 
 							return res.json({
@@ -722,8 +722,8 @@ exports.signin = async (req, res) => {
 									state,
 									country,
 									twilio,
-									firstName,
-									lastName
+									firstname,
+									lastname
 								},
 							});
 						} else {
@@ -754,7 +754,7 @@ exports.signin = async (req, res) => {
 					res.cookie('t', token, {
 						expire: new Date() + 9999,
 					});
-					const { _id, username, name, email, role, firstName, lastName } = data;
+					const { _id, username, name, email, role, firstname, lastName } = data;
 					return res.json({
 						token,
 						data: {
@@ -764,7 +764,7 @@ exports.signin = async (req, res) => {
 							name,
 							role,
 							firstName,
-							lastName
+							lastname
 						},
 						success: true
 					});
