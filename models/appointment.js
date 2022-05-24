@@ -43,7 +43,6 @@ const appointSchema = new schema(
         },
         notes: {
             type: String,
-            required: true
         },
         status: {
             type: Boolean,
