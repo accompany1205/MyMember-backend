@@ -563,6 +563,8 @@ exports.signin = async (req, res) => {
 									state,
 									city,
 									twilio,
+									firstName,
+									lastName
 								} = data;
 
 								const { username, password, email, phone, role } = subUserData;
@@ -585,6 +587,8 @@ exports.signin = async (req, res) => {
 										city,
 										default_locationData: default_location,
 										twilio,
+										firstName,
+										lastName
 									},
 									roles
 								});
@@ -642,6 +646,8 @@ exports.signin = async (req, res) => {
 									country,
 									state,
 									city,
+									firstName,
+									lastName
 								} = data;
 								return res.json({
 									success: true,
@@ -662,6 +668,8 @@ exports.signin = async (req, res) => {
 										state,
 										city,
 										isAccessLocations,
+										firstName,
+										lastName
 									},
 								});
 							}
@@ -692,6 +700,8 @@ exports.signin = async (req, res) => {
 								state,
 								city,
 								twilio,
+								firstName,
+								lastName
 							} = data;
 
 							return res.json({
@@ -712,6 +722,8 @@ exports.signin = async (req, res) => {
 									state,
 									country,
 									twilio,
+									firstName,
+									lastName
 								},
 							});
 						} else {
@@ -756,7 +768,7 @@ exports.signin = async (req, res) => {
 					});
 				} else {
 					res.json({
-						msg: 'role is not added to useru',
+						msg: 'role is not added to user',
 						success: false,
 					});
 				}
