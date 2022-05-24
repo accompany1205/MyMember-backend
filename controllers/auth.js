@@ -567,7 +567,8 @@ exports.signin = async (req, res) => {
 									lastName
 								} = data;
 
-								const { username, password, email, phone, role } = subUserData;
+								const { username, password, email, phone, role, firstName,
+									lastName } = subUserData;
 								let default_location = await location.find({ _id: data.default_location });
 								return res.json({
 									success: true,
@@ -754,7 +755,7 @@ exports.signin = async (req, res) => {
 					res.cookie('t', token, {
 						expire: new Date() + 9999,
 					});
-					const { _id, username, name, email, role } = data;
+					const { _id, username, name, email, role, firstName, lastName } = data;
 					return res.json({
 						token,
 						data: {
@@ -763,6 +764,8 @@ exports.signin = async (req, res) => {
 							email,
 							name,
 							role,
+							firstName,
+							lastName
 						},
 						success: true
 					});
