@@ -142,7 +142,7 @@ exports.todayTask = async (req, res) => {
         let cDate = ("0" + (date.getDate())).slice(-2);
         let cMonth = ("0" + (date.getMonth() + 1)).slice(-2);
         let cYear = date.getFullYear();
-        let currentDate = `${cMonth}-${cDate}-${cYear}`;
+        let currentDate = `${cYear}-${cMonth}-${cDate}`;
         console.log(currentDate)
         tasks.find(
             { start: currentDate }
@@ -182,7 +182,7 @@ exports.taskFilter = async (req, res) => {
             let cDate = ("0" + (date.getDate())).slice(-2);
             let cMonth = ("0" + (date.getMonth() + 1)).slice(-2);
             let cYear = date.getFullYear();
-            let currentDate = `${cMonth}-${cDate}-${cYear}`;
+            let currentDate = `${cYear}-${cMonth}-${cDate}`;
             filter.start = currentDate;
             console.log(filter)
             tasks.find(
@@ -206,7 +206,7 @@ exports.taskFilter = async (req, res) => {
             let cDate = ("0" + (date.getDate() + 1)).slice(-2);
             let cMonth = ("0" + (date.getMonth() + 1)).slice(-2);
             let cYear = date.getFullYear();
-            let currentDate = `${cMonth}-${cDate}-${cYear}`;
+            let currentDate = `${cYear}-${cMonth}-${cDate}`;
             filter.start = currentDate;
             console.log(filter)
             tasks.find(
@@ -228,6 +228,7 @@ exports.taskFilter = async (req, res) => {
                 })
 
         } else if (byTime === "This Week") {
+            console.log(filter)
             tasks.aggregate([
                 {
                     $match: filter
