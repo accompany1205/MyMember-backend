@@ -42,7 +42,22 @@ class PaymentGateWay {
       throw new Error(ex);
     }
   };
-  
+  securePayLink = async (payload) => {
+    try {
+      let formData = await this.formData(payload);
+      formData.append("redirect_url", Process.env.REDIRECT_URL);
+      formData.append("txn_type", "sale");
+      formData.append("surcharge", "37.50");
+      formData.append("epage", "1");
+      
+      
+
+      return await axios.post(process.env.VALOR_EPAGE_URL, formData, this.getHeader(formData));
+    } catch (ex) {
+      throw new Error(ex);
+    }
+  };
+
   editSubscription = async (payload) => {
     try {
       let formData = await this.formData(payload);

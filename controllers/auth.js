@@ -754,7 +754,7 @@ exports.signin = async (req, res) => {
 					res.cookie('t', token, {
 						expire: new Date() + 9999,
 					});
-					const { _id, username, name, email, role, firstname, lastName } = data;
+					const { _id, username, name, email, role, firstname, lastname } = data;
 					return res.json({
 						token,
 						data: {
@@ -763,7 +763,7 @@ exports.signin = async (req, res) => {
 							email,
 							name,
 							role,
-							firstName,
+							firstname,
 							lastname
 						},
 						success: true

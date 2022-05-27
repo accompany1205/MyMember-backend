@@ -434,14 +434,14 @@ exports.getRanksReportByProgram = async (req, res) => {
 						{
 							$project: {
 								userId: "$userId",
-								month: { $month: '$createdAt' },
-								year: { $year: '$createdAt' },
+								// month: { $month: '$createdAt' },
+								// year: { $year: '$createdAt' },
 							},
 						},
 						{
 							$match: {
-								month,
-								year,
+								// month,
+								// year,
 								userId
 							},
 						},
@@ -463,14 +463,14 @@ exports.getRanksReportByProgram = async (req, res) => {
 						{
 							$project: {
 								userId: "$userId",
-								lastMonth: { $month: '$createdAt' },
-								lastYear: { $year: '$createdAt' },
+								// lastMonth: { $month: '$createdAt' },
+								// lastYear: { $year: '$createdAt' },
 							},
 						},
 						{
 							$match: {
-								lastMonth,
-								lastYear,
+								// lastMonth,
+								// lastYear,
 								userId
 							},
 						},

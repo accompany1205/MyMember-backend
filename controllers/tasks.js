@@ -145,7 +145,10 @@ exports.todayTask = async (req, res) => {
         let currentDate = `${cYear}-${cMonth}-${cDate}`;
         console.log(currentDate)
         tasks.find(
-            { start: currentDate }
+            {
+                start: currentDate,
+                userId: userId
+            }
         ).populate({
             path: "subfolderId",
             select: "subFolderName",

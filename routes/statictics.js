@@ -28,7 +28,7 @@ router.get(
 );
 router.get(
 	'/statictics/get-ranks-report-by-program/:userId',
-	
+	requireSignin, verifySchool,
 	getRanksReportByProgram
 );
 router.get(
