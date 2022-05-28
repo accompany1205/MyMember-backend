@@ -1414,7 +1414,12 @@ exports.multipleFilter = async (req, res) => {
 function getUserId() {
 	return new Promise((resolve, reject) => {
 		User.aggregate([
-			{ $match: { role: 0, isEmailverify: true } },
+			{
+				$match: {
+					role: 0, isEmailverify: true,
+					_id: { $nin: [ObjectId('61ae1daf6aefd1b72be161d2'), ObjectId('618feefe5e06875058988bff'), ObjectId('6192af1dd217916a383c9e1e'), ObjectId('61b277baa0a21e44c1cef996'), ObjectId('619904708f65e00f836f4ae0'), ObjectId('61eb31b75e090c52c8957370'), ObjectId('619d971f96ab0469fa2d1255'), ObjectId('61aeda4074e2fa1825fbdaa8'), ObjectId('618ce6337c362a8e634d0b7c'), ObjectId('618ce6337c362a8e634d0b73')] }
+				}
+			},
 			{
 				$group: {
 					_id: "",
@@ -1499,6 +1504,10 @@ async function collectionModify() {
 						}
 					},
 					{
+						$match:
+							{ last_attended_date: { $ne: null } }
+					},
+					{
 						'$addFields': {
 							'rating': {
 								'$floor': {
@@ -1513,10 +1522,10 @@ async function collectionModify() {
 							}
 						}
 					},
-					{
-						$match: { rating: { $nin: ['', null] }, }
+					// {
+					// 	$match: { rating: { $nin: ['', null] }, }
 
-					}
+					// }
 				])])
 				Promise.all(data.map(member => {
 					update_Rating(member)
@@ -1528,7 +1537,6 @@ async function collectionModify() {
 						})
 
 				}))
-				console.log(time, allUsers.ids[time]._id)
 				time++;
 			}
 			else {

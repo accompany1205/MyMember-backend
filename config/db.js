@@ -9,18 +9,19 @@ const { filterSmartlist } = require('../controllers/smartlists')
 
 async function main() {
     const uri = process.env.DATABASE;
-    const client = mongoose.connect(uri, {
+    const options = {
         useNewUrlParser: true,
         useCreateIndex: true,
         useUnifiedTopology: true,
         keepAlive: true,
         reconnectInterval: 500, // Reconnect every 500ms
         poolSize: 5, // Maintain up to 5 socket connections
-        connectTimeoutMS: 10000, // Give up initial connection after 10 seconds
-        socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+        connectTimeoutMS: 30000, // Give up initial connection after 10 seconds
+        socketTimeoutMS: 30000, // Close sockets after 45 seconds of inactivity
         family: 4, // Use IPv4, skip trying IPv6
         reconnectTries: 30000
-    })
+    }
+    const client = mongoose.connect(uri, options)
 
     // Connect to the MongoDB cluster
     await client
