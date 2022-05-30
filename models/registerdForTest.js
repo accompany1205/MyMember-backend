@@ -9,6 +9,9 @@ const registerdForTest = new mongoose.Schema({
     userId: {
         type: String
     },
+    eventId: {
+        type:String
+    },
     testId: {
         type: String
     },

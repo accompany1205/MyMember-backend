@@ -28,6 +28,7 @@ const getUidAndInvoiceNumber = () => {
 
 exports.getRecommededForTest = async (req, res) => {
     let userId = req.params.userId;
+    let eventId = req.params.eventId;
     // var order = req.query.order || 1
     // let sortBy = req.query.sortBy || "firstName"
     // var totalCount = await RecommendedForTest
@@ -44,13 +45,14 @@ exports.getRecommededForTest = async (req, res) => {
     //     skip: per_page * page_no,
     // };
     if (!userId) {
-        res.json({
+        return res.json({
             success: false,
             msg: "Please include the userId in the parameters!"
         })
     }
 
     let students = await RecommendedForTest.find({
+        "eventId": eventId,
         "userId": userId,
         "isDeleted": false
     }).populate('studentId')
@@ -68,8 +70,10 @@ exports.getRecommededForTest = async (req, res) => {
         data: students,
     })
 }
+
 exports.getRegisteredForTest = async (req, res) => {
     let userId = req.params.userId;
+    let eventId = req.params.eventId;
     // let sortBy = req.query.sortBy || "fistName"
     // var order = req.query.order || 1
     // var totalCount = await RegisterdForTest
@@ -82,10 +86,11 @@ exports.getRegisteredForTest = async (req, res) => {
     // var per_page = parseInt(req.params.per_page) || 10;
     // var page_no = parseInt(req.params.page_no) || 0;
     // var pagination = { limit: per_page, skip: per_page * page_no, };
-    if (!userId) { res.json({ success: false, msg: "Please include the userId in the parameters!" }) }
+    if (!userId) { return res.json({ success: false, msg: "Please include the userId in the parameters!" }) }
 
     let students = await RegisterdForTest.find(
         {
+            "eventId": eventId,
             "userId": userId,
             "isDeleted": false
         }).populate('studentId')
@@ -104,6 +109,7 @@ exports.getRegisteredForTest = async (req, res) => {
 
 exports.getPromoted = async (req, res) => {
     let userId = req.params.userId;
+    let eventId = req.params.eventId;
 
     if (!userId) {
         res.json({
@@ -113,6 +119,7 @@ exports.getPromoted = async (req, res) => {
     }
 
     let students = await RegisterdForTest.find({
+        "eventId": eventId,
         "userId": userId,
         "isDeleted": true
     }).populate('studentId')
@@ -134,6 +141,7 @@ exports.recomendStudent = async (req, res) => {
 
     let students = req.body;
     let userId = req.params.userId;
+    let eventId = req.params.eventId;
     let recommendedFortestSchema = Joi.object({
         studentId: Joi.string().required(),
         firstName: Joi.string().required(),
@@ -144,6 +152,7 @@ exports.recomendStudent = async (req, res) => {
         // time: Joi.string(),
         // textContent: Joi.string(),
         program: Joi.string().required(),
+        eventId: Joi.string().required(),
         status: Joi.string().required(),
         rating: Joi.number().required(),
         current_rank_name: Joi.string(),
@@ -167,27 +176,28 @@ exports.recomendStudent = async (req, res) => {
         var alredyRecomend = "";
         const promises = [];
         for (let student of students) {
-            console.log(student.program)
+            let appt = await RecommendedForTest.findOne({ "eventId": eventId, "isDeleted": false, "studentId": student.studentId });
+            console.log(appt)
             const programs = await Program.findOne({ programName: student.program });
-            console.log(programs);
-            console.log((programs.program_rank).length);
-            if (!student.isRecommended && student.program && programs.program_rank.length > 1) {
+            if (appt === null && student.program && programs.program_rank.length > 1) {
                 student.userId = userId;
+                student.eventId = eventId;
                 await recommendedFortestSchema.validateAsync(student);
                 recommendedStudentsForTest.push(student)
-                let studentId = student.studentId
-                promises.push(updateStudentsById(studentId))
+                //let studentId = student.studentId
+                //promises.push(updateStudentsById(studentId))
             } else {
                 alredyRecomend += `${student.firstName} ${student.lastName}, `
             }
         }
-        await Promise.all(promises);
+        //await Promise.all(promises);
+        await Promise.all(recommendedStudentsForTest);
         await RecommendedForTest.insertMany(recommendedStudentsForTest);
         if (alredyRecomend) {
             return res.send({
                 recommendedStudentsForTest,
                 success: false,
-                msg: `${alredyRecomend} already recommneded or No Rank available for promte! `
+                msg: `${alredyRecomend} already recommneded or No Rank available to promte! `
             })
         }
         res.send({
@@ -200,14 +210,15 @@ exports.recomendStudent = async (req, res) => {
     }
 };
 
-const updateStudentsById = async (studentId) => {
-    return await Member.findByIdAndUpdate({ _id: studentId }, { isRecommended: true })
-}
+// const updateStudentsById = async (studentId) => {
+//     return await Member.findByIdAndUpdate({ _id: studentId }, { isRecommended: true })
+// }
 
 
 exports.registerdStudent = async (req, res) => {
     let students = req.body;
     let userId = req.params.userId;
+    let eventId = req.params.eventId;
     let registeredFortestSchema = Joi.object({
         studentId: Joi.string().required(),
         firstName: Joi.string().required(),
@@ -218,6 +229,7 @@ exports.registerdStudent = async (req, res) => {
         // time: Joi.string(),
         // textContent: Joi.string(),
         program: Joi.string().required(),
+        eventId: Joi.string().required(),
         rating: Joi.number().required(),
         current_rank_name: Joi.string(),
         userId: Joi.string().required(),
@@ -238,13 +250,14 @@ exports.registerdStudent = async (req, res) => {
         var alredyRegisterd = "";
         const promises = [];
         for (let student of students) {
-            
+
             if (!student.isPaid && student.program) {
                 student.userId = userId;
+                student.eventId = eventId;
                 await registeredFortestSchema.validateAsync(student);
                 regesteredStudentsForTest.push(student)
                 let studentId = student.studentId
-                promises.push(updateRecommendedStudentsByIdForRegister(studentId))
+                promises.push(updateRecommendedStudentsByIdForRegister(studentId, eventId))
             } else {
                 alredyRegisterd += `${student.firstName} ${student.lastName}, `
             }
@@ -268,10 +281,11 @@ exports.registerdStudent = async (req, res) => {
 
 }
 const updateRecommendedStudentsByIdForRegister = async (studentId) => {
-    return await RecommendedForTest.deleteOne({ studentId: studentId })
+    return await RecommendedForTest.updateOne({ studentId: studentId, eventId: eventId }, { "isDeleted": true });
 }
 exports.payAndPromoteTheStudent = async (req, res) => {
     let userId = req.params.userId;
+    let eventId = req.parama.eventId;
     // let { cardDetails, paidAmount, studentId, financeId } = req.body;
     // let updatePayment;
     // if (cardDetails) {
@@ -341,6 +355,7 @@ exports.payAndPromoteTheStudent = async (req, res) => {
         // "time": time,
         "program": program,
         "cheque_no": cheque_no,
+        "eventId": eventId,
         isPaid: isPaid
     });
     registerd.save((err, data) => {
@@ -373,8 +388,8 @@ exports.payAndPromoteTheStudent = async (req, res) => {
 
                     } else {
 
-                        RecommendedForTest.updateMany({
-                            "studentId": studentId
+                        RecommendedForTest.updateOne({
+                            "studentId": studentId, "eventId":eventId
                         }, {
                             "isDeleted": true
                         }, (err, data) => {
@@ -519,22 +534,21 @@ exports.multipleDocMerge = async (req, res) => {
 
 exports.deleteAll = async (req, res) => {
     let recommendIds = req.body.recommendIds;
-    let promise = [];
-    for (let id in recommendIds) {
-        let { studentId } = RecommendedForTest.findById(recommendIds[id]);
-        await Member.updateOne({ _id: studentId }, { $set: { isRecommended: false } })
-            .then(async data => {
-                await RecommendedForTest.deleteOne({ _id: recommendIds[id] },
-                    function (err, datas) {
-                        if (err) { res.send({ msg: "The recommended student was not removed!", success: false }) }
-                        promise.push(datas)
-                    })
-            }).catch(err => {
-                res.send({ msg: err.message.replace(/\"/g, ""), success: false })
-            })
+    try {
+        let promise = [];
+        for (let id in recommendIds) {
+            await RecommendedForTest.deleteOne({ _id: recommendIds[id] },
+                function (err, datas) {
+                    if (err) { return res.send({ msg: "The recommended student was not removed!", success: false }) }
+                    promise.push(datas)
+                })
+        }
+        Promise.all(promise);
+        return res.send({ msg: "Selected Students Have Been Successfully Deleted!", success: true })
+    } catch (err) {
+        return res.send({ msg: err.message.replace(/\"/g, ""), success: false })
     }
-    Promise.all(promise);
-    res.send({ msg: "Selected Students Have Been Successfully Deleted!", success: true })
+
 }
 
 
@@ -573,22 +587,21 @@ exports.removeFromRecomended = async (req, res) => {
 }
 exports.deleteAll_for_register = async (req, res) => {
     let regesterIds = req.body.registeredIds;
-    let promise = [];
-    for (let id in regesterIds) {
-        let { studentId } = await RegisterdForTest.findOne({ _id: regesterIds[id] });
-        await Member.updateOne({ _id: studentId }, { $set: { isRecommended: false } })
-            .then(async data => {
-                await RegisterdForTest.deleteOne({ _id: regesterIds[id] },
-                    function (err, datas) {
-                        if (err) { res.send({ msg: "The recommended student was not removed!", success: false }) }
-                        promise.push(datas)
-                    })
-            }).catch(err => {
-                res.send({ msg: err.message.replace(/\"/g, ""), success: false })
-            })
+    try {
+        let promise = [];
+        for (let id in regesterIds) {
+            await RecommendedForTest.deleteOne({ _id: regesterIds[id] },
+                function (err, datas) {
+                    if (err) { return res.send({ msg: "The recommended student was not removed!", success: false }) }
+                    promise.push(datas)
+                })
+        }
+        Promise.all(promise);
+        res.send({ msg: "Selected Students Have Been Successfully Deleted!", success: true })
+    } catch (err) {
+        return res.send({ msg: err.message.replace(/\"/g, ""), success: false })
     }
-    Promise.all(promise);
-    res.send({ msg: "Selected Students Have Been Successfully Deleted!", success: true })
+
 }
 exports.removeFromRegister = async (req, res) => {
     let regesterId = req.params.regesterId;

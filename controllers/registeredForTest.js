@@ -67,15 +67,21 @@ exports.payforPromotedstudens = async (req, res) => {
 exports.promoteStudentRank = async (req, res) => {
     try {
         const studentData = req.body;
+        if (!studentData.length) {
+            return res.json({
+                success: false,
+                msg: "You haven't selected any student!"
+            })
+        }
         const promises = [];
         for (let resgister of studentData) {
             let registerdId = resgister.registerdId;
             let current_rank_name = resgister.current_rank_name;
             let next_rank_name = resgister.next_rank_name;
-            console.log(registerdId, current_rank_name, next_rank_name)
             promises.push(await promoteStudents(registerdId, current_rank_name, next_rank_name))
         }
         await Promise.all(promises);
+
         res.json({
             success: true,
             statusCode: 200,
@@ -89,14 +95,15 @@ exports.promoteStudentRank = async (req, res) => {
 async function promoteStudents(registerdId, current_rank_name, next_rank_name) {
     let registeredData = await RegisterdForTest.findById(registerdId);
     let { studentId } = registeredData;
+    const data = await program_rank.findOne({ rank_name: current_rank_name }, { _id: 0, rank_image: 1, rank_name: 1, day_to_ready: 1, programName: 1, rank_order: 1 })
+    const data1 = await program_rank.findOne({ rank_name: next_rank_name }, { _id: 0, rank_image: 1 })
+    let nextImage = data1 ? data1.rank_image : "no data";
+    let currentImage = data ? data.rank_image : "no data";
+    let rank_order = data ? data.rank_order : "no data";
+    let currentprogramName = data.programName
+    let currentday_to_ready = data.day_to_readyu
     if (!registeredData.isDeleted) {
-        const data = await program_rank.findOne({ rank_name: current_rank_name }, { _id: 0, rank_image: 1, rank_name: 1, day_to_ready: 1, programName: 1, rank_order: 1 })
-        const data1 = await program_rank.findOne({ rank_name: next_rank_name }, { _id: 0, rank_image: 1 })
-        let nextImage = data1 ? data1.rank_image : "no data";
-        let currentImage = data ? data.rank_image : "no data";
-        let rank_order = data ? data.rank_order : "no data";
-        let currentprogramName = data.programName
-        let currentday_to_ready = data.day_to_ready
+
         await RegisterdForTest.findOneAndUpdate({
             _id: registerdId
         }, {
@@ -122,6 +129,18 @@ async function promoteStudents(registerdId, current_rank_name, next_rank_name) {
             });
             await resp.save()
         }
+        await RecommendedForTest.updateMany({ "studentId": studentId }, {
+            current_rank_name: current_rank_name,
+            next_rank_name: next_rank_name,
+            next_rank_img: nextImage,
+            current_rank_img: currentImage
+        });
+        await RegisterdForTest.updateMany({ "studentId": studentId }, {
+            current_rank_name: current_rank_name,
+            next_rank_name: next_rank_name,
+            next_rank_img: nextImage,
+            current_rank_img: currentImage
+        });
         return true;
     }
     return false;
@@ -177,7 +196,6 @@ exports.removeFromRegisterd = async (req, res) => {
 
 exports.deleteAll = async (req, res) => {
     let registeredIds = req.body.registeredIds;
-    console.log(registeredIds)
     let promise = [];
     try {
         for (let id in registeredIds) {

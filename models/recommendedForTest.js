@@ -11,6 +11,9 @@ const recommendedForTest = new mongoose.Schema({
     userId: {
         type: String
     },
+    eventId: {
+        type:String
+    },
     firstName: {
         type: String
     },
