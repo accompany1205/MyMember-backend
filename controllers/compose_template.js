@@ -329,52 +329,6 @@ exports.update_template = async (req, res) => {
     if (!updateTemplate.to) {
       updateTemplate.smartLists = updateTemplate.smartLists ? JSON.parse(updateTemplate.smartLists) : []
       updateTemplate.to = [];
-      // smartLists = smartLists.map(s => ObjectId(s));
-      // let [smartlists] = await smartlist.aggregate([
-      //   {
-      //     $match: {
-      //       _id: { $in: smartLists }
-      //     }
-      //   },
-      //   {
-      //     $lookup: {
-      //       from: "members",
-      //       localField: "smartlists",
-      //       foreignField: "_id",
-      //       as: "data"
-      //     }
-      //   },
-      //   {
-      //     $project: {
-      //       _id: 0,
-      //       data: "$data.email"
-      //     }
-      //   },
-      //   { $unwind: "$data" },
-      //   {
-      //     $group: {
-      //       _id: "",
-      //       emails: { $addToSet: "$data" }
-      //     }
-      //   },
-      //   {
-      //     $project: {
-      //       _id: 0
-      //     }
-
-      //   }
-      // ])
-
-      // smartlists = smartlists ? smartlists : []
-
-      // if (!smartlists.emails.length) {
-      //   return res.send({
-      //     msg: `No Smartlist exist!`,
-      //     success: false,
-      //   });
-      // }
-      // updateTemplate.to = smartlists.emails
-
     }
     else {
       updateTemplate.to = JSON.parse(updateTemplate.to);
@@ -553,7 +507,7 @@ exports.sendEmail = async (req, res) => {
       }
     } else {
       if (!JSON.parse(emailBody.immediately)) {
-        if (!emailBody.to.length) {
+        if (!emailBody.to) {
           emailBody.smartLists = emailBody.smartLists ? JSON.parse(emailBody.smartLists) : []
         }
         let sent_date = moment(emailBody.sent_date).format("YYYY-MM-DD");
@@ -565,16 +519,9 @@ exports.sendEmail = async (req, res) => {
             res.send({ msg: err, success: false })
           }
           else {
-            // all_temp.findOneAndUpdate({ _id: emailSave._id }, { is_Sent: false, email_type: "scheduled" })
-            //   .exec((err, emailUpdate) => {
-            //     if (err) {
-            //       res.send({ msg: err, success: false })
-            //     }
-            //     else {
+
             return res.send({ msg: `Email Successfully! Scheduled on ${sent_date} At ${emailBody.sent_time} `, success: true })
 
-            //   }
-            // })
           }
         })
       }

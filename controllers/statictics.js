@@ -429,19 +429,19 @@ exports.getRanksReportByProgram = async (req, res) => {
 					from: 'student_info_ranks',
 					localField: 'rank_name',
 					foreignField: 'rank_name',
-					as: 'this-month',
+					as: 'total-students',
 					pipeline: [
 						{
 							$project: {
 								userId: "$userId",
-								month: { $month: '$createdAt' },
-								year: { $year: '$createdAt' },
+								// month: { $month: '$createdAt' },
+								// year: { $year: '$createdAt' },
 							},
 						},
 						{
 							$match: {
-								month,
-								year,
+								// month,
+								// year,
 								userId
 							},
 						},
@@ -453,33 +453,33 @@ exports.getRanksReportByProgram = async (req, res) => {
 			},
 
 			// Get Last Month Date
-			{
-				$lookup: {
-					from: 'student_info_ranks',
-					localField: 'rank_name',
-					foreignField: 'rank_name',
-					as: 'last-month',
-					pipeline: [
-						{
-							$project: {
-								userId: "$userId",
-								lastMonth: { $month: '$createdAt' },
-								lastYear: { $year: '$createdAt' },
-							},
-						},
-						{
-							$match: {
-								lastMonth,
-								lastYear,
-								userId
-							},
-						},
-						{
-							$count: 'total',
-						},
-					],
-				},
-			},
+			// {
+			// 	$lookup: {
+			// 		from: 'student_info_ranks',
+			// 		localField: 'rank_name',
+			// 		foreignField: 'rank_name',
+			// 		as: 'last-month',
+			// 		pipeline: [
+			// 			{
+			// 				$project: {
+			// 					userId: "$userId",
+			// 					// lastMonth: { $month: '$createdAt' },
+			// 					// lastYear: { $year: '$createdAt' },
+			// 				},
+			// 			},
+			// 			{
+			// 				$match: {
+			// 					// lastMonth,
+			// 					// lastYear,
+			// 					userId
+			// 				},
+			// 			},
+			// 			{
+			// 				$count: 'total',
+			// 			},
+			// 		],
+			// 	},
+			// },
 
 			// Lets Map the Data
 			{
@@ -488,8 +488,8 @@ exports.getRanksReportByProgram = async (req, res) => {
 					rank_name: 1,
 					rank_image: 1,
 					rank_order: 1,
-					this_month: { $arrayElemAt: ['$this-month', 0] },
-					last_month: { $arrayElemAt: ['$last-month', 0] },
+					total_students: { $arrayElemAt: ['$total-students', 0] },
+					// last_month: { $arrayElemAt: ['$last-month', 0] },
 				},
 			},
 			{ $sort: { programName: 1 } }
