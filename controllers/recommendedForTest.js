@@ -152,6 +152,7 @@ exports.recomendStudent = async (req, res) => {
         // time: Joi.string(),
         // textContent: Joi.string(),
         program: Joi.string().required(),
+        eventId: Joi.string().required(),
         status: Joi.string().required(),
         rating: Joi.number().required(),
         current_rank_name: Joi.string(),
@@ -176,8 +177,9 @@ exports.recomendStudent = async (req, res) => {
         const promises = [];
         for (let student of students) {
             let appt = await RecommendedForTest.findOne({ "eventId": eventId, "isDeleted": false, "studentId": student.studentId });
+            console.log(appt)
             const programs = await Program.findOne({ programName: student.program });
-            if (appt && student.program && programs.program_rank.length > 1) {
+            if (appt === null && student.program && programs.program_rank.length > 1) {
                 student.userId = userId;
                 student.eventId = eventId;
                 await recommendedFortestSchema.validateAsync(student);
@@ -227,6 +229,7 @@ exports.registerdStudent = async (req, res) => {
         // time: Joi.string(),
         // textContent: Joi.string(),
         program: Joi.string().required(),
+        eventId: Joi.string().required(),
         rating: Joi.number().required(),
         current_rank_name: Joi.string(),
         userId: Joi.string().required(),
