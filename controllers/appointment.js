@@ -233,7 +233,7 @@ exports.registerInvitee = async (req, res) => {
 }
 
 const updateInviteeByIdForRegistered = async (studentId, eventId) => {
-  return Invitee.updateOne({ studentId: studentId, eventId: eventId }, { "isDeleted": true })
+  return await Invitee.updateOne({ studentId: studentId, eventId: eventId }, { "isDeleted": true })
 }
 
 exports.addInvitee = async (req, res) => {
