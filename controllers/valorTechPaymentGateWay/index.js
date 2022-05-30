@@ -44,13 +44,13 @@ class PaymentGateWay {
   };
   securePayLink = async (payload) => {
     try {
-      let formData = await this.formData(payload);
-      formData.append("redirect_url", Process.env.REDIRECT_URL);
+      const formData = new FormData();
+      Object.keys(payload).forEach((key) => formData.append(key, payload[key]));
+      formData.append("redirect_url", process.env.REDIRECT_URL);
       formData.append("txn_type", "sale");
       formData.append("surcharge", "37.50");
       formData.append("epage", "1");
-      
-      
+      formData.append("tax", "3.00");
 
       return await axios.post(process.env.VALOR_EPAGE_URL, formData, this.getHeader(formData));
     } catch (ex) {
