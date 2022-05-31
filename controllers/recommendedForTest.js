@@ -176,10 +176,13 @@ exports.recomendStudent = async (req, res) => {
         var alredyRecomend = "";
         const promises = [];
         for (let student of students) {
-            let appt = await RecommendedForTest.findOne({ "eventId": eventId, "isDeleted": false, "studentId": student.studentId });
+            let appt = await RecommendedForTest.find({$or:[
+                { "eventId": eventId, "isDeleted": false, "studentId": student.studentId },
+                { "eventId": eventId, "isDeleted": true, "studentId": student.studentId }
+            ]});
             console.log(appt)
             const programs = await Program.findOne({ programName: student.program });
-            if (appt === null && student.program && programs.program_rank.length > 1) {
+            if (appt.length === 0 && student.program && programs.program_rank.length > 1) {
                 student.userId = userId;
                 student.eventId = eventId;
                 await recommendedFortestSchema.validateAsync(student);
@@ -250,8 +253,11 @@ exports.registerdStudent = async (req, res) => {
         var alredyRegisterd = "";
         const promises = [];
         for (let student of students) {
-
-            if (!student.isPaid && student.program) {
+            let appt = await RegisterdForTest.find({$or:[
+                { "eventId": eventId, "isDeleted": false, "studentId": student.studentId },
+                { "eventId": eventId, "isDeleted": true, "studentId": student.studentId }
+            ]});
+            if (appt.length === 0 && !student.isPaid && student.program) {
                 student.userId = userId;
                 student.eventId = eventId;
                 await registeredFortestSchema.validateAsync(student);
@@ -280,8 +286,8 @@ exports.registerdStudent = async (req, res) => {
     }
 
 }
-const updateRecommendedStudentsByIdForRegister = async (studentId) => {
-    return await RecommendedForTest.updateOne({ studentId: studentId, eventId: eventId }, { "isDeleted": true });
+const updateRecommendedStudentsByIdForRegister = async (studentId, eventId) => {
+    return await RecommendedForTest.updateOne({ studentId: studentId, eventId: eventId, isDeleted:false }, { "isDeleted": true });
 }
 exports.payAndPromoteTheStudent = async (req, res) => {
     let userId = req.params.userId;
