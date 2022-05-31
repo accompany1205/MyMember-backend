@@ -250,8 +250,8 @@ exports.registerdStudent = async (req, res) => {
         var alredyRegisterd = "";
         const promises = [];
         for (let student of students) {
-
-            if (!student.isPaid && student.program) {
+            let appt = await RegisterdForTest.findOne({ "eventId": eventId, "isDeleted": false, "studentId": student.studentId });
+            if (appt === null && !student.isPaid && student.program) {
                 student.userId = userId;
                 student.eventId = eventId;
                 await registeredFortestSchema.validateAsync(student);
