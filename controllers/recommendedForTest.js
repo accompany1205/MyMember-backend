@@ -596,7 +596,7 @@ exports.deleteAll_for_register = async (req, res) => {
     try {
         let promise = [];
         for (let id in regesterIds) {
-            let {eventId, studentId} = await RecommendedForTest.findOne({ _id: regesterIds[id] });
+            let {eventId, studentId} = await RegisterdForTest.findOne({ _id: regesterIds[id] });
             await RegisterdForTest.deleteOne({ _id: regesterIds[id] },
                 async function (err, datas) {
                     if (err) { return res.send({ msg: "The recommended student was not removed!", success: false }) }
