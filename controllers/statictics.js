@@ -383,7 +383,7 @@ exports.getMemberByProgram = async (req, res) => {
 
 exports.getRanksReportByProgram = async (req, res) => {
 	try {
-		let { programID } = req.query;
+		let { programName } = req.query;
 		const userId = req.params.userId;
 		if (program === '') {
 			return res.json([]);
@@ -392,7 +392,7 @@ exports.getRanksReportByProgram = async (req, res) => {
 		const ranks = await program.aggregate([
 			{
 				$match: {
-					_id: mongoose.Types.ObjectId(programID),
+					programName: programName,
 				},
 			},
 			{ $unwind: '$program_rank' },
@@ -412,78 +412,33 @@ exports.getRanksReportByProgram = async (req, res) => {
 					programName: 1,
 					rank_name: '$program.rank_name',
 					rank_image: '$program.rank_image',
-					rank_order: '$program.rank_order',
+					rank_order: { $toInt: '$program.rank_order' },
 				},
 			},
 			// Get Current Month Data
 			{
 				$lookup: {
-					from: 'student_info_ranks',
+					from: 'members',
 					localField: 'rank_name',
-					foreignField: 'rank_name',
+					foreignField: 'current_rank_name',
 					as: 'total-students',
 					pipeline: [
 						{
-							$project: {
-								userId: "$userId",
-								// month: { $month: '$createdAt' },
-								// year: { $year: '$createdAt' },
-							},
-						},
-						{
 							$match: {
-								// month,
-								// year,
-								userId
+								program: programName,
+								userId: userId
 							},
 						},
+
 						{
-							'$group': {
-								'_id': '$current_rank_name',
-								'total': {
-									'$sum': 1
-								}
-							}
-						},
-						{
-							$project: {
-								total: 1,
-								_id: 0
-		
-							},
-						},
-					],
-				},
+							$count: 'total',
+						}
+
+
+					]
+				}
 			},
 
-			// Get Last Month Date
-			// {
-			// 	$lookup: {
-			// 		from: 'student_info_ranks',
-			// 		localField: 'rank_name',
-			// 		foreignField: 'rank_name',
-			// 		as: 'last-month',
-			// 		pipeline: [
-			// 			{
-			// 				$project: {
-			// 					userId: "$userId",
-			// 					// lastMonth: { $month: '$createdAt' },
-			// 					// lastYear: { $year: '$createdAt' },
-			// 				},
-			// 			},
-			// 			{
-			// 				$match: {
-			// 					// lastMonth,
-			// 					// lastYear,
-			// 					userId
-			// 				},
-			// 			},
-			// 			{
-			// 				$count: 'total',
-			// 			},
-			// 		],
-			// 	},
-			// },
 
 			// Lets Map the Data
 			{
@@ -492,57 +447,22 @@ exports.getRanksReportByProgram = async (req, res) => {
 					rank_name: 1,
 					rank_image: 1,
 					rank_order: 1,
-					total_students: { $arrayElemAt: ['$total-students', 0] },
-					// last_month: { $arrayElemAt: ['$last-month', 0] },
+					total_students: { $sum: '$total-students.total' },
+
 				},
 			},
-			{ $sort: { programName: 1 } }
-			// Ranks
+			{ $sort: { rank_order: 1 } },
+			// {
+			// 	$project: {
+
+			// 		total: 1
+
+			// 	}
+			// }
+
 		]);
 
-		// const ranks = await Member.aggregate(
-		// 	[
-		// 		{
-		// 			'$match': {
-		// 				'program': program,
-		// 				'userId': userId
-		// 			}
-		// 		}, {
-		// 			'$group': {
-		// 				'_id': '$current_rank_name',
-		// 				'programName': {
-		// 					'$first': '$program'
-		// 				},
-		// 				'rank_name': {
-		// 					'$first': '$current_rank_name'
-		// 				},
-		// 				'rank_image': {
-		// 					'$first': '$current_rank_img'
-		// 				},
-		// 				'rank_order': {
-		// 					'$first': '$rank_order'
-		// 				},
-		// 				'total': {
-		// 					'$sum': 1
-		// 				}
-		// 			}
-		// 		}, {
-		// 			'$sort': {
-		// 				'rank_order': 1
-		// 			}
-		// 		}, {
-		// 			'$project': {
-		// 				'rank_name': '$_id',
-		// 				'programName': 1,
-		// 				'rank_name': 1,
-		// 				'rank_image': 1,
-		// 				'rank_order': 1,
-		// 				'total': 1,
-		// 				'_id': 0
-		// 			}
-		// 		}
-		// 	]
-		// )
+		//
 
 		return res.json(ranks);
 	} catch (err) {
