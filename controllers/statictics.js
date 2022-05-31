@@ -383,56 +383,166 @@ exports.getMemberByProgram = async (req, res) => {
 
 exports.getRanksReportByProgram = async (req, res) => {
 	try {
-		let { program } = req.query;
+		let { programID } = req.query;
 		const userId = req.params.userId;
 		if (program === '') {
 			return res.json([]);
 		}
 
+		const ranks = await program.aggregate([
+			{
+				$match: {
+					_id: mongoose.Types.ObjectId(programID),
+				},
+			},
+			{ $unwind: '$program_rank' },
+			{
+				$lookup: {
+					from: 'program_ranks',
+					localField: 'program_rank',
+					foreignField: '_id',
+					as: 'program',
+				},
+			},
+			{
+				$unwind: '$program',
+			},
+			{
+				$project: {
+					programName: 1,
+					rank_name: '$program.rank_name',
+					rank_image: '$program.rank_image',
+					rank_order: '$program.rank_order',
+				},
+			},
+			// Get Current Month Data
+			{
+				$lookup: {
+					from: 'student_info_ranks',
+					localField: 'rank_name',
+					foreignField: 'rank_name',
+					as: 'total-students',
+					pipeline: [
+						{
+							$project: {
+								userId: "$userId",
+								// month: { $month: '$createdAt' },
+								// year: { $year: '$createdAt' },
+							},
+						},
+						{
+							$match: {
+								// month,
+								// year,
+								userId
+							},
+						},
+						{
+							'$group': {
+								'_id': '$current_rank_name',
+								'total': {
+									'$sum': 1
+								}
+							}
+						},
+						{
+							$project: {
+								total: 1,
+								_id: 0
+		
+							},
+						},
+					],
+				},
+			},
 
-		const ranks = await Member.aggregate(
-			[
-				{
-					'$match': {
-						'program': program,
-						'userId': userId
-					}
-				}, {
-					'$group': {
-						'_id': '$current_rank_name',
-						'programName': {
-							'$first': '$program'
-						},
-						'rank_name': {
-							'$first': '$current_rank_name'
-						},
-						'rank_image': {
-							'$first': '$current_rank_img'
-						},
-						'rank_order': {
-							'$first': '$rank_order'
-						},
-						'total': {
-							'$sum': 1
-						}
-					}
-				}, {
-					'$sort': {
-						'rank_order': 1
-					}
-				}, {
-					'$project': {
-						'rank_name': '$_id',
-						'programName': 1,
-						'rank_name': 1,
-						'rank_image': 1,
-						'rank_order': 1,
-						'total': 1,
-						'_id': 0
-					}
-				}
-			]
-		)
+			// Get Last Month Date
+			// {
+			// 	$lookup: {
+			// 		from: 'student_info_ranks',
+			// 		localField: 'rank_name',
+			// 		foreignField: 'rank_name',
+			// 		as: 'last-month',
+			// 		pipeline: [
+			// 			{
+			// 				$project: {
+			// 					userId: "$userId",
+			// 					// lastMonth: { $month: '$createdAt' },
+			// 					// lastYear: { $year: '$createdAt' },
+			// 				},
+			// 			},
+			// 			{
+			// 				$match: {
+			// 					// lastMonth,
+			// 					// lastYear,
+			// 					userId
+			// 				},
+			// 			},
+			// 			{
+			// 				$count: 'total',
+			// 			},
+			// 		],
+			// 	},
+			// },
+
+			// Lets Map the Data
+			{
+				$project: {
+					programName: 1,
+					rank_name: 1,
+					rank_image: 1,
+					rank_order: 1,
+					total_students: { $arrayElemAt: ['$total-students', 0] },
+					// last_month: { $arrayElemAt: ['$last-month', 0] },
+				},
+			},
+			{ $sort: { programName: 1 } }
+			// Ranks
+		]);
+
+		// const ranks = await Member.aggregate(
+		// 	[
+		// 		{
+		// 			'$match': {
+		// 				'program': program,
+		// 				'userId': userId
+		// 			}
+		// 		}, {
+		// 			'$group': {
+		// 				'_id': '$current_rank_name',
+		// 				'programName': {
+		// 					'$first': '$program'
+		// 				},
+		// 				'rank_name': {
+		// 					'$first': '$current_rank_name'
+		// 				},
+		// 				'rank_image': {
+		// 					'$first': '$current_rank_img'
+		// 				},
+		// 				'rank_order': {
+		// 					'$first': '$rank_order'
+		// 				},
+		// 				'total': {
+		// 					'$sum': 1
+		// 				}
+		// 			}
+		// 		}, {
+		// 			'$sort': {
+		// 				'rank_order': 1
+		// 			}
+		// 		}, {
+		// 			'$project': {
+		// 				'rank_name': '$_id',
+		// 				'programName': 1,
+		// 				'rank_name': 1,
+		// 				'rank_image': 1,
+		// 				'rank_order': 1,
+		// 				'total': 1,
+		// 				'_id': 0
+		// 			}
+		// 		}
+		// 	]
+		// )
 
 		return res.json(ranks);
 	} catch (err) {

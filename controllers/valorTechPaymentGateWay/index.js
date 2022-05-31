@@ -58,6 +58,15 @@ class PaymentGateWay {
     }
   };
 
+  epageCustomTransaction = async (payload) => {
+    try {
+      const formData = new FormData();
+      Object.keys(payload).forEach((key) => formData.append(key, payload[key]));
+      return await axios.post(process.env.VALOR_EPAGE_URL, formData, this.getHeader(formData));
+    } catch (ex) {
+      throw new Error(ex);
+    }
+  };
   editSubscription = async (payload) => {
     try {
       let formData = await this.formData(payload);
