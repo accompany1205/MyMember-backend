@@ -8,8 +8,20 @@ exports.create = async (req, res) => {
     rankBody.userId = req.params.userId;
     rankBody.adminId = req.params.adminId;
     let isExist = await program.find({ programName: rankBody.programName })
+    let [rankOrders] = await manage_rank.aggregate([{
+        '$group': {
+            '_id': '',
+            'highestRankOrder': {
+                '$max': '$rank_order'
+            }
+        }
+    }, {
+        '$project': {
+            '_id': 0
+        }
+    }])
     try {
-        if (isExist.length) {
+        if (isExist.length && rankBody.rank_order > rankOrders.highestRankOrder) {
             if (req.file) {
                 await cloudUrl.imageUrl(req.file)
                     .then((result) => {
@@ -41,7 +53,7 @@ exports.create = async (req, res) => {
             })
         }
         else {
-            res.send({ msg: "Program does not exist!", success: false })
+            res.send({ msg: `Rank order should be greaer than ${rankOrders.highestRankOrder}`, success: false })
         }
     }
 
