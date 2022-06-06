@@ -1479,7 +1479,6 @@ async function collectionModify() {
 	try {
 
 		const [allUsers] = await getUserId()
-		console.log(allUsers, allUsers.ids.length)
 		const promise = [];
 		var time = 0;
 
