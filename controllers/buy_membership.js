@@ -448,19 +448,18 @@ exports.updatePayments = async (req, res) => {
 			delete cardDetails.expiry_year;
 			cardDetails.expiry_date = expiry_date;
 		}
-		if (
-			ptype == 'credit card' &&
-			(payment_type == 'cash' || payment_type == 'cheque')
-		) {
-			const { uid } = getUidAndInvoiceNumber();
-			let valorRes = await valorTechPaymentGateWay.forfeitSubscription({
-				app_id: req.valorCredentials.app_id,
-				auth_key: req.valorCredentials.auth_key,
-				epi: req.valorCredentials.epi,
-				subscription_id,
-				uid,
-			});
-			if (valorRes.data.error_no == 'S00') {
+
+
+		const { uid } = getUidAndInvoiceNumber();
+		if (cardDetails) {
+			const valorPayload = { ...cardDetails, uid, amount: req.body.Amount };
+			valorPayload.app_id = req.valorCredentials.app_id;
+			valorPayload.auth_key = req.valorCredentials.auth_key;
+			valorPayload.epi = req.valorCredentials.epi;
+			const resp = await valorTechPaymentGateWay.saleSubscription(
+				valorPayload
+			);
+			if (resp.data.error_no == 'S00') {
 				const pay = await paymentProcessing(
 					buy_membershipId,
 					emiId,
@@ -478,42 +477,18 @@ exports.updatePayments = async (req, res) => {
 				});
 			}
 		} else {
-			const { uid } = getUidAndInvoiceNumber();
-			if (cardDetails) {
-				const valorPayload = { ...cardDetails, uid, amount: req.body.Amount };
-				const resp = await valorTechPaymentGateWay.saleSubscription(
-					valorPayload
-				);
-				if (resp.data.error_no == 'S00') {
-					const pay = await paymentProcessing(
-						buy_membershipId,
-						emiId,
-						balance,
-						createdBy,
-						'paid',
-						payment_type,
-						req.body.cheque_number
-					);
-					res.send(pay);
-				} else {
-					res.send({
-						success: false,
-						msg: 'Payment is not completed due to technical reason please try again!',
-					});
-				}
-			} else {
-				const pay = await paymentProcessing(
-					buy_membershipId,
-					emiId,
-					balance,
-					createdBy,
-					'paid',
-					payment_type,
-					req.body.cheque_number
-				);
-				res.send(pay);
-			}
+			const pay = await paymentProcessing(
+				buy_membershipId,
+				emiId,
+				balance,
+				createdBy,
+				'paid',
+				payment_type,
+				req.body.cheque_number
+			);
+			res.send(pay);
 		}
+
 	} catch (err) {
 		res.send({ error: err.message.replace(/\"/g, ''), success: false });
 	}
@@ -958,7 +933,7 @@ function createMemberShipDocument(membershipData, studentId) {
 				resolve({ msg: 'membership not buy', success: false });
 			} else {
 				update = {
-					$set: { status: 'active', membership_expiry: data.expiry_date },
+					$set: { status: 'active', membership_expiry: data.expiry_date, membership_start: data.mactive_date },
 					$push: { membership_details: data._id },
 				};
 				AddMember.findOneAndUpdate(

@@ -1487,12 +1487,22 @@ async function collectionModify() {
 			if (time < allUsers.ids.length) {
 				const [data] = await Promise.all([addmemberModal.aggregate([
 					{ $match: { 'userId': allUsers.ids[time]._id.toString() } },
+					{ $project: { _id: 1 } },
 					{
 						'$lookup': {
 							'from': 'class_schedules',
 							'localField': '_id',
 							'foreignField': 'class_attendanceArray.studentInfo',
-							'as': 'data'
+							'as': 'data',
+							pipeline: [
+								{
+									$project: {
+
+										start_date: 1
+
+									}
+								}
+							]
 						}
 					}, {
 						'$project': {

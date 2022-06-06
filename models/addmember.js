@@ -190,6 +190,9 @@ const addmemberSchema = new schema(
     membership_expiry: {
       type: Date,
     },
+    membership_start: {
+      type: Date,
+    },
     membership_details: [
       {
         type: schema.Types.ObjectId,

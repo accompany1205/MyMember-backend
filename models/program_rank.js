@@ -16,11 +16,11 @@ const programSchema = new mongoose.Schema(
         },
         day_to_ready: {
             type: String,
-            required: true
+            // required: true
         },
         lession_to_ready: {
             type: String,
-            required: true
+            // required: true
         },
         rank_order: {
             type: Number,

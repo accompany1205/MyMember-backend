@@ -42,7 +42,7 @@ exports.product_InfoById = async (req, res) => {
 exports.buy_product = async (req, res) => {
     const userId = req.params.userId;
     const studentId = req.params.studentId;
-    let valorPayload = req.body.product_details.valorPayloadz ? req.body.product_details.valorPayload : {};
+    let valorPayload = req.body.product_details.valorPayload ? req.body.product_details.valorPayload : {};
     valorPayload.app_id = req.valorCredentials.app_id
     valorPayload.auth_key = req.valorCredentials.auth_key
     valorPayload.epi = req.valorCredentials.epi
@@ -612,7 +612,9 @@ async function secureLink() {
             uid: resp.data.uid
         }
         const txn = await valorTechPaymentGateWay.epageCustomTransaction(paymentInfo)
-        console.log(txn.data.msg,txn.data.error_no)
+        let data = txn.data
+        console.log(data)
+        // console.log(txn.data.msg, txn.data.error_no)
         // if (txn.data.error_no === 'S00') {
         //     console.log({ msg: txn.data.msg, token: txn.data.token })
         // }
