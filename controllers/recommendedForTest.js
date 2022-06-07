@@ -182,6 +182,7 @@ exports.recomendStudent = async (req, res) => {
             ]});
             console.log(appt)
             const programs = await Program.findOne({ programName: student.program });
+            console.log(programs.program_rank);
             if (appt.length === 0 && student.program && programs.program_rank.length > 1) {
                 student.userId = userId;
                 student.eventId = eventId;
