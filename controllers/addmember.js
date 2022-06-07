@@ -1472,14 +1472,14 @@ exports.test = async (req, res) => {
 
 const updateStudentsById = async (studentId, start_date) => {
 
-	return student_info_ranks.findByIdAndUpdate({ _id: studentId }, { start_date: start_date, end_date: start_date })
+	return addmemberModal.findByIdAndUpdate({ _id: studentId }, { start_date: start_date, end_date: start_date })
 }
 
 async function collectionModify() {
 	try {
 
 		const [allUsers] = await getUserId()
-		console.log(allUsers, allUsers.ids.length)
+		// console.log(allUsers, allUsers.ids.length)
 		const promise = [];
 		var time = 0;
 
@@ -1487,60 +1487,36 @@ async function collectionModify() {
 			if (time < allUsers.ids.length) {
 				const [data] = await Promise.all([addmemberModal.aggregate([
 					{ $match: { 'userId': allUsers.ids[time]._id.toString() } },
-					{ $project: { _id: 1 } },
 					{
-						'$lookup': {
-							'from': 'class_schedules',
-							'localField': '_id',
-							'foreignField': 'class_attendanceArray.studentInfo',
-							'as': 'data',
-							pipeline: [
-								{
-									$project: {
-
-										start_date: 1
-
-									}
-								}
-							]
-						}
-					}, {
 						'$project': {
 							'last_attended_date': {
-								'$toDate': {
-									$max: '$data.start_date'
-								}
+								'$toDate': '$last_attended_date'
 							}
 						}
 					},
 					{
 						$match:
 							{ last_attended_date: { $ne: null } }
-					},
-					{
+					}, {
 						'$addFields': {
 							'rating': {
 								'$floor': {
 									'$divide': [
 										{
 											'$subtract': [
-												new Date(), '$last_attended_date'
+												'$$NOW', '$last_attended_date'
 											]
 										}, 1000 * 60 * 60 * 24
 									]
 								}
 							}
 						}
-					},
-					// {
-					// 	$match: { rating: { $nin: ['', null] }, }
-
-					// }
+					}
 				])])
 				Promise.all(data.map(member => {
 					update_Rating(member)
 						.then(resp => {
-							console.log(resp.n)
+							// console.log(resp.n)
 						})
 						.catch(err => {
 							console.log(err)

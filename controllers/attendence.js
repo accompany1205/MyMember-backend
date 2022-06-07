@@ -76,6 +76,7 @@ exports.create = async (req, res) => {
                       missclass_count: 0,
                       attendence_color: "#00FF00",
                       attendence_status: true,
+                      last_attended_date: new Date()
                     },
                     $inc: {
                       attendedclass_count: 1,

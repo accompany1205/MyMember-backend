@@ -158,6 +158,9 @@ const addmemberSchema = new schema(
       type: Number,
       default: 0,
     },
+    last_attended_date: {
+      type: Number,
+    },
     attendence_color: {
       type: String,
       default: "#FF0000",
