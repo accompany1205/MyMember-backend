@@ -1417,7 +1417,6 @@ function getUserId() {
 			{
 				$match: {
 					role: 0, isEmailverify: true,
-					_id: { $nin: [ObjectId('61ae1daf6aefd1b72be161d2'), ObjectId('618feefe5e06875058988bff'), ObjectId('6192af1dd217916a383c9e1e'), ObjectId('61b277baa0a21e44c1cef996'), ObjectId('619904708f65e00f836f4ae0'), ObjectId('61eb31b75e090c52c8957370'), ObjectId('619d971f96ab0469fa2d1255'), ObjectId('61aeda4074e2fa1825fbdaa8'), ObjectId('618ce6337c362a8e634d0b7c'), ObjectId('618ce6337c362a8e634d0b73')] }
 				}
 			},
 			{
@@ -1486,17 +1485,29 @@ async function collectionModify() {
 		var interval = setInterval(async function () {
 			if (time < allUsers.ids.length) {
 				const [data] = await Promise.all([addmemberModal.aggregate([
-					{ $match: { 'userId': allUsers.ids[time]._id.toString() } },
+					{ $match: { 'userId': allUsers.ids[time].toString() } },
 					{
 						'$project': {
-							'last_attended_date': {
-								'$toDate': '$last_attended_date'
-							}
+							'last_attended_date': 1
+
 						}
 					},
 					{
 						$match:
 							{ last_attended_date: { $ne: null } }
+					}, {
+						$addFields: {
+							"last_attended_date": {
+								$toDate: {
+									$dateToString: {
+										format: "%Y-%m-%d", date: {
+											'$toDate': '$last_attended_date'
+										}
+									}
+								}
+							}
+
+						}
 					}, {
 						'$addFields': {
 							'rating': {
@@ -2731,4 +2742,4 @@ exports.leads_past3_month = async (req, res) => {
 	}
 };
 
-// cron.schedule("10 21/ * * *", () => collectionModify())
+cron.schedule("0 0 * * *", () => collectionModify())
