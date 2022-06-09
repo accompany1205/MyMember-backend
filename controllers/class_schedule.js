@@ -41,15 +41,39 @@ exports.read = async (req, res) => {
     } catch (error) {
         res.send({ error: error.message.replace(/\"/g, ""), success: false })
     }
-
-    // const resp =
-    //     class_schedule.find({ userId: req.params.userId })
-    //         .then((result) => {
-    //             res.json(result)
-    //         }).catch((err) => {
-    //             res.send(err)
-    //         })
 };
+
+exports.readSchedule = async (req, res) => {
+    let startDate = req.params.dates;
+    let newMonth = startDate.slice(0, 2)
+    let newDate = startDate.slice(3, 5)
+    let newYear = startDate.slice(-4);
+    let updateM = ("0" + (parseInt(newMonth) + 1)).slice(-2);
+    let finalDate;
+    if (newMonth === "12") {
+        let newupdateM = "01";
+        let updateY = ("" + (parseInt(newYear) + 1))
+        finalDate = `${newupdateM}/${newDate}/${updateY}`;
+    } else {
+        finalDate = `${updateM}/${newDate}/${newYear}`;
+    }
+    try {
+        let parDate = startDate.split("-");
+        startDate = parDate.join("/")
+        class_schedule.find({
+            $and: [
+                { userId: req.params.userId },
+                { start_date: { $gte: (startDate), $lt: (finalDate) } }
+            ]
+        }).then((result) => {
+            return res.send({ success: true, data: result });
+        }).catch((err) => {
+            return res.send({ msg: "No data!", success: false });
+        });
+    } catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+    }
+}
 
 exports.class_schedule_Info = (req, res) => {
     try {
