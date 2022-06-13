@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const schema = mongoose.Schema;
 
 const addmemberSchema = new schema(
@@ -99,7 +99,7 @@ const addmemberSchema = new schema(
       default: "",
     },
     candidate: {
-      type: String
+      type: String,
     },
     current_stripe: {
       type: String,
@@ -182,7 +182,7 @@ const addmemberSchema = new schema(
       lastName: String,
       gender: String,
       dob: String,
-      age: String
+      age: String,
     },
     userId: {
       type: String,
@@ -264,9 +264,12 @@ const addmemberSchema = new schema(
         ref: "missYouCallNote",
       },
     ],
-    followup_notes: {
-      type: Array,
-    },
+    followup_notes: [
+      {
+        type: schema.Types.ObjectId,
+        ref: "followUpNotes",
+      },
+    ],
     rank_update_history: {
       type: Array,
     },
@@ -283,18 +286,18 @@ const addmemberSchema = new schema(
     },
     time: {
       type: Date,
-      default: Date.now()
+      default: Date.now(),
     },
     isInvitee: {
       type: Boolean,
-      default: false
+      default: false,
     },
     textContent: {
-      type: String
-    }
+      type: String,
+    },
   },
 
   { timestamps: true }
 );
 
-module.exports = mongoose.model('member', addmemberSchema);
+module.exports = mongoose.model("member", addmemberSchema);
