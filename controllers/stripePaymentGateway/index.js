@@ -21,6 +21,18 @@ router.get("/checkout-session", async (req, res) => {
   res.send(session);
 });
 
+router.post("/payment_links", async (req, res) => {
+  const paymentLink = await stripe.paymentLinks.create({
+    line_items: [
+      {
+        price: "price_1L8nchSB01SizmLfEMnJNe5n",
+        quantity: 1,
+      }
+    ],
+  });
+  res.send(paymentLink);
+});
+
 router.get("/success", async (req, res) => {
   res.send({ msg: "payment success" });
 });
