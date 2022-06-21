@@ -12,7 +12,7 @@ const misucall_notes = require("../models/misucall_notes");
 
 exports.seven_to_forteen = async (req, res) => {
   try {
-    let userId = req.params.userId
+    let userId = req.params.userId;
     var per_page = parseInt(req.params.per_page) || 10;
     var page_no = parseInt(req.params.page_no) || 0;
     var pagination = {
@@ -30,17 +30,16 @@ exports.seven_to_forteen = async (req, res) => {
             end_date: 1,
             program_color: 1,
             class_attendanceArray: 1,
-            repeat_weekly_on: 1
-
-          }
+            repeat_weekly_on: 1,
+          },
         },
         {
           $lookup: {
             from: "members",
             localField: "class_attendanceArray.studentInfo",
             foreignField: "_id",
-            as: "data"
-          }
+            as: "data",
+          },
         },
         {
           $project: {
@@ -58,33 +57,34 @@ exports.seven_to_forteen = async (req, res) => {
             "data.last_contact_missCall": 1,
             "data.attendedclass_count": 1,
             "data._id": 1,
-          }
+            "data.followup_notes":1
+          },
         },
         {
-          "$addFields": {
-            "attendence": {
-              "$map": {
-                "input": "$class_attendanceArray",
-                "in": {
-                  "$mergeObjects": [
+          $addFields: {
+            attendence: {
+              $map: {
+                input: "$class_attendanceArray",
+                in: {
+                  $mergeObjects: [
                     "$$this",
                     {
-                      "$arrayElemAt": [
+                      $arrayElemAt: [
                         "$data",
-                        { "$indexOfArray": ["$data._id", "$$this.studentInfo"] }
-                      ]
-                    }
-                  ]
-                }
-              }
-            }
-          }
+                        { $indexOfArray: ["$data._id", "$$this.studentInfo"] },
+                      ],
+                    },
+                  ],
+                },
+              },
+            },
+          },
         },
         {
           $project: {
             data: 0,
             class_attendanceArray: 0,
-          }
+          },
         },
         {
           $addFields: {
@@ -93,96 +93,119 @@ exports.seven_to_forteen = async (req, res) => {
             "attendence.program_name": "$program_name",
             "attendence.program_color": "$program_color",
             "attendence.repeat_weekly_on": "$repeat_weekly_on",
-          }
+          },
         },
         /** Unwind items array, will exclude docs where items is not an array/doesn't exists */
         {
-          $unwind: "$attendence"
+          $unwind: "$attendence",
         },
         /** Replace 'response.items' object as new root(document) */
         {
           $replaceRoot: {
-            newRoot: "$attendence"
-          }
+            newRoot: "$attendence",
+          },
         },
         {
-          "$group": {
-            "_id": "$studentInfo",
-            "latestDate": {
-              "$max": {
-                "$mergeObjects": [
+          $group: {
+            _id: "$studentInfo",
+            latestDate: {
+              $max: {
+                $mergeObjects: [
                   {
-                    "epochTime": "$epochTime",
-
+                    epochTime: "$epochTime",
                   },
-                  "$$ROOT"
-                ]
-              }
-            }
-          }
+                  "$$ROOT",
+                ],
+              },
+            },
+          },
         },
         {
-          "$addFields": {
-            "name": "$_id"
-          }
-        },
-        {
-          "$project": {
-            "_id": 0
-          }
-        },
-        {
-          "$unwind": {
-            "path": "$latestDate"
-          }
-        },
-        {
-          "$replaceRoot": {
-            "newRoot": "$latestDate"
-          }
+          $addFields: {
+            name: "$_id",
+          },
         },
         {
           $project: {
-            "epochTime": 1,
-            "studentInfo": 1,
-            "time": 1,
-            "date": 1,
-            "_id": 1,
-            "firstName": 1,
-            "lastName": 1,
-            "class_name": 1,
-            "memberprofileImage": 1,
-            "program_color": 1,
-            "program_name": 1,
-            "repeat_weekly_on": 1,
-            "dayssince": {
+            _id: 0,
+          },
+        },
+        {
+          $unwind: {
+            path: "$latestDate",
+          },
+        },
+        {
+          $replaceRoot: {
+            newRoot: "$latestDate",
+          },
+        },
+        {
+          $lookup: {
+            from: "followupnotes",
+            localField: "followup_notes",
+            foreignField: "_id",
+            as: "followup_notes",
+            pipeline: [
+              {
+                $project: {
+                  note: 1,
+                  time: 1,
+                  date: 1,
+                },
+              },
+            ],
+          },
+        },
+        {
+          $project: {
+            epochTime: 1,
+            studentInfo: 1,
+            time: 1,
+            date: 1,
+            _id: 1,
+            firstName: 1,
+            lastName: 1,
+            memberprofileImage: 1,
+            notes: { $arrayElemAt: ["$followup_notes", -1] },
+            class_name: 1,
+            program_color: 1,
+            program_name: 1,
+            repeat_weekly_on: 1,
+            dayssince: {
               $floor: {
-                $divide: [{
-                  $subtract: [new Date(), "$epochTime"
-                  ]
-                }, 1000 * 60 * 60 * 24]
-              }
-            }
-          }
+                $divide: [
+                  {
+                    $subtract: [new Date(), "$epochTime"],
+                  },
+                  1000 * 60 * 60 * 24,
+                ],
+              },
+            },
+          },
         },
         {
           $match: {
             dayssince: {
-              $gte: 7, $lte: 14
-            }
-          }
+              $gte: 7,
+              $lte: 14,
+            },
+          },
         },
         { $sort: { dayssince: 1 } },
         {
           $facet: {
-            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+            paginatedResults: [
+              { $skip: pagination.skip },
+              { $limit: pagination.limit },
+            ],
             totalCount: [
               {
-                $count: 'count'
-              }
-            ]
-          }
-        }
+                $count: "count",
+              },
+            ],
+          },
+        },
       ])
       .exec((err, memberdata) => {
         if (err) {
@@ -190,12 +213,15 @@ exports.seven_to_forteen = async (req, res) => {
             error: err,
           });
         } else {
-          let data = memberdata[0].paginatedResults
+          let data = memberdata[0].paginatedResults;
           if (data.length > 0) {
-            res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
-
+            res.send({
+              data: data,
+              totalCount: memberdata[0].totalCount[0].count,
+              success: true,
+            });
           } else {
-            res.send({ msg: 'data not found', success: false });
+            res.send({ msg: "data not found", success: false });
           }
         }
       });
@@ -206,7 +232,7 @@ exports.seven_to_forteen = async (req, res) => {
 
 exports.fifteen_to_thirty = async (req, res) => {
   try {
-    let userId = req.params.userId
+    let userId = req.params.userId;
     var per_page = parseInt(req.params.per_page) || 10;
     var page_no = parseInt(req.params.page_no) || 0;
     var pagination = {
@@ -224,17 +250,16 @@ exports.fifteen_to_thirty = async (req, res) => {
             end_date: 1,
             program_color: 1,
             class_attendanceArray: 1,
-            repeat_weekly_on: 1
-
-          }
+            repeat_weekly_on: 1,
+          },
         },
         {
           $lookup: {
             from: "members",
             localField: "class_attendanceArray.studentInfo",
             foreignField: "_id",
-            as: "data"
-          }
+            as: "data",
+          },
         },
         {
           $project: {
@@ -251,34 +276,35 @@ exports.fifteen_to_thirty = async (req, res) => {
             "data.missYouCall_notes": 1,
             "data.last_contact_missCall": 1,
             "data.attendedclass_count": 1,
+            "data.followup_notes": 1,
             "data._id": 1,
-          }
+          },
         },
         {
-          "$addFields": {
-            "attendence": {
-              "$map": {
-                "input": "$class_attendanceArray",
-                "in": {
-                  "$mergeObjects": [
+          $addFields: {
+            attendence: {
+              $map: {
+                input: "$class_attendanceArray",
+                in: {
+                  $mergeObjects: [
                     "$$this",
                     {
-                      "$arrayElemAt": [
+                      $arrayElemAt: [
                         "$data",
-                        { "$indexOfArray": ["$data._id", "$$this.studentInfo"] }
-                      ]
-                    }
-                  ]
-                }
-              }
-            }
-          }
+                        { $indexOfArray: ["$data._id", "$$this.studentInfo"] },
+                      ],
+                    },
+                  ],
+                },
+              },
+            },
+          },
         },
         {
           $project: {
             data: 0,
             class_attendanceArray: 0,
-          }
+          },
         },
         {
           $addFields: {
@@ -287,97 +313,119 @@ exports.fifteen_to_thirty = async (req, res) => {
             "attendence.program_name": "$program_name",
             "attendence.program_color": "$program_color",
             "attendence.repeat_weekly_on": "$repeat_weekly_on",
-          }
+          },
         },
         /** Unwind items array, will exclude docs where items is not an array/doesn't exists */
         {
-          $unwind: "$attendence"
+          $unwind: "$attendence",
         },
         /** Replace 'response.items' object as new root(document) */
         {
           $replaceRoot: {
-            newRoot: "$attendence"
-          }
+            newRoot: "$attendence",
+          },
         },
         {
-          "$group": {
-            "_id": "$studentInfo",
-            "latestDate": {
-              "$max": {
-                "$mergeObjects": [
+          $group: {
+            _id: "$studentInfo",
+            latestDate: {
+              $max: {
+                $mergeObjects: [
                   {
-                    "epochTime": "$epochTime",
-
+                    epochTime: "$epochTime",
                   },
-                  "$$ROOT"
-                ]
-              }
-            }
-          }
+                  "$$ROOT",
+                ],
+              },
+            },
+          },
         },
         {
-          "$addFields": {
-            "name": "$_id"
-          }
-        },
-        {
-          "$project": {
-            "_id": 0
-          }
-        },
-        {
-          "$unwind": {
-            "path": "$latestDate"
-          }
-        },
-        {
-          "$replaceRoot": {
-            "newRoot": "$latestDate"
-          }
+          $addFields: {
+            name: "$_id",
+          },
         },
         {
           $project: {
-            "epochTime": 1,
-            "studentInfo": 1,
-            "time": 1,
-            "date": 1,
-            "_id": 1,
-            "firstName": 1,
-            "lastName": 1,
-            "memberprofileImage": 1,
-            "class_name": 1,
-            "program_color": 1,
-            "program_name": 1,
-            "repeat_weekly_on": 1,
-            "dayssince": {
+            _id: 0,
+          },
+        },
+        {
+          $unwind: {
+            path: "$latestDate",
+          },
+        },
+        {
+          $replaceRoot: {
+            newRoot: "$latestDate",
+          },
+        },
+        {
+          $lookup: {
+            from: "followupnotes",
+            localField: "followup_notes",
+            foreignField: "_id",
+            as: "followup_notes",
+            pipeline: [
+              {
+                $project: {
+                  note: 1,
+                  time: 1,
+                  date: 1,
+                },
+              },
+            ],
+          },
+        },
+        {
+          $project: {
+            epochTime: 1,
+            studentInfo: 1,
+            time: 1,
+            date: 1,
+            _id: 1,
+            firstName: 1,
+            lastName: 1,
+            memberprofileImage: 1,
+            notes: { $arrayElemAt: ["$followup_notes", -1] },
+            class_name: 1,
+            program_color: 1,
+            program_name: 1,
+            repeat_weekly_on: 1,
+            dayssince: {
               $floor: {
-                $divide: [{
-                  $subtract: [new Date(), "$epochTime"
-
-                  ]
-                }, 1000 * 60 * 60 * 24]
-              }
-            }
-          }
-        }
-        , {
+                $divide: [
+                  {
+                    $subtract: [new Date(), "$epochTime"],
+                  },
+                  1000 * 60 * 60 * 24,
+                ],
+              },
+            },
+          },
+        },
+        {
           $match: {
             dayssince: {
-              $gte: 15, $lte: 30
-            }
-          }
+              $gte: 15,
+              $lte: 30,
+            },
+          },
         },
         { $sort: { dayssince: 1 } },
         {
           $facet: {
-            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+            paginatedResults: [
+              { $skip: pagination.skip },
+              { $limit: pagination.limit },
+            ],
             totalCount: [
               {
-                $count: 'count'
-              }
-            ]
-          }
-        }
+                $count: "count",
+              },
+            ],
+          },
+        },
       ])
       .exec((err, memberdata) => {
         if (err) {
@@ -385,12 +433,15 @@ exports.fifteen_to_thirty = async (req, res) => {
             error: err,
           });
         } else {
-          let data = memberdata[0].paginatedResults
+          let data = memberdata[0].paginatedResults;
           if (data.length > 0) {
-            res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
-
+            res.send({
+              data: data,
+              totalCount: memberdata[0].totalCount[0].count,
+              success: true,
+            });
           } else {
-            res.send({ msg: 'data not found', success: false });
+            res.send({ msg: "data not found", success: false });
           }
         }
       });
@@ -401,7 +452,7 @@ exports.fifteen_to_thirty = async (req, res) => {
 
 exports.Thirty_to_sixty = async (req, res) => {
   try {
-    let userId = req.params.userId
+    let userId = req.params.userId;
     var per_page = parseInt(req.params.per_page) || 10;
     var page_no = parseInt(req.params.page_no) || 0;
     var pagination = {
@@ -419,17 +470,16 @@ exports.Thirty_to_sixty = async (req, res) => {
             end_date: 1,
             program_color: 1,
             class_attendanceArray: 1,
-            repeat_weekly_on: 1
-
-          }
+            repeat_weekly_on: 1,
+          },
         },
         {
           $lookup: {
             from: "members",
             localField: "class_attendanceArray.studentInfo",
             foreignField: "_id",
-            as: "data"
-          }
+            as: "data",
+          },
         },
         {
           $project: {
@@ -446,132 +496,156 @@ exports.Thirty_to_sixty = async (req, res) => {
             "data.missYouCall_notes": 1,
             "data.last_contact_missCall": 1,
             "data.attendedclass_count": 1,
+            "data.followup_notes": 1,
             "data._id": 1,
-          }
+          },
         },
         {
-          "$addFields": {
-            "attendence": {
-              "$map": {
-                "input": "$class_attendanceArray",
-                "in": {
-                  "$mergeObjects": [
+          $addFields: {
+            attendence: {
+              $map: {
+                input: "$class_attendanceArray",
+                in: {
+                  $mergeObjects: [
                     "$$this",
                     {
-                      "$arrayElemAt": [
+                      $arrayElemAt: [
                         "$data",
-                        { "$indexOfArray": ["$data._id", "$$this.studentInfo"] }
-                      ]
-                    }
-                  ]
-                }
-              }
-            }
-          }
+                        { $indexOfArray: ["$data._id", "$$this.studentInfo"] },
+                      ],
+                    },
+                  ],
+                },
+              },
+            },
+          },
         },
         {
           $project: {
             data: 0,
             class_attendanceArray: 0,
-          }
+          },
         },
         {
           $addFields: {
             "attendence._id": "$_id",
-            "attendence.program_name": "$program_name",
             "attendence.class_name": "$class_name",
+            "attendence.program_name": "$program_name",
             "attendence.program_color": "$program_color",
             "attendence.repeat_weekly_on": "$repeat_weekly_on",
-          }
+          },
         },
         /** Unwind items array, will exclude docs where items is not an array/doesn't exists */
         {
-          $unwind: "$attendence"
+          $unwind: "$attendence",
         },
         /** Replace 'response.items' object as new root(document) */
         {
           $replaceRoot: {
-            newRoot: "$attendence"
-          }
+            newRoot: "$attendence",
+          },
         },
         {
-          "$group": {
-            "_id": "$studentInfo",
-            "latestDate": {
-              "$max": {
-                "$mergeObjects": [
+          $group: {
+            _id: "$studentInfo",
+            latestDate: {
+              $max: {
+                $mergeObjects: [
                   {
-                    "epochTime": "$epochTime",
-
+                    epochTime: "$epochTime",
                   },
-                  "$$ROOT"
-                ]
-              }
-            }
-          }
+                  "$$ROOT",
+                ],
+              },
+            },
+          },
         },
         {
-          "$addFields": {
-            "name": "$_id"
-          }
-        },
-        {
-          "$project": {
-            "_id": 0
-          }
-        },
-        {
-          "$unwind": {
-            "path": "$latestDate"
-          }
-        },
-        {
-          "$replaceRoot": {
-            "newRoot": "$latestDate"
-          }
+          $addFields: {
+            name: "$_id",
+          },
         },
         {
           $project: {
-            "epochTime": 1,
-            "studentInfo": 1,
-            "time": 1,
-            "date": 1,
-            "_id": 1,
-            "firstName": 1,
-            "lastName": 1,
-            "memberprofileImage": 1,
-            "class_name": 1,
-            "program_color": 1,
-            "program_name": 1,
-            "repeat_weekly_on": 1,
-            "dayssince": {
+            _id: 0,
+          },
+        },
+        {
+          $unwind: {
+            path: "$latestDate",
+          },
+        },
+        {
+          $replaceRoot: {
+            newRoot: "$latestDate",
+          },
+        },
+        {
+          $lookup: {
+            from: "followupnotes",
+            localField: "followup_notes",
+            foreignField: "_id",
+            as: "followup_notes",
+            pipeline: [
+              {
+                $project: {
+                  note: 1,
+                  time: 1,
+                  date: 1,
+                },
+              },
+            ],
+          },
+        },
+        {
+          $project: {
+            epochTime: 1,
+            studentInfo: 1,
+            time: 1,
+            date: 1,
+            _id: 1,
+            firstName: 1,
+            lastName: 1,
+            memberprofileImage: 1,
+            notes: { $arrayElemAt: ["$followup_notes", -1] },
+            class_name: 1,
+            program_color: 1,
+            program_name: 1,
+            repeat_weekly_on: 1,
+            dayssince: {
               $floor: {
-                $divide: [{
-                  $subtract: [new Date(), "$epochTime"
-                  ]
-                }, 1000 * 60 * 60 * 24]
-              }
-            }
-          }
-        }
-        , {
+                $divide: [
+                  {
+                    $subtract: [new Date(), "$epochTime"],
+                  },
+                  1000 * 60 * 60 * 24,
+                ],
+              },
+            },
+          },
+        },
+        {
           $match: {
             dayssince: {
-              $gte: 31, $lte: 60
-            }
-          }
+              $gte: 31,
+              $lte: 60,
+            },
+          },
         },
         { $sort: { dayssince: 1 } },
         {
           $facet: {
-            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+            paginatedResults: [
+              { $skip: pagination.skip },
+              { $limit: pagination.limit },
+            ],
             totalCount: [
               {
-                $count: 'count'
-              }
-            ]
-          }
-        }
+                $count: "count",
+              },
+            ],
+          },
+        },
       ])
       .exec((err, memberdata) => {
         if (err) {
@@ -579,12 +653,15 @@ exports.Thirty_to_sixty = async (req, res) => {
             error: err,
           });
         } else {
-          let data = memberdata[0].paginatedResults
+          let data = memberdata[0].paginatedResults;
           if (data.length > 0) {
-            res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
-
+            res.send({
+              data: data,
+              totalCount: memberdata[0].totalCount[0].count,
+              success: true,
+            });
           } else {
-            res.send({ msg: 'data not found', success: false });
+            res.send({ msg: "data not found", success: false });
           }
         }
       });
@@ -595,7 +672,7 @@ exports.Thirty_to_sixty = async (req, res) => {
 
 exports.more_than_sixty = async (req, res) => {
   try {
-    let userId = req.params.userId
+    let userId = req.params.userId;
     var per_page = parseInt(req.params.per_page) || 10;
     var page_no = parseInt(req.params.page_no) || 0;
     var pagination = {
@@ -613,17 +690,16 @@ exports.more_than_sixty = async (req, res) => {
             end_date: 1,
             program_color: 1,
             class_attendanceArray: 1,
-            repeat_weekly_on: 1
-
-          }
+            repeat_weekly_on: 1,
+          },
         },
         {
           $lookup: {
             from: "members",
             localField: "class_attendanceArray.studentInfo",
             foreignField: "_id",
-            as: "data"
-          }
+            as: "data",
+          },
         },
         {
           $project: {
@@ -640,133 +716,155 @@ exports.more_than_sixty = async (req, res) => {
             "data.missYouCall_notes": 1,
             "data.last_contact_missCall": 1,
             "data.attendedclass_count": 1,
+            "data.followup_notes": 1,
             "data._id": 1,
-          }
+          },
         },
         {
-          "$addFields": {
-            "attendence": {
-              "$map": {
-                "input": "$class_attendanceArray",
-                "in": {
-                  "$mergeObjects": [
+          $addFields: {
+            attendence: {
+              $map: {
+                input: "$class_attendanceArray",
+                in: {
+                  $mergeObjects: [
                     "$$this",
                     {
-                      "$arrayElemAt": [
+                      $arrayElemAt: [
                         "$data",
-                        { "$indexOfArray": ["$data._id", "$$this.studentInfo"] }
-                      ]
-                    }
-                  ]
-                }
-              }
-            }
-          }
+                        { $indexOfArray: ["$data._id", "$$this.studentInfo"] },
+                      ],
+                    },
+                  ],
+                },
+              },
+            },
+          },
         },
         {
           $project: {
             data: 0,
             class_attendanceArray: 0,
-          }
+          },
         },
         {
           $addFields: {
             "attendence._id": "$_id",
-            "attendence.program_name": "$program_name",
             "attendence.class_name": "$class_name",
+            "attendence.program_name": "$program_name",
             "attendence.program_color": "$program_color",
             "attendence.repeat_weekly_on": "$repeat_weekly_on",
-          }
+          },
         },
         /** Unwind items array, will exclude docs where items is not an array/doesn't exists */
         {
-          $unwind: "$attendence"
+          $unwind: "$attendence",
         },
         /** Replace 'response.items' object as new root(document) */
         {
           $replaceRoot: {
-            newRoot: "$attendence"
-          }
+            newRoot: "$attendence",
+          },
         },
         {
-          "$group": {
-            "_id": "$studentInfo",
-            "latestDate": {
-              "$max": {
-                "$mergeObjects": [
+          $group: {
+            _id: "$studentInfo",
+            latestDate: {
+              $max: {
+                $mergeObjects: [
                   {
-                    "epochTime": "$epochTime",
-
+                    epochTime: "$epochTime",
                   },
-                  "$$ROOT"
-                ]
-              }
-            }
-          }
+                  "$$ROOT",
+                ],
+              },
+            },
+          },
         },
         {
-          "$addFields": {
-            "name": "$_id"
-          }
-        },
-        {
-          "$project": {
-            "_id": 0
-          }
-        },
-        {
-          "$unwind": {
-            "path": "$latestDate"
-          }
-        },
-        {
-          "$replaceRoot": {
-            "newRoot": "$latestDate"
-          }
+          $addFields: {
+            name: "$_id",
+          },
         },
         {
           $project: {
-            "epochTime": 1,
-            "studentInfo": 1,
-            "time": 1,
-            "date": 1,
-            "_id": 1,
-            "firstName": 1,
-            "lastName": 1,
-            "memberprofileImage": 1,
-            "class_name": 1,
-            "program_color": 1,
-            "program_name": 1,
-            "repeat_weekly_on": 1,
-            "dayssince": {
+            _id: 0,
+          },
+        },
+        {
+          $unwind: {
+            path: "$latestDate",
+          },
+        },
+        {
+          $replaceRoot: {
+            newRoot: "$latestDate",
+          },
+        },
+        {
+          $lookup: {
+            from: "followupnotes",
+            localField: "followup_notes",
+            foreignField: "_id",
+            as: "followup_notes",
+            pipeline: [
+              {
+                $project: {
+                  note: 1,
+                  time: 1,
+                  date: 1,
+                },
+              },
+            ],
+          },
+        },
+        {
+          $project: {
+            epochTime: 1,
+            studentInfo: 1,
+            time: 1,
+            date: 1,
+            _id: 1,
+            firstName: 1,
+            lastName: 1,
+            memberprofileImage: 1,
+            notes: { $arrayElemAt: ["$followup_notes", -1] },
+            class_name: 1,
+            program_color: 1,
+            program_name: 1,
+            repeat_weekly_on: 1,
+            dayssince: {
               $floor: {
-                $divide: [{
-                  $subtract: [new Date(), "$epochTime"
-                  ]
-                }, 1000 * 60 * 60 * 24]
-              }
-            }
-          }
-        }
-        ,
-         {
+                $divide: [
+                  {
+                    $subtract: [new Date(), "$epochTime"],
+                  },
+                  1000 * 60 * 60 * 24,
+                ],
+              },
+            },
+          },
+        },
+        {
           $match: {
             dayssince: {
-              $gte: 61
-            }
-          }
+              $gte: 61,
+            },
+          },
         },
         { $sort: { dayssince: 1 } },
         {
           $facet: {
-            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+            paginatedResults: [
+              { $skip: pagination.skip },
+              { $limit: pagination.limit },
+            ],
             totalCount: [
               {
-                $count: 'count'
-              }
-            ]
-          }
-        }
+                $count: "count",
+              },
+            ],
+          },
+        },
       ])
       .exec((err, memberdata) => {
         if (err) {
@@ -774,12 +872,15 @@ exports.more_than_sixty = async (req, res) => {
             error: err,
           });
         } else {
-          let data = memberdata[0].paginatedResults
+          let data = memberdata[0].paginatedResults;
           if (data.length > 0) {
-            res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
-
+            res.send({
+              data: data,
+              totalCount: memberdata[0].totalCount[0].count,
+              success: true,
+            });
           } else {
-            res.send({ msg: 'data not found', success: false });
+            res.send({ msg: "data not found", success: false });
           }
         }
       });
@@ -902,7 +1003,7 @@ exports.updateNote = (req, res) => {
 
 exports.more_than_forteen = async (req, res) => {
   try {
-    let userId = req.params.userId
+    let userId = req.params.userId;
     var per_page = parseInt(req.params.per_page) || 10;
     var page_no = parseInt(req.params.page_no) || 0;
     var pagination = {
@@ -920,17 +1021,16 @@ exports.more_than_forteen = async (req, res) => {
             end_date: 1,
             program_color: 1,
             class_attendanceArray: 1,
-            repeat_weekly_on: 1
-
-          }
+            repeat_weekly_on: 1,
+          },
         },
         {
           $lookup: {
             from: "members",
             localField: "class_attendanceArray.studentInfo",
             foreignField: "_id",
-            as: "data"
-          }
+            as: "data",
+          },
         },
         {
           $project: {
@@ -950,33 +1050,33 @@ exports.more_than_forteen = async (req, res) => {
             "data.last_contact_missCall": 1,
             "data.attendedclass_count": 1,
             "data._id": 1,
-          }
+          },
         },
         {
-          "$addFields": {
-            "attendence": {
-              "$map": {
-                "input": "$class_attendanceArray",
-                "in": {
-                  "$mergeObjects": [
+          $addFields: {
+            attendence: {
+              $map: {
+                input: "$class_attendanceArray",
+                in: {
+                  $mergeObjects: [
                     "$$this",
                     {
-                      "$arrayElemAt": [
+                      $arrayElemAt: [
                         "$data",
-                        { "$indexOfArray": ["$data._id", "$$this.studentInfo"] }
-                      ]
-                    }
-                  ]
-                }
-              }
-            }
-          }
+                        { $indexOfArray: ["$data._id", "$$this.studentInfo"] },
+                      ],
+                    },
+                  ],
+                },
+              },
+            },
+          },
         },
         {
           $project: {
             data: 0,
             class_attendanceArray: 0,
-          }
+          },
         },
         {
           $addFields: {
@@ -985,100 +1085,108 @@ exports.more_than_forteen = async (req, res) => {
             "attendence.program_name": "$program_name",
             "attendence.program_color": "$program_color",
             "attendence.repeat_weekly_on": "$repeat_weekly_on",
-          }
+          },
         },
         /** Unwind items array, will exclude docs where items is not an array/doesn't exists */
         {
-          $unwind: "$attendence"
+          $unwind: "$attendence",
         },
         /** Replace 'response.items' object as new root(document) */
         {
           $replaceRoot: {
-            newRoot: "$attendence"
-          }
+            newRoot: "$attendence",
+          },
         },
         {
-          "$group": {
-            "_id": "$studentInfo",
-            "latestDate": {
-              "$max": {
-                "$mergeObjects": [
+          $group: {
+            _id: "$studentInfo",
+            latestDate: {
+              $max: {
+                $mergeObjects: [
                   {
-                    "epochTime": "$epochTime",
-
+                    epochTime: "$epochTime",
                   },
-                  "$$ROOT"
-                ]
-              }
-            }
-          }
+                  "$$ROOT",
+                ],
+              },
+            },
+          },
         },
         {
-          "$addFields": {
-            "name": "$_id"
-          }
-        },
-        {
-          "$project": {
-            "_id": 0
-          }
-        },
-        {
-          "$unwind": {
-            "path": "$latestDate"
-          }
-        },
-        {
-          "$replaceRoot": {
-            "newRoot": "$latestDate"
-          }
+          $addFields: {
+            name: "$_id",
+          },
         },
         {
           $project: {
-            "epochTime": 1,
-            "studentInfo": 1,
-            "time": 1,
-            "date": 1,
-            "_id": 1,
-            "firstName": 1,
-            "lastName": 1,
-            "studentType": 1,
-            "primaryPhone": 1,
-            "class_name": 1,
-            "program_color": 1,
-            "repeat_weekly_on": 1,
-            "dayssince": {
+            _id: 0,
+          },
+        },
+        {
+          $unwind: {
+            path: "$latestDate",
+          },
+        },
+        {
+          $replaceRoot: {
+            newRoot: "$latestDate",
+          },
+        },
+        {
+          $project: {
+            epochTime: 1,
+            studentInfo: 1,
+            time: 1,
+            date: 1,
+            _id: 1,
+            firstName: 1,
+            lastName: 1,
+            studentType: 1,
+            primaryPhone: 1,
+            class_name: 1,
+            program_color: 1,
+            repeat_weekly_on: 1,
+            dayssince: {
               $floor: {
-                $divide: [{
-                  $subtract: [new Date(), {
-                    $dateFromString: {
-                      dateString: "$epochTime"
-                    }
-                  }]
-                }, 1000 * 60 * 60 * 24]
-              }
-            }
-          }
-        }
-        , {
+                $divide: [
+                  {
+                    $subtract: [
+                      new Date(),
+                      {
+                        $dateFromString: {
+                          dateString: "$epochTime",
+                        },
+                      },
+                    ],
+                  },
+                  1000 * 60 * 60 * 24,
+                ],
+              },
+            },
+          },
+        },
+        {
           $match: {
             dayssince: {
-              $gte: 14
-            }
-          }
+              $gte: 14,
+            },
+          },
         },
         { $sort: { dayssince: 1 } },
 
         {
           $facet: {
-            paginatedResults: [{ $skip: pagination.skip }, { $limit: pagination.limit }],
+            paginatedResults: [
+              { $skip: pagination.skip },
+              { $limit: pagination.limit },
+            ],
             totalCount: [
               {
-                $count: 'count'
-              }
-            ]
-          }
-        }
+                $count: "count",
+              },
+            ],
+          },
+        },
       ])
       .exec((err, memberdata) => {
         if (err) {
@@ -1086,12 +1194,15 @@ exports.more_than_forteen = async (req, res) => {
             error: err,
           });
         } else {
-          let data = memberdata[0].paginatedResults
+          let data = memberdata[0].paginatedResults;
           if (data.length > 0) {
-            res.send({ data: data, totalCount: memberdata[0].totalCount[0].count, success: true });
-
+            res.send({
+              data: data,
+              totalCount: memberdata[0].totalCount[0].count,
+              success: true,
+            });
           } else {
-            res.send({ msg: 'data not found', success: false });
+            res.send({ msg: "data not found", success: false });
           }
         }
       });
@@ -1106,26 +1217,25 @@ exports.missclasses = async (req, res) => {
       {
         $group: {
           _id: " ",
-          id: { $push: "$_id" }
-        }
+          id: { $push: "$_id" },
+        },
       },
       {
         $project: {
           id: 1,
-          _id: 0
-        }
-      }
+          _id: 0,
+        },
+      },
     ]);
 
-    id = id.id
+    id = id.id;
     for await (const i of id) {
-
       let data = await classes.aggregate([
         {
           $project: {
             class_name: 1,
             class_attendanceArray: "$class_attendanceArray.studentInfo",
-          }
+          },
         },
         { $match: { class_attendanceArray: { $nin: [i] } } },
         {
@@ -1133,23 +1243,23 @@ exports.missclasses = async (req, res) => {
             _id: "_id",
             missclass_count: {
               $sum: 1,
-            }
-          }
+            },
+          },
         },
-        { $project: { _id: 0 }, }
-      ])
+        { $project: { _id: 0 } },
+      ]);
 
-      let { missclass_count } = data[0]
-      await updateStudentsById(i, missclass_count)
+      let { missclass_count } = data[0];
+      await updateStudentsById(i, missclass_count);
     }
-    console.log("miss_Classes updated!")
-  }
-  catch (err) {
+    console.log("miss_Classes updated!");
+  } catch (err) {
     throw new Error(err);
-
   }
-}
+};
 const updateStudentsById = async (studentId, missclass_count) => {
-  return student.findByIdAndUpdate({ _id: studentId }, { missclass_count: missclass_count })
-}
-
+  return student.findByIdAndUpdate(
+    { _id: studentId },
+    { missclass_count: missclass_count }
+  );
+};
