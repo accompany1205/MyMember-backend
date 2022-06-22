@@ -20,6 +20,7 @@ class SocketEngine {
         socket.join(room);
       });
 
+      
       socket.on('leaveTextChatRoom', async (room) => {
         socket.leave(room);
       });
