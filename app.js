@@ -209,7 +209,15 @@ const purchaseMemberships = require("./models/purchaseMemberships");
 
 // middlewares
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(
+  express.json({
+    verify: function (req, res, buf) {
+      if (req.originalUrl.startsWith("/api/webhook")) {
+        req.rawBody = buf.toString();
+      }
+    },
+  })
+);
 app.use(express.urlencoded({ extended: false }));
 app.set("view engine", "ejs");
 // app.use('/', express.static(path.join(__dirname, '')));
