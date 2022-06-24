@@ -1301,3 +1301,4 @@ exports.expiredMembership = async (req, res) => {
 			}
 		});
 };
+exports.createMemberShipDocument=createMemberShipDocument

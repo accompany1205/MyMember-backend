@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
-
+const { createMemberShipDocument } = require("../buy_membership");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 router.get("/config", async (req, res) => {
   const price = await stripe.prices.retrieve(process.env.PRICE);
-  console.log(price);
+  // console.log(price);
   res.send({
     publicKey: process.env.STRIPE_PUBLISHABLE_KEY,
     unitAmount: price.unit_amount,
@@ -13,13 +13,6 @@ router.get("/config", async (req, res) => {
   });
 });
 
-// Fetch the Checkout Session to display the JSON result on the success page
-router.get("/checkout-session", async (req, res) => {
-  const { sessionId } = req.query;
-  console.log(sessionId);
-  const session = await stripe.checkout.sessions.retrieve(sessionId);
-  res.send(session);
-});
 
 router.post("/payment_links", async (req, res) => {
   const paymentLink = await stripe.paymentLinks.create({
@@ -27,22 +20,27 @@ router.post("/payment_links", async (req, res) => {
       {
         price: "price_1L8nchSB01SizmLfEMnJNe5n",
         quantity: 1,
-      }
+      },
     ],
   });
   res.send(paymentLink);
 });
 
 router.get("/success", async (req, res) => {
+  const { session_id } = req.query;
+  const session = await stripe.checkout.sessions.retrieve(session_id);
+  console.log(session);
+
   res.send({ msg: "payment success" });
 });
+
 router.get("/canceled", async (req, res) => {
   res.send({ msg: "payment declined" });
 });
+
 router.post("/create-checkout-session", async (req, res) => {
   const domainURL = process.env.DOMAIN;
   const { line_items, mode } = req.body;
-
   // Create new Checkout Session for the order
   const session = await stripe.checkout.sessions.create({
     line_items,
@@ -51,11 +49,19 @@ router.post("/create-checkout-session", async (req, res) => {
     cancel_url: `${domainURL}/api/canceled`,
     // automatic_tax: {enabled: true},
   });
+  // membershipHandler(req.body);
   console.log(session);
 
-  return res.redirect(303, session.url);
+  return res.send({url: session.url});
 });
 
+async function membershipHandler(membershipData) {
+  const memberShipDoc = await createMemberShipDocument(
+    membershipData,
+    studentId
+  );
+  return res.send(memberShipDoc);
+}
 // Webhook handler for asynchronous events.
 router.post("/webhook", async (req, res) => {
   let data;
@@ -87,24 +93,57 @@ router.post("/webhook", async (req, res) => {
   }
 
   switch (eventType) {
+    case "customer.subscription.created":
+      console.log(`🔔  Subscription created!`, data);
     case "checkout.session.completed":
       // Payment is successful and the subscription is created.
       // You should provision the subscription and save the customer ID to your database.
       console.log(`🔔  Payment received!`);
       break;
+    case "charge.succeeded":
+      console.log(`🔔  amount charged!`);
+      const paymentIntent = data.object;
+      console.log(paymentIntent.receipt_url);
+      break;
     case "invoice.paid":
-      // Continue to provision the subscription as payments continue to be made.
-      // Store the status in your database and check when a user accesses your service.
-      // This approach helps you avoid hitting rate limits.
       break;
     case "invoice.payment_failed":
-      // The payment failed or the customer does not have a valid payment method.
-      // The subscription becomes past_due. Notify your customer and send them to the
-      // customer portal to update their payment information.
       break;
     default:
     // Unhandled event type
   }
+  res.send({ msg: "success" });
 });
 
+function striperErrorHandler(err) {
+  switch (err.type) {
+    case "StripeCardError":
+      // A declined card error
+      err.message; // => e.g. "Your card's expiration year is invalid."
+      break;
+    case "StripeRateLimitError":
+      // Too many requests made to the API too quickly
+      err.message;
+      break;
+    case "StripeInvalidRequestError":
+      // Invalid parameters were supplied to Stripe's API
+      err.message;
+      break;
+    case "StripeAPIError":
+      // An error occurred internally with Stripe's API
+      err.message;
+      break;
+    case "StripeConnectionError":
+      // Some kind of error occurred during the HTTPS communication
+      err.message;
+      break;
+    case "StripeAuthenticationError":
+      // You probably used an incorrect API key
+      err.message;
+      break;
+    default:
+      // Handle any other types of unexpected errors
+      break;
+  }
+}
 module.exports = router;

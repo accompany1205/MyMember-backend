@@ -75,7 +75,7 @@ const EmailSchema = schema({
     },
     isActive: {
         type: Boolean,
-        default: false
+        default: true
     },
     attachments: {
         type: Array
