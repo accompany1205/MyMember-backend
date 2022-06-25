@@ -4,6 +4,7 @@ const appointment = require("../controllers/appointment")
 const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 
 router.post("/add_appointment/:userId", verifySchool, appointment.Create);
+router.post("/add_appointment/v2/:userId", verifySchool, appointment.Create);
 router.get("/appointment/list_of_appointments/:userId/:dates", verifySchool, appointment.read);
 router.get("/appointment/list_of_appointments_onCategory/:userId/:page_no/:per_page/:catType", verifySchool, appointment.catRead);
 router.get("/appointment/list_of_appoinment_info/:userId/:appointId", requireSignin, appointment.appointInfo)

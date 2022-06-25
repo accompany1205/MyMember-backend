@@ -35,6 +35,10 @@ exports.Create = async (req, res) => {
   }
 };
 
+exports.apptCreate =async (req, res) => {
+  return "In progress"
+}
+
 exports.updateAll = async (req, res) => {
   let userId = req.params.userId;
   let oldCategoryId = req.params.oldcategoryname;
