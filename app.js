@@ -183,6 +183,7 @@ const recommendedCandidatesRoutes = require("./routes/recommededCandidate");
 
 const textTemplateRoutes = require("./routes/text_templates_routes");
 const textChatRoutes = require("./routes/text_chat_routes");
+const chatbotUsersRoutes = require("./routes/chatbot_users");
 
 const appointmentEvent = require("./routes/appointment_event");
 const finance = require("./routes/finance");
@@ -320,6 +321,7 @@ app.use("/api", document_subFolder);
 app.use("/api", upload_doc);
 app.use("/api", textTemplateRoutes);
 app.use("/api", textChatRoutes);
+app.use("/api", chatbotUsersRoutes);
 app.use("/api", finance_list);
 app.use("/api", student_email);
 app.use("/api", student_text);
