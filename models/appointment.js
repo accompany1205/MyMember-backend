@@ -62,8 +62,52 @@ const appointSchema = new schema(
         },
         userId: {
             type: String
+        },
+        eventBanner: {
+            type:String
+        },
+        tickeNotes : {
+            type:String
+        },
+        hostName:{
+            typr:String
+        },
+        hostEmail: {
+            type:String
+        },
+        hostMobileNumber: {
+            type:String
+        },
+        hostAlternateNumber: {
+            type:String
+        },
+        eventLocation : {
+            type:String
+        },
+        eventStreet: {
+            type:String
+        },
+        eventCity : {
+            type:String
+        },
+        eventState: {
+            type:String
+        },
+        zip : {
+            type:String
+        },
+        ticketName: {
+            type:String
+        },
+        ticketAvailabeQuantity: {
+            type:String
+        },
+        ticktePrice : {
+            type:String
+        },
+        totalIncome : {
+            type:String
         }
-
     },
     { timestamps: true }
 );
