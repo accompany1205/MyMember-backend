@@ -101,6 +101,15 @@ class SocketEngine {
         }
       });
 
+      socket.on('createRoom', async ({ email, roomId }) => {
+        let user = await ChatUser.findOne({ email }, { roomId: 1 });
+        if (user && user.roomId) {
+          socket.join(user.roomId);
+          socket.emit('updatedRoomId', user.roomId);
+        }
+        else socket.join(roomId);
+      });
+
       socket.on('getChatbotUsers', async ({ currentUserEmail, schoolId }) => {
         try {
           let chatbotUsers = await ChatUser.find({ schoolId }).populate('chats');
@@ -150,6 +159,7 @@ class SocketEngine {
           );
 
           const chatbotChats = await Chat.find({ roomId }).sort({ timestamp: 1 });
+          io.to(roomId).emit('message', { email, roomId, message, timestamp });
           io.emit('chatbotChats', chatbotChats);
         } catch (error) {
           console.log(error);
