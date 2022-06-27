@@ -64,6 +64,9 @@ const recommendedCandidate = new mongoose.Schema({
     stripe_history: {
         type: Array,
     },
+    joinHistory: {
+        type : Array,
+    },
     isDeleted: {
         type: Boolean,
         default: false

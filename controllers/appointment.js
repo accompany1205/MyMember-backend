@@ -3,8 +3,9 @@ const _ = require("lodash");
 const Invitee = require("../models/eventInvitee")
 const EventRegistered = require("../models/eventRegistered");
 const Member = require('../models/addmember');
+const cloudUrl = require('../gcloud/imageUrl');
 
-// const todo = require("../models/todo_schema")
+
 
 exports.Create = async (req, res) => {
   var appoinemnt = req.body;
@@ -34,6 +35,41 @@ exports.Create = async (req, res) => {
     res.send({ error: err.message.replace(/\"/g, ""), success: false })
   }
 };
+
+exports.apptCreate = async (req, res) => {
+  let Appts = req.body
+  console.log(Appts);
+  console.log(req.file)
+  let userId = req.params.userId;
+  let dateRanges = req.body.repeatedDates;
+  try {
+    let allAppt = [];
+    let bannerImage;
+    if (req.file) {
+      bannerImage = await cloudUrl.imageUrl(req.file);
+    }
+    if (dateRanges.length > 1) {
+      for (let dates in dateRanges) {
+        let newAppt = { ...req.body, eventBanner: bannerImage, start: dateRanges[dates], end: dateRanges[dates], userId: userId, repeatedDates: dateRanges };
+        allAppt.push(newAppt);
+      }
+      let resp = await appoint.insertMany(allAppt);
+      return res.send({ msg: "Appointment added!", success: true, resp })
+    } else {
+      var App = _.extend(Appts, req.params);
+      const campaigns = new appoint(App);
+      campaigns.save((err, appdata) => {
+        if (err) {
+          return res.send({ msg: "appoinment is not added", success: false });
+        } else {
+          return res.send({ success: true, msg: "apoointment added!", appdata });
+        }
+      });
+    }
+  } catch (err) {
+    return res.send({ error: err.message.replace(/\"/g, ""), success: false })
+  }
+}
 
 exports.updateAll = async (req, res) => {
   let userId = req.params.userId;
@@ -98,7 +134,7 @@ exports.getAttended = async (req, res) => {
   });
   if (!attendee.length) {
     return res.json({
-      data:[],
+      data: [],
       success: false,
       msg: "There is no data found!"
     })
@@ -136,12 +172,12 @@ exports.eventPay = async (req, res) => {
       "cheque_no": req.body.cheque_no,
       "isPaid": req.body.isPaid
     };
-     EventRegistered.findOneAndUpdate({_id:eventRegistered}, { $set: registerd })
-     .then((data) =>{
-      return res.send({msg: "payment done!", success:true});
-     }).catch(err => {
-       return res.send({msg: err.message.replace(/\"/g, ""), success: false, })
-     })
+    EventRegistered.findOneAndUpdate({ _id: eventRegistered }, { $set: registerd })
+      .then((data) => {
+        return res.send({ msg: "payment done!", success: true });
+      }).catch(err => {
+        return res.send({ msg: err.message.replace(/\"/g, ""), success: false, })
+      })
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false })
   }

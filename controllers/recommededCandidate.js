@@ -117,13 +117,14 @@ exports.promoteTheStudentStripe = async (req, res) => {
             candidate,
             current_stripe,
         } = req.body;
-        // let stripeDetails = await Stripe.find({ candidate: candidate, stripe_name: current_stripe })
-        // if (!stripeDetails) {
-        //     return res.json({
-        //         success: false,
-        //         msg: "There is some issue while fetching Stripe!!"
-        //     })
-        // }
+
+        const {
+            join,
+            quite,
+            programmName,
+            reason
+        } = req.body;
+
         let history = {
             current_stripe,
             candidate,
@@ -135,6 +136,41 @@ exports.promoteTheStudentStripe = async (req, res) => {
         //         msg: "The meximum stripe limit has been reached!"
         //     })
         // }
+        if (join) {
+            let joinedHistory = {
+                join,
+                candidate,
+                "statusUpdateDate": date
+            }
+            let JoinedStatus = await RecommendedCandidateModel.updateOne({
+                "_id": recommededCandidateId
+            }, {
+                $set: joinedHistory,
+                $push: {
+                    joinHistory: joinedHistory
+                },
+                new: true
+
+            })
+        } else if (quite) {
+            let joinedHistory = {
+                quite,
+                candidate,
+                reason,
+                "statusUpdateDate": date
+            }
+            let JoinedStatus = await RecommendedCandidateModel.updateOne({
+                "_id": recommededCandidateId
+            }, {
+                $set: joinedHistory,
+                $push: {
+                    joinHistory: joinedHistory
+                },
+                new: true
+
+            })
+        }
+
         let updateStripeIntoRecommededCandidate = await RecommendedCandidateModel.updateOne({
             "_id": recommededCandidateId
         }, {
