@@ -93,12 +93,12 @@ router.get(
 
 // Get Memberships
 router.get(
-	'/dashboard2/expired-membership/:userId/:page_no/:per_page',
+	'/dashboard2/expired-this-month-membership/:userId/:page_no/:per_page',
 	requireSignin,
 	expiredMembership
 );
 router.get(
-	'/dashboard2/all-memberships/:userId/:page_no/:per_page',
+	'/dashboard2/all-expired-memberships/:userId/:page_no/:per_page',
 	requireSignin,
 	allMemberships
 );
