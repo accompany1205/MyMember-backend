@@ -967,7 +967,7 @@ exports.birthday_all_time = async (req, res) => {
 	}
 };
 
-exports.expiredMembership = async (req, res) => {
+exports.allMemberships = async (req, res) => {
 	const page = parseFloat(req.params.page_no) || 1;
 	const pageSize = parseFloat(req.params.per_page) || 5;
 	const skip = (page - 1) * pageSize;
@@ -975,7 +975,6 @@ exports.expiredMembership = async (req, res) => {
 	const date = new Date();
 	const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
 	let { start, end } = dateRangeBuild(firstDayOfMonth, date);
-
 	let userId = req.params.userId;
 	try {
 		const aggregateData = await BuyMembership.aggregate([
@@ -984,6 +983,7 @@ exports.expiredMembership = async (req, res) => {
 				$project: {
 					student_name: 1,
 					membership_name: 1,
+					membership_type:1,
 					expiry_date: {
 						$convert: {
 							input: '$expiry_date',
@@ -1010,10 +1010,10 @@ exports.expiredMembership = async (req, res) => {
 			},
 			{
 				$project: {
-					student_name: 1,
 					membership_name: 1,
+					membership_type:1,
 					expiry_date: 1,
-					studentId: 1,
+					student_name:"$student.firstName" ,
 					phone: '$student.primaryPhone',
 				},
 			},
@@ -1021,6 +1021,7 @@ exports.expiredMembership = async (req, res) => {
 			{
 				$match: {
 					expiry_date: {
+						$gte:start,
 						$lt: end,
 					},
 				},
@@ -1053,7 +1054,7 @@ exports.expiredMembership = async (req, res) => {
 	}
 };
 
-exports.allMemberships = async (req, res) => {
+exports.expiredMembership = async (req, res) => {
 	const page = parseFloat(req.params.page_no) || 1;
 	const pageSize = parseFloat(req.params.per_page) || 5;
 	const skip = (page - 1) * pageSize;
@@ -1066,6 +1067,7 @@ exports.allMemberships = async (req, res) => {
 				$project: {
 					student_name: 1,
 					membership_name: 1,
+					membership_type:1,
 					expiry_date: {
 						$convert: {
 							input: '$expiry_date',
@@ -1092,10 +1094,11 @@ exports.allMemberships = async (req, res) => {
 			},
 			{
 				$project: {
-					student_name: 1,
 					membership_name: 1,
+					membership_type:1,
 					expiry_date: 1,
 					studentId: 1,
+					student_name:"$student.firstName" ,
 					phone: '$student.primaryPhone',
 				},
 			},

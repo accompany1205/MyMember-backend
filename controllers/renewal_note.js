@@ -167,7 +167,7 @@ exports.expire_thirty_std = async (req, res) => {
                   notes: 1,
                   primaryPhone: 1,
                   studentType: 1,
-                  last_contact_renewal: 1,
+                  last_attended_date: 1,
                   memberprofileImage: 1,
                   status: 1,
                   followup_notes: 1,
@@ -196,7 +196,6 @@ exports.expire_thirty_std = async (req, res) => {
               {
                 $project: {
                   note: 1,
-                  time: 1,
                   date: 1,
                 },
               },
@@ -241,8 +240,8 @@ exports.expire_thirty_std = async (req, res) => {
             studentType: {
               $first: "$members.studentType",
             },
-            last_contact_renewal: {
-              $first: "$members.last_contact_renewal",
+            last_attended_date: {
+              $first: "$members.last_attended_date",
             },
             memberprofileImage: {
               $first: "$members.memberprofileImage",
@@ -368,7 +367,7 @@ exports.expire_sixty_std = async (req, res) => {
                   notes: 1,
                   primaryPhone: 1,
                   studentType: 1,
-                  last_contact_renewal: 1,
+                  last_attended_date: 1,
                   memberprofileImage: 1,
                   status: 1,
                   followup_notes: 1,
@@ -397,7 +396,6 @@ exports.expire_sixty_std = async (req, res) => {
               {
                 $project: {
                   note: 1,
-                  time: 1,
                   date: 1,
                 },
               },
@@ -442,8 +440,8 @@ exports.expire_sixty_std = async (req, res) => {
             studentType: {
               $first: "$members.studentType",
             },
-            last_contact_renewal: {
-              $first: "$members.last_contact_renewal",
+            last_attended_date: {
+              $first: "$members.last_attended_date",
             },
             memberprofileImage: {
               $first: "$members.memberprofileImage",
@@ -569,7 +567,7 @@ exports.expire_ninty_std = async (req, res) => {
                   notes: 1,
                   primaryPhone: 1,
                   studentType: 1,
-                  last_contact_renewal: 1,
+                  last_attended_date: 1,
                   memberprofileImage: 1,
                   status: 1,
                   followup_notes: 1,
@@ -598,7 +596,6 @@ exports.expire_ninty_std = async (req, res) => {
               {
                 $project: {
                   note: 1,
-                  time: 1,
                   date: 1,
                 },
               },
@@ -643,8 +640,8 @@ exports.expire_ninty_std = async (req, res) => {
             studentType: {
               $first: "$members.studentType",
             },
-            last_contact_renewal: {
-              $first: "$members.last_contact_renewal",
+            last_attended_date: {
+              $first: "$members.last_attended_date",
             },
             memberprofileImage: {
               $first: "$members.memberprofileImage",
@@ -776,7 +773,7 @@ exports.frozenmembership = async (req, res) => {
                   notes: 1,
                   primaryPhone: 1,
                   studentType: 1,
-                  last_contact_renewal: 1,
+                  last_attended_date: 1,
                   memberprofileImage: 1,
                   status: 1,
                   followup_notes: 1,
@@ -810,7 +807,6 @@ exports.frozenmembership = async (req, res) => {
               {
                 $project: {
                   note: 1,
-                  time: 1,
                   date: 1,
                 },
               },
@@ -862,6 +858,9 @@ exports.frozenmembership = async (req, res) => {
             },
             status: {
               $first: "$members.status",
+            },
+            last_attended_date: {
+              $first: "$members.last_attended_date",
             },
             memberships: {
               $push: {
