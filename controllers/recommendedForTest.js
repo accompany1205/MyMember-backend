@@ -180,7 +180,6 @@ exports.recomendStudent = async (req, res) => {
                 { "eventId": eventId, "isDeleted": false, "studentId": student.studentId },
                 { "eventId": eventId, "isDeleted": true, "studentId": student.studentId }
             ]});
-            console.log(appt)
             const programs = await Program.findOne({ programName: student.program });
             console.log(programs.program_rank);
             if (appt.length === 0 && student.program && programs.program_rank.length > 1) {
