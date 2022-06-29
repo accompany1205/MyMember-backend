@@ -292,7 +292,7 @@ const updateRecommendedStudentsByIdForRegister = async (studentId, eventId) => {
 }
 exports.payAndPromoteTheStudent = async (req, res) => {
     let userId = req.params.userId;
-    let eventId = req.parama.eventId;
+    let eventId = req.params.eventId;
     // let { cardDetails, paidAmount, studentId, financeId } = req.body;
     // let updatePayment;
     // if (cardDetails) {
