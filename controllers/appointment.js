@@ -218,7 +218,6 @@ exports.payForRegister = async (req, res) => {
     eventRegisterData.userId = userId;
     let eventRegister = new EventRegistered(eventRegisterData);
     eventRegister.save(async (err, data) => {
-      // console.log(data)
       if (err) {
         return res.send({
           success: false,
@@ -250,7 +249,11 @@ exports.registerInvitee = async (req, res) => {
     let registerInvitee = [];
     const promises = [];
     for (let student of students) {
-      if (student.program) {
+      let appt = await EventRegistered.find({$or:[
+        { "eventId": eventId, "isDeleted": false, "studentId": student.studentId },
+        { "eventId": eventId, "isDeleted": true, "studentId": student.studentId }
+    ]});
+      if (appt.length === 0 && student.program) {
         student.userId = userId;
         student.eventId = eventId;
         registerInvitee.push(student)
@@ -269,7 +272,7 @@ exports.registerInvitee = async (req, res) => {
 }
 
 const updateInviteeByIdForRegistered = async (studentId, eventId) => {
-  return await Invitee.updateOne({ studentId: studentId, eventId: eventId }, { "isDeleted": true })
+  return await Invitee.updateOne({ studentId: studentId, eventId: eventId, isDeleted:false }, { "isDeleted": true })
 }
 
 exports.addInvitee = async (req, res) => {
@@ -287,14 +290,19 @@ exports.addInvitee = async (req, res) => {
     const promises = [];
     var alredyInvitee = "";
     for (let student of students) {
-      let appt = await Invitee.findOne({ "eventId": eventId, "isDeleted": false, "studentId": student.studentId });
-      if (appt) {
-        alredyInvitee += `${student.firstName} , `
-      } else {
+      let appt = await Invitee.find({
+        $or: [
+          { "eventId": eventId, "isDeleted": false, "studentId": student.studentId },
+          { "eventId": eventId, "isDeleted": true, "studentId": student.studentId }
+        ]
+      });
+      if (appt.length === 0) {
         student.userId = userId;
         student.eventId = eventId;
         InviteeforEvent.push(student);
-        promises.push(updateStudentsById(student.studentId))
+        //promises.push(updateStudentsById(student.studentId))
+      } else {
+        alredyInvitee += `${student.firstName} , `
       }
     }
     await Promise.all(promises);

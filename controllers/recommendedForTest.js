@@ -180,7 +180,6 @@ exports.recomendStudent = async (req, res) => {
                 { "eventId": eventId, "isDeleted": false, "studentId": student.studentId },
                 { "eventId": eventId, "isDeleted": true, "studentId": student.studentId }
             ]});
-            console.log(appt)
             const programs = await Program.findOne({ programName: student.program });
             console.log(programs.program_rank);
             if (appt.length === 0 && student.program && programs.program_rank.length > 1) {
@@ -292,7 +291,7 @@ const updateRecommendedStudentsByIdForRegister = async (studentId, eventId) => {
 }
 exports.payAndPromoteTheStudent = async (req, res) => {
     let userId = req.params.userId;
-    let eventId = req.parama.eventId;
+    let eventId = req.params.eventId;
     // let { cardDetails, paidAmount, studentId, financeId } = req.body;
     // let updatePayment;
     // if (cardDetails) {
