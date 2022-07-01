@@ -54,10 +54,11 @@ exports.update = async (req, res) => {
   const adminId = req.params.adminId;
   const userId = req.params.userId;
   const stripeBody = req.body;
+  console.log(stripeBody);
   let isExist = await candidate.find({
     candidate: stripeBody.candidate,
   });
-
+  console.log(isExist);
   try {
     if (isExist.length) {
       if (req.file) {
@@ -69,28 +70,27 @@ exports.update = async (req, res) => {
           .catch((err) => {
             res.send({ msg: err.message.replace(/\"/g, ""), success: false });
           });
-
-        await stripe
-          .updatedOne(
-            { _id: stripeId, $and: [{ userId: userId }, { adminId: adminId }] },
-            { $set: stripeBody }
-          )
-          .exec((err, updateStripe) => {
-            if (err) {
-              res.send({ msg: err.message.replace(/\"/g, ""), success: false });
-            } else {
-              if (updateStripe.n < 1) {
-                return res.send({
-                  msg: "This is system generated Stripe Only admin can update",
-                  success: false,
-                });
-              }
-              res.send({ msg: "stripe updated successfully", success: true });
-            }
-          });
-      } else {
-        res.send({ msg: "Candidate does not exist!", success: false });
       }
+      await stripe
+        .updateOne(
+          { _id: stripeId, $and: [{ userId: userId }, { adminId: adminId }] },
+          { $set: stripeBody }
+        )
+        .exec((err, updateStripe) => {
+          if (err) {
+            res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+          } else {
+            if (updateStripe.n < 1) {
+              return res.send({
+                msg: "This is system generated Stripe Only admin can update",
+                success: false,
+              });
+            }
+            res.send({ msg: "stripe updated successfully", success: true });
+          }
+        });
+    } else {
+      res.send({ msg: "Candidate does not exist!", success: false });
     }
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
