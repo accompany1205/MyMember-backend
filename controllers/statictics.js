@@ -383,12 +383,19 @@ exports.getMemberByProgram = async (req, res) => {
 
 exports.getRanksReportByProgram = async (req, res) => {
 	try {
-		let { programName } = req.query;
+		let { programName ,studentType} = req.query;
 		const userId = req.params.userId;
-		if (program === '') {
+		if (programName === '') {
 			return res.json([]);
 		}
-
+		const filter=userId&&programName&&studentType?
+		{
+			userId: userId,
+			program: programName,
+			studentType:studentType
+		}:{
+			userId: userId,
+			program: programName}
 		const ranks = await program.aggregate([
 			{
 				$match: {
@@ -424,10 +431,7 @@ exports.getRanksReportByProgram = async (req, res) => {
 					as: 'total-students',
 					pipeline: [
 						{
-							$match: {
-								program: programName,
-								userId: userId
-							},
+							$match: filter
 						},
 
 						{

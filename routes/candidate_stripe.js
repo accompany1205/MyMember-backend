@@ -1,13 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const { candidate_read, candidate_create, candidate_update, candidate_detail, candidate_remove } = require("../controllers/candidate_stripe")
-const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
+const manage_stripe = require("../controllers/candidate_stripe")
+const { requireSignin, isAuth } = require("../controllers/auth");
 const upload = require('../handler/multer')
 
-router.get("/list_of_candidate/:userId", verifySchool, candidate_read);
-router.post("/add_candidate/:userId", verifySchool, upload.single('candidate_image'), candidate_create);
-router.put("/update_candidate/:userId/:candidateId", verifySchool, upload.single('candidate_image'), candidate_update);
-router.get("/candidate_info/:userId/:candidateId", verifySchool, candidate_detail);
-router.delete("/delete_candidate/:userId/:candidateId", verifySchool, candidate_remove);
+router.get("/stripe_info/:userId/:stripeId",requireSignin,manage_stripe.manage_stripe_detail);
+router.post("/add_stripe/:userId",requireSignin,upload.single('stripe_image'),manage_stripe.create);
+//router.get("/list_of_manage_stripe/:user_id",requireSignin,manage_stripe.read);
+router.put("/update_stripe/:userId/:stripeId",requireSignin,upload.single('stripe_image'),manage_stripe.update);
+router.delete("/delete_stripe/:userId/:stripeId",requireSignin,manage_stripe.remove);
 
 module.exports = router;

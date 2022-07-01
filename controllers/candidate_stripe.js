@@ -1,171 +1,149 @@
 const { env } = require("process");
-const candidate_stripe = require("../models/candidate_stripe");
-const cloudUrl = require("../gcloud/imageUrl")
+const stripe = require("../models/candidate_stripe");
+const candidate = require("../models/candidate");
+const cloudUrl = require("../gcloud/imageUrl");
 
-exports.candidate_create = async (req, res) => {
-    try {
-        const candidateBody = req.body
-        candidateBody.userId = req.params.userId;
-        candidateBody.adminId = req.params.adminId;
-        if (req.file) {
-            await cloudUrl.imageUrl(req.file)
-                .then((expimgUrl) => {
-                    candidateBody.candidate_image = expimgUrl
-                })
-                .catch((error) => {
-                    res.send({ msg: 'candidate image url  not created', success: false })
-                })
-        }
-        const stripeObj = new candidate_stripe(candidateBody)
-        stripeObj.save((err, data) => {
-            if (err) {
-                return res.status(400).send({
-                    msg: err.message.replace(/\"/g, ""),
-                    success: false
-                });
-            }
-            else {
-                res.send({ msg: "Candidate created successfully", success: true })
-
-            }
-        })
-    }
-    catch (err) {
-        res.send({ error: err.message.replace(/\"/g, ""), success: false });
-    }
-}
-
-exports.candidate_read = (req, res) => {
-    const adminId = process.env.ADMINID
-    const userId = req.params.userId
-    try {
-        candidate_stripe.find({ $or: [{ userId: userId }, { adminId: adminId }] })
-            .populate("stripes")
-            .then((stripe) => {
-                if (stripe.length > 0) {
-                    res.send({ data: stripe, success: true })
-                }
-                else {
-                    res.send({ msg: 'candidate is empty', success: false })
-                }
-            }).catch((err) => {
-                res.send(err)
-            })
-    }
-    catch (err) {
-        res.send({ error: err.message.replace(/\"/g, ""), success: false });
-    }
-}
-
-exports.candidate_readAdmin = (req, res) => {
-    const adminId = req.params.adminId
-    try {
-        candidate_stripe.find({ adminId: adminId })
-            .populate("stripes")
-            .then((stripe) => {
-                if (stripe.length > 0) {
-                    res.send({ data: stripe, success: true })
-                }
-                else {
-                    res.send({ msg: 'candidate is empty', success: false })
-                }
-            }).catch((err) => {
-                res.send(err)
-            })
-    }
-    catch (err) {
-        res.send({ error: err.message.replace(/\"/g, ""), success: false });
-    }
-}
-
-exports.candidate_update = async (req, res) => {
-    try {
-        const candidateBody = req.body
-        const candidateId = req.params.candidateId;
-        const adminId = req.params.adminId
-        const userId = req.params.userId;
-        if (req.file) {
-            await cloudUrl.imageUrl(req.file)
-                .then((expimgUrl) => {
-                    candidateBody.candidate_image = expimgUrl
-                })
-                .catch((error) => {
-                    res.send({ msg: 'candidate image url not created', success: false })
-                })
-        }
-        candidate_stripe.updateOne({ _id: candidateId, $and: [{ userId: userId }, { adminId: adminId }] }, { $set: candidateBody })
-            .exec(async (err, updateData) => {
-                if (err) {
-                    res.send({ msg: 'candidate already exist!', success: err })
-                }
-                else {
-                    if (updateData.n < 1) {
-                        return res.send({
-                            msg: "This is system generated membership Only admin can update",
-                            success: false,
-                        });
-                    }
-                    res.send({
-                        msg: 'candidate updated successfully',
-                        success: true
-                    })
-                }
-            })
-    }
-    catch (err) {
-        res.send({ error: err.message.replace(/\"/g, ""), success: false });
-    }
-}
-
-exports.candidate_detail = (req, res) => {
-    try {
-        const id = req.params.candidateId
-        candidate_stripe.findById(id)
-            .select('candidate')
-            .populate('stripes')
-            .then((result) => {
-                res.json(result)
-            }).catch((err) => {
-                res.send(err)
+exports.create = async (req, res) => {
+  const stripeBody = req.body;
+  stripeBody.userId = req.params.userId;
+  stripeBody.adminId = req.params.adminId;
+  let isExist = await candidate.find({
+    candidate: stripeBody.candidate,
+  });
+  try {
+    if (isExist.length) {
+      if (req.file) {
+        await cloudUrl
+          .imageUrl(req.file)
+          .then((expimgUrl) => {
+            stripeBody.stripe_image = expimgUrl;
+          })
+          .catch((error) => {
+            res.send({ msg: "Stripe image url not created", success: false });
+          });
+      }
+      const managestripe = new stripe(stripeBody);
+      managestripe.save((err, data) => {
+        if (err) {
+          res.send({ error: "manage stripe is not add" });
+        } else {
+          candidate
+            .updateOne(
+              { candidate: req.body.candidate },
+              { $push: { stripes: data._id } }
+            )
+            .exec((err, stripe_data) => {
+              if (err) {
+                res.send({ msg: err, success: false });
+              } else {
+                res.send({ msg: "stripe  added successfully", success: true });
+              }
             });
-    } catch (err) {
-        res.send({ error: err.message.replace(/\"/g, ""), success: false });
-
+        }
+      });
+    } else {
+      res.send({ msg: "Candidate does not exist!", success: false });
     }
-
+  } catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+  }
 };
 
-exports.candidate_remove = async (req, res) => {
-    try {
-        var candidateId = req.params.candidateId;
-        const adminId = req.params.adminId
-        const userId = req.params.userId;
-        candidate_stripe.findOneAndRemove
-            ({ _id: candidateId, $and: [{ userId: userId }, { adminId: adminId }] })
-            .exec((err, data) => {
-                if (err) {
-                    res.send({ msg: 'Candidate  not removed', success: false })
-                }
-                else {
-                    if (!data) {
-                        return res.send({
-                            msg: "This is system generated membership Only admin can delete",
-                            success: false,
-                        });
-                    }
-                    res.send({
-                        msg: "Candidate removed  successfully",
-                        success: true,
-                    });
-                }
-            })
-    } catch (err) {
-        res.send({ error: err.message.replace(/\"/g, ""), success: false });
+exports.update = async (req, res) => {
+  const stripeId = req.params.stripeId;
+  const adminId = req.params.adminId;
+  const userId = req.params.userId;
+  const stripeBody = req.body;
+  let isExist = await candidate.find({
+    candidate: stripeBody.candidate,
+  });
 
+  try {
+    if (isExist.length) {
+      if (req.file) {
+        await cloudUrl
+          .imageUrl(req.file)
+          .then((expimgUrl) => {
+            stripeBody.stripe_image = expimgUrl;
+          })
+          .catch((err) => {
+            res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+          });
+
+        await stripe
+          .updatedOne(
+            { _id: stripeId, $and: [{ userId: userId }, { adminId: adminId }] },
+            { $set: stripeBody }
+          )
+          .exec((err, updateStripe) => {
+            if (err) {
+              res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+            } else {
+              if (updateStripe.n < 1) {
+                return res.send({
+                  msg: "This is system generated Stripe Only admin can update",
+                  success: false,
+                });
+              }
+              res.send({ msg: "stripe updated successfully", success: true });
+            }
+          });
+      } else {
+        res.send({ msg: "Candidate does not exist!", success: false });
+      }
     }
-
+  } catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+  }
+};
+exports.manage_stripe_detail = (req, res) => {
+  try {
+    const stripeId = req.params.stripeId;
+    stripe
+      .findById(stripeId)
+      .then((result) => {
+        res.send({ result, success: true });
+      })
+      .catch((err) => {
+        res.send(err);
+      });
+  } catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+  }
 };
 
-
-
-
+exports.remove = async (req, res) => {
+  try {
+    const stripeId = req.params.stripeId;
+    const adminId = req.params.adminId;
+    const userId = req.params.userId;
+    stripe.remove(
+      { _id: stripeId, $and: [{ userId: userId }, { adminId: adminId }] },
+      async (err, data) => {
+        if (err) {
+          res.send({ msg: "manage stripe is not delete", success: false });
+        } else {
+          if (!data) {
+            return res.send({
+              msg: "This is system generated Stipe Only admin can delete",
+              success: false,
+            });
+          }
+          await candidate.updateOne(
+            { stripes: stripeId },
+            { $pull: { stripes: stripeId } },
+            function (err, data) {
+              if (err) {
+                res.send({ msg: "stripe not removed", success: false });
+              } else {
+                res.send({ msg: "stripe removed successfully", success: true });
+              }
+            }
+          );
+        }
+      }
+    );
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+  }
+};

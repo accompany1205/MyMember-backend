@@ -1,31 +1,63 @@
 const express = require("express");
 const router = express.Router();
-const { create_candidate,
-        candidate_List,
-        create_candidateStripe,
-        promote_stripe,
-        delete_candidate,
-        candidate_Stripe,
-        delete_candidate_stripe,
-        cadidate_stripe_update,
-        count_stripe,
-        stripe_report,
-        join_notjoin
-     } = require("../controllers/candidates");
-const { requireSignin,isAuth,verifySchool } = require("../controllers/auth");
+const upload = require("../handler/multer");
 
-router.post("/candidates/stripe_full_report/:userId",verifySchool,stripe_report)
-router.get("/candidates/count_each_stripe/:userId",verifySchool,count_stripe)
+const {
+  candidate_read,
+  candidate_create,
+  candidate_update,
+  candidate_detail,
+  candidate_remove,
+  getStripeReportByCandidate,
+  promote_stripe,
+  stripe_report,
+  join_notjoin,
+} = require("../controllers/candidate");
+const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 
-router.get("/candidates/list_candidiate/:userId",verifySchool,candidate_List);
-router.get("/candidates/list_cadidate_stripe/:userId",verifySchool,candidate_Stripe)
+router.get(
+  "/candidates/get-stripe-report-by-candidate/:userId",
+  requireSignin,
+  verifySchool,
+  getStripeReportByCandidate
+);
+router.post(
+  "/candidates/stripe_full_report/:userId",
+  verifySchool,
+  stripe_report
+);
+router.put(
+  "/candidates/candidate_promote/:userId/:candidateId",
+  verifySchool,
+  promote_stripe
+);
+router.put(
+  "/candidates/candidate_stripe_join_not_join/:userId/:candidateId",
+  join_notjoin
+);
 
-router.post("/candidates/create_candidate/:userId",verifySchool,create_candidate);
-router.put("/candidates/candidate_stripe/:userId/:candidateId",verifySchool,create_candidateStripe);
-router.put("/candidates/candidate_promote/:userId/:candidateId",verifySchool,promote_stripe)
-router.put('/candidates/candidate_stripe_detail_update/:userId/:candidateId',verifySchool,cadidate_stripe_update)
-router.put('/candidates/candidate_stripe_join_not_join/:userId/:candidateId',join_notjoin)
-router.delete("/candidates/candidate_delete/:userId/:candidateId",verifySchool,delete_candidate) //candidate remove in candidate tab and and stripe tab both
-router.delete("/candidates/cadidate_delete_stripe/:userId/:candidateId",verifySchool,delete_candidate_stripe)
+router.get("/list_of_candidate/:userId", verifySchool, candidate_read);
+router.get(
+  "/candidate_info/:userId/:candidateId",
+  verifySchool,
+  candidate_detail
+);
+router.post(
+  "/add_candidate/:userId",
+  verifySchool,
+  upload.single("candidate_image"),
+  candidate_create
+);
+router.put(
+  "/update_candidate/:userId/:candidateId",
+  verifySchool,
+  upload.single("candidate_image"),
+  candidate_update
+);
+router.delete(
+  "/delete_candidate/:userId/:candidateId",
+  verifySchool,
+  candidate_remove
+);
 
 module.exports = router;

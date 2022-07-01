@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { candidate_readAdmin, candidate_create, candidate_update, candidate_detail, candidate_remove } = require("../../../controllers/candidate_stripe")
+const { candidate_readAdmin, candidate_create, candidate_update, candidate_detail, candidate_remove } = require("../../../controllers/candidate")
 const { requireSignin, isAuth, verifySchool, isAdmin } = require("../../../controllers/auth");
 const upload = require('../../../handler/multer')
 
