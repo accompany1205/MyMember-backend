@@ -173,7 +173,7 @@ exports.getStripeReportByCandidate = async (req, res) => {
   try {
     let { candidateName } = req.query;
     const userId = req.params.userId;
-    if (canidate === "") {
+    if (candidateName === "") {
       return res.json([]);
     }
 
@@ -183,24 +183,24 @@ exports.getStripeReportByCandidate = async (req, res) => {
           candidate: candidateName,
         },
       },
-      { $unwind: "$canidate_stripe" },
+      { $unwind: "$stripes" },
       {
         $lookup: {
-          from: "canidate_stripes",
-          localField: "canidate_stripe",
+          from: "candidate_stripes",
+          localField: "stripes",
           foreignField: "_id",
-          as: "canidate",
+          as: "candidate",
         },
       },
       {
-        $unwind: "$canidate",
+        $unwind: "$candidate",
       },
       {
         $project: {
           candidate: 1,
-          stripe_name: "$canidate.stripe_name",
-          stripe_image: "$canidate.stripe_image",
-          stripe_order: { $toInt: "$canidate.stripe_order" },
+          stripe_name: "$candidate.stripe_name",
+          stripe_image: "$candidate.stripe_image",
+          stripe_order: { $toInt: "$candidate.stripe_order" },
         },
       },
       // Get Current Month Data
@@ -208,7 +208,7 @@ exports.getStripeReportByCandidate = async (req, res) => {
         $lookup: {
           from: "members",
           localField: "stripe_name",
-          foreignField: "current_stripe_name",
+          foreignField: "current_stripe",
           as: "total-students",
           pipeline: [
             {
