@@ -779,11 +779,6 @@ exports.frozenmembership = async (req, res) => {
                   followup_notes: 1,
                 },
               },
-              {
-                $match: {
-                  firstName: "sonu",
-                },
-              },
             ],
           },
         },

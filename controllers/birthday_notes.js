@@ -104,10 +104,20 @@ exports.birth_this_week = async (req, res) => {
   };
 
   let userId = req.params.userId;
+  const studentType = req.query.studentType;
+  const filter =
+    userId && studentType
+      ? {
+          userId,
+          studentType,
+        }
+      : {
+          userId,
+        };
   try {
     await student
       .aggregate([
-        { $match: { userId: userId } },
+        { $match:filter },
 
         {
           $project: {
@@ -600,14 +610,25 @@ exports.thirtyToSixty = async (req, res) => {
       limit: per_page,
       skip: per_page * page_no,
     };
-    let birthdayData = await student
+    const studentType = req.query.studentType;
+    const filter =
+      userId && studentType
+        ? {
+            userId,
+            studentType,
+          }
+        : {
+            userId,
+          };
+   student
       .aggregate([
-        { $match: { userId: userId } },
+        { $match: filter },
         {
           $project: {
             firstName: 1,
             lastName: 1,
             primaryPhone: 1,
+            studentType:1,
             program: 1,
             current_rank_img: 1,
             dob: 1,
@@ -633,6 +654,7 @@ exports.thirtyToSixty = async (req, res) => {
             lastName: 1,
             primaryPhone: 1,
             program: 1,
+            studentType:1,
             current_rank_img: 1,
             dob: 1,
             followup_notes: 1,
@@ -657,6 +679,7 @@ exports.thirtyToSixty = async (req, res) => {
             lastName: 1,
             primaryPhone: 1,
             program: 1,
+            studentType:1,
             current_rank_img: 1,
             dob: 1,
             followup_notes: 1,
@@ -759,9 +782,19 @@ exports.sixtyToNinety = async (req, res) => {
       limit: per_page,
       skip: per_page * page_no,
     };
-    let birthdayData = await student
+    const studentType = req.query.studentType;
+    const filter =
+      userId && studentType
+        ? {
+            userId,
+            studentType,
+          }
+        : {
+            userId,
+          };
+    student
       .aggregate([
-        { $match: { userId: userId } },
+        { $match: filter },
         {
           $project: {
             firstName: 1,
@@ -769,6 +802,7 @@ exports.sixtyToNinety = async (req, res) => {
             primaryPhone: 1,
             program: 1,
             current_rank_img: 1,
+            studentType:1,
             dob: 1,
             followup_notes: 1,
             todayDayOfYear: { $dayOfYear: new Date() },
@@ -791,6 +825,7 @@ exports.sixtyToNinety = async (req, res) => {
             firstName: 1,
             lastName: 1,
             primaryPhone: 1,
+            studentType:1,
             program: 1,
             current_rank_img: 1,
             dob: 1,
@@ -815,6 +850,7 @@ exports.sixtyToNinety = async (req, res) => {
             firstName: 1,
             lastName: 1,
             primaryPhone: 1,
+            studentType:1,
             program: 1,
             current_rank_img: 1,
             dob: 1,
@@ -861,6 +897,7 @@ exports.sixtyToNinety = async (req, res) => {
             firstName: 1,
             lastName: 1,
             dob: 1,
+            studentType:1,
             primaryPhone: 1,
             studentType: 1,
             program: 1,
@@ -964,10 +1001,21 @@ exports.this_month = async (req, res) => {
 
   let todays = new Date();
   let userId = req.params.userId;
+  const studentType = req.query.studentType;
+  const filter =
+    userId && studentType
+      ? {
+          userId,
+          studentType,
+        }
+      : {
+          userId,
+        };
+
   try {
     await student
       .aggregate([
-        { $match: { userId: userId } },
+        { $match: filter },
 
         {
           $project: {
@@ -1069,10 +1117,20 @@ exports.next_month = async (req, res) => {
   let todays = new Date();
   let nextMonth = new Date(todays.setMonth(todays.getMonth() + 1));
   let userId = req.params.userId;
+  const studentType = req.query.studentType;
+  const filter =
+    userId && studentType
+      ? {
+          userId,
+          studentType,
+        }
+      : {
+          userId,
+        };
   try {
     const nextMonthBirthday = await student
       .aggregate([
-        { $match: { userId: userId } },
+        { $match: filter},
         {
           $project: {
             firstName: 1,
