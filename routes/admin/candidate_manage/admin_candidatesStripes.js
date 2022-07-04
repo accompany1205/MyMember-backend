@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const manage_stripe = require("../../../controllers/stripe")
+const manage_stripe = require("../../../controllers/candidate_stripe")
 const { requireSignin, isAuth, isAdmin } = require("../../../controllers/auth");
 const upload = require('../../../handler/multer')
 

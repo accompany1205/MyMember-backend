@@ -2,7 +2,7 @@ require('dotenv').config();
 const User = require('../models/user');
 const Member = require('../models/addmember');
 const RecommendedCandidateModel = require('../models/recommendedCandidate');
-const Stripe = require('../models/stripe');
+const Stripe = require('../models/candidate_stripe');
 // const Stripe = require('../models/stripe');
 const Joi = require('@hapi/joi');
 const _ = require('lodash')

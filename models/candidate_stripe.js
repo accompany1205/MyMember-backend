@@ -1,50 +1,31 @@
 const mongoose = require("mongoose");
-const schema = mongoose.Schema
-const stripeSchema = new schema(
+const { ObjectId } = mongoose.Schema;
+
+const managestripeSchema = new mongoose.Schema(
     {
         candidate: {
             type: String,
-            trim: true,
-            required: true,
-            unique: true,
-            maxlength: 32
+            required: true
         },
-        color: {
+        stripe_name: {
             type: String,
             required: true
         },
-        lable: {
+        stripe_order: {
             type: String,
             required: true
         },
-        total_stripe: {
-            type: String,
-            required: true
-        },
-        progression: {
-            type: String,
-            required: true
-        },
-        candidate_image: {
+        stripe_image: {
             type: String
         },
-        stripes: [
-            {
-                type: schema.Types.ObjectId,
-                ref: 'Stripe'
-            },
-        ],
         userId: {
             type: String,
         },
         adminId: {
             type: String,
         },
-        status: {
-            type: String
-        }
     },
     { timestamps: true }
 );
 
-module.exports = mongoose.model("candidatesStripe", stripeSchema);
+module.exports = mongoose.model("candidate_stripes", managestripeSchema);
