@@ -2606,7 +2606,7 @@ exports.pnlProductSale = async (req, res) => {
 				deposite: '$deposite',
 				month: { $month: '$createdAt' },
 				year: { $year: '$createdAt' },
-				productType: '$product_type',
+				productName: '$product_name',
 			},
 		},
 		{
@@ -2614,7 +2614,7 @@ exports.pnlProductSale = async (req, res) => {
 		},
 		{
 			$group: {
-				_id: '$productType',
+				_id: '$productName',
 				balance: { $sum: '$deposite' },
 			},
 		},
@@ -2628,7 +2628,7 @@ exports.pnlProductSale = async (req, res) => {
 				deposite: '$deposite',
 				month: { $month: '$createdAt' },
 				year: { $year: '$createdAt' },
-				productType: '$product_type',
+				productName: '$product_name',
 			},
 		},
 		{
@@ -2636,7 +2636,7 @@ exports.pnlProductSale = async (req, res) => {
 		},
 		{
 			$group: {
-				_id: '$productType',
+				_id: '$productName',
 				balance: { $sum: '$deposite' },
 			},
 		},
@@ -2650,7 +2650,7 @@ exports.pnlProductSale = async (req, res) => {
 				deposite: '$deposite',
 				month: { $month: '$createdAt' },
 				year: { $year: '$createdAt' },
-				productType: '$product_type',
+				productName: '$product_name',
 			},
 		},
 		{
@@ -2658,7 +2658,7 @@ exports.pnlProductSale = async (req, res) => {
 		},
 		{
 			$group: {
-				_id: '$productType',
+				_id: '$productName',
 				balance: { $sum: '$deposite' },
 			},
 		},

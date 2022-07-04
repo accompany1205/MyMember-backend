@@ -146,6 +146,12 @@ exports.statisticsFilter = async (req, res) => {
 	}
 }
 
+// Active Student
+// Active Trial
+// Leads
+// Former Student
+// Former Trial
+
 exports.statisticsFilterMember = async (req, res) => {
 	const userId = req.params.userId;
 	let date = req.body.dates;
@@ -171,7 +177,13 @@ exports.statisticsFilterMember = async (req, res) => {
 				{
 					$and: [
 						{ userId: userId },
-						{ studentType: "Active Student" },
+						{
+							$or: [
+								{ studentType: "Active Student" },
+								{ studentType: "Active Trial" },
+								{ studentType: "Leads" }
+							]
+						},
 						{ createdAt: { $gte: (date), $lt: (finalDate) } }
 					]
 				}
@@ -180,7 +192,12 @@ exports.statisticsFilterMember = async (req, res) => {
 				{
 					$and: [
 						{ userId: userId },
-						{ studentType: "Former Student" },
+						{
+							$or: [
+								{ studentType: "Former Student"},
+								{ studentType: "Former Trial" }
+							]
+						},
 						{ createdAt: { $gte: (date), $lt: (finalDate) } }
 					]
 				}
