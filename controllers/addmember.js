@@ -1179,7 +1179,7 @@ exports.trial_this_month = (req, res) => {
               userId: req.params.userId,
             },
             {
-              studentType: "Active Trials",
+              studentType: "Active Trial",
             },
             {
               $expr: {
