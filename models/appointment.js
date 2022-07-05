@@ -63,6 +63,9 @@ const appointSchema = new schema(
         userId: {
             type: String
         },
+        ticketType : {
+            type:String
+        },
         eventBanner: {
             type:String
         },

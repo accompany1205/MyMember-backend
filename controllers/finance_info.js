@@ -138,7 +138,7 @@ exports.fetchAllCC = async (req, res) => {
 
 exports.expenseStateByCategory = async (req, res) => {
 	// fetch expese state
-	
+
 	const total = await Expense.aggregate([
 		{ $match: { userId: mongoose.Types.ObjectId(req.params.userId) } },
 		{
@@ -172,7 +172,7 @@ exports.expenseStateByCategory = async (req, res) => {
 
 	// fetch All Category
 	let adminId = process.env.ADMINID;
-	const categories = await ExpenseCategory.find({ $or:[{userId: req.params.userId}, {adminId}]  });
+	const categories = await ExpenseCategory.find({ $or: [{ userId: req.params.userId }, { adminId }] });
 	const data = categories.map((category) => {
 		const find = expenses.find(
 			(x) => String(x._id) === String(category.expense_category_type)
@@ -2607,6 +2607,7 @@ exports.pnlProductSale = async (req, res) => {
 				month: { $month: '$createdAt' },
 				year: { $year: '$createdAt' },
 				productName: '$product_name',
+				productType: '$product_type'
 			},
 		},
 		{
@@ -2615,7 +2616,9 @@ exports.pnlProductSale = async (req, res) => {
 		{
 			$group: {
 				_id: '$productName',
+				productType : { $first: '$productType' },
 				balance: { $sum: '$deposite' },
+
 			},
 		},
 	]);
@@ -2629,6 +2632,7 @@ exports.pnlProductSale = async (req, res) => {
 				month: { $month: '$createdAt' },
 				year: { $year: '$createdAt' },
 				productName: '$product_name',
+				productType: '$product_type'
 			},
 		},
 		{
@@ -2637,7 +2641,9 @@ exports.pnlProductSale = async (req, res) => {
 		{
 			$group: {
 				_id: '$productName',
+				productType : { $first: '$productType' },
 				balance: { $sum: '$deposite' },
+
 			},
 		},
 	]);
@@ -2651,35 +2657,37 @@ exports.pnlProductSale = async (req, res) => {
 				month: { $month: '$createdAt' },
 				year: { $year: '$createdAt' },
 				productName: '$product_name',
+				productType: '$product_type'
 			},
 		},
 		{
 			$match: { year: ytd },
 		},
 		{
-			$group: {
+			$group:
+			{
 				_id: '$productName',
+				productType : { $first: '$productType' },
 				balance: { $sum: '$deposite' },
 			},
 		},
 	]);
-
 	let productNames = [];
 
 	if (FirstMonthDownPaymentNRegistration.length > 0) {
 		for (let each of FirstMonthDownPaymentNRegistration) {
-			productNames.push(each._id);
+			productNames.push(each);
 		}
 	}
 	if (secondMonthDownPaymentNRegistration.length > 0) {
 		for (let each of secondMonthDownPaymentNRegistration) {
-			productNames.push(each._id);
+			productNames.push(each);
 		}
 	}
 
 	if (YearlyDownPaymentNRegistration.length > 0) {
 		for (let each of YearlyDownPaymentNRegistration) {
-			productNames.push(each._id);
+			productNames.push(each);
 		}
 	}
 
@@ -2692,7 +2700,7 @@ exports.pnlProductSale = async (req, res) => {
 
 		// @downpayment+registration Fee
 		let firstMDownPNRegis = FirstMonthDownPaymentNRegistration.find(
-			(a) => a._id === x
+			(a) => a._id === x._id
 		);
 		if (firstMDownPNRegis) {
 			firstMonthIncome += firstMDownPNRegis.balance;
@@ -2703,7 +2711,7 @@ exports.pnlProductSale = async (req, res) => {
 
 		// @downpayment+registration Fee
 		let secondMDownPNRegis = secondMonthDownPaymentNRegistration.find(
-			(a) => a._id === x
+			(a) => a._id === x._id
 		);
 		if (secondMDownPNRegis) {
 			secondMonthIncome += secondMDownPNRegis.balance;
@@ -2714,7 +2722,7 @@ exports.pnlProductSale = async (req, res) => {
 		let incomeInYear = 0;
 		// @downpayment+registration Fee
 		let yearlyDownPNRegis = YearlyDownPaymentNRegistration.find(
-			(a) => a._id === x
+			(a) => a._id === x._id
 		);
 		if (yearlyDownPNRegis) {
 			incomeInYear += yearlyDownPNRegis.balance;
