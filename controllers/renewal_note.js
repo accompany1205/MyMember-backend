@@ -106,6 +106,16 @@ exports.expire_thirty_std = async (req, res) => {
       limit: per_page,
       skip: per_page * page_no,
     };
+    const studentType = req.query.studentType;
+    const filter =
+      userId && studentType
+        ? {
+            userId,
+            studentType,
+          }
+        : {
+            userId,
+          };
 
     buymembership
       .aggregate([
@@ -171,7 +181,11 @@ exports.expire_thirty_std = async (req, res) => {
                   memberprofileImage: 1,
                   status: 1,
                   followup_notes: 1,
+                  userId: 1,
                 },
+              },
+              {
+                $match: filter,
               },
             ],
           },
@@ -307,6 +321,16 @@ exports.expire_sixty_std = async (req, res) => {
       limit: per_page,
       skip: per_page * page_no,
     };
+    const studentType = req.query.studentType;
+    const filter =
+      userId && studentType
+        ? {
+            userId,
+            studentType,
+          }
+        : {
+            userId,
+          };
     buymembership
       .aggregate([
         { $match: { userId: userId } },
@@ -371,8 +395,10 @@ exports.expire_sixty_std = async (req, res) => {
                   memberprofileImage: 1,
                   status: 1,
                   followup_notes: 1,
+                  userId: 1,
                 },
               },
+              { $match: filter },
             ],
           },
         },
@@ -507,6 +533,16 @@ exports.expire_ninty_std = async (req, res) => {
       limit: per_page,
       skip: per_page * page_no,
     };
+    const studentType = req.query.studentType;
+    const filter =
+      userId && studentType
+        ? {
+            userId,
+            studentType,
+          }
+        : {
+            userId,
+          };
     buymembership
       .aggregate([
         { $match: { userId: userId } },
@@ -571,8 +607,10 @@ exports.expire_ninty_std = async (req, res) => {
                   memberprofileImage: 1,
                   status: 1,
                   followup_notes: 1,
+                  userId: 1,
                 },
               },
+              { $match: filter },
             ],
           },
         },
@@ -707,6 +745,16 @@ exports.frozenmembership = async (req, res) => {
       limit: per_page,
       skip: per_page * page_no,
     };
+    const studentType = req.query.studentType;
+    const filter =
+      userId && studentType
+        ? {
+            userId,
+            studentType,
+          }
+        : {
+            userId,
+          };
     buymembership
       .aggregate([
         { $match: { userId: userId } },
@@ -777,8 +825,10 @@ exports.frozenmembership = async (req, res) => {
                   memberprofileImage: 1,
                   status: 1,
                   followup_notes: 1,
+                  userId: 1,
                 },
               },
+              { $match: filter },
             ],
           },
         },
