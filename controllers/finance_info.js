@@ -2590,6 +2590,7 @@ exports.pnlMembership = async (req, res) => {
 	}
 };
 
+
 exports.pnlProductSale = async (req, res) => {
 	let { firstMonth, firstYear, secondMonth, secondYear, ytd } = req.query;
 	firstMonth = parseInt(firstMonth) + 1;
@@ -2614,6 +2615,9 @@ exports.pnlProductSale = async (req, res) => {
 			$match: { month: firstMonth, year: firstYear },
 		},
 		{
+			$sort: {productName:1}
+		},
+		{
 			$group: {
 				_id: '$productName',
 				productType : { $first: '$productType' },
@@ -2622,7 +2626,6 @@ exports.pnlProductSale = async (req, res) => {
 			},
 		},
 	]);
-
 	/// Second Month DownPayment + Registration Fee
 	const secondMonthDownPaymentNRegistration = await BuyProduct.aggregate([
 		{ $match: { userId: req.params.userId } },
@@ -2639,6 +2642,9 @@ exports.pnlProductSale = async (req, res) => {
 			$match: { month: secondMonth, year: secondYear },
 		},
 		{
+			$sort: {productName:1}
+		},
+		{
 			$group: {
 				_id: '$productName',
 				productType : { $first: '$productType' },
@@ -2647,7 +2653,6 @@ exports.pnlProductSale = async (req, res) => {
 			},
 		},
 	]);
-
 	/// Second Month DownPayment + Registration Fee
 	const YearlyDownPaymentNRegistration = await BuyProduct.aggregate([
 		{ $match: { userId: req.params.userId } },
@@ -2664,6 +2669,9 @@ exports.pnlProductSale = async (req, res) => {
 			$match: { year: ytd },
 		},
 		{
+			$sort: {productName:1}
+		},
+		{
 			$group:
 			{
 				_id: '$productName',
@@ -2676,22 +2684,24 @@ exports.pnlProductSale = async (req, res) => {
 
 	if (FirstMonthDownPaymentNRegistration.length > 0) {
 		for (let each of FirstMonthDownPaymentNRegistration) {
-			productNames.push(each);
+			let obj = {"_id":each._id, "productType": each.productType}
+			productNames.push(obj);
 		}
 	}
 	if (secondMonthDownPaymentNRegistration.length > 0) {
 		for (let each of secondMonthDownPaymentNRegistration) {
-			productNames.push(each);
+			let obj = {"_id":each._id, "productType": each.productType}
+			productNames.push(obj);
 		}
 	}
 
 	if (YearlyDownPaymentNRegistration.length > 0) {
 		for (let each of YearlyDownPaymentNRegistration) {
-			productNames.push(each);
+			let obj = {"_id":each._id, "productType": each.productType}
+			productNames.push(obj);
 		}
 	}
-
-	productNames = [...new Set(productNames)];
+	productNames = [...new Set(productNames.map(JSON.stringify))].map(JSON.parse);
 
 	const data = productNames.map((x) => {
 		// first month=====================================
@@ -3242,7 +3252,6 @@ exports.deleteExpenseCategory = async (req, res) => {
 	const category = await ExpenseCategory.findById(id);
 	if (!category) throw Error('Category not Found');
 
-	// console.log(category.expense_category_type);
 
 	// Check if any transection is found then return error message
 	const transection = await Expense.findOne({
