@@ -171,12 +171,22 @@ exports.candidate_remove = async (req, res) => {
 
 exports.getStripeReportByCandidate = async (req, res) => {
   try {
-    let { candidateName } = req.query;
+    let { candidateName, studentType } = req.query;
     const userId = req.params.userId;
     if (candidateName === "") {
       return res.json([]);
     }
-
+    const filter =
+      userId && candidateName && studentType
+        ? {
+            userId: userId,
+            candidate: candidateName,
+            studentType: studentType,
+          }
+        : {
+            userId: userId,
+            candidate: candidateName,
+          };
     const stripes = await candidateModal.aggregate([
       {
         $match: {
@@ -212,10 +222,7 @@ exports.getStripeReportByCandidate = async (req, res) => {
           as: "total-students",
           pipeline: [
             {
-              $match: {
-                candidate: candidateName,
-                userId: userId,
-              },
+              $match: filter,
             },
 
             {
