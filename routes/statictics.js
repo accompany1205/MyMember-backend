@@ -8,13 +8,16 @@ const {
 	getMemberByProgram,
 	getRanksReportByProgram,
 	statisticsFilter,
-	statisticsFilterMember
+	statisticsFilterMember,
+	leadsFilter
 } = require('../controllers/statictics');
 const { requireSignin, verifySchool } = require('../controllers/auth');
 router.get('/statictics/all-program/:userId', requireSignin, getAllProgram);
 router.get('/statictics/state-by-type/:userId', requireSignin, getStateByType);
 router.post('/statictics/graphFetch/:userId', requireSignin, statisticsFilter);
 router.post('/statictics/graphFetchMember/:userId', requireSignin, statisticsFilterMember);
+router.get('/statictics/leadsFilter/:userId/:studentType/:date', requireSignin, leadsFilter);
+//leads_tracking/get_all_leads
 
 router.get(
 	'/statictics/yearly-join-quit-data/:userId',

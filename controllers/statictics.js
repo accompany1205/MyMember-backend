@@ -4,6 +4,7 @@ const program = require('../models/program');
 const program_rank = require('../models/program_rank');
 const Member = require('../models/addmember');
 const { dateRangeBuild } = require('./../utilities/dateRangeProcess');
+const leadsTracking = require('../models/leads_tracking')
 const mongoose = require('mongoose');
 exports.getAllProgram = async (req, res) => {
 	try {
@@ -152,6 +153,89 @@ exports.statisticsFilter = async (req, res) => {
 // Former Student
 // Former Trial
 
+exports.leadsFilter = async (req, res) => {
+	let adminId = process.env.ADMINID;
+	let userId = req.params.userId;
+	let studentType = req.params.studentType;
+	let year = parseInt(req.params.date);
+	try {
+		// let leads = await leadsTracking.find({ $or: [{ userId: userId }, { adminId: adminId }] }, { _id: 0, leads_category: 1 });
+		// if (studentType === "All") {
+		// 	let data = leadsTracking.aggregate([
+		// 		{
+		// 			$match: {
+		// 				userId: userId, adminId: adminId
+		// 			}
+		// 		},
+		// 		{
+		// 			$lookup: {
+		// 				from: "member",
+		// 				let:{id:"$leads_category"},
+		// 				pipeline :[
+		// 					{
+		// 						$match:{
+		// 							$expr:{
+		// 								$in:{
+		// 									'$$id',"$"
+		// 								}
+		// 							}
+		// 						}
+		// 					}
+		// 				],
+		// 				as: "leadInfo"
+		// 			}
+		// 		}
+
+		// 	]);
+			// let monthyInfo =await  Member.aggregate(
+			// 	[
+			// {
+			// 	$match: {
+			// 		userId: userId
+			// 	}
+			// },
+			// 		{
+			// 			$project: {
+			// 				leadsTracking: '$leadsTracking',
+			// 				month: { $month: '$createdAt' },
+			// 				year: { $year: '$createdAt' },
+			// 			}
+			// 		},
+			// 		{
+			// 			$match: {
+			// 				year: year
+			// 			}
+			// 		},
+			// 		{
+			// 			$lookup: {
+			// from: "leads_tracking",
+			// localField: "leadsTracking",
+			// foreignField: "leads_category",
+			// as: "leadInfo"
+			// 			}
+			// 		}
+			// 		// {
+			// 		// 	$group: {
+			// 		// 		_id: {
+
+			// 		// 		}
+			// 		// 	}
+			// 		// }
+
+			// 	]
+			// );
+
+		// 	console.log(monthyInfo);
+		// }
+		// else {
+
+		// }
+	} catch (err) {
+		res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+	}
+}
+
+
 exports.statisticsFilterMember = async (req, res) => {
 	const userId = req.params.userId;
 	let date = req.body.dates;
@@ -194,7 +278,7 @@ exports.statisticsFilterMember = async (req, res) => {
 						{ userId: userId },
 						{
 							$or: [
-								{ studentType: "Former Student"},
+								{ studentType: "Former Student" },
 								{ studentType: "Former Trial" }
 							]
 						},
@@ -400,19 +484,20 @@ exports.getMemberByProgram = async (req, res) => {
 
 exports.getRanksReportByProgram = async (req, res) => {
 	try {
-		let { programName ,studentType} = req.query;
+		let { programName, studentType } = req.query;
 		const userId = req.params.userId;
 		if (programName === '') {
 			return res.json([]);
 		}
-		const filter=userId&&programName&&studentType?
-		{
-			userId: userId,
-			program: programName,
-			studentType:studentType
-		}:{
-			userId: userId,
-			program: programName}
+		const filter = userId && programName && studentType ?
+			{
+				userId: userId,
+				program: programName,
+				studentType: studentType
+			} : {
+				userId: userId,
+				program: programName
+			}
 		const ranks = await program.aggregate([
 			{
 				$match: {
