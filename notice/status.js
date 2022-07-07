@@ -1,7 +1,8 @@
-const corn = require('node-cron')
-const addmemberModal = require('../models/addmember')
+const corn = require("node-cron");
+const addmemberModal = require("../models/addmember");
 const class_schedule = require("../models/class_schedule");
-const {tommarrow } = require("../controllers/birthday_notes")
+const { tommarrow } = require("../controllers/birthday_notes");
+const buyMembership = require("../models/buy_membership");
 // const {missclasses}=require('../controllers/misucall_notes')
 // const emailsentsave = require('../models/emailSentSave')
 // const textSentSave = require("../models/textSentSave")
@@ -9,19 +10,83 @@ const {tommarrow } = require("../controllers/birthday_notes")
 // const { sync } = require('make-dir');
 // // 00 13 19 * * 0-6
 
-
 missClassesCount = async (payload) => {
-    try {
-      return await axios.post(process.env.VALOR_PAYTECH_URL, payload, this.getHeader(formData));
-    } catch (ex) {
-      throw new Error(ex);
-    }
+  try {
+    return await axios.post(
+      process.env.VALOR_PAYTECH_URL,
+      payload,
+      this.getHeader(formData)
+    );
+  } catch (ex) {
+    throw new Error(ex);
   }
-// module.exports = corn.schedule("* * * * *", tommarrow)
+};
+
+expiredMemberships = async () => {
+  try {
+    const expired_Membership = await buyMembership.aggregate([
+      {
+        $match: {
+          userId: "61927cd1e953ff693a3f7744",
+        },
+      },
+      {
+        $project: {
+          membership_name: 1,
+          membership_type: 1,
+          membership_status: 1,
+          studentInfo: 1,
+          expiry_date: {
+            $toDate: "$expiry_date",
+          },
+        },
+      },
+      {
+        $match: {
+          expiry_date: {
+            $lte: new Date(),
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+        },
+      },
+    ]);
+    Promise.all(
+      expired_Membership.map((expired_Membership) => {
+        update_MembershipStatus(expired_Membership)
+          .then((resp) => {})
+          .catch((err) => {
+            console.log(err);
+          });
+      })
+    );
+    console.log({ msg: "Membership status updated successfully" });
+  } catch (ex) {
+    throw new Error(ex);
+  }
+};
+async function update_MembershipStatus(membership) {
+  let { _id } = membership;
+  return new Promise((resolve, reject) => {
+
+    // buyMembership
+    //   .updateOne(
+    //     { _id: _id.toString() },
+    //     { $set: { membership_status: "Expired" } }
+    //   )
+    //   .then((resp) => resolve(resp))
+    //   .catch((err) => reject(err));
+  });
+}
+// expiredMemberships();
+// module.exports = corn.schedule("*/5 * * * * *", expiredMemberships)
 
 // //update student expire status
 // module.exports = corn.schedule("00 02 17 * * 0-6", function(){
-//     addmemberModal.find({})  
+//     addmemberModal.find({})
 //         .populate('membership_details')
 //         .exec((err, stdData) => {
 //             if (err) {
@@ -76,7 +141,6 @@ missClassesCount = async (payload) => {
 //         }
 //     })
 // })
-
 
 // //student rating update
 // module.exports = corn.schedule("00 12 19 * * 0-6", function () {
@@ -133,8 +197,6 @@ missClassesCount = async (payload) => {
 //     })
 // })
 
-
-
 // module.exports = corn.schedule('*/20 * * * * *',function(){
 //     let options = {
 //         timeZone: 'Asia/Kolkata',
@@ -145,7 +207,7 @@ missClassesCount = async (payload) => {
 //         minute: 'numeric',
 //         second: 'numeric',
 //         },
-      
+
 //         formatter = new Intl.DateTimeFormat([], options);
 //         var a =(formatter.format(new Date()));
 
@@ -154,7 +216,7 @@ missClassesCount = async (payload) => {
 //         var dates = h[0]
 //         var d = dates.split('/')
 //         var dateary = d
-//         // var hms = h[1].split(':')    
+//         // var hms = h[1].split(':')
 //         // 4/21/2021, 11:08:00 AM dt
 // // 0|app       | 4/21/2021  11:08:00 AM split_td
 // // 0|app       | [ ' 11', '08', '00 AM' ] splitT
@@ -173,8 +235,6 @@ missClassesCount = async (payload) => {
 // //   hours = parseInt(hours, 10) + 12;
 // // }
 
-
-
 // // run
 // // 0|app  | 4/21/2021, 11:59:00 AM dt
 // // 0|app  | 4/21/2021  11:59:00 AM split_td
@@ -186,7 +246,6 @@ missClassesCount = async (payload) => {
 // // 0|app  | Invalid Date cur
 // // 0|app  | data not come
 
-        
 //         var time12h=h[1] // time change in 24hr
 //         var tisp = time12h.split(' ');
 //         const [b,time, modifier] = time12h.split(' ');
@@ -200,7 +259,7 @@ missClassesCount = async (payload) => {
 //       }
 //       console.log(msg= {hour:`${hours}`,min:`${minutes}`})
 //       console.log(msg.hour,msg.min)
-    
+
 //         var y = d[2]
 //         var mo = parseInt(dateary[0])-1
 //         var d = parseInt(dateary[1])
@@ -239,7 +298,7 @@ missClassesCount = async (payload) => {
 //                     };
 //                     emailData.subject = sub;
 //                     emailData.content = template;
-                 
+
 //                     sgMail.send_via_sendgrid(emailData).then(resp => {
 //                         emailsentsave.findByIdAndUpdate(row._id, {$set:{email_type:'sent'}})
 //                             .exec((err, emailUpdate) => {
@@ -254,14 +313,13 @@ missClassesCount = async (payload) => {
 //                         res.send(err)
 //                     })
 //             })
-  
+
 //         }
 //         else{
 //             console.log('data not come')
 //         }
 // })
 // })
-
 
 // // module.exports = corn.schedule('*/60 * * * * *',function(){
 // // EmailSent.find({$and:[{email_type:'schedule'},{email_status:true}]})
@@ -292,7 +350,7 @@ missClassesCount = async (payload) => {
 // //                     };
 // //                     emailData.subject = sub;
 // //                     emailData.content = '<h1>hello sir i am ok</h1>';
-                 
+
 // //                     sgMail.send_via_sendgrid(emailData).then(resp => {
 // //                     EmailSent.findByIdAndUpdate(row._id, {$set:{email_type:'sent'}})
 // //                             .exec((err, emailUpdate) => {
@@ -331,24 +389,24 @@ missClassesCount = async (payload) => {
 // //                 var date = d.getDate()
 // //                 var mon = d.getMonth()+1
 // //               var job = corn.schedule(`* * * ${date} ${mon} *`, function() {
-                    
+
 // //                     function sendBulkMessages(msg,to){
 // //                         const client = require('twilio')(process.env.ACCOUNT_SID, process.env.AUTH_TOKEN);
-// //                         var numbers = []; 
-// //                         for(i = 0; i < to.length; i++) 
-// //                         { 
-// //                             numbers.push(JSON.stringify({  
-// //                             binding_type: 'sms', address: to[i]})) 
-// //                         } 
-                       
-// //                         const notificationOpts = { 
-// //                           toBinding: numbers, 
-// //                           body: msg, 
-// //                         }; 
+// //                         var numbers = [];
+// //                         for(i = 0; i < to.length; i++)
+// //                         {
+// //                             numbers.push(JSON.stringify({
+// //                             binding_type: 'sms', address: to[i]}))
+// //                         }
 
-// //                         client.notify 
-// //                         .services(process.env.SERVICE_SID) 
-// //                         .notifications.create(notificationOpts) 
+// //                         const notificationOpts = {
+// //                           toBinding: numbers,
+// //                           body: msg,
+// //                         };
+
+// //                         client.notify
+// //                         .services(process.env.SERVICE_SID)
+// //                         .notifications.create(notificationOpts)
 // //                         .then((resp)=>{
 // //                                textSentSave.findByIdAndUpdate(row._id,{text_type:'sent'})
 // //                               .exec((err,updatetxt)=>{
@@ -364,7 +422,7 @@ missClassesCount = async (payload) => {
 // //                         }).catch((error)=>{
 // //                             res.send(error)
 // //                         })
-// //                     }  
+// //                     }
 // //                     sendBulkMessages(msg,to)
 
 // //                 })
@@ -372,8 +430,3 @@ missClassesCount = async (payload) => {
 // //         }
 // //     })
 // // })
-
-
-
-
-

@@ -1252,19 +1252,60 @@ exports.getMergeDoc = async (req, res) => {
 exports.expiredMembership = async (req, res) => {
   var per_page = parseInt(req.params.per_page) || 5;
   var page_no = parseInt(req.params.page_no) || 0;
+  const userId = req.params.userId;
   var pagination = {
     limit: per_page,
     skip: per_page * page_no,
   };
+  const studentType = req.query.studentType;
+  const filter =
+    userId && studentType
+      ? {
+          userId,
+          studentType,
+        }
+      : {
+          userId,
+        };
+
   buyMembership
     .aggregate([
-      { $match: { userId: req.params.userId } },
+      { $match: { userId: userId } },
       {
         $project: {
           membership_name: 1,
+          membership_type: 1,
           membership_status: 1,
-          expiry_date: { $toDate: "$expiry_date" },
           studentInfo: 1,
+          expiry_date: {
+            $toDate: "$expiry_date",
+          },
+        },
+      },
+      {
+        $match: {
+          expiry_date: {
+            $lte: new Date(),
+          },
+        },
+      },
+      {
+        $addFields: {
+          days_till_Expire: {
+            $multiply: [
+              {
+                $floor: {
+                  $divide: [
+                    {
+                      $subtract: [new Date(), "$expiry_date"],
+                    },
+                    1000 * 60 * 60 * 24,
+                  ],
+                },
+              },
+              -1,
+            ],
+          },
         },
       },
       {
@@ -1272,64 +1313,112 @@ exports.expiredMembership = async (req, res) => {
           from: "members",
           localField: "studentInfo",
           foreignField: "_id",
-          as: "data",
+          as: "members",
+          pipeline: [
+            {
+              $project: {
+                firstName: 1,
+                lastName: 1,
+                program: 1,
+                notes: 1,
+                primaryPhone: 1,
+                studentType: 1,
+                last_attended_date: 1,
+                memberprofileImage: 1,
+                status: 1,
+                followup_notes: 1,
+                userId: 1,
+              },
+            },
+            {
+              $match: filter,
+            },
+          ],
         },
       },
       {
         $match: {
-          expiry_date: { $lte: new Date() },
+          members: {
+            $ne: [],
+          },
+        },
+      },
+      {
+        $unwind: "$members",
+      },
+      {
+        $lookup: {
+          from: "followupnotes",
+          localField: "members.followup_notes",
+          foreignField: "_id",
+          as: "followup_notes",
+          pipeline: [
+            {
+              $project: {
+                note: 1,
+                date: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $project: {
+          studentInfo: 1,
+          membership_name: 1,
+          membership_type: 1,
+          membership_status: 1,
+          expiry_date: 1,
+          days_till_Expire: 1,
+          members: 1,
+          notes: {
+            $arrayElemAt: ["$followup_notes", -1],
+          },
         },
       },
       {
         $group: {
-          _id: "$data._id",
-
-          no_of_Memberships: { $sum: 1 },
-          firstName: { $first: "$data.firstName" },
-          lastName: { $first: "$data.lastName" },
-          program: { $first: "$data.program" },
-          notes: { $first: "$data.notes" },
-          primaryPhone: { $first: "$data.primaryPhone" },
-          studentType: { $first: "$data.studentType" },
-          status: { $first: "$data.status" },
-          last_attended_date: { $first: "$data.last_attended_date" },
-          time: { $first: "$data.time" },
+          _id: "$studentInfo",
+          no_of_Memberships: {
+            $sum: 1,
+          },
+          firstName: {
+            $first: "$members.firstName",
+          },
+          lastName: {
+            $first: "$members.lastName",
+          },
+          notes: {
+            $first: "$notes",
+          },
+          program: {
+            $first: "$members.program",
+          },
+          primaryPhone: {
+            $first: "$members.primaryPhone",
+          },
+          studentType: {
+            $first: "$members.studentType",
+          },
+          last_attended_date: {
+            $first: "$members.last_attended_date",
+          },
+          memberprofileImage: {
+            $first: "$members.memberprofileImage",
+          },
+          status: {
+            $first: "$members.status",
+          },
           memberships: {
             $push: {
-              $cond: [
-                { $lte: ["$expiry_date", new Date()] },
-                {
-                  membership_name: "$membership_name",
-                  membership_status: "Expired",
-                  expiry_date: "$expiry_date",
-                  dayssince: {
-                    $floor: {
-                      $divide: [
-                        { $subtract: [new Date(), "$expiry_date"] },
-                        1000 * 60 * 60 * 24,
-                      ],
-                    },
-                  },
-                },
-                "$$REMOVE",
-              ],
+              membership_name: "$membership_name",
+              membership_type: "$membership_type",
+              membership_status: "$membership_status",
+              expiry_date: "$expiry_date",
+              days_till_Expire: "$days_till_Expire",
+              whenFreeze: "$whenFreeze",
             },
           },
-        },
-      },
-      { $unwind: "$_id" },
-      { $unwind: "$firstName" },
-      { $unwind: "$lastName" },
-      { $unwind: "$program" },
-      { $unwind: "$notes" },
-      { $unwind: "$primaryPhone" },
-      { $unwind: "$studentType" },
-      { $unwind: "$status" },
-      { $unwind: "$time" },
-      { $unwind: "$last_attended_date" },
-      {
-        $sort: {
-          firstName: 1,
         },
       },
       {
