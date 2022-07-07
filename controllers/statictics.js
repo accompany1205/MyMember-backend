@@ -1,19 +1,11 @@
 const tempList = require("../models/std_temp_list");
 // const async = require('async');
-<<<<<<< HEAD
 const program = require('../models/program');
 const program_rank = require('../models/program_rank');
 const Member = require('../models/addmember');
 const { dateRangeBuild } = require('./../utilities/dateRangeProcess');
 const leadsTracking = require('../models/leads_tracking')
 const mongoose = require('mongoose');
-=======
-const program = require("../models/program");
-const program_rank = require("../models/program_rank");
-const Member = require("../models/addmember");
-const { dateRangeBuild } = require("./../utilities/dateRangeProcess");
-const mongoose = require("mongoose");
->>>>>>> e74b9e641f9ce7a531b170037f971df669dd718e
 exports.getAllProgram = async (req, res) => {
   try {
     const adminId = process.env.ADMINID; // fix adminid
@@ -486,100 +478,6 @@ exports.getMemberByProgram = async (req, res) => {
 };
 
 exports.getRanksReportByProgram = async (req, res) => {
-<<<<<<< HEAD
-	try {
-		let { programName, studentType } = req.query;
-		const userId = req.params.userId;
-		if (programName === '') {
-			return res.json([]);
-		}
-		const filter = userId && programName && studentType ?
-			{
-				userId: userId,
-				program: programName,
-				studentType: studentType
-			} : {
-				userId: userId,
-				program: programName
-			}
-		const ranks = await program.aggregate([
-			{
-				$match: {
-					programName: programName,
-				},
-			},
-			{ $unwind: '$program_rank' },
-			{
-				$lookup: {
-					from: 'program_ranks',
-					localField: 'program_rank',
-					foreignField: '_id',
-					as: 'program',
-				},
-			},
-			{
-				$unwind: '$program',
-			},
-			{
-				$project: {
-					programName: 1,
-					rank_name: '$program.rank_name',
-					rank_image: '$program.rank_image',
-					rank_order: { $toInt: '$program.rank_order' },
-				},
-			},
-			// Get Current Month Data
-			{
-				$lookup: {
-					from: 'members',
-					localField: 'rank_name',
-					foreignField: 'current_rank_name',
-					as: 'total-students',
-					pipeline: [
-						{
-							$match: filter
-						},
-
-						{
-							$count: 'total',
-						}
-
-
-					]
-				}
-			},
-
-
-			// Lets Map the Data
-			{
-				$project: {
-					programName: 1,
-					rank_name: 1,
-					rank_image: 1,
-					rank_order: 1,
-					total_students: { $sum: '$total-students.total' },
-
-				},
-			},
-			{ $sort: { rank_order: 1 } },
-			// {
-			// 	$project: {
-
-			// 		total: 1
-
-			// 	}
-			// }
-
-		]);
-
-		//
-
-		return res.json(ranks);
-	} catch (err) {
-		console.log(err);
-		return res.status(500).json({ message: 'Data not Found' });
-	}
-=======
   try {
     let { programName, studentType } = req.query;
     const userId = req.params.userId;
@@ -669,5 +567,4 @@ exports.getRanksReportByProgram = async (req, res) => {
     console.log(err);
     return res.status(500).json({ message: "Data not Found" });
   }
->>>>>>> e74b9e641f9ce7a531b170037f971df669dd718e
 };
