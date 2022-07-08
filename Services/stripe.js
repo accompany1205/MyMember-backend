@@ -47,15 +47,16 @@ exports.createCard = async (req, res) => {
         let cardExpiryYear = req.body.card_expiry_year
         let cardCvc = req.body.card_cvc
         let email = req.body.email
+        let phone = req.body.phone
         let cardToken = await createCardToken({ cardNumber, cardExpiryMonth, cardExpiryYear, cardCvc })
         let findCustomer = await StripeCustomers.findOne({ "email": email })
         let customerId
         let cardCheck = await StripeCards.findOne({ "card_number": cardNumber,"email":email })
         if (cardCheck) {
-            throw ({ "status": false, "message": "card already existed with this customer email" })
+            return { "status": false, "message": "card already existed with this customer email" }
         }
         if (findCustomer == null) {
-            throw { "status": false, "message": "customer not existed" }
+            return { "status": false, "message": "customer not existed" }
         }
         else {
             customerId = findCustomer.id
@@ -69,14 +70,16 @@ exports.createCard = async (req, res) => {
                 "customer_id": customerId,
                 "card_id": cardId.id,
                 "card_number": cardNumber,
-                "email": email
+                "email": email,
+                "phone":phone
             }
         )
-        res.send(cardId)
+
+        return cardId
     }
     catch (error) {
-        console.log(JSON.parse(JSON.stringify(error)))
-        res.send(error)
+        console.log("--------------",JSON.parse(JSON.stringify(error)))
+        return error
     }
 };
 
@@ -155,9 +158,10 @@ exports.createPayment = async (req, res) => {
         if (findCustomer == null) {
             throw { "status": false, "message": "customer not existed" }
         }
+        console.log("amount is ------------",req.body.amount,req.body.card_id,)
         let paymentIntent = await stripe.paymentIntents.create({
             amount: (req.body.amount) * 100, //stripe uses cents
-            currency: 'inr',
+            currency: 'usd',
             customer: findCustomer.get("id"),
             payment_method_types: ['card'],
             payment_method: req.body.card_id,
@@ -165,10 +169,10 @@ exports.createPayment = async (req, res) => {
             description: req.body.description
         });
         let storeTransaction = await StoreTransaction.create(paymentIntent)
-        res.send(paymentIntent)
+        return paymentIntent
     }
     catch (err) {
-        res.send(err)
+        return err
     }
 };
 
@@ -212,7 +216,7 @@ exports.createRefund = async (req, res) => {
         }
         let createChargeIdResponse = await createChargeId({
             amount: (req.body.amount) * 100, //stripe uses cents
-            currency: 'inr',
+            currency: 'usd',
             customer: findCustomer.get("id"),
             source: req.body.card_id,
             description: req.body.description
