@@ -149,155 +149,207 @@ exports.statisticsFilter = async (req, res) => {
 // Former Trial
 
 exports.leadsFilter = async (req, res) => {
-	let adminId = process.env.ADMINID;
-	let userId = req.params.userId;
-	let studentType = req.params.studentType;
-	let year = parseInt(req.params.date);
-	try {
-		// let leads = await leadsTracking.find({ $or: [{ userId: userId }, { adminId: adminId }] }, { _id: 0, leads_category: 1 });
-		// if (studentType === "All") {
-		// 	let data = leadsTracking.aggregate([
-		// 		{
-		// 			$match: {
-		// 				userId: userId, adminId: adminId
-		// 			}
-		// 		},
-		// 		{
-		// 			$lookup: {
-		// 				from: "member",
-		// 				let:{id:"$leads_category"},
-		// 				pipeline :[
-		// 					{
-		// 						$match:{
-		// 							$expr:{
-		// 								$in:{
-		// 									'$$id',"$"
-		// 								}
-		// 							}
-		// 						}
-		// 					}
-		// 				],
-		// 				as: "leadInfo"
-		// 			}
-		// 		}
+  let adminId = process.env.ADMINID;
+  let userId = req.params.userId;
+  let studentType = req.params.studentType;
+  let year = parseInt(req.params.date);
+  try {
+    let leads = await leadsTracking.find({ $or: [{ userId: userId }, { adminId: adminId }] }, { _id: 0, leads_category: 1 });
+    console.log(leads);
+    if (studentType === "All") {
+      // let data = await leadsTracking.aggregate([
+      //   {
+      //     $match: {
+      //       $or: [
+      //         { userId: userId }, { adminId: adminId }
+      //       ]
 
-		// 	]);
-			// let monthyInfo =await  Member.aggregate(
-			// 	[
-			// {
-			// 	$match: {
-			// 		userId: userId
-			// 	}
-			// },
-			// 		{
-			// 			$project: {
-			// 				leadsTracking: '$leadsTracking',
-			// 				month: { $month: '$createdAt' },
-			// 				year: { $year: '$createdAt' },
-			// 			}
-			// 		},
-			// 		{
-			// 			$match: {
-			// 				year: year
-			// 			}
-			// 		},
-			// 		{
-			// 			$lookup: {
-			// from: "leads_tracking",
-			// localField: "leadsTracking",
-			// foreignField: "leads_category",
-			// as: "leadInfo"
-			// 			}
-			// 		}
-			// 		// {
-			// 		// 	$group: {
-			// 		// 		_id: {
+      //     }
+      //   },
+      //   {
+      //   	$lookup: {
+      //   		from: "member",
+      //   		let:{leadTrek: "$leads_category"},
+      //   		pipeline :[
+      //   			{
+      //           $match:{
+      //             $expr: {$in:["$$leadTrek", "$leadsTracking"]}
+      //           }
+      //         }
+      //   		],
+      //   		as: "leadInfo"
+      //   	}
+      //   }
 
-			// 		// 		}
-			// 		// 	}
-			// 		// }
+      // ]);
+      // console.log(data);
+      let monthyInfo = await Member.aggregate(
+        [
+          {
+            $match: {
+              userId: userId
+            }
+          },
+          {
+            $project: {
+              _id: 0,
+              leadsTracking: '$leadsTracking',
+              month: { $month: '$createdAt' },
+              year: { $year: '$createdAt' },
+            }
+          },
+          {
+            $match: {
+              year: year
+            }
+          }
+        ]
+      );
 
-			// 	]
-			// );
-
-		// 	console.log(monthyInfo);
-		// }
-		// else {
-
-		// }
-	} catch (err) {
-		res.send({ msg: err.message.replace(/\"/g, ""), success: false });
-	}
+      console.log(monthyInfo);
+      let leadInfo = [];
+      for (data of leads) {
+        for (led of monthyInfo) {
+          if (led.month === 1) {
+            if (led.leadsTracking.includes(data.leads_category)) {
+              leadInfo.push(trakInfo(data.leads_category, led.month));
+            }
+          } else if (led.month === 2) {
+            if (led.leadsTracking.includes(data.leads_category)) {
+              leadInfo.push(trakInfo(data.leads_category, led.month))
+            }
+          } else if (led.month === 3) {
+            if (led.leadsTracking.includes(data.leads_category)) {
+              leadInfo.push(trakInfo(data.leads_category, led.month))
+            }
+          } else if (led.month === 4) {
+            if (led.leadsTracking.includes(data.leads_category)) {
+              leadInfo.push(trakInfo(data.leads_category, led.month))
+            }
+          } else if (led.month === 5) {
+            if (led.leadsTracking.includes(data.leads_category)) {
+              leadInfo.push(trakInfo(data.leads_category, led.month))
+            }
+          } else if (led.month === 6) {
+            if (led.leadsTracking.includes(data.leads_category)) {
+              leadInfo.push(trakInfo(data.leads_category, led.month))
+            }
+          } else if (led.month === 7) {
+            if (led.leadsTracking.includes(data.leads_category)) {
+              leadInfo.push(trakInfo(data.leads_category, led.month))
+            }
+          } else if (led.month === 8) {
+            if (led.leadsTracking.includes(data.leads_category)) {
+              leadInfo.push(trakInfo(data.leads_category, led.month))
+            }
+          } else if (led.month === 9) {
+            if (led.leadsTracking.includes(data.leads_category)) {
+              leadInfo.push(trakInfo(data.leads_category, led.month))
+            }
+          } else if (led.month === 10) {
+            if (led.leadsTracking.includes(data.leads_category)) {
+              leadInfo.push(trakInfo(data.leads_category, led.month))
+            }
+          } else if (led.month === 11) {
+            if (led.leadsTracking.includes(data.leads_category)) {
+              leadInfo.push(trakInfo(data.leads_category, led.month))
+            }
+          } else if (led.month === 12) {
+            if (led.leadsTracking.includes(data.leads_category)) {
+              leadInfo.push(trakInfo(data.leads_category, led.month))
+            }
+          }
+        }
+      }
+      console.log(leadInfo)
+      counter = {}
+      leadInfo.forEach(function (obj) {
+        var key = JSON.stringify(obj)
+        counter[key] = (counter[key] || 0) + 1;
+        console.log((counter[key]))
+      })
+      console.log(counter);
+      return res.send({success:true, data : counter})
+    }
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+  }
 }
 
+const trakInfo = (lead, month) => {
+  let leadObj = {}
+  leadObj.lead = lead
+  leadObj.month = month
+  return leadObj;
+}
 
 exports.statisticsFilterMember = async (req, res) => {
-	const userId = req.params.userId;
-	let date = req.body.dates;
-	//let newMonth = date.slice(0, 2)
-	let newDate = date.slice(3, 5)
-	let newYear = date.slice(-4);
-	let updateY = ("" + (parseInt(newYear) + 1))
-	let finalDate;
-	//let updateM = ("0" + (parseInt(newMonth) + 1)).slice(-2);
-	try {
-		let count = 1;
-		let promises = [];
-		while (count <= 12) {
-			let month = ("0" + count).slice(-2);
-			finalDate = `${month}-${newDate}-${updateY}`;
-			date = `${month}-${newDate}-${newYear}`
-			let dataObj = {
-				month: 0,
-				join: 0,
-				quite: 0
-			};
-			let join = await Member.find(
-				{
-					$and: [
-						{ userId: userId },
-						{
-							$or: [
-								{ studentType: "Active Student" },
-								{ studentType: "Active Trial" },
-								{ studentType: "Leads" }
-							]
-						},
-						{ createdAt: { $gte: (date), $lt: (finalDate) } }
-					]
-				}
-			);
-			let quite = await Member.find(
-				{
-					$and: [
-						{ userId: userId },
-						{
-							$or: [
-								{ studentType: "Former Student" },
-								{ studentType: "Former Trial" }
-							]
-						},
-						{ createdAt: { $gte: (date), $lt: (finalDate) } }
-					]
-				}
-			);
+  const userId = req.params.userId;
+  let date = req.body.dates;
+  //let newMonth = date.slice(0, 2)
+  let newDate = date.slice(3, 5)
+  let newYear = date.slice(-4);
+  let updateY = ("" + (parseInt(newYear) + 1))
+  let finalDate;
+  //let updateM = ("0" + (parseInt(newMonth) + 1)).slice(-2);
+  try {
+    let count = 1;
+    let promises = [];
+    while (count <= 12) {
+      let month = ("0" + count).slice(-2);
+      finalDate = `${month}-${newDate}-${updateY}`;
+      date = `${month}-${newDate}-${newYear}`
+      let dataObj = {
+        month: 0,
+        join: 0,
+        quite: 0
+      };
+      let join = await Member.find(
+        {
+          $and: [
+            { userId: userId },
+            {
+              $or: [
+                { studentType: "Active Student" },
+                { studentType: "Active Trial" },
+                { studentType: "Leads" }
+              ]
+            },
+            { createdAt: { $gte: (date), $lt: (finalDate) } }
+          ]
+        }
+      );
+      let quite = await Member.find(
+        {
+          $and: [
+            { userId: userId },
+            {
+              $or: [
+                { studentType: "Former Student" },
+                { studentType: "Former Trial" }
+              ]
+            },
+            { createdAt: { $gte: (date), $lt: (finalDate) } }
+          ]
+        }
+      );
 
-			dataObj.month = count;
-			dataObj.join = join.length;
-			dataObj.quite = quite.length;
-			promises.push(dataObj);
-			count += 1;
-		}
-		// let responseData = await Promise.all(promises);
+      dataObj.month = count;
+      dataObj.join = join.length;
+      dataObj.quite = quite.length;
+      promises.push(dataObj);
+      count += 1;
+    }
+    // let responseData = await Promise.all(promises);
 
-		if (promises.length == 0) {
-			return res.send({ msg: "no data!", success: false })
-		}
-		return res.send({ msg: "data", success: true, data: promises });
+    if (promises.length == 0) {
+      return res.send({ msg: "no data!", success: false })
+    }
+    return res.send({ msg: "data", success: true, data: promises });
 
-	} catch (err) {
-		res.send({ msg: err.message.replace(/\"/g, ""), success: false })
-	}
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
 }
 
 exports.getJoinDataByYear = async (req, res) => {
@@ -487,14 +539,14 @@ exports.getRanksReportByProgram = async (req, res) => {
     const filter =
       userId && programName && studentType
         ? {
-            userId: userId,
-            program: programName,
-            studentType: studentType,
-          }
+          userId: userId,
+          program: programName,
+          studentType: studentType,
+        }
         : {
-            userId: userId,
-            program: programName,
-          };
+          userId: userId,
+          program: programName,
+        };
     const ranks = await program.aggregate([
       {
         $match: {
