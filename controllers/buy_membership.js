@@ -1268,190 +1268,129 @@ exports.expiredMembership = async (req, res) => {
           userId,
         };
 
-  buyMembership
-    .aggregate([
-      { $match: { userId: userId } },
-      {
-        $project: {
-          membership_name: 1,
-          membership_type: 1,
-          membership_status: 1,
-          studentInfo: 1,
-          expiry_date: {
-            $toDate: "$expiry_date",
-          },
+  AddMember.aggregate([
+    { $match: filter },
+    {
+      $project: {
+        firstName: 1,
+        lastName: 1,
+        program: 1,
+        primaryPhone: 1,
+        studentType: 1,
+        last_attended_date: 1,
+        memberprofileImage: 1,
+        status: 1,
+        followup_notes: 1,
+        userId: 1,
+        last_membership: {
+          $arrayElemAt: ["$membership_details", -1],
         },
       },
-      {
-        $match: {
-          expiry_date: {
-            $lte: new Date(),
-          },
+    },
+    {
+      $match: {
+        last_membership: {
+          $nin: [null],
         },
       },
-      {
-        $addFields: {
-          days_till_Expire: {
-            $multiply: [
-              {
-                $floor: {
-                  $divide: [
-                    {
-                      $subtract: [new Date(), "$expiry_date"],
-                    },
-                    1000 * 60 * 60 * 24,
-                  ],
-                },
+    },
+    {
+      $lookup: {
+        from: "buy_memberships",
+        localField: "last_membership",
+        foreignField: "_id",
+        as: "memberships",
+        pipeline: [
+          {
+            $project: {
+              expiry_date: {
+                $toDate: "$expiry_date",
               },
-              -1,
-            ],
+              membership_status: 1,
+              membership_name: 1,
+              membership_type: 1,
+            },
           },
-        },
-      },
-      {
-        $lookup: {
-          from: "members",
-          localField: "studentInfo",
-          foreignField: "_id",
-          as: "members",
-          pipeline: [
-            {
-              $project: {
-                firstName: 1,
-                lastName: 1,
-                program: 1,
-                notes: 1,
-                primaryPhone: 1,
-                studentType: 1,
-                last_attended_date: 1,
-                memberprofileImage: 1,
-                status: 1,
-                followup_notes: 1,
-                userId: 1,
+          {
+            $match: {
+              membership_status: {
+                $ne: ["Expired"],
               },
             },
-            {
-              $match: filter,
-            },
-          ],
+          },
+        ],
+      },
+    },
+    {
+      $match: {
+        "memberships.expiry_date": {
+          $lte: new Date(),
         },
       },
-      {
-        $match: {
-          members: {
-            $ne: [],
-          },
-        },
-      },
-      {
-        $unwind: "$members",
-      },
-      {
-        $lookup: {
-          from: "followupnotes",
-          localField: "members.followup_notes",
-          foreignField: "_id",
-          as: "followup_notes",
-          pipeline: [
-            {
-              $project: {
-                note: 1,
-                date: 1,
-              },
-            },
-          ],
-        },
-      },
-      {
-        $project: {
-          studentInfo: 1,
-          membership_name: 1,
-          membership_type: 1,
-          membership_status: 1,
-          expiry_date: 1,
-          days_till_Expire: 1,
-          members: 1,
-          notes: {
-            $arrayElemAt: ["$followup_notes", -1],
-          },
-        },
-      },
-      {
-        $group: {
-          _id: "$studentInfo",
-          no_of_Memberships: {
-            $sum: 1,
-          },
-          firstName: {
-            $first: "$members.firstName",
-          },
-          lastName: {
-            $first: "$members.lastName",
-          },
-          notes: {
-            $first: "$notes",
-          },
-          program: {
-            $first: "$members.program",
-          },
-          primaryPhone: {
-            $first: "$members.primaryPhone",
-          },
-          studentType: {
-            $first: "$members.studentType",
-          },
-          last_attended_date: {
-            $first: "$members.last_attended_date",
-          },
-          memberprofileImage: {
-            $first: "$members.memberprofileImage",
-          },
-          status: {
-            $first: "$members.status",
-          },
-          memberships: {
-            $push: {
-              membership_name: "$membership_name",
-              membership_type: "$membership_type",
-              membership_status: "$membership_status",
-              expiry_date: "$expiry_date",
-              days_till_Expire: "$days_till_Expire",
-              whenFreeze: "$whenFreeze",
+    },
+    {
+      $lookup: {
+        from: "followupnotes",
+        localField: "followup_notes",
+        foreignField: "_id",
+        as: "followup_notes",
+        pipeline: [
+          {
+            $project: {
+              note: 1,
+              date: 1,
             },
           },
-        },
+        ],
       },
-      {
-        $facet: {
-          paginatedResults: [
-            { $skip: pagination.skip },
-            { $limit: pagination.limit },
-          ],
-          totalCount: [
-            {
-              $count: "count",
-            },
-          ],
+    },
+    {
+      $project: {
+        firstName: 1,
+        lastName: 1,
+        program: 1,
+        notes: 1,
+        primaryPhone: 1,
+        studentType: 1,
+        last_attended_date: 1,
+        memberprofileImage: 1,
+        status: 1,
+        notes: {
+          $arrayElemAt: ["$followup_notes", -1],
         },
+        memberships: 1,
       },
-    ])
-    .exec((err, memberdata) => {
-      if (err) {
+    },
+    {
+      $facet: {
+        paginatedResults: [
+          { $skip: pagination.skip },
+          { $limit: pagination.limit },
+        ],
+        totalCount: [
+          {
+            $count: "count",
+          },
+        ],
+      },
+    },
+  ]).exec((err, memberdata) => {
+    if (err) {
+      res.send({
+        error: err,
+      });
+    } else {
+      let data = memberdata[0].paginatedResults;
+      if (data.length > 0) {
         res.send({
-          error: err,
+          data: data,
+          totalCount: memberdata[0].totalCount[0].count,
+          success: true,
         });
       } else {
-        let data = memberdata[0].paginatedResults;
-        if (data.length > 0) {
-          res.send({
-            data: data,
-            totalCount: memberdata[0].totalCount[0].count,
-            success: true,
-          });
-        } else {
-          res.send({ msg: "data not found", success: false });
-        }
+        res.send({ msg: "data not found", success: false });
       }
-    });
+    }
+  });
 };
 exports.createMemberShipDocument = createMemberShipDocument;

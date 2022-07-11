@@ -81,12 +81,18 @@ const EmailSchema = schema({
         type: Array
     },
     smartLists:
-        { type: Array }
+        { type: Array },
     // [{
     //     stdtype: String,
     //     smId: String,
     //     smrtList: Array
     // }]
+    inActiveUsers: [
+        {
+          type: schema.Types.ObjectId,
+          ref: "User",
+        },
+      ],
 },
     { timestamps: true }
 )
