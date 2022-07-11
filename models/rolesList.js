@@ -9,7 +9,6 @@ const userSchema = new schema(
         rolename: {
             type: String,
             trim: true,
-            unique: true,
             maxlength: 100
         },
         default_location: {

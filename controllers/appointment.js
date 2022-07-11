@@ -38,19 +38,19 @@ exports.Create = async (req, res) => {
 
 exports.apptCreate = async (req, res) => {
   let Appts = req.body
-  console.log(Appts);
-  console.log(req.file)
   let userId = req.params.userId;
-  let dateRanges = req.body.repeatedDates;
+  let dateRanges = JSON.parse(req.body.repeatedDates);
   try {
     let allAppt = [];
-    let bannerImage;
+    let bannerImage = null;
     if (req.file) {
       bannerImage = await cloudUrl.imageUrl(req.file);
     }
     if (dateRanges.length > 1) {
       for (let dates in dateRanges) {
+        console.log(dateRanges[dates])
         let newAppt = { ...req.body, eventBanner: bannerImage, start: dateRanges[dates], end: dateRanges[dates], userId: userId, repeatedDates: dateRanges };
+        console.log(newAppt);
         allAppt.push(newAppt);
       }
       let resp = await appoint.insertMany(allAppt);
@@ -249,10 +249,12 @@ exports.registerInvitee = async (req, res) => {
     let registerInvitee = [];
     const promises = [];
     for (let student of students) {
-      let appt = await EventRegistered.find({$or:[
-        { "eventId": eventId, "isDeleted": false, "studentId": student.studentId },
-        { "eventId": eventId, "isDeleted": true, "studentId": student.studentId }
-    ]});
+      let appt = await EventRegistered.find({
+        $or: [
+          { "eventId": eventId, "isDeleted": false, "studentId": student.studentId },
+          { "eventId": eventId, "isDeleted": true, "studentId": student.studentId }
+        ]
+      });
       if (appt.length === 0 && student.program) {
         student.userId = userId;
         student.eventId = eventId;
@@ -272,7 +274,7 @@ exports.registerInvitee = async (req, res) => {
 }
 
 const updateInviteeByIdForRegistered = async (studentId, eventId) => {
-  return await Invitee.updateOne({ studentId: studentId, eventId: eventId, isDeleted:false }, { "isDeleted": true })
+  return await Invitee.updateOne({ studentId: studentId, eventId: eventId, isDeleted: false }, { "isDeleted": true })
 }
 
 exports.addInvitee = async (req, res) => {
@@ -430,29 +432,117 @@ exports.filterEvents = async (req, res) => {
 exports.read = async (req, res) => {
   let startDate = req.params.dates;
   let newMonth = startDate.slice(0, 2)
-  let newDate = startDate.slice(3, 5)
+  let nNewMonth = ("0" + (parseInt(newMonth))).slice(-2)
+  // let newDate = startDate.slice(3, 5)
+  let newDate = "01"
   let newYear = startDate.slice(-4);
   let updateM = ("0" + (parseInt(newMonth) + 1)).slice(-2);
+  let nStartDate = `${newYear}-${nNewMonth}-${newDate}`
+  console.log(nStartDate);
   let finalDate;
   if (newMonth === "12") {
     let newupdateM = "01";
     let updateY = ("" + (parseInt(newYear) + 1))
-    finalDate = `${newupdateM}/${newDate}/${updateY}`;
+    finalDate = `${updateY}-${newupdateM}-${newDate}`;
   } else {
-    finalDate = `${updateM}/${newDate}/${newYear}`;
+    finalDate = `${newYear}-${updateM}-${newDate}`;
   }
-
+  console.log(finalDate)
   appoint.find({
     $and: [{ userId: req.params.userId },
-    { start: { $gte: (startDate), $lt: (finalDate) } }
+    { start: { $gte: (nStartDate), $lt: (finalDate) } }
     ]
-  }).sort({ start: 1 })
+  })
     .then((result) => {
       res.send({ success: true, data: result });
     })
     .catch((err) => {
-      res.send({ msg: "No data!", success: false });
+      res.send({ msg: "No data!", err:err, success: false });
     });
+  // let startDate = (req.params.dates);
+  // console.log("wrwjreirj-->")
+  // let userId = req.params.userId;
+  // let newMonth = parseInt(startDate.slice(0,2));
+  // let newYear = parseInt(startDate.slice(-4));
+  // try {
+  //   let datas = await appoint.aggregate([
+  //     {
+  //       $match: { userId: userId }
+  //     },
+  //     {
+  //       $project: {
+  //             title: "$title",
+  //             category: "$category",
+  //             appointment_type: "$appointment_type",
+  //             app_color: "$app_color",
+  //             start:"$start",
+  //             end:"$end",
+  //             month: { $month: "$start" },
+  //             year: {$year: "$start" },
+  //             start_time:"$start_time",
+  //             end_time:"$end_time",
+  //             notes:"$notes",
+  //             status:"$status",
+  //             ticketType:"$ticketType",
+  //             eventBanner:"$eventBanner",
+  //             tickeNotes:"$tickeNotes",
+  //             hostName:"$hostName",
+  //             hostEmail: "$hostEmail",
+  //             hostMobileNumber: "$hostMobileNumber",
+  //             hostAlternateNumber: "$hostAlternateNumber",
+  //             eventLocation: "$eventLocation",
+  //             eventStreet: "$eventStreet",
+  //             eventCity:"$eventCity",
+  //             eventState:"$eventState",
+  //             zip: "$zip",
+  //             ticketName: "$ticketName",
+  //             ticketAvailabeQuantity: "$ticketAvailabeQuantity",
+  //             ticktePrice: "$ticktePrice",
+  //             totalIncome: "$totalIncome"
+  //           }
+  //     },
+  //     // {
+  //     //   $project: {
+  //     //     title: "$title",
+  //     //     category: "$category",
+  //     //     appointment_type: "$appointment_type",
+  //     //     app_color: "$app_color",
+  //     //     start:"$start",
+  //     //     end:"$end",
+  //     //     month: { $month: "$start" },
+  //     //     year: {$year: "$start" },
+  //     //     start_time:"$start_time",
+  //     //     end_time:"$end_time",
+  //     //     notes:"$notes",
+  //     //     status:"$status",
+  //     //     ticketType:"$ticketType",
+  //     //     eventBanner:"$eventBanner",
+  //     //     tickeNotes:"$tickeNotes",
+  //     //     hostName:"$hostName",
+  //     //     hostEmail: "$hostEmail",
+  //     //     hostMobileNumber: "$hostMobileNumber",
+  //     //     hostAlternateNumber: "$hostAlternateNumber",
+  //     //     eventLocation: "$eventLocation",
+  //     //     eventStreet: "$eventStreet",
+  //     //     eventCity:"$eventCity",
+  //     //     eventState:"$eventState",
+  //     //     zip: "$zip",
+  //     //     ticketName: "$ticketName",
+  //     //     ticketAvailabeQuantity: "$ticketAvailabeQuantity",
+  //     //     ticktePrice: "$ticktePrice",
+  //     //     totalIncome: "$totalIncome"
+  //     //   }
+  //     // },
+  //     {
+  //       $match: {
+  //         month:newMonth, year:newYear
+  //       }
+  //     }
+  //   ]);
+  //   console.log(datas)
+  // } catch (err) {
+  //   res.send({ msg: "No data!",err: err, success: false });
+  // }
 };
 
 exports.allEvents = async (req, res) => {
