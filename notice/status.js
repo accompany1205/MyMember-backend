@@ -22,7 +22,7 @@ missClassesCount = async (payload) => {
   }
 };
 
-expiredLastMembership = async () => {
+var expiredLastMembership = async () => {
   const expired_LastaMembership = await addmemberModal.aggregate([
     {
       $project: {
@@ -86,6 +86,7 @@ expiredLastMembership = async () => {
       },
     },
   ]);
+  console.log(expired_LastaMembership);
   Promise.all(
     expired_LastaMembership.map((expired_Membership) => {
       update_LastMembershipStatus(expired_Membership)
@@ -178,7 +179,7 @@ async function update_MembershipStatus(membership) {
       .catch((err) => reject(err));
   });
 }
-module.exports = corn.schedule("0 0 * * *", expiredLastMembership());
+module.exports = corn.schedule("0 1 * * *", () => expiredLastMembership());
 
 // //update student expire status
 // module.exports = corn.schedule("00 02 17 * * 0-6", function(){
