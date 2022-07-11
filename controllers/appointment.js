@@ -433,7 +433,8 @@ exports.read = async (req, res) => {
   let startDate = req.params.dates;
   let newMonth = startDate.slice(0, 2)
   let nNewMonth = ("0" + (parseInt(newMonth))).slice(-2)
-  let newDate = startDate.slice(3, 5)
+  // let newDate = startDate.slice(3, 5)
+  let newDate = "01"
   let newYear = startDate.slice(-4);
   let updateM = ("0" + (parseInt(newMonth) + 1)).slice(-2);
   let nStartDate = `${newYear}-${nNewMonth}-${newDate}`
