@@ -755,97 +755,71 @@ exports.frozenmembership = async (req, res) => {
         : {
             userId,
           };
-    buymembership
+    student
       .aggregate([
         { $match: { userId: userId } },
 
         {
           $project: {
-            membership_name: 1,
-            membership_type: 1,
-            membership_status: 1,
-            studentInfo: 1,
-            expiry_date: {
-              $toDate: "$expiry_date",
-            },
-            whenFreeze: 1,
-            isFreeze: 1,
-          },
-        },
-        {
-          $addFields: {
-            days_till_Expire: {
-              $multiply: [
-                {
-                  $floor: {
-                    $divide: [
-                      {
-                        $subtract: [new Date(), "$expiry_date"],
-                      },
-                      1000 * 60 * 60 * 24,
-                    ],
-                  },
-                },
-                -1,
-              ],
+            firstName: 1,
+            lastName: 1,
+            program: 1,
+            primaryPhone: 1,
+            studentType: 1,
+            last_attended_date: 1,
+            memberprofileImage: 1,
+            status: 1,
+            followup_notes: 1,
+            userId: 1,
+            last_membership: {
+              $arrayElemAt: ["$membership_details", -1],
             },
           },
         },
         {
           $match: {
-            $or: [
-              {
-                membership_status: "freeze",
-              },
-              {
-                isFreeze: true,
-              },
-            ],
+            last_membership: {
+              $nin: [null],
+            },
           },
-        },
-        {
-          $unwind: "$studentInfo",
         },
         {
           $lookup: {
-            from: "members",
-            localField: "studentInfo",
+            from: "buy_memberships",
+            localField: "last_membership",
             foreignField: "_id",
-            as: "members",
+            as: "memberships",
             pipeline: [
               {
                 $project: {
-                  firstName: 1,
-                  lastName: 1,
-                  program: 1,
-                  notes: 1,
-                  primaryPhone: 1,
-                  studentType: 1,
-                  last_attended_date: 1,
-                  memberprofileImage: 1,
-                  status: 1,
-                  followup_notes: 1,
-                  userId: 1,
+                  expiry_date: {
+                    $toDate: "$expiry_date",
+                  },
+                  membership_status: 1,
+                  membership_name: 1,
+                  membership_type: 1,
                 },
               },
-              { $match: filter },
+              {
+                $match: {
+                  membership_status: "Freeze",
+                },
+              },
             ],
           },
         },
         {
           $match: {
-            members: {
+            memberships: {
+              $exists: true,
               $ne: [],
             },
           },
         },
         {
-          $unwind: "$members",
-        },
-        {
           $lookup: {
             from: "followupnotes",
-            localField: "members.followup_notes",
+            localField: "followup_notes",
             foreignField: "_id",
             as: "followup_notes",
             pipeline: [
@@ -860,64 +834,19 @@ exports.frozenmembership = async (req, res) => {
         },
         {
           $project: {
-            studentInfo: 1,
-            membership_name: 1,
-            membership_type: 1,
-            membership_status: 1,
-            expiry_date: 1,
-            isFreeze: 1,
-            whenFreeze: 1,
-            days_till_Expire: 1,
-            members: 1,
+            firstName: 1,
+            lastName: 1,
+            program: 1,
+            notes: 1,
+            primaryPhone: 1,
+            studentType: 1,
+            last_attended_date: 1,
+            memberprofileImage: 1,
+            status: 1,
             notes: {
               $arrayElemAt: ["$followup_notes", -1],
             },
-          },
-        },
-        {
-          $group: {
-            _id: "$studentInfo",
-            no_of_Memberships: {
-              $sum: 1,
-            },
-            firstName: {
-              $first: "$members.firstName",
-            },
-            lastName: {
-              $first: "$members.lastName",
-            },
-            notes: {
-              $first: "$notes",
-            },
-            program: {
-              $first: "$members.program",
-            },
-            primaryPhone: {
-              $first: "$members.primaryPhone",
-            },
-            studentType: {
-              $first: "$members.studentType",
-            },
-            memberprofileImage: {
-              $first: "$members.memberprofileImage",
-            },
-            status: {
-              $first: "$members.status",
-            },
-            last_attended_date: {
-              $first: "$members.last_attended_date",
-            },
-            memberships: {
-              $push: {
-                membership_name: "$membership_name",
-                membership_type: "$membership_type",
-                membership_status: "$membership_status",
-                expiry_date: "$expiry_date",
-                days_till_Expire: "$days_till_Expire",
-                isFreeze: "$isFreeze",
-                whenFreeze: "$whenFreeze",
-              },
-            },
+            memberships: 1,
           },
         },
         {

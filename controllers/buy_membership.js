@@ -405,7 +405,7 @@ async function freezeMembership(membershipId, payload) {
       .findByIdAndUpdate(membershipId, {
         $set: {
           isFreeze: true,
-          membership_status: "freeze",
+          membership_status: "Freeze",
           expiry_date: expiry_date,
         },
         $push: {
@@ -421,7 +421,7 @@ async function freezeMembership(membershipId, payload) {
         if (err) {
           resolve(false);
         } else {
-          lastestMembership(membershipId, "freeze", expiry_date)
+          lastestMembership(membershipId, "Freeze", expiry_date)
             .then((data) => resolve(data))
             .catch((err) => resolve(false));
         }
@@ -1311,13 +1311,13 @@ exports.expiredMembership = async (req, res) => {
               membership_type: 1,
             },
           },
-          {
-            $match: {
-              membership_status: {
-                $ne: ["Expired"],
-              },
-            },
-          },
+          // {
+          //   $match: {
+          //     membership_status: {
+          //       $ne: ["Expired"],
+          //     },
+          //   },
+          // },
         ],
       },
     },
