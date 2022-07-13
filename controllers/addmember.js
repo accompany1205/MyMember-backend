@@ -902,7 +902,7 @@ exports.studentinfo = (req, res) => {
     .findById(studentinfo)
     .populate({
       path: "membership_details",
-      options: { sort: { ["membership_name"]: order } },
+      options: { sort: { ["_id"]: -1 } },
     })
     .populate("product_details")
     .populate("finance_details")

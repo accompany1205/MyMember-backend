@@ -22,14 +22,107 @@ missClassesCount = async (payload) => {
   }
 };
 
+var expiredLastMembership = async () => {
+  const expired_LastaMembership = await addmemberModal.aggregate([
+    {
+      $project: {
+        last_membership: {
+          $arrayElemAt: ["$membership_details", -1],
+        },
+      },
+    },
+    {
+      $match: {
+        status: { $nin: ["Expired"] },
+        last_membership: {
+          $nin: [null],
+        },
+      },
+    },
+    {
+      $lookup: {
+        from: "buy_memberships",
+        localField: "last_membership",
+        foreignField: "_id",
+        as: "membership",
+        pipeline: [
+          {
+            $project: {
+              expiry_date: {
+                // $toDate: "$expiry_date",
+                $convert: {
+                  input: "$expiry_date",
+                  to: "date",
+                  onError: "$expiry_date",
+                  onNull: "$expiry_date",
+                },
+              },
+              membership_status: 1,
+            },
+          },
+          // {
+          //   $match: {
+          //     membership_status: {
+          //       $ne: ["Expired"],
+          //     },
+          //   },
+          // },
+        ],
+      },
+    },
+    {
+      $unwind: "$membership",
+    },
+    {
+      $match: {
+        "membership.expiry_date": {
+          $lte: new Date(),
+        },
+      },
+    },
+    {
+      $project: {
+        membershipId: "$membership._id",
+      },
+    },
+  ]);
+  console.log(expired_LastaMembership);
+  Promise.all(
+    expired_LastaMembership.map((expired_Membership) => {
+      update_LastMembershipStatus(expired_Membership)
+        .then((resp) => console.log(resp.nModified))
+        .catch((err) => {
+          console.log(err);
+        });
+    })
+  );
+};
+
+function update_LastMembershipStatus(member) {
+  let { _id, membershipId } = member;
+  return new Promise((resolve, reject) => {
+    addmemberModal
+      .updateOne({ _id: _id.toString() }, { $set: { status: "Expired" } })
+      .then((resp) => {
+        buyMembership
+          .updateOne(
+            { _id: membershipId.toString() },
+            { $set: { membership_status: "Expired" } }
+          )
+          .then((resp) => resolve(resp))
+          .catch((err) => reject(err));
+      })
+      .catch((err) => reject(err));
+  });
+}
 expiredMemberships = async () => {
   try {
     const expired_Membership = await buyMembership.aggregate([
-      {
-        $match: {
-          userId: "61927cd1e953ff693a3f7744",
-        },
-      },
+      // {
+      //   $match: {
+      //     userId: "618fcc965e06875058988534",
+      //   },
+      // },
       {
         $project: {
           membership_name: 1,
@@ -37,7 +130,13 @@ expiredMemberships = async () => {
           membership_status: 1,
           studentInfo: 1,
           expiry_date: {
-            $toDate: "$expiry_date",
+            // $toDate: "$expiry_date",
+            $convert: {
+              input: "$expiry_date",
+              to: "date",
+              onError: "$expiry_date",
+              onNull: "$expiry_date",
+            },
           },
         },
       },
@@ -71,18 +170,16 @@ expiredMemberships = async () => {
 async function update_MembershipStatus(membership) {
   let { _id } = membership;
   return new Promise((resolve, reject) => {
-
-    // buyMembership
-    //   .updateOne(
-    //     { _id: _id.toString() },
-    //     { $set: { membership_status: "Expired" } }
-    //   )
-    //   .then((resp) => resolve(resp))
-    //   .catch((err) => reject(err));
+    buyMembership
+      .updateOne(
+        { _id: _id.toString() },
+        { $set: { membership_status: "Expired" } }
+      )
+      .then((resp) => resolve(resp))
+      .catch((err) => reject(err));
   });
 }
-// expiredMemberships();
-// module.exports = corn.schedule("*/5 * * * * *", expiredMemberships)
+module.exports = corn.schedule("0 1 * * *", () => expiredLastMembership());
 
 // //update student expire status
 // module.exports = corn.schedule("00 02 17 * * 0-6", function(){
