@@ -39,7 +39,7 @@ exports.Create = async (req, res) => {
 exports.apptCreate = async (req, res) => {
   let Appts = req.body
   let userId = req.params.userId;
-  let dateRanges = JSON.parse(req.body.repeatedDates);
+  let dateRanges = (req.body.repeatedDates);
   try {
     let allAppt = [];
     let bannerImage = null;
@@ -48,9 +48,7 @@ exports.apptCreate = async (req, res) => {
     }
     if (dateRanges.length > 1) {
       for (let dates in dateRanges) {
-        console.log(dateRanges[dates])
         let newAppt = { ...req.body, eventBanner: bannerImage, start: dateRanges[dates], end: dateRanges[dates], userId: userId, repeatedDates: dateRanges };
-        console.log(newAppt);
         allAppt.push(newAppt);
       }
       let resp = await appoint.insertMany(allAppt);

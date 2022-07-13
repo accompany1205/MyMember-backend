@@ -73,7 +73,7 @@ const appointSchema = new schema(
             type:String
         },
         hostName:{
-            typr:String
+            type:String
         },
         hostEmail: {
             type:String
