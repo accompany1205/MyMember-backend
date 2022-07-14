@@ -39,7 +39,7 @@ exports.Create = async (req, res) => {
 exports.apptCreate = async (req, res) => {
   let Appts = req.body
   let userId = req.params.userId;
-  let dateRanges = (req.body.repeatedDates);
+  let dateRanges = JSON.parse(req.body.repeatedDates);
   try {
     let allAppt = [];
     let bannerImage = null;
