@@ -157,32 +157,6 @@ exports.leadsFilter = async (req, res) => {
     let leads = await leadsTracking.find({ $or: [{ userId: userId }, { adminId: adminId }] }, { _id: 0, leads_category: 1 });
     console.log(leads);
     if (studentType === "All") {
-      // let data = await leadsTracking.aggregate([
-      //   {
-      //     $match: {
-      //       $or: [
-      //         { userId: userId }, { adminId: adminId }
-      //       ]
-
-      //     }
-      //   },
-      //   {
-      //   	$lookup: {
-      //   		from: "member",
-      //   		let:{leadTrek: "$leads_category"},
-      //   		pipeline :[
-      //   			{
-      //           $match:{
-      //             $expr: {$in:["$$leadTrek", "$leadsTracking"]}
-      //           }
-      //         }
-      //   		],
-      //   		as: "leadInfo"
-      //   	}
-      //   }
-
-      // ]);
-      // console.log(data);
       let monthyInfo = await Member.aggregate(
         [
           {
@@ -264,14 +238,19 @@ exports.leadsFilter = async (req, res) => {
         var key = JSON.stringify(obj)
         counter[key] = (counter[key] || 0) + 1;
       })
-      console.log(counter);
-      return res.send({ success: true, data: counter })
+      let leadData = [];
+      Object.keys(counter).forEach(function (obje) {
+        let dataObj = JSON.parse(obje);
+        dataObj.count = counter[obje];
+        leadData.push(dataObj);
+      })
+      return res.send({ success: true, data: leadData, leads: leads })
     } else {
       let monthyInfo = await Member.aggregate(
         [
           {
             $match: {
-              userId: userId, studentType:studentType
+              userId: userId, studentType: studentType
             }
           },
           {
@@ -348,8 +327,13 @@ exports.leadsFilter = async (req, res) => {
         var key = JSON.stringify(obj)
         counter[key] = (counter[key] || 0) + 1;
       })
-      console.log(counter);
-      return res.send({ success: true, data: counter })
+      let leadData = [];
+      Object.keys(counter).forEach(function (obje) {
+        let dataObj = JSON.parse(obje);
+        dataObj.count = counter[obje];
+        leadData.push(dataObj);
+      })
+      return res.send({ success: true, data: leadData, leads: leads })
     }
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false });
