@@ -201,6 +201,7 @@ exports.add_template = async (req, res) => {
 
     if (!(JSON.parse(immediately))) {
       obj.email_type = "scheduled";
+      obj.isTemplate=true;
       saveEmailTemplate(obj)
         .then((data) => {
           nurturingFolderModal

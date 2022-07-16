@@ -363,6 +363,7 @@ exports.add_template = async (req, res) => {
           })
       }
     } else if (!JSON.parse(immediately) && days) {
+      obj.isTemplate=true;
       saveEmailTemplate(obj)
         .then((data) => {
           systemFolder

@@ -113,42 +113,30 @@ async function monitorListingsUsingEventEmitter(pipeline = []) {
                         }
                       }
 
-                      console.log({
+                      const emailData = new Mailer({
                         to: [fullDocument.email],
                         from: element.from,
                         subject: element.subject,
                         html: temp,
                         attachments: element.attachments,
                       });
-                      // const emailData = new Mailer({
-                      //     to: smartEmails,
-                      //     from: element.from,
-                      //     subject: element.subject,
-                      //     html: temp,
-                      //     attachments: element.attachments
-                      // });
-                      // emailData.sendMail()
-                      //     .then(resp => console.log('mail sended'))
-                      //     .catch(err => console.log(err))
+                      emailData
+                        .sendMail()
+                        .then((resp) => console.log("mail sended"))
+                        .catch((err) => console.log(err));
                     } else {
-                      console.log("smartlist1", {
+                      const emailData = new Mailer({
                         to: [fullDocument.email],
                         from: element.from,
                         subject: element.subject,
                         html: element.template,
                         attachments: element.attachments,
                       });
-                      // const emailData = new Mailer({
-                      //     to: [fullDocument.email],
-                      //     from: element.from,
-                      //     subject: element.subject,
-                      //     html: element.template,
-                      //     attachments: element.attachments
-                      // });
 
-                      // emailData.sendMail()
-                      //     .then(resp => console.log('mail sended'))
-                      //     .catch(err => console.log(err))
+                      emailData
+                        .sendMail()
+                        .then((resp) => console.log("mail sended"))
+                        .catch((err) => console.log(err));
                     }
                   }
                 }
