@@ -65,15 +65,15 @@ const recommendedCandidate = new mongoose.Schema({
         type: Array,
     },
     joinHistory: {
-        type : Array,
+        type: Array,
     },
     isDeleted: {
         type: Boolean,
         default: false
     },
-
-
-});
+},
+    { timestamps: true }
+);
 
 
 module.exports = mongoose.model("recommendedCandidate", recommendedCandidate)

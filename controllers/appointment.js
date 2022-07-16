@@ -48,9 +48,7 @@ exports.apptCreate = async (req, res) => {
     }
     if (dateRanges.length > 1) {
       for (let dates in dateRanges) {
-        console.log(dateRanges[dates])
         let newAppt = { ...req.body, eventBanner: bannerImage, start: dateRanges[dates], end: dateRanges[dates], userId: userId, repeatedDates: dateRanges };
-        console.log(newAppt);
         allAppt.push(newAppt);
       }
       let resp = await appoint.insertMany(allAppt);
@@ -457,7 +455,7 @@ exports.read = async (req, res) => {
       res.send({ success: true, data: result });
     })
     .catch((err) => {
-      res.send({ msg: "No data!", err:err, success: false });
+      res.send({ msg: "No data!", err: err, success: false });
     });
   // let startDate = (req.params.dates);
   // console.log("wrwjreirj-->")
@@ -634,16 +632,35 @@ exports.appointInfo = (req, res) => {
 };
 
 
-exports.update = (req, res) => {
+exports.update = async (req, res) => {
   const id = req.params.appointId;
-  appoint
-    .findByIdAndUpdate(id, { $set: req.body })
-    .then((update_resp) => {
-      res.send({ msg: "Appointment Updated successfuly", success: true, update_resp });
-    })
-    .catch((err) => {
-      res.send({ msg: "Appointment Not updated!", success: false });
-    });
+  let bannerImage = null;
+  try {
+    if (req.file) {
+      bannerImage = await cloudUrl.imageUrl(req.file);
+      let data = { ...req.body, eventBanner: bannerImage }
+      appoint
+        .findByIdAndUpdate(id, { $set: data })
+        .then((update_resp) => {
+          res.send({ msg: "Appointment Updated successfuly", success: true, update_resp });
+        })
+        .catch((err) => {
+          res.send({ msg: "Appointment Not updated!", success: false });
+        });
+    } else {
+      appoint
+        .findByIdAndUpdate(id, { $set: req.body })
+        .then((update_resp) => {
+          res.send({ msg: "Appointment Updated successfuly", success: true, update_resp });
+        })
+        .catch((err) => {
+          res.send({ msg: "Appointment Not updated!", success: false });
+        });
+    }
+
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
 };
 
 exports.appointmentFilter = async (req, res) => {

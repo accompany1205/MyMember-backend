@@ -157,32 +157,6 @@ exports.leadsFilter = async (req, res) => {
     let leads = await leadsTracking.find({ $or: [{ userId: userId }, { adminId: adminId }] }, { _id: 0, leads_category: 1 });
     console.log(leads);
     if (studentType === "All") {
-      // let data = await leadsTracking.aggregate([
-      //   {
-      //     $match: {
-      //       $or: [
-      //         { userId: userId }, { adminId: adminId }
-      //       ]
-
-      //     }
-      //   },
-      //   {
-      //   	$lookup: {
-      //   		from: "member",
-      //   		let:{leadTrek: "$leads_category"},
-      //   		pipeline :[
-      //   			{
-      //           $match:{
-      //             $expr: {$in:["$$leadTrek", "$leadsTracking"]}
-      //           }
-      //         }
-      //   		],
-      //   		as: "leadInfo"
-      //   	}
-      //   }
-
-      // ]);
-      // console.log(data);
       let monthyInfo = await Member.aggregate(
         [
           {
@@ -205,8 +179,6 @@ exports.leadsFilter = async (req, res) => {
           }
         ]
       );
-
-      console.log(monthyInfo);
       let leadInfo = [];
       for (data of leads) {
         for (led of monthyInfo) {
@@ -261,15 +233,107 @@ exports.leadsFilter = async (req, res) => {
           }
         }
       }
-      console.log(leadInfo)
       counter = {}
       leadInfo.forEach(function (obj) {
         var key = JSON.stringify(obj)
         counter[key] = (counter[key] || 0) + 1;
-        console.log((counter[key]))
       })
-      console.log(counter);
-      return res.send({success:true, data : counter})
+      let leadData = [];
+      Object.keys(counter).forEach(function (obje) {
+        let dataObj = JSON.parse(obje);
+        dataObj.count = counter[obje];
+        leadData.push(dataObj);
+      })
+      return res.send({ success: true, data: leadData, leads: leads })
+    } else {
+      let monthyInfo = await Member.aggregate(
+        [
+          {
+            $match: {
+              userId: userId, studentType: studentType
+            }
+          },
+          {
+            $project: {
+              _id: 0,
+              leadsTracking: '$leadsTracking',
+              month: { $month: '$createdAt' },
+              year: { $year: '$createdAt' },
+            }
+          },
+          {
+            $match: {
+              year: year
+            }
+          }
+        ]
+      );
+      let leadInfo = [];
+      for (data of leads) {
+        for (led of monthyInfo) {
+          if (led.month === 1) {
+            if (led.leadsTracking.includes(data.leads_category)) {
+              leadInfo.push(trakInfo(data.leads_category, led.month));
+            }
+          } else if (led.month === 2) {
+            if (led.leadsTracking.includes(data.leads_category)) {
+              leadInfo.push(trakInfo(data.leads_category, led.month))
+            }
+          } else if (led.month === 3) {
+            if (led.leadsTracking.includes(data.leads_category)) {
+              leadInfo.push(trakInfo(data.leads_category, led.month))
+            }
+          } else if (led.month === 4) {
+            if (led.leadsTracking.includes(data.leads_category)) {
+              leadInfo.push(trakInfo(data.leads_category, led.month))
+            }
+          } else if (led.month === 5) {
+            if (led.leadsTracking.includes(data.leads_category)) {
+              leadInfo.push(trakInfo(data.leads_category, led.month))
+            }
+          } else if (led.month === 6) {
+            if (led.leadsTracking.includes(data.leads_category)) {
+              leadInfo.push(trakInfo(data.leads_category, led.month))
+            }
+          } else if (led.month === 7) {
+            if (led.leadsTracking.includes(data.leads_category)) {
+              leadInfo.push(trakInfo(data.leads_category, led.month))
+            }
+          } else if (led.month === 8) {
+            if (led.leadsTracking.includes(data.leads_category)) {
+              leadInfo.push(trakInfo(data.leads_category, led.month))
+            }
+          } else if (led.month === 9) {
+            if (led.leadsTracking.includes(data.leads_category)) {
+              leadInfo.push(trakInfo(data.leads_category, led.month))
+            }
+          } else if (led.month === 10) {
+            if (led.leadsTracking.includes(data.leads_category)) {
+              leadInfo.push(trakInfo(data.leads_category, led.month))
+            }
+          } else if (led.month === 11) {
+            if (led.leadsTracking.includes(data.leads_category)) {
+              leadInfo.push(trakInfo(data.leads_category, led.month))
+            }
+          } else if (led.month === 12) {
+            if (led.leadsTracking.includes(data.leads_category)) {
+              leadInfo.push(trakInfo(data.leads_category, led.month))
+            }
+          }
+        }
+      }
+      counter = {}
+      leadInfo.forEach(function (obj) {
+        var key = JSON.stringify(obj)
+        counter[key] = (counter[key] || 0) + 1;
+      })
+      let leadData = [];
+      Object.keys(counter).forEach(function (obje) {
+        let dataObj = JSON.parse(obje);
+        dataObj.count = counter[obje];
+        leadData.push(dataObj);
+      })
+      return res.send({ success: true, data: leadData, leads: leads })
     }
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false });

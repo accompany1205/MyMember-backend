@@ -215,6 +215,46 @@ exports.promoteTheStudentStripe = async (req, res) => {
 
 }
 
+exports.getFilteredStudents = async (req, res) => {
+    let userId = req.params.userId;
+    let startDate = req.params.dates;
+    let newMonth = startDate.slice(0, 2);
+    let newDate = startDate.slice(3, 5);
+    let newYear = startDate.slice(-4);
+    let updateM = ("0" + (parseInt(newMonth) + 1)).slice(-2);
+    let finalDate;
+    if (newMonth === "12") {
+        let newupdateM = "01";
+        let updateY = "" + (parseInt(newYear) + 1);
+        finalDate = `${newupdateM}/${newDate}/${updateY}`;
+    } else {
+        finalDate = `${updateM}/${newDate}/${newYear}`;
+    }
+    try {
+        let parDate = startDate.split("-");
+        startDate = parDate.join("/");
+        data = await RecommendedCandidateModel.aggregate(
+            [
+                {
+                    $match: {
+                        $and: [
+                            { userId: userId },
+                            { createdAt: { $gte: startDate, $lt: finalDate } },
+                        ]
+                    }
+                }
+
+            ]
+        );
+        if (data.length > 0) {
+            return res.send({ data: data, success: true, msg: "data!" })
+        }
+        return res.send({ data: data, success: true, msg: "No data for This filter!" })
+    } catch (err) {
+        res.send({ error: err.message.replace(/\"/g, ""), success: false })
+    }
+}
+
 exports.getRecommendedCandidateStudents = async (req, res) => {
     try {
 
