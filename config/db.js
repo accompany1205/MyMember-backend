@@ -207,7 +207,6 @@ function scheduledMails(userId) {
   return new Promise((resolve, reject) => {
     Template.find({
       $or: [{ userId }, { adminId: { $exists: true } }],
-      is_Sent: false,
       email_type: "scheduled",
       inActiveUsers: { $nin: [userId] },
       isTemplate: true,

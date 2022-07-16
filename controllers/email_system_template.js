@@ -214,7 +214,7 @@ exports.add_template = async (req, res) => {
       }, { email: 1, _id: 0 })
       let rest = [...new Set(mapObj.map(element => element.email))];
 
-      if (!rest.length) {
+      if (!rest.length && JSON.parse(immediately)) {
         return res.send({
           msg: `No Smartlist exist!`,
           success: false,
@@ -280,7 +280,7 @@ exports.add_template = async (req, res) => {
         })
 
         mapObj = mapObj ? mapObj : []
-        if (!mapObj.length) {
+        if (!mapObj.length && JSON.parse(immediately)) {
           return res.send({
             msg: `No Smartlist exist!`,
             success: false,
