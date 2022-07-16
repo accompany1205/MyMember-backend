@@ -210,6 +210,7 @@ function scheduledMails(userId) {
       is_Sent: false,
       email_type: "scheduled",
       inActiveUsers: { $nin: [userId] },
+      isTemplate: true,
     }).exec((err, resp) => {
       if (err) {
         reject(err);
