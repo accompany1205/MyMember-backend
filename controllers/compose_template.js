@@ -661,7 +661,7 @@ exports.activate_mail = async (req, res) => {
   if (req.body.isActive) {
     all_temp.updateOne(
       { _id: { $in: tempId } },
-      { $pull: { inActiveUsers: userId } },
+      { $set: { isTemplate: true }, $pull: { inActiveUsers: userId } },
       (err, resp) => {
         if (err) {
           res.json({ success: false, msg: "mail activation failed!" });
@@ -676,7 +676,7 @@ exports.activate_mail = async (req, res) => {
   } else {
     all_temp.updateMany(
       { _id: { $in: tempId } },
-      { $push: { inActiveUsers: userId } },
+      { $set: { isTemplate: true }, $push: { inActiveUsers: userId } },
       (err, resp) => {
         if (err) {
           res.json({ success: false, msg: "mail deactivation failed!" });
