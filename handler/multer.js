@@ -7,6 +7,6 @@ module.exports = multer({
             cb(new Error('file is not supported'),false)
             return
         }
-        cb(null ,true)
+        cb(null ,true)                                                                                          
     },
 })  

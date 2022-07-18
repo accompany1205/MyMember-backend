@@ -274,8 +274,18 @@ const userSchema = new schema(
             },
             password: {
                 type: String
-            }
-        }]
+            },
+           
+        }],
+        stripe_pub:{
+            type:String
+        },
+        stripe_sec:{
+            type:String
+        },
+        stripe_name:{
+            type:String
+        }
     },
     { timestamps: true }
 );

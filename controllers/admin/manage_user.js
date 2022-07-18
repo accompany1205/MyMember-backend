@@ -260,6 +260,27 @@ exports.update_user_by_admin = async (req, res) => {
   });
 };
 
+// only for demo
+exports.update_user_stripe_info = async (req, res) => {
+  const data = req.body;
+  const userId = req.params.userId;
+  let update_user = await user.updateOne({
+    _id: userId
+  }, data)
+  if (update_user.nModified < 1) {
+    return res.send({
+      msg: 'user not updated',
+      success: false
+    })
+  }
+  return res.send({
+    msg: "successfully updated",
+    success: true
+  })
+
+
+}
+
 exports.remove = (req, res) => {
   user.findByIdAndRemove(req.params.userId).exec((err, removeData) => {
     if (err) {
@@ -284,7 +305,7 @@ exports.removeAll = (req, res) => {
     } else {
       res.send({
         msg: "user remove successfully",
-        success:true
+        success: true
       });
     }
   });
