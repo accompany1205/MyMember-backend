@@ -2,7 +2,7 @@ const all_temp = require("../models/emailSentSave");
 const students = require("../models/addmember");
 const nurturingFolderModal = require("../models/email_nurturing_folder");
 const smartlist = require("../models/smartlists");
-const Template = require('../models/emailTemplates')
+const Template = require("../models/emailTemplates");
 const key = require("../models/email_key");
 const moment = require("moment");
 const async = require("async");
@@ -12,7 +12,7 @@ const cron = require("node-cron");
 const folderNur = require("../models/email_nurturing_folder");
 const cloudUrl = require("../gcloud/imageUrl");
 const ObjectId = require("mongodb").ObjectId;
-const { filterSmartlist } = require('../controllers/smartlists')
+const { filterSmartlist } = require("../controllers/smartlists");
 
 function timefun(sd, st) {
   var date = sd;
@@ -32,14 +32,14 @@ function timefun(sd, st) {
 
 exports.getData = (req, res) => {
   let options = {
-    timeZone: "Asia/Kolkata",
-    hour: "numeric",
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
-    minute: "numeric",
-    second: "numeric",
-  },
+      timeZone: "Asia/Kolkata",
+      hour: "numeric",
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+      minute: "numeric",
+      second: "numeric",
+    },
     formatter = new Intl.DateTimeFormat([], options);
   var a = formatter.format(new Date());
   // var str = a
@@ -102,7 +102,7 @@ exports.getData = (req, res) => {
 
 exports.add_template = async (req, res) => {
   try {
-    let { userId, folderId } = req.params
+    let { userId, folderId } = req.params;
     let {
       to,
       from,
@@ -117,37 +117,39 @@ exports.add_template = async (req, res) => {
       sent_date,
       smartLists,
       createdBy,
-      isPlaceHolders
+      isPlaceHolders,
     } = req.body;
-    if (days && days_type != 'before') {
-      sent_date = moment().add(days, 'days').format("YYYY-MM-DD");
+    if (days && days_type != "before") {
+      sent_date = moment().add(days, "days").format("YYYY-MM-DD");
     } else {
       sent_date = moment(sent_date).format("YYYY-MM-DD");
-
     }
     if (!to) {
-      smartLists = smartLists ? JSON.parse(smartLists) : []
-      smartLists = smartLists.map(s => ObjectId(s));
+      smartLists = smartLists ? JSON.parse(smartLists) : [];
+      smartLists = smartLists.map((s) => ObjectId(s));
       let smartlists = await smartlist.aggregate([
         { $match: { _id: { $in: smartLists } } },
-        { $project: { criteria: 1, _id: 0 } }
-      ])
+        { $project: { criteria: 1, _id: 0 } },
+      ]);
       let promises = [];
       smartlists.forEach((element, index) => {
-        promises.push(filterSmartlist(element.criteria, userId))
-      })
-      var data = await Promise.all(promises)
+        promises.push(filterSmartlist(element.criteria, userId));
+      });
+      var data = await Promise.all(promises);
 
       data = [].concat.apply([], data);
-      let mapObj = await students.find({
-        _id: { $in: data },
-        userId: userId,
-        email: { $nin: [undefined, ''] }
-      }, { email: 1, _id: 0 })
+      let mapObj = await students.find(
+        {
+          _id: { $in: data },
+          userId: userId,
+          email: { $nin: [undefined, ""] },
+        },
+        { email: 1, _id: 0 }
+      );
 
-      let rest = [...new Set(mapObj.map(element => element.email))];
+      let rest = [...new Set(mapObj.map((element) => element.email))];
 
-      if (!rest.length) {
+      if (!rest.length && JSON.parse(immediately)) {
         return res.send({
           msg: `No Smartlist exist!`,
           success: false,
@@ -173,7 +175,7 @@ exports.add_template = async (req, res) => {
       userId,
       folderId,
       smartLists,
-      createdBy
+      createdBy,
     };
     // const promises = []
     // if (req.files) {
@@ -182,25 +184,25 @@ exports.add_template = async (req, res) => {
     //   });
     //   obj.attachments = await Promise.all(promises);
     // }
-    let attachments = []
+    let attachments = [];
     if (req.files) {
-      (req.files).map((file) => {
-        let content = new Buffer.from(file.buffer, "utf-8")
+      req.files.map((file) => {
+        let content = new Buffer.from(file.buffer, "utf-8");
         let attach = {
           content: content,
           filename: file.originalname,
           type: `application/${file.mimetype.split("/")[1]}`,
-          disposition: "attachment"
-        }
-        attachments.push(attach)
-
-      })
+          disposition: "attachment",
+        };
+        attachments.push(attach);
+      });
     }
     const Allattachments = await Promise.all(attachments);
     obj.attachments = Allattachments;
 
-    if (!(JSON.parse(immediately))) {
+    if (!JSON.parse(immediately)) {
       obj.email_type = "scheduled";
+      obj.isTemplate = true;
       saveEmailTemplate(obj)
         .then((data) => {
           nurturingFolderModal
@@ -224,110 +226,118 @@ exports.add_template = async (req, res) => {
             msg: err,
           });
         });
-    }
-    else {
+    } else {
       if (JSON.parse(isPlaceHolders)) {
         let mapObj = await students.find({
           _id: { $in: data },
-          email: { $nin: [undefined, ''] },
-          userId: userId
-        })
-        mapObj = mapObj ? mapObj : []
-        if (!mapObj.length) {
+          email: { $nin: [undefined, ""] },
+          userId: userId,
+        });
+        mapObj = mapObj ? mapObj : [];
+        console.log(!mapObj.length);
+        if (!mapObj.length && JSON.parse(immediately)) {
           return res.send({
             msg: `No Smartlist exist!`,
             success: false,
           });
         }
 
-        Promise.all(mapObj.map(Element => {
-          let temp = template;
+        Promise.all(
+          mapObj.map((Element) => {
+            let temp = template;
 
-          for (i in Element) {
-            if (temp.includes(i)) {
-              temp = replace(temp, i, Element[i])
+            for (i in Element) {
+              if (temp.includes(i)) {
+                temp = replace(temp, i, Element[i]);
+              }
             }
-          }
-          const emailData = new Mailer({
-            to: [Element["email"]],
-            from: from,
-            subject: subject,
-            html: temp,
-            attachments: Allattachments
-          });
-          emailData.sendMail()
-
-        }))
-          .then(resp => {
-            obj.email_type = 'sent'
-            obj.is_Sent = true
+            const emailData = new Mailer({
+              to: [Element["email"]],
+              from: from,
+              subject: subject,
+              html: temp,
+              attachments: Allattachments,
+            });
+            emailData.sendMail();
+          })
+        )
+          .then((resp) => {
+            obj.email_type = "sent";
+            obj.is_Sent = true;
             saveEmailTemplate(obj)
               .then((data) => {
-                nurturingFolderModal
-                  .findByIdAndUpdate(folderId, { $push: { template: data._id } }, (err, data) => {
+                nurturingFolderModal.findByIdAndUpdate(
+                  folderId,
+                  { $push: { template: data._id } },
+                  (err, data) => {
                     if (err) {
-                      res.send({ msg: err, success: false })
+                      res.send({ msg: err, success: false });
                     }
-                    res.send({ msg: "Email send Successfully!", success: true })
-
-                  })
+                    res.send({
+                      msg: "Email send Successfully!",
+                      success: true,
+                    });
+                  }
+                );
               })
               .catch((ex) => {
                 res.send({
                   success: false,
-                  msg: ex
+                  msg: ex,
                 });
               });
           })
-          .catch(Err => {
-            res.sen({ msg: Err, success: false })
-          })
-      }
-      else {
-
-        console.log("to")
+          .catch((Err) => {
+            res.sen({ msg: Err, success: false });
+          });
+      } else {
+        console.log("to");
         let emailData = new Mailer({
           to,
           from,
           subject,
           html: template,
-          attachments: Allattachments
-        })
-        emailData.sendMail()
-          .then(resp => {
-            obj.email_type = 'sent'
-            obj.is_Sent = true
+          attachments: Allattachments,
+        });
+        emailData
+          .sendMail()
+          .then((resp) => {
+            obj.email_type = "sent";
+            obj.is_Sent = true;
             saveEmailTemplate(obj)
               .then((data) => {
-                nurturingFolderModal
-                  .findByIdAndUpdate(folderId, { $push: { template: data._id } }, (err, data) => {
+                nurturingFolderModal.findByIdAndUpdate(
+                  folderId,
+                  { $push: { template: data._id } },
+                  (err, data) => {
                     if (err) {
-                      res.send({ msg: err, success: false })
+                      res.send({ msg: err, success: false });
                     }
-                    return res.send({ msg: "Email send Successfully!", success: true })
-
-                  })
+                    return res.send({
+                      msg: "Email send Successfully!",
+                      success: true,
+                    });
+                  }
+                );
               })
               .catch((ex) => {
                 res.send({
                   success: false,
-                  msg: ex
+                  msg: ex,
                 });
               });
           })
-          .catch(Err => {
-            res.sen({ msg: Err, success: false })
-          })
+          .catch((Err) => {
+            res.sen({ msg: Err, success: false });
+          });
       }
     }
   } catch (err) {
-    res.send({ error: err.message.replace(/\"/g, ""), success: false })
+    res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
-
 };
 function replace(strig, old_word, new_word) {
-  return strig.replace(new RegExp(`{${old_word}}`, 'g'), new_word)
-
+  return strig.replace(new RegExp(`{${old_word}}`, "g"), new_word);
 }
 
 function saveEmailTemplate(obj) {
@@ -354,7 +364,8 @@ exports.remove_template = (req, res) => {
         function (err, temp) {
           if (err) {
             res.send({
-              msg: "Template  not removed!", success: false
+              msg: "Template  not removed!",
+              success: false,
             });
           } else {
             res.send({ msg: "Template removed successfully" });
@@ -404,48 +415,49 @@ exports.swapAndUpdate_template = async (req, res) => {
 };
 exports.update_template = async (req, res) => {
   let updateTemplate = req.body;
-  let templateId = req.params.templateId
+  let templateId = req.params.templateId;
   try {
     updateTemplate.to = updateTemplate.to ? JSON.parse(updateTemplate.to) : [];
     if (!updateTemplate.to) {
-      smartLists = updateTemplate.smartLists ? JSON.parse(updateTemplate.smartLists) : []
-      smartLists = smartLists.map(s => ObjectId(s));
+      smartLists = updateTemplate.smartLists
+        ? JSON.parse(updateTemplate.smartLists)
+        : [];
+      smartLists = smartLists.map((s) => ObjectId(s));
       let [smartlists] = await smartlist.aggregate([
         {
           $match: {
-            _id: { $in: smartLists }
-          }
+            _id: { $in: smartLists },
+          },
         },
         {
           $lookup: {
             from: "members",
             localField: "smartlists",
             foreignField: "_id",
-            as: "data"
-          }
+            as: "data",
+          },
         },
         {
           $project: {
             _id: 0,
-            data: "$data.email"
-          }
+            data: "$data.email",
+          },
         },
         { $unwind: "$data" },
         {
           $group: {
             _id: "",
-            emails: { $addToSet: "$data" }
-          }
+            emails: { $addToSet: "$data" },
+          },
         },
         {
           $project: {
-            _id: 0
-          }
+            _id: 0,
+          },
+        },
+      ]);
 
-        }
-      ])
-
-      smartlists = smartlists ? smartlists : []
+      smartlists = smartlists ? smartlists : [];
 
       if (!smartlists.emails.length) {
         return res.send({
@@ -453,8 +465,7 @@ exports.update_template = async (req, res) => {
           success: false,
         });
       }
-      updateTemplate.to = smartlists.emails
-
+      updateTemplate.to = smartlists.emails;
     }
     // promises = []
     // if (req.files) {
@@ -463,19 +474,18 @@ exports.update_template = async (req, res) => {
     //   });
     //   updateTemplate.attachments = await Promise.all(promises);
     // }
-    let attachments = []
+    let attachments = [];
     if (req.files) {
-      (req.files).map((file) => {
-        let content = new Buffer.from(file.buffer, "utf-8")
+      req.files.map((file) => {
+        let content = new Buffer.from(file.buffer, "utf-8");
         let attach = {
           content: content,
           filename: file.originalname,
           type: `application/${file.mimetype.split("/")[1]}`,
-          disposition: "attachment"
-        }
-        attachments.push(attach)
-
-      })
+          disposition: "attachment",
+        };
+        attachments.push(attach);
+      });
     }
     const Allattachments = await Promise.all(attachments);
     updateTemplate.attachments = Allattachments;
@@ -491,79 +501,81 @@ exports.update_template = async (req, res) => {
       }
     );
   } catch (err) {
-    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
-
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }
-}
+};
 
 exports.swap_template = async (req, res) => {
-  let templateId = req.params.templateId
-  let FirstSelectedOid = req.body.FirstSelectedOid
-  let newPositionOfFirstSelected = req.body.newPositionOfFirstSelected
-  let DateOfFirstSelectedOid = req.body.DateOfFirstSelectedOid
-  let SecondSelectedOid = req.body.SecondSelectedOid
-  let newPositionOfSecondSelected = req.body.newPositionOfSecondSelected
-  let DateOfSecondSelectedOid = req.body.DateOfSecondSelectedOid
+  let templateId = req.params.templateId;
+  let FirstSelectedOid = req.body.FirstSelectedOid;
+  let newPositionOfFirstSelected = req.body.newPositionOfFirstSelected;
+  let DateOfFirstSelectedOid = req.body.DateOfFirstSelectedOid;
+  let SecondSelectedOid = req.body.SecondSelectedOid;
+  let newPositionOfSecondSelected = req.body.newPositionOfSecondSelected;
+  let DateOfSecondSelectedOid = req.body.DateOfSecondSelectedOid;
 
   await nurturingFolderModal.updateOne(
     { _id: req.params.templateId },
 
     {
       $pull: {
-        template:
-        {
-          $in:
-            [FirstSelectedOid,
-              SecondSelectedOid
-            ]
-        }
-      }
+        template: {
+          $in: [FirstSelectedOid, SecondSelectedOid],
+        },
+      },
     }
-  )
+  );
   await nurturingFolderModal.updateOne(
     { _id: templateId },
     {
       $push: {
         template: {
           $each: [FirstSelectedOid],
-          $position: newPositionOfFirstSelected
-        }
-      }
+          $position: newPositionOfFirstSelected,
+        },
+      },
     }
-  )
-  await nurturingFolderModal.updateOne(
-    { _id: req.params.templateId },
+  );
+  await nurturingFolderModal
+    .updateOne(
+      { _id: req.params.templateId },
 
-    {
-      $push: {
-        template: {
-          $each: [SecondSelectedOid],
-          $position: newPositionOfSecondSelected
-        }
+      {
+        $push: {
+          template: {
+            $each: [SecondSelectedOid],
+            $position: newPositionOfSecondSelected,
+          },
+        },
       }
-    }
-  )
+    )
     .exec(async (err, data) => {
       if (err) {
         res.send({
           msg: "not update template",
-          success: false
+          success: false,
         });
       } else {
-        await all_temp.findByIdAndUpdate(FirstSelectedOid, { $set: { sent_date: DateOfFirstSelectedOid } })
-        await all_temp.findByIdAndUpdate(SecondSelectedOid, { $set: { sent_date: DateOfSecondSelectedOid } })
+        await all_temp.findByIdAndUpdate(FirstSelectedOid, {
+          $set: { sent_date: DateOfFirstSelectedOid },
+        });
+        await all_temp
+          .findByIdAndUpdate(SecondSelectedOid, {
+            $set: { sent_date: DateOfSecondSelectedOid },
+          })
           .exec(async (err, data) => {
             if (err) {
               res.send({
                 msg: "Template not updated!",
-                success: false
+                success: false,
+              });
+            } else {
+              res.send({
+                msg: "template swapped successfully! ",
+                success: true,
               });
             }
-            else {
-              res.send({ msg: 'template swapped successfully! ', success: true });
-
-            }
-          })
+          });
       }
     });
 };
@@ -578,7 +590,10 @@ exports.single_tem_update_status = (req, res) => {
         if (err) {
           res.json({ success: false, msg: "email status not deactive" });
         } else {
-          res.json({ success: true, msg: "Template marked as stared successfully" });
+          res.json({
+            success: true,
+            msg: "Template marked as stared successfully",
+          });
         }
       }
     );
@@ -670,30 +685,28 @@ exports.multipal_temp_remove = (req, res) => {
 
   if (!templateIds.length) {
     return res.send({ msg: "please selecte Template", success: false });
-
   }
-  all_temp.remove({ _id: { $in: templateIds } })
-    .exec((err, resp) => {
-      if (err) {
-        res.json({ success: false, msg: "templates not remove" });
-      } else {
-        console.log(templateIds)
-        folderNur.updateOne(
+  all_temp.remove({ _id: { $in: templateIds } }).exec((err, resp) => {
+    if (err) {
+      res.json({ success: false, msg: "templates not remove" });
+    } else {
+      console.log(templateIds);
+      folderNur
+        .updateOne(
           { _id: folderId },
           { $pull: { template: { $in: templateIds } } }
-        ).exec((err, resp) => {
+        )
+        .exec((err, resp) => {
           if (err) {
             res.json({ success: false, msg: "templates not remove" });
-          }
-          else {
+          } else {
             res.json({ success: true, msg: "template  removed successfully" });
-
           }
-        })
-      }
-    })
+        });
+    }
+  });
 };
 
 function removeEmptyString(arr) {
-  return arr.filter(v => v != '')
+  return arr.filter((v) => v != "");
 }
