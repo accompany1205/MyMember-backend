@@ -289,10 +289,38 @@ exports.update_user_stripe_info = async (req, res) => {
       success: true
     })
   } catch (err) {
-    return res.send({msg:err.message.replace(/\"/g, ''), success:false});
+    return res.send({ msg: err.message.replace(/\"/g, ''), success: false });
   }
+}
 
+exports.get_user_stripe_info = async (req, res) => {
+  try{
+    if(!req.params.userId){
+      return res.send({
+        msg:"no params found",
+        success:false
+      })
+    }
+    user.findById({ _id: req.params.userId }, { stripe_pub: 1, stripe_sec: 1,stripe_name:1 })
+    .exec((err, data) => {
+      if (err) {
+        return res.send({
+          msg: err.message.replace(/\"/g, ''),
+          success:false        
+        })
+      }
+      res.send({
+        msg:"data",
+        data:data,
+        success:true
+      })
 
+    })
+  }catch(err){
+    return res.send({ msg: err.message.replace(/\"/g, ''), success: false });
+
+  }
+ 
 
 }
 
