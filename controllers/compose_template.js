@@ -826,7 +826,6 @@ async function emailCronFucntionality() {
     is_Sent: false,
     email_type: "scheduled",
     adminId: { $exists: false },
-    isActive: true,
   });
   scheduledListing.forEach(async (ele, i) => {
     let hours = parseInt(ele.sent_time.split(":")[0]);
