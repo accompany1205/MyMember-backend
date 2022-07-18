@@ -243,8 +243,8 @@ exports.leadsFilter = async (req, res) => {
         dataObj.count = counter[obje];
         leadData.push(dataObj);
       })
-      leadData.lead = leads
-      return res.send({ success: true, data: leadData })
+      
+      return res.send({ success: true, data:leadData, leads:leads.map(e => e.leads_category)})
     } else {
       let monthyInfo = await Member.aggregate(
         [
@@ -333,8 +333,7 @@ exports.leadsFilter = async (req, res) => {
         dataObj.count = counter[obje];
         leadData.push(dataObj);
       })
-      leadData.lead = leads;
-      return res.send({ success: true, data: leadData })
+      return res.send({ success: true, data: leadData, leads:leads.map(e => e.leads_category)})
     }
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false });
