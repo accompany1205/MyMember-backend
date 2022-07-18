@@ -1,6 +1,8 @@
 const user = require("../../models/user");
 const sgMail = require("sendgrid-v3-node");
 const cloudUrl = require("../../gcloud/imageUrl");
+const bcrypt = require('bcryptjs');
+
 
 exports.user_List = (req, res) => {
   user
@@ -262,21 +264,34 @@ exports.update_user_by_admin = async (req, res) => {
 
 // only for demo
 exports.update_user_stripe_info = async (req, res) => {
-  const data = req.body;
+  let data = req.body;
   const userId = req.params.userId;
-  let update_user = await user.updateOne({
-    _id: userId
-  }, data)
-  if (update_user.nModified < 1) {
+  try {
+    const salt = await bcrypt.genSalt(10);
+    const stripe_sec = await bcrypt.hash(req.body.stripe_sec, salt);
+    const stripe_pub = await bcrypt.hash(req.body.stripe_pub, salt)
+    data.stripe_sec = stripe_sec;
+    data.stripe_pub = stripe_pub;
+
+    let update_user = await user.updateOne({
+      _id: userId
+    }, data)
+
+    if (update_user.nModified < 1) {
+      return res.send({
+        msg: 'user not updated!',
+        success: false
+      })
+    }
+
     return res.send({
-      msg: 'user not updated',
-      success: false
+      msg: "successfully updated!",
+      success: true
     })
+  } catch (err) {
+    return res.send({msg:err.message.replace(/\"/g, ''), success:false});
   }
-  return res.send({
-    msg: "successfully updated",
-    success: true
-  })
+
 
 
 }
