@@ -152,7 +152,9 @@ exports.seven_to_forteen = async (req, res) => {
             error: err,
           });
         } else {
+          console.log(memberdata)
           let data = memberdata[0].paginatedResults;
+          console.log(data)
           if (data.length > 0) {
             res.send({
               data: data,
