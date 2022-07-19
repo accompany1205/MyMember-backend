@@ -122,7 +122,7 @@ exports.expire_thirty_std = async (req, res) => {
         { $match: { userId: userId } },
 
         {
-          $project: {
+          $project: { 
             membership_name: 1,
             membership_type: 1,
             membership_status: 1,
@@ -209,6 +209,7 @@ exports.expire_thirty_std = async (req, res) => {
             pipeline: [
               {
                 $project: {
+                  time:1,
                   note: 1,
                   date: 1,
                 },

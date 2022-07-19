@@ -1610,7 +1610,7 @@ exports.updateRating = async (req, res) => {
       data.map((member) => {
         console.log(member);
         update_Rating(member)
-          .then((resp) => {})
+          .then((resp) => { })
           .catch((err) => {
             console.log(err);
           });

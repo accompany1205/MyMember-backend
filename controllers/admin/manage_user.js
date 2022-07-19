@@ -1,6 +1,8 @@
 const user = require("../../models/user");
 const sgMail = require("sendgrid-v3-node");
 const cloudUrl = require("../../gcloud/imageUrl");
+const bcrypt = require('bcryptjs');
+
 
 exports.user_List = (req, res) => {
   user
@@ -260,6 +262,68 @@ exports.update_user_by_admin = async (req, res) => {
   });
 };
 
+// only for demo
+exports.update_user_stripe_info = async (req, res) => {
+  let data = req.body;
+  const userId = req.params.userId;
+  try {
+    const salt = await bcrypt.genSalt(10);
+    const stripe_sec = await bcrypt.hash(req.body.stripe_sec, salt);
+    const stripe_pub = await bcrypt.hash(req.body.stripe_pub, salt)
+    data.stripe_sec = stripe_sec;
+    data.stripe_pub = stripe_pub;
+
+    let update_user = await user.updateOne({
+      _id: userId
+    }, data)
+
+    if (update_user.nModified < 1) {
+      return res.send({
+        msg: 'user not updated!',
+        success: false
+      })
+    }
+
+    return res.send({
+      msg: "successfully updated!",
+      success: true
+    })
+  } catch (err) {
+    return res.send({ msg: err.message.replace(/\"/g, ''), success: false });
+  }
+}
+
+exports.get_user_stripe_info = async (req, res) => {
+  try{
+    if(!req.params.userId){
+      return res.send({
+        msg:"no params found",
+        success:false
+      })
+    }
+    user.findById({ _id: req.params.userId }, { stripe_pub: 1, stripe_sec: 1,stripe_name:1 })
+    .exec((err, data) => {
+      if (err) {
+        return res.send({
+          msg: err.message.replace(/\"/g, ''),
+          success:false        
+        })
+      }
+      res.send({
+        msg:"data",
+        data:data,
+        success:true
+      })
+
+    })
+  }catch(err){
+    return res.send({ msg: err.message.replace(/\"/g, ''), success: false });
+
+  }
+ 
+
+}
+
 exports.remove = (req, res) => {
   user.findByIdAndRemove(req.params.userId).exec((err, removeData) => {
     if (err) {
@@ -284,7 +348,7 @@ exports.removeAll = (req, res) => {
     } else {
       res.send({
         msg: "user remove successfully",
-        success:true
+        success: true
       });
     }
   });
