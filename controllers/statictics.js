@@ -155,7 +155,6 @@ exports.leadsFilter = async (req, res) => {
   let year = parseInt(req.params.date);
   try {
     let leads = await leadsTracking.find({ $or: [{ userId: userId }, { adminId: adminId }] }, { _id: 0, leads_category: 1 });
-    console.log(leads);
     if (studentType === "All") {
       let monthyInfo = await Member.aggregate(
         [
@@ -244,7 +243,8 @@ exports.leadsFilter = async (req, res) => {
         dataObj.count = counter[obje];
         leadData.push(dataObj);
       })
-      return res.send({ success: true, data: leadData, leads: leads })
+      
+      return res.send({ success: true, data:leadData, leads:leads.map(e => e.leads_category)})
     } else {
       let monthyInfo = await Member.aggregate(
         [
@@ -333,7 +333,7 @@ exports.leadsFilter = async (req, res) => {
         dataObj.count = counter[obje];
         leadData.push(dataObj);
       })
-      return res.send({ success: true, data: leadData, leads: leads })
+      return res.send({ success: true, data: leadData, leads:leads.map(e => e.leads_category)})
     }
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false });

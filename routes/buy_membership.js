@@ -7,6 +7,7 @@ const {
   members_info,
   remove,
   buyMembership,
+  buyMembershipStripe,
   membership_InfoById,
   updatePayments,
   lastestMembership,
@@ -26,6 +27,7 @@ router.get('/member/expired_Membership/:userId/:page_no/:per_page', verifySchool
 router.get("/membership/buy_membership_info_BymemberShipId/:userId/:membershipID", requireSignin, verifySchool, membership_InfoById)
 router.get("/membership/buy_membership_info/:userId/:studentId", requireSignin, members_info)
 router.post("/membership/buy_membership/:userId/:studentId", requireSignin, verifySchool, buyMembership);
+router.post("/membership/buy_membership_stripe/:userId/:studentId", buyMembershipStripe);
 // router.post("/membership/buy_membership/:userId",requireSignin,buyMembership);
 router.put("/membership/update_buy_memberships/:userId/:membershipId/:type", requireSignin, verifySchool, update);
 router.delete("/membership/delete_buy_membership/:userId/:membershipId", requireSignin, verifySchool, remove);

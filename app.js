@@ -20,6 +20,7 @@ require("./config/db");
 // import routes
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
+const stripeRoutes = require("./routes/stripe");
 const categoryRoutes = require("./routes/category");
 const braintreeRoutes = require("./routes/braintree");
 const orderRoutes = require("./routes/order");
@@ -235,6 +236,7 @@ app.use("/api", TTL);
 
 app.use("/api", authRoutes);
 app.use("/api", userRoutes);
+app.use("/api", stripeRoutes);
 app.use("/api", categoryRoutes);
 app.use("/api", braintreeRoutes);
 app.use("/api", orderRoutes);
