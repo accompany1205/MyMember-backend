@@ -4,8 +4,8 @@ const Invitee = require("../models/eventInvitee")
 const EventRegistered = require("../models/eventRegistered");
 const Member = require('../models/addmember');
 const cloudUrl = require('../gcloud/imageUrl');
-
-
+const Mailer = require("../helpers/Mailer");
+require("dotenv").config();
 
 exports.Create = async (req, res) => {
   var appoinemnt = req.body;
@@ -35,6 +35,34 @@ exports.Create = async (req, res) => {
     res.send({ error: err.message.replace(/\"/g, ""), success: false })
   }
 };
+
+
+exports.sendEmailToGuest = async (req, res) => {
+  let emailList = req.body.emailList;
+  if (emailList.length === 0) {
+    return res.send({ msg: "Please select students!", success: false });
+  }
+  let subject = req.body.subject;
+  let url = req.body.url;
+  try {
+    const emailData = new Mailer({
+      to: emailList,
+      from: "akshit20@navgurukul.org",
+      subject: subject,
+      html: url
+    })
+
+    emailData.sendMail().then(resp => {
+      return res.send({ msg: "email Sent!", success: true })
+    }).catch(err => {
+      return res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+    })
+  } catch (err) {
+    return res.send({ error: err.message.replace(/\"/g, ""), success: false })
+  }
+
+}
+
 
 exports.apptCreate = async (req, res) => {
   let Appts = req.body

@@ -31,6 +31,7 @@ exports.createNote = async (req, res) => {
     (createNotePayload.memberId = studentInfo._id);
 
   let createdNote = await followUpNotes.create(createNotePayload);
+  console.log(createdNote)
   if (!createdNote) {
     res.send({
       success: false,
