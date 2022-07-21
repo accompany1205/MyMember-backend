@@ -2,6 +2,8 @@
 const buy_product = require("../models/buy_product");
 const Finance_infoSchema = require("../models/finance_info");
 const AddMember = require("../models/addmember");
+const StripeApis = require("../Services/stripe");
+const StripeCards = require('../models/stripe_cards')
 const _ = require("lodash");
 const Joi = require("@hapi/joi");
 var mongo = require("mongoose");
@@ -27,7 +29,7 @@ exports.product_InfoById = async (req, res) => {
     var productID = req.params.productID;
     var userId = req.params.userId;
     try {
-        productData = await buy_product.find({
+        let productData = await buy_product.find({
             _id: productID,
             userId: userId,
         });
@@ -39,6 +41,76 @@ exports.product_InfoById = async (req, res) => {
         res.send({ error: error.message.replace(/\"/g, ""), success: false });
     }
 };
+
+exports.buy_product_stripe = async (req, res) => {
+    const userId = req.params.userId;
+    const studentId = req.params.studentId;
+    let stripePayload = req.body.product_details.stripePayload ? req.body.product_details.stripePayload : {};
+    let productData = req.body.product_details;
+    console.log(productData)
+    const Address = stripePayload ? stripePayload.address : "";
+    const payLatter = req.body.product_details.pay_latter;
+    const financeId = req.body.product_details.financeId ? req.body.product_details.financeId : 1;
+    const ptype = req.body.product_details.ptype;
+    delete req.body.product_details.stripePayload;
+    let memberShipDoc;
+    productData.userId = userId;
+    try {
+        if (!productData.isEMI && productData.balance == 0
+            // productData.payment_type == "pif"
+        ) {
+            productData.due_status = "paid";
+            if (ptype === 'credit card') {
+                if (stripePayload.pan) {
+                    let cardId
+                    let findExistingCard = await StripeCards.findOne({ "card_number": stripePayload.card_number })
+                    console.log(findExistingCard)
+                    if (findExistingCard) {
+                        cardId = findExistingCard["card_id"]
+                    }
+                    else {
+                        let createCard = await StripeApis.createCard({
+                            "body": {
+                                "card_number": stripePayload.card_number,
+                                "card_expiry_month": stripePayload.card_expiry_month,
+                                "card_expiry_year": stripePayload.card_expiry_year,
+                                "card_cvc": stripePayload.card_cvc,
+                                "email": stripePayload.email,
+                                "phone": stripePayload.phone,
+                            }
+                        })
+                        console.log(createCard)
+                        if (createCard.status) {
+                            return createCard
+                        }
+                        cardId = createCard["id"]
+                    }
+                    let createPaymentResponse = await StripeApis.createPayment({
+                        "body": {
+                          "amount": stripePayload.amount,
+                          "card_id": cardId,
+                          "description": stripePayload.description,
+                          "email": stripePayload.email
+                        }
+                      })
+                      res.send(createPaymentResponse)
+                }
+                else {
+                    return res.send({
+                        msg: "please provide Card Detatils",
+                        success: false,
+                    });
+                }
+            }
+        }else {
+            res.send({ msg: "EMI system not supported yet!", success: false });
+        }
+    } catch (err) {
+        res.send({ msg: error.message.replace(/\"/g, ""), success: false });
+    }
+
+}
+
 exports.buy_product = async (req, res) => {
     const userId = req.params.userId;
     const studentId = req.params.studentId;
