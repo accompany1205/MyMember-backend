@@ -182,8 +182,10 @@ exports.deleteSubUserInfo = (req, res) => {
 // **** Roles List ****
 
 exports.createRolesList = (req, res) => {
+    const userId = req.params.userId;
     try {
         var RolesListObj = new RolesList(req.body)
+        RolesListObj.userId = userId;
         RolesListObj.save((err, data) => {
             if (err) {
                 res.send({ 'msg': err.message, 'success': false })
