@@ -3,7 +3,7 @@ const router = express.Router();
 const permissionsOfSubUsers = require("../../controllers/permissionsOfSubUsers");
 const upload = require('../../handler/multer')
 
-router.post("/sub-users/permissions/create", upload.single('profile_img'), permissionsOfSubUsers.create);
+router.post("/sub-users/permissions/create/:userId", upload.single('profile_img'), permissionsOfSubUsers.create);
 router.put("/sub-users/permissions/update/:SubUserId", upload.single('profile_img'), permissionsOfSubUsers.update);
 
 router.get("/sub-users/permissions/list", permissionsOfSubUsers.getList);

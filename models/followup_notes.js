@@ -20,7 +20,7 @@ const followUpNotes = new schema({
     },
     time: {
         type: String,
-        default: new Date().toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
+        default: new Date()
     },
     userId: {
         type: String

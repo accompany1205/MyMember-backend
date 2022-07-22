@@ -218,30 +218,45 @@ exports.promoteTheStudentStripe = async (req, res) => {
 exports.getFilteredStudents = async (req, res) => {
     let userId = req.params.userId;
     let startDate = req.params.dates;
-    let newMonth = startDate.slice(0, 2);
-    let newDate = startDate.slice(3, 5);
-    let newYear = startDate.slice(-4);
-    let updateM = ("0" + (parseInt(newMonth) + 1)).slice(-2);
-    let finalDate;
-    if (newMonth === "12") {
-        let newupdateM = "01";
-        let updateY = "" + (parseInt(newYear) + 1);
-        finalDate = `${newupdateM}/${newDate}/${updateY}`;
-    } else {
-        finalDate = `${updateM}/${newDate}/${newYear}`;
-    }
+    let newMonth = parseInt(startDate.slice(0, 2));
+    let newYear = parseInt(startDate.slice(-4));
     try {
-        let parDate = startDate.split("-");
-        startDate = parDate.join("/");
         data = await RecommendedCandidateModel.aggregate(
             [
                 {
-                    $match: {
-                        $and: [
-                            { userId: userId },
-                            { createdAt: { $gte: startDate, $lt: finalDate } },
-                        ]
+                    $match:
+
+                        { userId: userId }
+                },
+                {
+                    $project: {
+                        lastPromotedDate: "$lastPromotedDate",
+                        candidate_status: "$candidate_status",
+                        last_stripe_given: "$last_stripe_given",
+                        current_stripe: "$current_stripe",
+                        stripe_history: "$stripe_history",
+                        joinHistory: "$joinHistory",
+                        isDeleted: "$isDeleted",
+                        studentId: "$studentId",
+                        rating: "$rating",
+                        firstName: "$firstName",
+                        lastName: "$lastName",
+                        memberprofileImage: "$memberprofileImage",
+                        userId: "$userId",
+                        program: "$program",
+                        current_rank_name: "$current_rank_name",
+                        next_rank_name: "$next_rank_name",
+                        candidate: "$candidate",
+                        month: { $month: "$createdAt" },
+                        year: {
+                            $year: "$createdAt",
+                        }
                     }
+                },
+                {
+
+                    $match: { month: newMonth, year: newYear },
+
                 }
 
             ]
