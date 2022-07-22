@@ -123,6 +123,7 @@ exports.birth_this_week = async (req, res) => {
           $project: {
             firstName: 1,
             dob: 1,
+            status: 1,
             studentType: 1,
             lastName: 1,
             primaryPhone: 1,
@@ -160,6 +161,7 @@ exports.birth_this_week = async (req, res) => {
         {
           $project: {
             firstName: 1,
+            status: 1,
             lastName: 1,
             dob: 1,
             primaryPhone: 1,
@@ -227,6 +229,7 @@ exports.seven_to_forteen = async (req, res) => {
           $project: {
             firstName: 1,
             lastName: 1,
+            status: 1,
             memberprofileImage: 1,
             notes: 1,
             birthday_notes: 1,
@@ -251,6 +254,7 @@ exports.seven_to_forteen = async (req, res) => {
           $project: {
             firstName: 1,
             lastName: 1,
+            status: 1,
             memberprofileImage: 1,
             notes: 1,
             birthday_notes: 1,
@@ -276,6 +280,7 @@ exports.seven_to_forteen = async (req, res) => {
           $project: {
             firstName: 1,
             lastName: 1,
+            status: 1,
             memberprofileImage: 1,
             notes: 1,
             birthday_notes: 1,
@@ -358,6 +363,7 @@ exports.fifteen_to_thirty = async (req, res) => {
           $project: {
             firstName: 1,
             lastName: 1,
+            status: 1,
             memberprofileImage: 1,
             notes: 1,
             birthday_notes: 1,
@@ -382,6 +388,7 @@ exports.fifteen_to_thirty = async (req, res) => {
           $project: {
             firstName: 1,
             lastName: 1,
+            status: 1,
             memberprofileImage: 1,
             notes: 1,
             birthday_notes: 1,
@@ -407,6 +414,7 @@ exports.fifteen_to_thirty = async (req, res) => {
           $project: {
             firstName: 1,
             lastName: 1,
+            status: 1,
             memberprofileImage: 1,
             notes: 1,
             birthday_notes: 1,
@@ -487,6 +495,7 @@ exports.moreThirty = async (req, res) => {
           $project: {
             firstName: 1,
             lastName: 1,
+            status: 1,
             memberprofileImage: 1,
             notes: 1,
             birthday_notes: 1,
@@ -511,6 +520,7 @@ exports.moreThirty = async (req, res) => {
           $project: {
             firstName: 1,
             lastName: 1,
+            status: 1,
             memberprofileImage: 1,
             notes: 1,
             birthday_notes: 1,
@@ -536,6 +546,7 @@ exports.moreThirty = async (req, res) => {
           $project: {
             firstName: 1,
             lastName: 1,
+            status: 1,
             memberprofileImage: 1,
             notes: 1,
             birthday_notes: 1,
@@ -627,6 +638,7 @@ exports.thirtyToSixty = async (req, res) => {
           $project: {
             firstName: 1,
             lastName: 1,
+            status: 1,
             primaryPhone: 1,
             studentType:1,
             program: 1,
@@ -652,6 +664,7 @@ exports.thirtyToSixty = async (req, res) => {
           $project: {
             firstName: 1,
             lastName: 1,
+            status: 1,
             primaryPhone: 1,
             program: 1,
             studentType:1,
@@ -679,6 +692,7 @@ exports.thirtyToSixty = async (req, res) => {
             lastName: 1,
             primaryPhone: 1,
             program: 1,
+            status: 1,
             studentType:1,
             current_rank_img: 1,
             dob: 1,
@@ -726,6 +740,7 @@ exports.thirtyToSixty = async (req, res) => {
             lastName: 1,
             dob: 1,
             primaryPhone: 1,
+            status: 1,
             studentType: 1,
             program: 1,
             current_rank_img: 1,
@@ -799,6 +814,7 @@ exports.sixtyToNinety = async (req, res) => {
           $project: {
             firstName: 1,
             lastName: 1,
+            status: 1,
             primaryPhone: 1,
             program: 1,
             current_rank_img: 1,
@@ -824,6 +840,7 @@ exports.sixtyToNinety = async (req, res) => {
           $project: {
             firstName: 1,
             lastName: 1,
+            status: 1,
             primaryPhone: 1,
             studentType:1,
             program: 1,
@@ -850,6 +867,7 @@ exports.sixtyToNinety = async (req, res) => {
             firstName: 1,
             lastName: 1,
             primaryPhone: 1,
+            status: 1,
             studentType:1,
             program: 1,
             current_rank_img: 1,
@@ -897,6 +915,7 @@ exports.sixtyToNinety = async (req, res) => {
             firstName: 1,
             lastName: 1,
             dob: 1,
+            status: 1,
             studentType:1,
             primaryPhone: 1,
             studentType: 1,
@@ -954,6 +973,7 @@ exports.tommarrow = async (req, res) => {
         {
           $project: {
             firstName: 1,
+            status: 1,
             lastName: 1,
             dob: 1,
             email: 1,
@@ -1022,6 +1042,7 @@ exports.this_month = async (req, res) => {
             firstName: 1,
             dob: 1,
             studentType: 1,
+            status: 1,
             lastName: 1,
             primaryPhone: 1,
             current_rank_img: 1,
@@ -1064,6 +1085,7 @@ exports.this_month = async (req, res) => {
             studentType: 1,
             program: 1,
             current_rank_img: 1,
+            status: 1,
             daysTillBirthday: 1,
             notes: { $arrayElemAt: ["$followup_notes", -1] },
           },
@@ -1134,6 +1156,7 @@ exports.next_month = async (req, res) => {
         {
           $project: {
             firstName: 1,
+            status: 1,
             lastName: 1,
             program: 1,
             current_rank_img: 1,
@@ -1160,6 +1183,7 @@ exports.next_month = async (req, res) => {
             lastName: 1,
             program: 1,
             current_rank_img: 1,
+            status: 1,
             dob: 1,
             followup_notes: 1,
             leap: 1,
@@ -1181,6 +1205,7 @@ exports.next_month = async (req, res) => {
         {
           $project: {
             firstName: 1,
+            status: 1,
             lastName: 1,
             program: 1,
             current_rank_img: 1,
@@ -1238,6 +1263,7 @@ exports.next_month = async (req, res) => {
             dob: 1,
             primaryPhone: 1,
             studentType: 1,
+            status: 1,
             program: 1,
             current_rank_img: 1,
             daysTillBirthday: 1,
