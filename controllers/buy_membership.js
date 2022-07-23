@@ -1205,25 +1205,24 @@ exports.buyMembershipStripe = async (req, res) => {
         if (stripePayload && ptype === "credit card") {
           console.log("payment method entered")
           let cardId
-          let findExistingCard = await StripeCards.findOne({"card_number":stripePayload.card_number})
+          let findExistingCard = await StripeCards.findOne({ "card_number": stripePayload.card_number })
           console.log(findExistingCard)
-          if(findExistingCard)
-          {
+          if (findExistingCard) {
             cardId = findExistingCard["card_id"]
           }
-          else
-          {
-          let createCard = await StripeApis.createCard({
-            "body":{
-              "card_number": stripePayload.card_number,
-              "card_expiry_month": stripePayload.card_expiry_month,
-              "card_expiry_year": stripePayload.card_expiry_year,
-              "card_cvc": stripePayload.card_cvc,
-              "email": stripePayload.email,
-              "phone": stripePayload.phone,
-            }})
+          else {
+            let createCard = await StripeApis.createCard({
+              "body": {
+                "card_number": stripePayload.card_number,
+                "card_expiry_month": stripePayload.card_expiry_month,
+                "card_expiry_year": stripePayload.card_expiry_year,
+                "card_cvc": stripePayload.card_cvc,
+                "email": stripePayload.email,
+                "phone": stripePayload.phone,
+              }
+            })
             console.log(createCard)
-            if(createCard.status){
+            if (createCard.status) {
               return createCard
             }
             cardId = createCard["id"]
@@ -1586,12 +1585,12 @@ exports.expiredMembership = async (req, res) => {
   const filter =
     userId && studentType
       ? {
-          userId,
-          studentType,
-        }
+        userId,
+        studentType,
+      }
       : {
-          userId,
-        };
+        userId,
+      };
 
   AddMember.aggregate([
     { $match: filter },
@@ -1607,6 +1606,12 @@ exports.expiredMembership = async (req, res) => {
         status: 1,
         followup_notes: 1,
         userId: 1,
+        primaryPhone: 1,
+        street: 1,
+        town: 1,
+        state: 1,
+        zipPostalCode: 1,
+        email: 1,
         last_membership: {
           $arrayElemAt: ["$membership_details", -1],
         },
@@ -1662,7 +1667,7 @@ exports.expiredMembership = async (req, res) => {
         pipeline: [
           {
             $project: {
-              time:1,
+              time: 1,
               note: 1,
               date: 1,
             },
@@ -1681,6 +1686,12 @@ exports.expiredMembership = async (req, res) => {
         last_attended_date: 1,
         memberprofileImage: 1,
         status: 1,
+        primaryPhone: 1,
+        street: 1,
+        town: 1,
+        state: 1,
+        zipPostalCode: 1,
+        email: 1,
         notes: {
           $arrayElemAt: ["$followup_notes", -1],
         },
