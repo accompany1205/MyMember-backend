@@ -29,6 +29,7 @@ exports.createNote = async (req, res) => {
   createNotePayload.lastName = studentInfo.lastName;
   (createNotePayload.userId = studentInfo.userId),
     (createNotePayload.memberId = studentInfo._id);
+    createNotePayload.time = new Date().toLocaleTimeString([], {hour:"numeric", minute:"numeric", hour12:true});
 
   let createdNote = await followUpNotes.create(createNotePayload);
   console.log(createdNote)
