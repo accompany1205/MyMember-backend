@@ -76,119 +76,19 @@ async function monitorListingsUsingEventEmitter(pipeline = []) {
     try {
       switch (next.operationType) {
         case "insert":
-          console.log("an insert happened...", "_Id: ", next.fullDocument);
+          console.log("an insert happened...", "_Id: ");
+          sendMail(next);
           break;
-
         case "update":
           console.log("an update happened...");
-          const { fullDocument, updateDescription } = next;
-          let { current_rank_name, current_stripe, program, candidate } =
-            updateDescription.updatedFields;
-          let { userId, email } = fullDocument;
-          const adminScheduleMails = await scheduledMails(userId);
-
-          adminScheduleMails.map(async (element) => {
-            if (element.smartLists.length) {
-              let smartData = await smartlist.find({
-                _id: { $in: element.smartLists },
-              });
-              smartData.map(async (smartlist1) => {
-                let smartEmails = await filterSmartlist(
-                  smartlist1.criteria,
-                  userId
-                );
-                if (smartEmails.length) {
-                  console.log("smartEmails", smartEmails);
-
-                  if (
-                    JSON.stringify(smartEmails).includes(
-                      fullDocument._id.toString()
-                    )
-                  ) {
-                    if (element.isPlaceHolders) {
-                      let temp = element.template;
-                      for (i in fullDocument) {
-                        if (element.template.includes(i)) {
-                          temp = replace(temp, i, fullDocument[i]);
-                        }
-                      }
-
-                      const emailData = new Mailer({
-                        to: [fullDocument.email],
-                        from: element.from,
-                        subject: element.subject,
-                        html: temp,
-                        attachments: element.attachments,
-                      });
-                      emailData
-                        .sendMail()
-                        .then((resp) => console.log("mail sended"))
-                        .catch((err) => console.log(err));
-                    } else {
-                      const emailData = new Mailer({
-                        to: [fullDocument.email],
-                        from: element.from,
-                        subject: element.subject,
-                        html: element.template,
-                        attachments: element.attachments,
-                      });
-
-                      emailData
-                        .sendMail()
-                        .then((resp) => console.log("mail sended"))
-                        .catch((err) => console.log(err));
-                    }
-                  }
-                }
-
-                //             console.log(smartlist1);
-                //             [current_rank_name1] = smartlist1.criteria.current_rank_name;
-                //             if (current_rank_name1 == [current_rank_name]) {
-                //                 console.log(current_rank_name1, [current_rank_name])
-
-                //                 smartlist1.criteria.email = [email];
-                //                 let smartEmails = await filterSmartlist(smartlist1.criteria, userId)
-                //                 if (element.isPlaceHolders) {
-                //                     for (i in fullDocument) {
-                //                         if (element.template.includes(i)) {
-                //                             temp = replace(element.template, i, fullDocument[i])
-                //                         }
-                //                     }
-                //                     const emailData = new Mailer({
-                //                         to: smartEmails,
-                //                         from: element.from,
-                //                         subject: element.subject,
-                //                         html: temp,
-                //                         attachments: element.attachments
-                //                     });
-                //                     emailData.sendMail()
-                //                         .then(resp => console.log('mail sended'))
-                //                         .catch(err => console.log(err))
-                // }
-
-                //             }
-              });
-            }
-          });
-        // }
-        // const smartId = await smartlist.find({ 'criteria.current_rank_name': [current_rank_name], userId: userId })
-        // console.log(smartId)
-        // const emailData = new Mailer({
-        //     to: [Element["email"]],
-        //     from: emailBody.from,
-        //     subject: emailBody.subject,
-        //     html: temp,
-        //     attachments: emailBody.attachments
-        //   });
-        //   emailData.sendMail()
-        //     break;
-
-        // case 'delete':
-        //     console.log('a delete happened...');
-        //     break;
-
-        // default:
-        //     break;
+          sendMail(next);
+          break;
+        case "delete":
+          console.log("a delete happened...");
+          break;
+        default:
+          console.log("an default case happened...");
+          break;
       }
     } catch (err) {
       console.error(err);
@@ -218,5 +118,90 @@ function scheduledMails(userId) {
     });
   });
 }
+function saveEmailTemplate(obj) {
+  return new Promise((resolve, reject) => {
+    let emailDetail = new Template(obj);
+    emailDetail.save((err, data) => {
+      if (err) {
+        reject({ data: "Data not save in Database!", success: err });
+      } else {
+        resolve(data);
+      }
+    });
+  });
+}
 
-// console.log(scheduledMails())
+async function sendMail(next) {
+  const { fullDocument, updateDescription } = next;
+  let { current_rank_name, current_stripe, program, candidate } =
+    updateDescription.updatedFields;
+  let { userId, email } = fullDocument;
+  const adminScheduleMails = await scheduledMails(userId);
+
+  adminScheduleMails.map(async (element) => {
+    if (element.smartLists.length) {
+      let smartData = await smartlist.find({
+        _id: { $in: element.smartLists },
+      });
+      smartData.map(async (smartlist1) => {
+        let smartEmails = await filterSmartlist(smartlist1.criteria, userId);
+        if (smartEmails.length) {
+
+          if (
+            JSON.stringify(smartEmails).includes(fullDocument._id.toString())
+          ) {
+            if (element.isPlaceHolders) {
+              let temp = element.template;
+              for (i in fullDocument) {
+                if (element.template.includes(i)) {
+                  temp = replace(temp, i, fullDocument[i]);
+                }
+              }
+
+              const emailData = new Mailer({
+                to: [fullDocument.email],
+                from: element.from,
+                subject: element.subject,
+                html: temp,
+                attachments: element.attachments,
+              });
+              emailData
+                .sendMail()
+                .then((resp) => {
+                  saveEmailTemplate({
+                    to: [fullDocument.email],
+                    from: element.from,
+                    subject: element.subject,
+                    html: temp,
+                    attachments: element.attachments,
+                    userId,
+                    email_type: true,
+                    is_Sent: true,
+                    sent_date: new Date(),
+                  })
+                    .then(() => console.log("mail sended"))
+                    .catch();
+                })
+                .catch((err) => console.log(err));
+            } else {
+              const emailData = new Mailer({
+                to: [fullDocument.email],
+                from: element.from,
+                subject: element.subject,
+                html: element.template,
+                attachments: element.attachments,
+              });
+
+              emailData
+                .sendMail()
+                .then((resp) => console.log("mail sended"))
+                .catch((err) => console.log(err));
+            }
+          }
+        }
+      });
+    }
+  });
+}
+
+// (scheduledMails("606aea95a145ea2d26e0f1ab").then(data=>console.log(data[1])))

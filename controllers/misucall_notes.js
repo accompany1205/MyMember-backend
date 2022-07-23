@@ -37,6 +37,7 @@ exports.seven_to_forteen = async (req, res) => {
           $project: {
             firstName: 1,
             lastName: 1,
+            status: 1,
             memberprofileImage: 1,
             last_attended_date: 1,
             attendedclass_count: 1,
@@ -103,6 +104,7 @@ exports.seven_to_forteen = async (req, res) => {
             },
             firstName: 1,
             lastName: 1,
+            status: 1,
             memberprofileImage: 1,
             last_attended_date: 1,
             attendedclass_count: 1,
@@ -152,9 +154,7 @@ exports.seven_to_forteen = async (req, res) => {
             error: err,
           });
         } else {
-          console.log(memberdata)
           let data = memberdata[0].paginatedResults;
-          console.log(data)
           if (data.length > 0) {
             res.send({
               data: data,
@@ -199,6 +199,7 @@ exports.fifteen_to_thirty = async (req, res) => {
           $project: {
             firstName: 1,
             lastName: 1,
+            status: 1,
             memberprofileImage: 1,
             last_attended_date: 1,
             attendedclass_count: 1,
@@ -265,6 +266,7 @@ exports.fifteen_to_thirty = async (req, res) => {
             },
             firstName: 1,
             lastName: 1,
+            status: 1,
             memberprofileImage: 1,
             last_attended_date: 1,
             attendedclass_count: 1,
@@ -359,6 +361,7 @@ exports.Thirty_to_sixty = async (req, res) => {
           $project: {
             firstName: 1,
             lastName: 1,
+            status: 1,
             memberprofileImage: 1,
             last_attended_date: 1,
             attendedclass_count: 1,
@@ -425,6 +428,7 @@ exports.Thirty_to_sixty = async (req, res) => {
             },
             firstName: 1,
             lastName: 1,
+            status: 1,
             memberprofileImage: 1,
             last_attended_date: 1,
             attendedclass_count: 1,
@@ -519,6 +523,7 @@ exports.more_than_sixty = async (req, res) => {
           $project: {
             firstName: 1,
             lastName: 1,
+            status: 1,
             memberprofileImage: 1,
             last_attended_date: 1,
             attendedclass_count: 1,
@@ -585,6 +590,7 @@ exports.more_than_sixty = async (req, res) => {
             },
             firstName: 1,
             lastName: 1,
+            status: 1,
             memberprofileImage: 1,
             last_attended_date: 1,
             attendedclass_count: 1,
@@ -1014,7 +1020,7 @@ exports.missclasses = async (req, res) => {
       let { missclass_count } = data[0];
       await updateStudentsById(i, missclass_count);
     }
-    console.log("miss_Classes updated!");
+    // console.log("miss_Classes updated!");
   } catch (err) {
     throw new Error(err);
   }
