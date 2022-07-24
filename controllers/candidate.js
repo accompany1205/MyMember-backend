@@ -169,6 +169,105 @@ exports.candidate_remove = async (req, res) => {
   }
 };
 
+exports.candidate_stripe_filter = async (req, res) => {
+  let userId = req.params.userId;
+  let studentType = req.params.studentType;
+  let candidateName = req.params.candidate;
+  let candidateArray = ["Leadership Club (Beta)", "BBC Candidate List (Beta)"]
+  let sum_of_LCB=0;
+  let sum_of_BBc=0;
+  try {
+  for (i of candidateArray) {
+    let filter = userId && i && studentType
+      ? {
+        userId: userId,
+        candidate: i,
+        studentType: studentType,
+      }
+      : {
+        userId: userId,
+        candidate: i,
+      }
+    
+      const stripes = await candidateModal.aggregate([
+        {
+          $match: {
+            candidate: i,
+          },
+        },
+        { $unwind: "$stripes" },
+        {
+          $lookup: {
+            from: "candidate_stripes",
+            localField: "stripes",
+            foreignField: "_id",
+            as: "candidate",
+          },
+        },
+        {
+          $unwind: "$candidate",
+        },
+        {
+          $project: {
+            candidate: 1,
+            stripe_name: "$candidate.stripe_name",
+            stripe_image: "$candidate.stripe_image",
+            stripe_order: { $toInt: "$candidate.stripe_order" },
+          },
+        },
+        // Get Current Month Data
+        {
+          $lookup: {
+            from: "members",
+            localField: "stripe_name",
+            foreignField: "current_stripe",
+            as: "total-students",
+            pipeline: [
+              {
+                $match: filter,
+              },
+
+              {
+                $count: "total",
+              },
+            ],
+          },
+        },
+        {
+          $project: {
+            candidate: 1,
+            stripe_name: 1,
+            stripe_image: 1,
+            stripe_order: 1,
+            total_students: { $sum: "$total-students.total" },
+          },
+        },
+        { $sort: { stripe_order: 1 } },
+      ])
+      let sum = stripes.reduce(function (previousValue, currentValue) {
+          return previousValue + currentValue.total_students
+        }, 0)
+        if(i === "Leadership Club (Beta)"){
+          sum_of_LCB=sum
+        }else if (i==="BBC Candidate List (Beta)"){
+          sum_of_BBc=sum
+        }
+      
+  }
+  
+  return res.send({
+    sum_of_LCB:sum_of_LCB,
+    sum_of_BBc:sum_of_BBc,
+    success:true
+  }) 
+
+
+
+  } catch (err) {
+    return res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
+}
+
 exports.getStripeReportByCandidate = async (req, res) => {
   try {
     let { candidateName, studentType } = req.query;
@@ -179,14 +278,14 @@ exports.getStripeReportByCandidate = async (req, res) => {
     const filter =
       userId && candidateName && studentType
         ? {
-            userId: userId,
-            candidate: candidateName,
-            studentType: studentType,
-          }
+          userId: userId,
+          candidate: candidateName,
+          studentType: studentType,
+        }
         : {
-            userId: userId,
-            candidate: candidateName,
-          };
+          userId: userId,
+          candidate: candidateName,
+        };
     const stripes = await candidateModal.aggregate([
       {
         $match: {

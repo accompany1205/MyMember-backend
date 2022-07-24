@@ -12,6 +12,7 @@ const {
   promote_stripe,
   stripe_report,
   join_notjoin,
+  candidate_stripe_filter
 } = require("../controllers/candidate");
 const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 
@@ -21,6 +22,11 @@ router.get(
   verifySchool,
   getStripeReportByCandidate
 );
+
+
+router.get('/candidates/get-stripe-filter-by-month-year/:userId/:studentType',verifySchool,candidate_stripe_filter)
+
+
 router.post(
   "/candidates/stripe_full_report/:userId",
   verifySchool,
