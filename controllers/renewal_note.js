@@ -110,19 +110,19 @@ exports.expire_thirty_std = async (req, res) => {
     const filter =
       userId && studentType
         ? {
-            userId,
-            studentType,
-          }
+          userId,
+          studentType,
+        }
         : {
-            userId,
-          };
+          userId,
+        };
 
     buymembership
       .aggregate([
         { $match: { userId: userId } },
 
         {
-          $project: { 
+          $project: {
             membership_name: 1,
             membership_type: 1,
             membership_status: 1,
@@ -182,6 +182,12 @@ exports.expire_thirty_std = async (req, res) => {
                   status: 1,
                   followup_notes: 1,
                   userId: 1,
+                  primaryPhone: 1,
+                  street: 1,
+                  town: 1,
+                  state: 1,
+                  zipPostalCode: 1,
+                  email: 1,
                 },
               },
               {
@@ -209,7 +215,7 @@ exports.expire_thirty_std = async (req, res) => {
             pipeline: [
               {
                 $project: {
-                  time:1,
+                  time: 1,
                   note: 1,
                   date: 1,
                 },
@@ -226,6 +232,12 @@ exports.expire_thirty_std = async (req, res) => {
             expiry_date: 1,
             days_till_Expire: 1,
             members: 1,
+            primaryPhone: 1,
+            street: 1,
+            town: 1,
+            state: 1,
+            zipPostalCode: 1,
+            email: 1,
             notes: {
               $arrayElemAt: ["$followup_notes", -1],
             },
@@ -236,6 +248,24 @@ exports.expire_thirty_std = async (req, res) => {
             _id: "$studentInfo",
             no_of_Memberships: {
               $sum: 1,
+            },
+            primaryPhone: {
+              $first: "$members.primaryPhone",
+            },
+            street: {
+              $first: "$members.street",
+            },
+            town: {
+              $first: "$members.town",
+            },
+            state: {
+              $first: "$members.state",
+            },
+            zipPostalCode: {
+              $first: "$members.zipPostalCode",
+            },
+            email: {
+              $first: "$members.email",
             },
             firstName: {
               $first: "$members.firstName",
@@ -326,12 +356,12 @@ exports.expire_sixty_std = async (req, res) => {
     const filter =
       userId && studentType
         ? {
-            userId,
-            studentType,
-          }
+          userId,
+          studentType,
+        }
         : {
-            userId,
-          };
+          userId,
+        };
     buymembership
       .aggregate([
         { $match: { userId: userId } },
@@ -397,6 +427,12 @@ exports.expire_sixty_std = async (req, res) => {
                   status: 1,
                   followup_notes: 1,
                   userId: 1,
+                  primaryPhone: 1,
+                  street: 1,
+                  town: 1,
+                  state: 1,
+                  zipPostalCode: 1,
+                  email: 1
                 },
               },
               { $match: filter },
@@ -448,6 +484,24 @@ exports.expire_sixty_std = async (req, res) => {
             _id: "$studentInfo",
             no_of_Memberships: {
               $sum: 1,
+            },
+            primaryPhone: {
+              $first: "$members.primaryPhone",
+            },
+            street: {
+              $first: "$members.street",
+            },
+            town: {
+              $first: "$members.town",
+            },
+            state: {
+              $first: "$members.state",
+            },
+            zipPostalCode: {
+              $first: "$members.zipPostalCode",
+            },
+            email: {
+              $first: "$members.email",
             },
             firstName: {
               $first: "$members.firstName",
@@ -538,12 +592,12 @@ exports.expire_ninty_std = async (req, res) => {
     const filter =
       userId && studentType
         ? {
-            userId,
-            studentType,
-          }
+          userId,
+          studentType,
+        }
         : {
-            userId,
-          };
+          userId,
+        };
     buymembership
       .aggregate([
         { $match: { userId: userId } },
@@ -609,6 +663,12 @@ exports.expire_ninty_std = async (req, res) => {
                   status: 1,
                   followup_notes: 1,
                   userId: 1,
+                  primaryPhone: 1,
+                  street: 1,
+                  town: 1,
+                  state: 1,
+                  zipPostalCode: 1,
+                  email: 1,
                 },
               },
               { $match: filter },
@@ -660,6 +720,24 @@ exports.expire_ninty_std = async (req, res) => {
             _id: "$studentInfo",
             no_of_Memberships: {
               $sum: 1,
+            },
+            primaryPhone: {
+              $first: "$members.primaryPhone",
+            },
+            street: {
+              $first: "$members.street",
+            },
+            town: {
+              $first: "$members.town",
+            },
+            state: {
+              $first: "$members.state",
+            },
+            zipPostalCode: {
+              $first: "$members.zipPostalCode",
+            },
+            email: {
+              $first: "$members.email",
             },
             firstName: {
               $first: "$members.firstName",
@@ -750,12 +828,12 @@ exports.frozenmembership = async (req, res) => {
     const filter =
       userId && studentType
         ? {
-            userId,
-            studentType,
-          }
+          userId,
+          studentType,
+        }
         : {
-            userId,
-          };
+          userId,
+        };
     student
       .aggregate([
         { $match: { userId: userId } },
@@ -772,6 +850,12 @@ exports.frozenmembership = async (req, res) => {
             status: 1,
             followup_notes: 1,
             userId: 1,
+            primaryPhone: 1,
+            street: 1,
+            town: 1,
+            state: 1,
+            zipPostalCode: 1,
+            email: 1,
             last_membership: {
               $arrayElemAt: ["$membership_details", -1],
             },
@@ -844,6 +928,12 @@ exports.frozenmembership = async (req, res) => {
             last_attended_date: 1,
             memberprofileImage: 1,
             status: 1,
+            primaryPhone: 1,
+            street: 1,
+            town: 1,
+            state: 1,
+            zipPostalCode: 1,
+            email: 1,
             notes: {
               $arrayElemAt: ["$followup_notes", -1],
             },

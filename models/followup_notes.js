@@ -20,7 +20,6 @@ const followUpNotes = new schema({
     },
     time: {
         type: String,
-        default: new Date()
     },
     userId: {
         type: String

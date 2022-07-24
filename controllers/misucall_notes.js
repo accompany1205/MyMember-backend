@@ -35,6 +35,12 @@ exports.seven_to_forteen = async (req, res) => {
         },
         {
           $project: {
+            primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1,
             firstName: 1,
             lastName: 1,
             status: 1,
@@ -109,6 +115,12 @@ exports.seven_to_forteen = async (req, res) => {
             last_attended_date: 1,
             attendedclass_count: 1,
             studentType: 1,
+            primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1
           },
         },
         {
@@ -204,7 +216,12 @@ exports.fifteen_to_thirty = async (req, res) => {
             last_attended_date: 1,
             attendedclass_count: 1,
             followup_notes: 1,
-            studentType: 1,
+            studentType: 1, primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1
           },
         },
         {
@@ -270,7 +287,12 @@ exports.fifteen_to_thirty = async (req, res) => {
             memberprofileImage: 1,
             last_attended_date: 1,
             attendedclass_count: 1,
-            studentType: 1,
+            studentType: 1, primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1
           },
         },
         {
@@ -366,7 +388,12 @@ exports.Thirty_to_sixty = async (req, res) => {
             last_attended_date: 1,
             attendedclass_count: 1,
             followup_notes: 1,
-            studentType: 1,
+            studentType: 1, primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1
           },
         },
         {
@@ -433,6 +460,12 @@ exports.Thirty_to_sixty = async (req, res) => {
             last_attended_date: 1,
             attendedclass_count: 1,
             studentType: 1,
+            primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1,
           },
         },
         {
@@ -528,7 +561,12 @@ exports.more_than_sixty = async (req, res) => {
             last_attended_date: 1,
             attendedclass_count: 1,
             followup_notes: 1,
-            studentType: 1,
+            studentType: 1, primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1
           },
         },
         {
@@ -595,6 +633,12 @@ exports.more_than_sixty = async (req, res) => {
             last_attended_date: 1,
             attendedclass_count: 1,
             studentType: 1,
+            primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1
           },
         },
         {

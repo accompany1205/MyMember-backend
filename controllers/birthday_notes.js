@@ -130,6 +130,12 @@ exports.birth_this_week = async (req, res) => {
             current_rank_img: 1,
             program: 1,
             followup_notes: 1,
+            primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1,
             daysTillBirthday: {
               $subtract: [{ $dayOfMonth: "$dob" }, { $dayOfMonth: "$$NOW" }],
             },
@@ -168,7 +174,12 @@ exports.birth_this_week = async (req, res) => {
             studentType: 1,
             program: 1,
             current_rank_img: 1,
-            daysTillBirthday: 1,
+            daysTillBirthday: 1, primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1,
             notes: { $arrayElemAt: ["$followup_notes", -1] },
           },
         },
@@ -235,6 +246,12 @@ exports.seven_to_forteen = async (req, res) => {
             birthday_notes: 1,
             program: 1,
             dob: 1,
+            primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1,
             todayDayOfYear: { $dayOfYear: new Date() },
             leap: {
               $or: [
@@ -261,7 +278,12 @@ exports.seven_to_forteen = async (req, res) => {
             program: 1,
             dob: 1,
             leap: 1,
-            todayDayOfYear: 1,
+            todayDayOfYear: 1, primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1,
             dayOfYear: {
               $subtract: [
                 "$dayOfYear",
@@ -286,6 +308,12 @@ exports.seven_to_forteen = async (req, res) => {
             birthday_notes: 1,
             program: 1,
             dob: 1,
+            primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1,
             daysTillBirthday: {
               $subtract: [
                 {
@@ -369,6 +397,12 @@ exports.fifteen_to_thirty = async (req, res) => {
             birthday_notes: 1,
             program: 1,
             dob: 1,
+            primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1,
             todayDayOfYear: { $dayOfYear: new Date() },
             leap: {
               $or: [
@@ -396,6 +430,12 @@ exports.fifteen_to_thirty = async (req, res) => {
             dob: 1,
             leap: 1,
             todayDayOfYear: 1,
+            primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1,
             dayOfYear: {
               $subtract: [
                 "$dayOfYear",
@@ -420,6 +460,12 @@ exports.fifteen_to_thirty = async (req, res) => {
             birthday_notes: 1,
             program: 1,
             dob: 1,
+            primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1,
             daysTillBirthday: {
               $subtract: [
                 {
@@ -501,6 +547,12 @@ exports.moreThirty = async (req, res) => {
             birthday_notes: 1,
             program: 1,
             dob: 1,
+            primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1,
             todayDayOfYear: { $dayOfYear: new Date() },
             leap: {
               $or: [
@@ -528,6 +580,12 @@ exports.moreThirty = async (req, res) => {
             dob: 1,
             leap: 1,
             todayDayOfYear: 1,
+            primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1,
             dayOfYear: {
               $subtract: [
                 "$dayOfYear",
@@ -552,6 +610,12 @@ exports.moreThirty = async (req, res) => {
             birthday_notes: 1,
             program: 1,
             dob: 1,
+            primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1,
             daysTillBirthday: {
               $subtract: [
                 {
@@ -645,6 +709,12 @@ exports.thirtyToSixty = async (req, res) => {
             current_rank_img: 1,
             dob: 1,
             followup_notes: 1,
+            primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1,
             todayDayOfYear: { $dayOfYear: new Date() },
             leap: {
               $or: [
@@ -672,6 +742,12 @@ exports.thirtyToSixty = async (req, res) => {
             dob: 1,
             followup_notes: 1,
             todayDayOfYear: 1,
+            primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1,
             dayOfYear: {
               $subtract: [
                 "$dayOfYear",
@@ -697,6 +773,12 @@ exports.thirtyToSixty = async (req, res) => {
             current_rank_img: 1,
             dob: 1,
             followup_notes: 1,
+            primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1,
             daysTillBirthday: {
               $subtract: [
                 {
@@ -745,6 +827,12 @@ exports.thirtyToSixty = async (req, res) => {
             program: 1,
             current_rank_img: 1,
             daysTillBirthday: 1,
+            primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1,
             notes: { $arrayElemAt: ["$followup_notes", -1] },
           },
         },
@@ -821,6 +909,12 @@ exports.sixtyToNinety = async (req, res) => {
             studentType:1,
             dob: 1,
             followup_notes: 1,
+            primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1,
             todayDayOfYear: { $dayOfYear: new Date() },
             leap: {
               $or: [
@@ -848,6 +942,12 @@ exports.sixtyToNinety = async (req, res) => {
             dob: 1,
             followup_notes: 1,
             todayDayOfYear: 1,
+            primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1,
             dayOfYear: {
               $subtract: [
                 "$dayOfYear",
@@ -873,6 +973,12 @@ exports.sixtyToNinety = async (req, res) => {
             current_rank_img: 1,
             dob: 1,
             followup_notes: 1,
+            primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1,
             daysTillBirthday: {
               $subtract: [
                 {
@@ -922,6 +1028,12 @@ exports.sixtyToNinety = async (req, res) => {
             program: 1,
             current_rank_img: 1,
             daysTillBirthday: 1,
+            primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1,
             notes: { $arrayElemAt: ["$followup_notes", -1] },
           },
         },
@@ -1048,6 +1160,12 @@ exports.this_month = async (req, res) => {
             current_rank_img: 1,
             program: 1,
             followup_notes: 1,
+             primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1,
             daysTillBirthday: {
               $subtract: [{ $dayOfMonth: "$dob" }, { $dayOfMonth: todays }],
             },
@@ -1087,6 +1205,12 @@ exports.this_month = async (req, res) => {
             current_rank_img: 1,
             status: 1,
             daysTillBirthday: 1,
+            primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1,
             notes: { $arrayElemAt: ["$followup_notes", -1] },
           },
         },
@@ -1162,6 +1286,12 @@ exports.next_month = async (req, res) => {
             current_rank_img: 1,
             dob: 1,
             followup_notes: 1,
+            primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1,
             todayDayOfYear: { $dayOfYear: new Date() },
             leap: {
               $or: [
@@ -1188,6 +1318,12 @@ exports.next_month = async (req, res) => {
             followup_notes: 1,
             leap: 1,
             todayDayOfYear: 1,
+            primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1,
             dayOfYear: {
               $subtract: [
                 "$dayOfYear",
@@ -1211,6 +1347,12 @@ exports.next_month = async (req, res) => {
             current_rank_img: 1,
             dob: 1,
             followup_notes: 1,
+            primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1,
             daysTillBirthday: {
               $subtract: [
                 {
@@ -1267,6 +1409,12 @@ exports.next_month = async (req, res) => {
             program: 1,
             current_rank_img: 1,
             daysTillBirthday: 1,
+            primaryPhone:1,
+            street:1,
+            town:1,
+            state:1,
+            zipPostalCode:1,
+            email:1,
             notes: { $arrayElemAt: ["$followup_notes", -1] },
           },
         },
