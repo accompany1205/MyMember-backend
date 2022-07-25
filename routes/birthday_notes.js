@@ -6,6 +6,7 @@ const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 router.get("/birthday/seven_to_fourteen/:userId/:page_no/:per_page", verifySchool, seven_to_forteen)
 router.get("/birthday/fifteen_to_thirty/:userId/:page_no/:per_page", verifySchool, fifteen_to_thirty)
 router.get("/birthday/more_than_thirty/:userId/:page_no/:per_page", verifySchool, moreThirty)
+
 router.get("/birthday/thirty_to_sixty/:userId/:page_no/:per_page", verifySchool, thirtyToSixty)
 router.get("/birthday/more_than_sixty/:userId/:page_no/:per_page", verifySchool, sixtyToNinety)
 router.get("/birthday/birthday_this_week/:userId/:page_no/:per_page", verifySchool, birth_this_week)

@@ -6,7 +6,6 @@ const systemFolder = require("../models/email_system_folder");
 const user = require("../models/user");
 const async = require("async");
 moment = require("moment");
-const cron = require("node-cron");
 const Mailer = require("../helpers/Mailer");
 // const sgMail = require('@sendgrid/mail');
 // sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -239,6 +238,7 @@ exports.add_template = async (req, res) => {
       content_type,
       email_type: "scheduled",
       category: "system",
+      is_Sent: true,
       userId,
       folderId,
       smartLists,

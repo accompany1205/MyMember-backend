@@ -11,7 +11,6 @@ const cors = require("cors");
 const path = require("path");
 const crypto = require("crypto");
 const fileUpload = require("express-fileupload");
-const corn = require("node-cron");
 const expressValidator = require("express-validator");
 require("dotenv").config();
 const socketio = require("socket.io");
