@@ -1,8 +1,11 @@
 const candidateModal = require("../models/candidate");
+const RecommendedCandidateModel = require("../models/recommendedCandidate")
 const User = require("../models/user");
 const member = require("../models/addmember");
 const cloudUrl = require("../gcloud/imageUrl");
 const { env } = require("process");
+const { forEach } = require("lodash");
+const { JSONCookie } = require("cookie-parser");
 
 exports.candidate_create = async (req, res) => {
   try {
@@ -169,26 +172,45 @@ exports.candidate_remove = async (req, res) => {
   }
 };
 
+const joinAndQuiteCandidate = async (userId) => {
+  let join = 0;
+  let quite = 0;
+  const data = await RecommendedCandidateModel.find({ userId: userId })
+  for (i of data) {
+    const Length = i.joinHistory.length
+    if (i.joinHistory.length > 0) {
+      if (i.joinHistory[Length - 1].join) {
+        join++
+      } else {
+        quite++
+      }
+    }
+  }
+  return ({ join: join, quite: quite })
+
+
+
+}
+
 exports.candidate_stripe_filter = async (req, res) => {
   let userId = req.params.userId;
   let studentType = req.query.studentType;
-  //let candidateName = req.query.candidate;
   let candidateArray = ["Leadership Club (Beta)", "BBC Candidate List (Beta)"]
-  let sum_of_LCB=0;
-  let sum_of_BBc=0;
+  let sum_of_LCB = 0;
+  let sum_of_BBc = 0;
   try {
-  for (i of candidateArray) {
-    let filter = userId && i && studentType
-      ? {
-        userId: userId,
-        candidate: i,
-        studentType: studentType,
-      }
-      : {
-        userId: userId,
-        candidate: i,
-      }
-    
+    for (i of candidateArray) {
+      let filter = userId && i && studentType
+        ? {
+          userId: userId,
+          candidate: i,
+          studentType: studentType,
+        }
+        : {
+          userId: userId,
+          candidate: i,
+        }
+
       const stripes = await candidateModal.aggregate([
         {
           $match: {
@@ -245,24 +267,25 @@ exports.candidate_stripe_filter = async (req, res) => {
         { $sort: { stripe_order: 1 } },
       ])
       let sum = stripes.reduce(function (previousValue, currentValue) {
-          return previousValue + currentValue.total_students
-        }, 0)
-        if(i === "Leadership Club (Beta)"){
-          sum_of_LCB=sum
-        }else if (i==="BBC Candidate List (Beta)"){
-          sum_of_BBc=sum
-        }
-      
-  }
-  
-  return res.send({
-    sum_of_LCB:sum_of_LCB,
-    sum_of_BBc:sum_of_BBc,
-    success:true
-  }) 
+        return previousValue + currentValue.total_students
+      }, 0)
+      if (i === "Leadership Club (Beta)") {
+        sum_of_LCB = sum
+      } else if (i === "BBC Candidate List (Beta)") {
+        sum_of_BBc = sum
+      }
 
+    }
 
-
+    const joinNotjoinData = await joinAndQuiteCandidate(userId);
+    
+    return res.send({
+      sum_of_LCB: sum_of_LCB,
+      sum_of_BBc: sum_of_BBc,
+      join: joinNotjoinData.join,
+      quite: joinNotjoinData.quite,
+      success: true
+    })
   } catch (err) {
     return res.send({ msg: err.message.replace(/\"/g, ""), success: false })
   }
