@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { getRecommendedCandidateStudents, recomendStudent, promoteTheStudentStripe, removeFromRecomended, removeAll, getFilteredStudents } = require("../controllers/recommededCandidate");
+const { getRecommendedCandidateStudents, recomendStudent, promoteTheStudentStripe, removeFromRecomended, removeAll, getFilteredStudents,candidateJoinNotJoinHistory } = require("../controllers/recommededCandidate");
 const { requireSignin, isAuth, isAdmin } = require("../controllers/auth");
 
 router.get("/recomend_candidate/get_by_user_id/:userId/:page_no/:per_page", requireSignin, getRecommendedCandidateStudents);
