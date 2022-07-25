@@ -8,7 +8,6 @@ const moment = require("moment");
 const async = require("async");
 const Mailer = require("../helpers/Mailer");
 // const sgMail = require("sendgrid-v3-node");
-const cron = require("node-cron");
 const folderNur = require("../models/email_nurturing_folder");
 const cloudUrl = require("../gcloud/imageUrl");
 const ObjectId = require("mongodb").ObjectId;
@@ -172,6 +171,7 @@ exports.add_template = async (req, res) => {
       content_type,
       category: "nurturing",
       email_type: "scheduled",
+      is_Sent: true,
       userId,
       folderId,
       smartLists,

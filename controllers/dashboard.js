@@ -785,10 +785,11 @@ exports.birthday_this_month = async (req, res) => {
 				{
 					$project: {
 						daysTillBirthday: {
-							$divide: [
+							$subtract: [
+								{$divide: [
 								{ $subtract: ['$nextBirthday', '$today'] },
 								24 * 60 * 60 * 1000 /* milliseconds in a day */,
-							],
+							]},1]
 						},
 						firstName: 1,
 						dob: 1,
@@ -813,6 +814,7 @@ exports.birthday_this_month = async (req, res) => {
 					$match: {
 						daysTillBirthday: {
 							$lte: 30,
+							$gte: -1,
 						},
 					},
 				},

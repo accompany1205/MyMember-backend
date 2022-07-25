@@ -2,7 +2,6 @@ const purchaseMembership = require("../models/purchaseMemberships");
 const _ = require("lodash");
 var addmemberModal = require("../models/addmember");
 const createEMIRecord = require("../Services/createEMi");
-const cron = require("node-cron");
 const moment = require("moment");
 exports.getpurchaseMembership = async (req, res) => {
   try {

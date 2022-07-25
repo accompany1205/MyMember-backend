@@ -5,7 +5,6 @@ const async = require("async");
 const sgMail = require("sendgrid-v3-node");
 const moment = require("moment");
 const cloudUrl = require("../gcloud/imageUrl");
-const cron = require("node-cron");
 const ObjectId = require("mongodb").ObjectId;
 
 function timefun(sd, st) {

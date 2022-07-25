@@ -1,29 +1,44 @@
-const corn = require("node-cron");
-const addmemberModal = require("../models/addmember");
+const cron = require("node-cron");
+const Member = require("../models/addmember");
+const User = require("../models/user");
 const class_schedule = require("../models/class_schedule");
-const { tommarrow } = require("../controllers/birthday_notes");
 const buyMembership = require("../models/buy_membership");
-// const {missclasses}=require('../controllers/misucall_notes')
-// const emailsentsave = require('../models/emailSentSave')
-// const textSentSave = require("../models/textSentSave")
-// const sgMail = require('sendgrid-v3-node');
-// const { sync } = require('make-dir');
-// // 00 13 19 * * 0-6
+const all_temp = require("../models/emailSentSave");
+const { filterSmartlist } = require("../controllers/smartlists");
+const smartlist = require("../models/smartlists");
+const Mailer = require("../helpers/Mailer");
+const ObjectId = require("mongodb").ObjectId;
 
-missClassesCount = async (payload) => {
-  try {
-    return await axios.post(
-      process.env.VALOR_PAYTECH_URL,
-      payload,
-      this.getHeader(formData)
-    );
-  } catch (ex) {
-    throw new Error(ex);
-  }
-};
+function getUserId() {
+  return new Promise((resolve, reject) => {
+    User.aggregate([
+      {
+        $match: {
+          role: 0,
+          isEmailverify: true,
+        },
+      },
+      {
+        $group: {
+          _id: "",
+          ids: { $push: "$_id" },
+        },
+      },
+      {
+        $project: {
+          ids: 1,
+          _id: 0,
+        },
+      },
+    ])
+      .then((data) => resolve(data))
+      .catch((err) => reject(err));
+  });
+}
 
+//Memberships
 var expiredLastMembership = async () => {
-  const expired_LastaMembership = await addmemberModal.aggregate([
+  const expired_LastaMembership = await Member.aggregate([
     {
       $project: {
         last_membership: {
@@ -86,7 +101,6 @@ var expiredLastMembership = async () => {
       },
     },
   ]);
-  console.log(expired_LastaMembership);
   Promise.all(
     expired_LastaMembership.map((expired_Membership) => {
       update_LastMembershipStatus(expired_Membership)
@@ -101,8 +115,7 @@ var expiredLastMembership = async () => {
 function update_LastMembershipStatus(member) {
   let { _id, membershipId } = member;
   return new Promise((resolve, reject) => {
-    addmemberModal
-      .updateOne({ _id: _id.toString() }, { $set: { status: "Expired" } })
+    Member.updateOne({ _id: _id.toString() }, { $set: { status: "Expired" } })
       .then((resp) => {
         buyMembership
           .updateOne(
@@ -115,14 +128,10 @@ function update_LastMembershipStatus(member) {
       .catch((err) => reject(err));
   });
 }
-expiredMemberships = async () => {
+
+allexpiredMemberships = async () => {
   try {
     const expired_Membership = await buyMembership.aggregate([
-      // {
-      //   $match: {
-      //     userId: "618fcc965e06875058988534",
-      //   },
-      // },
       {
         $project: {
           membership_name: 1,
@@ -155,7 +164,7 @@ expiredMemberships = async () => {
     ]);
     Promise.all(
       expired_Membership.map((expired_Membership) => {
-        update_MembershipStatus(expired_Membership)
+        updateAllMembershipStatus(expired_Membership)
           .then((resp) => {})
           .catch((err) => {
             console.log(err);
@@ -167,7 +176,7 @@ expiredMemberships = async () => {
     throw new Error(ex);
   }
 };
-async function update_MembershipStatus(membership) {
+async function updateAllMembershipStatus(membership) {
   let { _id } = membership;
   return new Promise((resolve, reject) => {
     buyMembership
@@ -179,122 +188,299 @@ async function update_MembershipStatus(membership) {
       .catch((err) => reject(err));
   });
 }
-module.exports = corn.schedule("0 1 * * *", () => expiredLastMembership());
 
-// //update student expire status
-// module.exports = corn.schedule("00 02 17 * * 0-6", function(){
-//     addmemberModal.find({})
-//         .populate('membership_details')
-//         .exec((err, stdData) => {
-//             if (err) {
-//                 res.send({ error: 'student data not found' })
-//             }
-//             else {
-//                 for (row of stdData) {
-//                     for (member of row.membership_details) {
-//                         var expiry_date = member.expiry_date;
-//                         var expdate = new Date(expiry_date)
-//                         if (expdate < new Date()) {
-//                             const subtract = (new Date() - new Date(expiry_date))
-//                             const diffTime = Math.abs(subtract);
-//                             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-//                             addmemberModal.findByIdAndUpdate({ _id: row._id }, { status:'expired', days_expire: diffDays })
-//                                 .exec((err, updateStatus) => {
-//                                     if (err) {
-//                                         res.send(err)
-//                                     }
-//                                     else {
-//                                         res.send('status update successfully')
-//                                     }
-//                                 })
-//                         }
-//                         else {
-//                             res.send('membership is not expire')
-//                         }
-//                     }
-//                 }
-//             }
-//         })
-// })
+async function collectionModify() {
+  try {
+    const [allUsers] = await getUserId();
+    // console.log(allUsers, allUsers.ids.length)
+    const promise = [];
+    var time = 0;
 
-// // after one day all attendence_status is false
-// module.exports = corn.schedule("00 24 17 * * 0-6", function () {
-//     addmemberModal.find({ attendence_status: true }).exec((err, Status) => {
-//         if (err) {
-//             send.send({ error: 'status is not find' })
-//         }
-//         else {
-//             for (row of Status) {
-//                 addmemberModal.update({ _id: row._id }, { $set: { attendence_status: false } })
-//                     .exec((err, updateStatus) => {
-//                         if (err) {
-//                             res.send(err)
-//                         }
-//                         else {
-//                             res.send({ msg: 'attendance status is update' })
-//                         }
-//                     })
-//             }
-//         }
-//     })
-// })
+    var interval = setInterval(async function () {
+      if (time < allUsers.ids.length) {
+        const [data] = await Promise.all([
+          Member.aggregate([
+            { $match: { userId: allUsers.ids[time].toString() } },
+            {
+              $project: {
+                last_attended_date: 1,
+              },
+            },
+            {
+              $match: { last_attended_date: { $ne: null } },
+            },
+            {
+              $addFields: {
+                last_attended_date: {
+                  $toDate: {
+                    $dateToString: {
+                      format: "%Y-%m-%d",
+                      date: {
+                        $toDate: "$last_attended_date",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            {
+              $addFields: {
+                rating: {
+                  $floor: {
+                    $divide: [
+                      {
+                        $subtract: ["$$NOW", "$last_attended_date"],
+                      },
+                      1000 * 60 * 60 * 24,
+                    ],
+                  },
+                },
+              },
+            },
+          ]),
+        ]);
+        Promise.all(
+          data.map((member) => {
+            update_Rating(member)
+              .then((resp) => {
+                // console.log(resp.n)
+              })
+              .catch((err) => {
+                console.log(err);
+              });
+          })
+        );
+        time++;
+      } else {
+        clearInterval(interval);
+        console.log({ msg: "rating updated successfully" });
+      }
+    }, 3000);
+  } catch (err) {
+    console.log({ msg: err.message.replace(/\"/g, ""), success: false });
+  }
+}
+async function update_Rating(member) {
+  let { _id, rating } = member;
+  rating = rating == null ? 0 : rating;
+  return new Promise((resolve, reject) => {
+    Member.updateOne(
+      { _id: _id.toString() },
+      { $set: { rating: rating.toString() } }
+    )
+      .then((resp) => resolve(resp))
+      .catch((err) => reject(err));
+  });
+}
 
-// //student rating update
-// module.exports = corn.schedule("00 12 19 * * 0-6", function () {
-//     addmemberModal.find({ attendence_status: false }).exec((err, notattend) => {
-//         if (err) {
-//             res.send({ error: 'student false status is not found' })
-//         }
-//         else {
-//             for (row of notattend) {
-//                 addmemberModal.update({ _id: row._id }, { $set: { rating: row.rating + 1 } })
-//                     .exec((err, updaterating) => {
-//                         if (err) {
-//                             res.send({ error: 'student attendence status is not update' })
-//                         }
-//                         else {
-//                             res.send({ msg: 'student attendence status is update' })
-//                         }
-//                     })
-//             }
-//         }
-//     })
-// })
+//schedule-Mails
+async function emailCronFucntionality() {
+  let promises = [];
+  let scheduledListing = await all_temp.find({
+    is_Sent: false,
+    email_type: "scheduled",
+    adminId: { $exists: false },
+  });
+  scheduledListing.forEach(async (ele, i) => {
+    let hours = parseInt(ele.sent_time.split(":")[0]);
+    let mins = parseInt(ele.sent_time.split(":")[1]);
+    let sentDate = new Date(ele.sent_date)
+      .setHours(hours, mins)
+      .toString()
+      .slice(0, 10);
+    let currentDate = new Date()
+      .setHours(new Date().getHours(), new Date().getMinutes(), 0)
+      .toString()
+      .slice(0, 10);
+    if (sentDate === currentDate) {
+      if (!ele.to.length) {
+        let smartLists = ele.smartLists;
+        smartLists = ele.smartLists.map((s) => ObjectId(s));
+        let smartlists = await smartlist.aggregate([
+          { $match: { _id: { $in: smartLists } } },
+          { $project: { criteria: 1, _id: 0 } },
+        ]);
+        let promises = [];
+        smartlists.forEach((element, index) => {
+          promises.push(filterSmartlist(element.criteria, ele.userId));
+        });
+        var data = await Promise.all(promises);
+        data = [].concat.apply([], data);
+        let mapObj = await students.find(
+          {
+            _id: { $in: data },
+            userId: ele.userId,
+            email: { $nin: [undefined, ""] },
+          },
+          { email: 1, _id: 0 }
+        );
 
-// //left day count of birthday
-// module.exports = corn.schedule("00 55 11 * * 0-6", function () {
-//     addmemberModal.find({}).exec((err, list_member) => {
-//         if (err) {
-//             res.send({ error: 'member list not found' })
-//         }
-//         else {
-//             for (row of list_member) {
-//                 var birthDate = row.dob
-//                 var currentDate = new Date()
-//                 var currentYear = new Date().getFullYear();
-//                 var today = new Date(currentYear, currentDate.getMonth(), currentDate.getDate());
-//                 var yearBirthday = new Date(currentYear, birthDate.getMonth(), birthDate.getDate());
+        let rest = [...new Set(mapObj.map((element) => element.email))];
+        if (ele.isPlaceHolders) {
+          let mapObj = await students.find({
+            _id: { $in: data },
+            userId: ele.userId,
+          });
 
-//                 var timDiffInMilliSeconds = yearBirthday.getTime() - today.getTime();
-//                 var timDiffInDays = timDiffInMilliSeconds / (1000 * 60 * 60 * 24);
-//                 var leftDay = timDiffInDays - 1
+          Promise.all(
+            mapObj.map((Element) => {
+              let temp = ele.template;
+              for (i in Element) {
+                if (temp.includes(i)) {
+                  temp = replace(temp, i, Element[i]);
+                }
+              }
+              const emailData = new Mailer({
+                to: [Element["email"]],
+                from: ele.from,
+                subject: ele.subject,
+                html: temp,
+                attachments: ele.attachments,
+              });
+              emailData.sendMail();
+            })
+          )
 
-//                 addmemberModal.findByIdAndUpdate({ _id: row._id }, { $set: { day_left: leftDay } })
-//                     .exec((err, left_day) => {
-//                         if (err) {
-//                             res.send({ error: 'birthday left day is not update' })
-//                         }
-//                         else {
-//                             res.send({ msg: 'birthday left day is update' })
-//                         }
-//                     })
+            .then(async (resp) => {
+              return Promise.all([
+                await all_temp.findOneAndUpdate(
+                  { _id: ele._id },
+                  { $set: { is_Sent: true } }
+                ),
+              ]);
+            })
+            .catch((err) => {
+              throw new Error(err);
+            });
+        } else if (rest.length) {
+          const emailData = new Mailer({
+            to: rest,
+            from: ele.from,
+            subject: ele.subject,
+            html: ele.template,
+            attachments: ele.attachments,
+          });
+          emailData
+            .sendMail()
+            .then(async (resp) => {
+              return Promise.all([
+                await all_temp.findOneAndUpdate(
+                  { _id: ele._id },
+                  { $set: { is_Sent: true } }
+                ),
+              ]);
+            })
+            .catch((err) => {
+              throw new Error(err);
+            });
+        }
+      } else {
+        const emailData = new Mailer({
+          to: ele.to,
+          from: ele.from,
+          subject: ele.subject,
+          html: ele.template,
+          attachments: ele.attachments,
+        });
+        emailData
+          .sendMail()
+          .then((resp) => {
+            return Promise.all([
+              all_temp.findOneAndUpdate(
+                { _id: ele._id },
+                { $set: { is_Sent: true } }
+              ),
+            ]);
+          })
+          .catch((err) => {
+            throw new Error(err);
+          });
+      }
+    }
+  });
+  // await Promise.all(promises);
+}
 
-//             }
-//         }
-//     })
-// })
+async function DailyTriggeredMails() {
+  try {
+    const [allUsers] = await getUserId();
+    const promise = [];
+    var time = 0;
 
-// module.exports = corn.schedule('*/20 * * * * *',function(){
+    var interval = setInterval(async function () {
+      if (time < allUsers.ids.length) {
+        console.log(allUsers.ids[time]);
+        const [data] = await Promise.all([
+          Member.aggregate([
+            { $match: { userId: allUsers.ids[time].toString() } },
+            {
+              $project: {
+                last_attended_date: 1,
+              },
+            },
+            {
+              $match: { last_attended_date: { $ne: null } },
+            },
+            {
+              $addFields: {
+                last_attended_date: {
+                  $toDate: {
+                    $dateToString: {
+                      format: "%Y-%m-%d",
+                      date: {
+                        $toDate: "$last_attended_date",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            {
+              $addFields: {
+                rating: {
+                  $floor: {
+                    $divide: [
+                      {
+                        $subtract: ["$$NOW", "$last_attended_date"],
+                      },
+                      1000 * 60 * 60 * 24,
+                    ],
+                  },
+                },
+              },
+            },
+          ]),
+        ]);
+        Promise.all(
+          data.map((member) => {
+            update_Rating(member)
+              .then((resp) => {
+                // console.log(resp.n)
+              })
+              .catch((err) => {
+                console.log(err);
+              });
+          })
+        );
+        time++;
+      } else {
+        clearInterval(interval);
+        console.log({ msg: "rating updated successfully" });
+      }
+    }, 3000);
+  } catch (err) {
+    console.log({ msg: err.message.replace(/\"/g, ""), success: false });
+  }
+}
+
+// DailyTriggeredMails();
+module.exports = cron.schedule("0 1 * * *", () => {
+  collectionModify(), expiredLastMembership();
+});
+
+module.exports = cron.schedule(`*/1 * * * *`, () => emailCronFucntionality());
+
+// module.exports = cron.schedule('*/20 * * * * *',function(){
 //     let options = {
 //         timeZone: 'Asia/Kolkata',
 //         hour: 'numeric',
@@ -418,7 +604,7 @@ module.exports = corn.schedule("0 1 * * *", () => expiredLastMembership());
 // })
 // })
 
-// // module.exports = corn.schedule('*/60 * * * * *',function(){
+// // module.exports = cron.schedule('*/60 * * * * *',function(){
 // // EmailSent.find({$and:[{email_type:'schedule'},{email_status:true}]})
 // //     .exec((err,scheduleData)=>{
 // //         if(err){
@@ -438,7 +624,7 @@ module.exports = corn.schedule("0 1 * * *", () => expiredLastMembership());
 // //                 var hour = tsplit[0]
 // //                 var min = tsplit[1]
 
-// //                 corn.schedule(`${min} ${hour} ${date} ${mon} *`, function() {
+// //                 cron.schedule(`${min} ${hour} ${date} ${mon} *`, function() {
 // //                     const emailData = {
 // //                         sendgrid_key:Auth,
 // //                         to:to,
@@ -463,66 +649,6 @@ module.exports = corn.schedule("0 1 * * *", () => expiredLastMembership());
 // //                     })
 // //             })
 
-// //             })
-// //         }
-// //     })
-// // })
-
-// // module.exports = corn.schedule('*/30 * * * * *',function(){
-// //     textSentSave.find({$and:[{text_type:'schedule'},{textStatus:true}]})
-// //     .exec((err,txtData)=>{
-// //         if(err){
-// //             res.send('schedule data not found')
-// //         }
-// //         else{
-// //             var Data = txtData
-// //             Data.forEach((row)=>{
-// //                 var ACCOUNT_SID = process.env.ACCOUNT_SID
-// //                 var AUTH_TOKEN = process.env.AUTH_TOKEN
-// //                 var MSG_SERVICE_SID = process.env.MSG_SERVICE_SID
-// //                 var to = row.to
-// //                 var msg = row.msg
-// //                 var d = new Date(row.schedule_date)
-// //                 var date = d.getDate()
-// //                 var mon = d.getMonth()+1
-// //               var job = corn.schedule(`* * * ${date} ${mon} *`, function() {
-
-// //                     function sendBulkMessages(msg,to){
-// //                         const client = require('twilio')(process.env.ACCOUNT_SID, process.env.AUTH_TOKEN);
-// //                         var numbers = [];
-// //                         for(i = 0; i < to.length; i++)
-// //                         {
-// //                             numbers.push(JSON.stringify({
-// //                             binding_type: 'sms', address: to[i]}))
-// //                         }
-
-// //                         const notificationOpts = {
-// //                           toBinding: numbers,
-// //                           body: msg,
-// //                         };
-
-// //                         client.notify
-// //                         .services(process.env.SERVICE_SID)
-// //                         .notifications.create(notificationOpts)
-// //                         .then((resp)=>{
-// //                                textSentSave.findByIdAndUpdate(row._id,{text_type:'sent'})
-// //                               .exec((err,updatetxt)=>{
-// //                                    if(err){
-// //                                       res.send('schedule text sms not sent')
-// //                                    }
-// //                               else{
-
-// //                                   res.send('schedule text sms sent successfully')
-// //                                   job.stop()
-// //                                }
-// //                            })
-// //                         }).catch((error)=>{
-// //                             res.send(error)
-// //                         })
-// //                     }
-// //                     sendBulkMessages(msg,to)
-
-// //                 })
 // //             })
 // //         }
 // //     })

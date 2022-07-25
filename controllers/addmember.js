@@ -21,7 +21,6 @@ const system_folder = require("../models/email_system_folder");
 const mergeFile = require("../Services/mergeFile");
 const manage_rank = require("../models/program_rank");
 const mergeMultipleFiles = require("../Services/mergeMultipleFiles");
-const cron = require("node-cron");
 
 // const ManyStudents = require('../std.js');
 // const students = require('../std.js');
@@ -1414,32 +1413,6 @@ exports.multipleFilter = async (req, res) => {
 };
 
 //need to cha
-function getUserId() {
-  return new Promise((resolve, reject) => {
-    User.aggregate([
-      {
-        $match: {
-          role: 0,
-          isEmailverify: true,
-        },
-      },
-      {
-        $group: {
-          _id: "",
-          ids: { $push: "$_id" },
-        },
-      },
-      {
-        $project: {
-          ids: 1,
-          _id: 0,
-        },
-      },
-    ])
-      .then((data) => resolve(data))
-      .catch((err) => reject(err));
-  });
-}
 exports.test = async (req, res) => {
   const data = await student_info_ranks
     .find({}, { studentId: 1 })
@@ -1478,149 +1451,6 @@ const updateStudentsById = async (studentId, start_date) => {
   );
 };
 
-async function collectionModify() {
-  try {
-    const [allUsers] = await getUserId();
-    // console.log(allUsers, allUsers.ids.length)
-    const promise = [];
-    var time = 0;
-
-    var interval = setInterval(async function () {
-      if (time < allUsers.ids.length) {
-        const [data] = await Promise.all([
-          addmemberModal.aggregate([
-            { $match: { userId: allUsers.ids[time].toString() } },
-            {
-              $project: {
-                last_attended_date: 1,
-              },
-            },
-            {
-              $match: { last_attended_date: { $ne: null } },
-            },
-            {
-              $addFields: {
-                last_attended_date: {
-                  $toDate: {
-                    $dateToString: {
-                      format: "%Y-%m-%d",
-                      date: {
-                        $toDate: "$last_attended_date",
-                      },
-                    },
-                  },
-                },
-              },
-            },
-            {
-              $addFields: {
-                rating: {
-                  $floor: {
-                    $divide: [
-                      {
-                        $subtract: ["$$NOW", "$last_attended_date"],
-                      },
-                      1000 * 60 * 60 * 24,
-                    ],
-                  },
-                },
-              },
-            },
-          ]),
-        ]);
-        Promise.all(
-          data.map((member) => {
-            update_Rating(member)
-              .then((resp) => {
-                // console.log(resp.n)
-              })
-              .catch((err) => {
-                console.log(err);
-              });
-          })
-        );
-        time++;
-      } else {
-        clearInterval(interval);
-        console.log({ msg: "rating updated successfully" });
-      }
-    }, 3000);
-  } catch (err) {
-    console.log({ msg: err.message.replace(/\"/g, ""), success: false });
-  }
-}
-async function update_Rating(member) {
-  let { _id, rating } = member;
-  rating = rating == null ? 0 : rating;
-  return new Promise((resolve, reject) => {
-    addmemberModal
-      .updateOne(
-        { _id: _id.toString() },
-        { $set: { rating: rating.toString() } }
-      )
-      .then((resp) => resolve(resp))
-      .catch((err) => reject(err));
-  });
-}
-exports.updateRating = async (req, res) => {
-  try {
-    const userId = req.params.userId;
-    const [data] = await Promise.all([
-      addmemberModal.aggregate([
-        { $match: { userId: userId } },
-        {
-          $lookup: {
-            from: "class_schedules",
-            localField: "_id",
-            foreignField: "class_attendanceArray.studentInfo",
-            as: "data",
-          },
-        },
-        {
-          $project: {
-            last_attended_date: {
-              $toDate: {
-                $max: "$data.start_date",
-              },
-            },
-          },
-        },
-        {
-          $addFields: {
-            rating: {
-              $floor: {
-                $divide: [
-                  {
-                    $subtract: [new Date(), "$last_attended_date"],
-                  },
-                  1000 * 60 * 60 * 24,
-                ],
-              },
-            },
-          },
-        },
-        {
-          $match: { rating: { $nin: ["", null] } },
-        },
-      ]),
-    ]);
-    console.log(data);
-
-    Promise.all(
-      data.map((member) => {
-        console.log(member);
-        update_Rating(member)
-          .then((resp) => { })
-          .catch((err) => {
-            console.log(err);
-          });
-      })
-    );
-    res.send({ msg: "rating updated successfully", data });
-  } catch (err) {
-    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
-  }
-};
 exports.birth_next_month = (req, res) => {
   var curDate = new Date();
   var next_month = new Date(
@@ -2749,4 +2579,3 @@ exports.leads_past3_month = async (req, res) => {
   }
 };
 
-cron.schedule("0 0 * * *", () => collectionModify());
