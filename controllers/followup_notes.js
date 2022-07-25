@@ -29,7 +29,7 @@ exports.createNote = async (req, res) => {
   createNotePayload.lastName = studentInfo.lastName;
   (createNotePayload.userId = studentInfo.userId),
     (createNotePayload.memberId = studentInfo._id);
-    createNotePayload.time = new Date().toLocaleTimeString([], {hour:"numeric", minute:"numeric", hour12:true});
+  createNotePayload.time = new Date().toLocaleTimeString([], { hour: "numeric", minute: "numeric", hour12: true });
 
   let createdNote = await followUpNotes.create(createNotePayload);
   console.log(createdNote)
@@ -184,7 +184,7 @@ exports.filterByNotes = async (req, res) => {
               time: 1,
               createdAt: 1,
               date: { $dateFromString: { dateString: "$date" } },
-            },
+            }, primaryPhone
           },
           {
             $match: {
@@ -431,18 +431,32 @@ exports.getNotesByMemberId = async (req, res) => {
   let filter = {
     memberId: memberId,
   };
-  let notes = await followUpNotes.find(filter);
-  if (!notes) {
+
+  let member = await memberModel.findOne({ _id: memberId }, { email: 1, street: 1, town: 1, state: 1, primaryPhone: 1 })
+  followUpNotes.find(filter, function (err, notes) {
+    if (!notes) {
+      res.send({
+        success: true,
+        msg: "Data not exists for this query!!",
+      });
+    }
     res.send({
       success: true,
-      msg: "Data not exists for this query!!",
-    });
-  }
-  res.send({
-    success: true,
-    msg: "Please find the notes with userId",
-    data: notes,
-  });
+      msg: "Please find the notes with userId",
+      data: 
+        notes.map(e => {
+          e["_doc"].memberDetail = {
+            email: member.email,
+            street: member.street,
+            town: member.town,
+            state: member.state,
+            primaryPhone: member.primaryPhone
+          }
+          return e
+        })
+    })
+  })
+
 };
 
 exports.getNotesByNoteType = async (req, res) => {
