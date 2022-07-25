@@ -24,7 +24,7 @@ router.get(
 );
 
 
-router.get('/candidates/get-stripe-filter-by-month-year/:userId/:studentType',verifySchool,candidate_stripe_filter)
+router.get('/candidates/get-stripe-filter-by-month-year/:userId',verifySchool,candidate_stripe_filter)
 
 
 router.post(

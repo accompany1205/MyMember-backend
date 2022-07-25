@@ -171,8 +171,8 @@ exports.candidate_remove = async (req, res) => {
 
 exports.candidate_stripe_filter = async (req, res) => {
   let userId = req.params.userId;
-  let studentType = req.params.studentType;
-  let candidateName = req.params.candidate;
+  let studentType = req.query.studentType;
+  //let candidateName = req.query.candidate;
   let candidateArray = ["Leadership Club (Beta)", "BBC Candidate List (Beta)"]
   let sum_of_LCB=0;
   let sum_of_BBc=0;
