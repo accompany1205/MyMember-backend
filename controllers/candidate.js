@@ -172,21 +172,120 @@ exports.candidate_remove = async (req, res) => {
   }
 };
 
-const joinAndQuiteCandidate = async (userId) => {
+
+const yearDataCandidate = async (userId) => {
+  let date = new Date()
+  let year = date.getFullYear()
+  const data = await RecommendedCandidateModel.aggregate([
+    {
+      $match: {
+        userId: userId
+      }
+    },
+    {
+      $project: {
+        history: { $arrayElemAt: ["$joinHistory.statusUpdateDate", -1] },
+      }
+    },
+
+    { $unwind: "$history" }
+    ,
+    {
+      $project: {
+        _id: 0,
+        year: { $year: "$history" },
+      }
+    },
+    {
+      $match: { year: year }
+    },
+
+  ])
+  return ({ year: data })
+  console.log(data);
+}
+
+
+const CandidatePreviousMonth = async (userId) => {
+  let date = new Date()
+  let month = (date.getMonth() + 1) - 1
+  const data = await RecommendedCandidateModel.aggregate([
+    {
+      $match: {
+        userId: userId
+      }
+    },
+    {
+      $project: {
+        history: { $arrayElemAt: ["$joinHistory.statusUpdateDate", -1] },
+      }
+    },
+
+    { $unwind: "$history" }
+    ,
+    {
+      $project: {
+        _id: 0,
+        month: { $month: "$history" },
+      }
+    },
+    {
+      $match: { month: month }
+    },
+
+  ])
+  return ({ previousMonth: data })
+
+  console.log(data);
+
+}
+
+const candidateThisMonth = async (userId) => {
   let join = 0;
   let quite = 0;
-  const data = await RecommendedCandidateModel.find({ userId: userId })
-  for (i of data) {
-    const Length = i.joinHistory.length
-    if (i.joinHistory.length > 0) {
-      if (i.joinHistory[Length - 1].join) {
-        join++
-      } else {
-        quite++
+  let date = new Date()
+  let month = date.getMonth() + 1
+  // let startDate = req.params.dates;
+  // let newMonth = parseInt(startDate.slice(0, 2));
+  // const data = await RecommendedCandidateModel.find({ userId: userId })
+  // for (i of data) {
+  //   const Length = i.joinHistory.length
+  //   if (i.joinHistory.length > 0) {
+  //     if (i.joinHistory[Length - 1].join) {
+  //       join++
+  //     } else {
+  //       quite++
+  //     }
+  //   }
+  // }
+  // return ({ join: join, quite: quite })
+  const data = await RecommendedCandidateModel.aggregate([
+    {
+      $match: {
+        userId: userId
       }
-    }
-  }
-  return ({ join: join, quite: quite })
+    },
+    {
+      $project: {
+        history: { $arrayElemAt: ["$joinHistory.statusUpdateDate", -1] },
+      }
+    },
+
+    { $unwind: "$history" }
+    ,
+    {
+      $project: {
+        _id: 0,
+        month: { $month: "$history" },
+      }
+    },
+    {
+      $match: { month: month }
+    },
+
+  ])
+  return ({ month: data })
+  // console.log(data);
 }
 
 exports.candidate_stripe_filter = async (req, res) => {
@@ -274,13 +373,16 @@ exports.candidate_stripe_filter = async (req, res) => {
 
     }
 
-    const joinNotjoinData = await joinAndQuiteCandidate(userId);
+    const Month = await candidateThisMonth(userId);
+    const previousMonth = await CandidatePreviousMonth(userId);
+    const year = await yearDataCandidate(userId)
 
     return res.send({
       sum_of_LCB: sum_of_LCB,
       sum_of_BBc: sum_of_BBc,
-      join: joinNotjoinData.join,
-      quite: joinNotjoinData.quite,
+      ThisMonth: Month.month.length,
+      lastMonth:previousMonth.previousMonth.length,
+      Thisyear:year.year.length,
       success: true
     })
   } catch (err) {
@@ -385,7 +487,7 @@ exports.getStripeReportByCandidate = async (req, res) => {
           _id: 0,
           data: "$recommendData.history.last_stripe_given",
           stripe_name: 1,
-          "total-students":1
+          "total-students": 1
         },
       },
       {
@@ -396,16 +498,16 @@ exports.getStripeReportByCandidate = async (req, res) => {
           month: { $month: "$data" },
           year: { $year: "$data" },
           stripe_name: "$stripe_name",
-          "total-students":1
+          "total-students": 1
         }
       },
       {
         $match: { month: newMonth, year: newYear }
       },
       {
-        $group : {
-          _id:"$stripe_name",
-          count:{$count:{}}
+        $group: {
+          _id: "$stripe_name",
+          count: { $count: {} }
         }
       }
 
