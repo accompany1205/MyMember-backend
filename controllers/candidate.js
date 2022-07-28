@@ -187,9 +187,6 @@ const joinAndQuiteCandidate = async (userId) => {
     }
   }
   return ({ join: join, quite: quite })
-
-
-
 }
 
 exports.candidate_stripe_filter = async (req, res) => {
@@ -278,7 +275,7 @@ exports.candidate_stripe_filter = async (req, res) => {
     }
 
     const joinNotjoinData = await joinAndQuiteCandidate(userId);
-    
+
     return res.send({
       sum_of_LCB: sum_of_LCB,
       sum_of_BBc: sum_of_BBc,
@@ -292,6 +289,9 @@ exports.candidate_stripe_filter = async (req, res) => {
 }
 
 exports.getStripeReportByCandidate = async (req, res) => {
+  let startDate = req.params.dates;
+  let newMonth = parseInt(startDate.slice(0, 2));
+  let newYear = parseInt(startDate.slice(-4));
   try {
     let { candidateName, studentType } = req.query;
     const userId = req.params.userId;
@@ -353,29 +353,76 @@ exports.getStripeReportByCandidate = async (req, res) => {
           ],
         },
       },
-
-      // Lets Map the Data
       {
-        $project: {
-          candidate: 1,
-          stripe_name: 1,
-          stripe_image: 1,
-          stripe_order: 1,
-          total_students: { $sum: "$total-students.total" },
+        $lookup: {
+          from: "recommendedcandidates",
+          localField: "stripe_name",
+          foreignField: "current_stripe",
+          as: "recommendData",
         },
       },
-      { $sort: { stripe_order: 1 } },
+      {
+
+        $addFields: {
+          "recommendData": {
+            "$map": {
+              "input": "$recommendData",
+              "as": "r",
+              "in": {
+                "history": { "$slice": ["$$r.stripe_history", -1] }
+              }
+            }
+          }
+        },
+
+      },
+      {
+        $unwind: "$recommendData"
+
+      },
+      {
+        $project: {
+          _id: 0,
+          data: "$recommendData.history.last_stripe_given",
+          stripe_name: 1,
+          "total-students":1
+        },
+      },
+      {
+        $unwind: "$data"
+      },
+      {
+        $project: {
+          month: { $month: "$data" },
+          year: { $year: "$data" },
+          stripe_name: "$stripe_name",
+          "total-students":1
+        }
+      },
+      {
+        $match: { month: newMonth, year: newYear }
+      },
+      {
+        $group : {
+          _id:"$stripe_name",
+          count:{$count:{}}
+        }
+      }
+
       // {
-      // 	$project: {
-
-      // 		total: 1
-
-      // 	}
-      // }
+      //   $project: {
+      //     candidate: 1,
+      //     stripe_name: 1,
+      //     stripe_image: 1,
+      //     stripe_order: 1,
+      //     total_students: { $sum: "$total-students.total" },
+      //   },
+      // },
+      // { $sort: { stripe_order: 1 } },
     ]);
 
     //
-
+    console.log(stripes)
     return res.json(stripes);
   } catch (err) {
     console.log(err);
