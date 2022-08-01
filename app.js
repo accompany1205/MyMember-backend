@@ -24,6 +24,7 @@ const categoryRoutes = require("./routes/category");
 const braintreeRoutes = require("./routes/braintree");
 const orderRoutes = require("./routes/order");
 
+
 //ttl
 const TTL = require("./routes/attl");
 
@@ -186,6 +187,12 @@ const chatbotUsersRoutes = require("./routes/chatbot_users");
 
 const appointmentEvent = require("./routes/appointment_event");
 const finance = require("./routes/finance");
+
+//Form builder Routes
+const builderRoutes = require("./routes/builder/routes")
+const viewFormRoutes = require("./routes/builder/view-form")
+
+
 const app = express();
 // app.use(fileUpload({ safeFileNames: true, preserveExtension: true }))
 const { v4: uuidv4 } = require("uuid");
@@ -219,9 +226,13 @@ app.use(
   })
 );
 app.use(express.urlencoded({ extended: false }));
-app.set("view engine", "ejs");
+
+//ejs
+//app.set("view engine", "ejs");
+//app.set("views", path.join(__dirname, "views"));
+
 // app.use('/', express.static(path.join(__dirname, '')));
-app.set("views", path.join(__dirname, "views"));
+
 app.use(morgan("dev"));
 app.use(cookieParser());
 app.use(expressValidator());
@@ -393,6 +404,12 @@ app.use(middleware.errorHandler);
 app.use(middleware.unknownEndpoint);
 // menu middle
 app.use("/api", student_menu);
+
+//form builder routes
+app.use("/api/forms", builderRoutes)
+app.use('/builder/view', viewFormRoutes)
+app.set("view engine", "pug");
+app.set("views", path.join(__dirname, "template"));
 
 // const privateKey1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/privkey.pem', 'utf8');
 // const certificate1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/cert.pem', 'utf8');
