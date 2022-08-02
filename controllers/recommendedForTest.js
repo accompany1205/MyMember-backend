@@ -56,6 +56,18 @@ exports.getRecommededForTest = async (req, res) => {
         "userId": userId,
         "isDeleted": false
     }).populate('studentId')
+    let Registered = await RegisterdForTest.find(
+        {
+            "eventId": eventId,
+            "userId": userId,
+            "isDeleted": false
+        })
+    let Promoted = await RegisterdForTest.find(
+        {
+            "eventId": eventId,
+            "userId": userId,
+            "isDeleted": true
+        }) 
     // .skip(pagination.skip)
     // .limit(pagination.limit)
     // .sort({ [sortBy]: order });
@@ -68,6 +80,7 @@ exports.getRecommededForTest = async (req, res) => {
     res.json({
         success: true,
         data: students,
+        count:{recommeded:students.length,Registered:Registered.length,Promoted:Promoted.length}
     })
 }
 

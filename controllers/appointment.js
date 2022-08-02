@@ -60,8 +60,9 @@ exports.sendEmailToGuest = async (req, res) => {
   } catch (err) {
     return res.send({ error: err.message.replace(/\"/g, ""), success: false })
   }
-
 }
+
+
 
 
 exports.apptCreate = async (req, res) => {

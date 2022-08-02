@@ -28,4 +28,5 @@ router.post("/eventManager/filterEvent/:userId", verifySchool, appointment.filte
 router.get("/allAppt/:userId",verifySchool, appointment.allEvents);
 router.put("/eventManager/eventPay/:userId/:eventRegisteredId",verifySchool, appointment.eventPay);
 
+
 module.exports = router;

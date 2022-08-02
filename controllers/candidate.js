@@ -301,6 +301,7 @@ const candidateThisMonth = async (userId) => {
   } })
 }
 
+
 exports.candidate_stripe_filter = async (req, res) => {
   let userId = req.params.userId;
   // let studentType = req.query.studentType;
@@ -389,6 +390,7 @@ exports.candidate_stripe_filter = async (req, res) => {
     const Month = await candidateThisMonth(userId);
     const previousMonth = await CandidatePreviousMonth(userId);
     const year = await yearDataCandidate(userId)
+    const all =await candidateAll(userId)
 
     return res.send({
       ThisMonth:Month.ThisMonth,
