@@ -399,17 +399,20 @@ app.use("/api", registeredForTestRoutes);
 app.use("/api", recommendedCandidatesRoutes);
 app.use("/api", membershipFolderRoute);
 app.use("/api", Dashboard);
-//
-app.use(middleware.errorHandler);
-app.use(middleware.unknownEndpoint);
-// menu middle
-app.use("/api", student_menu);
 
 //form builder routes
 app.use("/api/forms", builderRoutes)
 app.use('/builder/view', viewFormRoutes)
 app.set("view engine", "pug");
 app.set("views", path.join(__dirname, "template"));
+
+//
+app.use(middleware.errorHandler);
+app.use(middleware.unknownEndpoint);
+// menu middle
+app.use("/api", student_menu);
+
+
 
 // const privateKey1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/privkey.pem', 'utf8');
 // const certificate1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/cert.pem', 'utf8');
