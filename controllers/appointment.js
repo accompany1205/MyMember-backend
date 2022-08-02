@@ -140,6 +140,10 @@ exports.getInvitees = async (req, res) => {
   let invitees = await Invitee.find({
     "userId": userId, "eventId": eventId, "isDeleted": false
   });
+  let attendee = await EventRegistered.find({
+    "userId": userId, "eventId": eventId, "isDeleted": true
+  });
+  let registeredInvitee = await EventRegistered.find({ "userId": userId, "eventId": eventId, "isDeleted": false });
   if (!invitees.length) {
     return res.json({
       data: [],
@@ -150,6 +154,7 @@ exports.getInvitees = async (req, res) => {
   return res.json({
     success: true,
     data: invitees,
+    count:{invitees:invitees.length,attendee:attendee.length,registeredInvitee:registeredInvitee.length}
   })
 }
 
