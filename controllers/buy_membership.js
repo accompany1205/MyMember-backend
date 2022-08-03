@@ -68,7 +68,7 @@ exports.update = async (req, res) => {
         if (subscription_id) {
           const freezeValorPayload =
             await valorTechPaymentGateWay.freezeSubscription({
-              app_id: req.valorCredentials.app_id,
+              app_id: req.valorCredfreeze_stop_dateentials.app_id,
               auth_key: req.valorCredentials.auth_key,
               epi: req.valorCredentials.epi,
               subscription_id,
@@ -82,7 +82,7 @@ exports.update = async (req, res) => {
                 msg: "Membership freezed successfully",
                 success: true,
               });
-            } else {
+            } else {  
               console.log("i am here");
               res.status(400).send({
                 msg: "Membership not updated but valor freezed membership!",
@@ -399,10 +399,9 @@ function refundMembership(membershipId, payload) {
 
 async function freezeMembership(membershipId, payload) {
   return new Promise((resolve, reject) => {
-    let expiry_date = moment(payload.freeze_stop_date)
+    let expiry_date = moment(payload.expiry_date)
       .add(daysRemaining(payload.freeze_stop_date), "days")
       .format("YYYY-MM-DD");
-    console.log(payload);
     buyMembership
       .findByIdAndUpdate(membershipId, {
         $set: {
@@ -421,7 +420,7 @@ async function freezeMembership(membershipId, payload) {
       })
       .exec((err, data) => {
         if (err) {
-          resolve(false);
+          reject(false);
         } else {
           lastestMembership(membershipId, "Freeze", expiry_date)
             .then((data) => resolve(data))

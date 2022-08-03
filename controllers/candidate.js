@@ -220,6 +220,7 @@ const yearDataCandidate = async (userId) => {
 const CandidatePreviousMonth = async (userId) => {
   let date = new Date();
   let month = date.getMonth();
+  console.log(month)
   const data = await RecommendedCandidateModel.aggregate([
     {
       $match: {
@@ -285,6 +286,7 @@ const candidateThisMonth = async (userId) => {
     }
 
   ])
+  console.log(data);
   let joinData = 0;
   let quiteData = 0;
   for(i of data){
@@ -390,7 +392,7 @@ exports.candidate_stripe_filter = async (req, res) => {
     const Month = await candidateThisMonth(userId);
     const previousMonth = await CandidatePreviousMonth(userId);
     const year = await yearDataCandidate(userId)
-    const all =await candidateAll(userId)
+    // const all =await candidateAll(userId)
 
     return res.send({
       ThisMonth:Month.ThisMonth,
