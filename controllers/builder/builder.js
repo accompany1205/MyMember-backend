@@ -191,14 +191,19 @@ exports.updateFormData = async (req,res) => {
 
 exports.updateFormSettings = async (req,res) => {
     try{
-        console.log("ufs-backend")
         let formId = req.params.id
         let update = {title: req.body.title, enable: req.body.enabled}
         console.log("updateSettings:", formId, update)
+        let enabled = null;
+        if(req.body.enabled == "enabled"){
+            enabled = true
+        }else{
+            enabled = false
+        }
 
         let form = await Form.findOne({_id: formId})
         form.title = req.body.title
-        form.enabled = req.body.enabled
+        form.enabled = enabled
         await form.save()
 
         res.status(200).json({
