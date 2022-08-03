@@ -34,48 +34,55 @@ router.get('/:formId', async(req,res) => {
     })
 })
 
+
+
 router.post("/process/newstudent/:formId", async(req,res) => {
         let formId = req.params.formId
+
+        let isObject = function(a) {
+            return (!!a) && (a.constructor === Object);
+        };
     
         try{
             console.log("Processing Form")
             console.log("Req.body::", req.body)
+            console.log("first-name::", typeof(req.body.firstname), req.body.firstname[0], req.body.firstname[1])
     
             let formId = req.params.formId
             let userId = req.params.userId
     
             //Contact Info
-            let memberType = req.body.member_type
+            let memberType = req.body.memberType
             let memberId = req.body.memberId
     
             // Member Info
-            let firstName = req.body.firstname
-            let lastName = req.body.lastname
-            let gender = req.body.gender
-            let dob = req.body.dob
-            let age = req.body.age
+            let firstName =  (req.body.firstname && isObject(req.body.firstname) ) ? req.body.firstname[0] : req.body.firstname
+            let lastName =  (req.body.lastname && isObject(req.body.lastname) ) ? req.body.lastname[0] : req.body.lastname
+            let gender = (req.body.gender && isObject(req.body.gender) ) ? req.body.gender[0] : req.body.gender
+            let dob = (req.body.dob && isObject(req.body.dob) ) ? req.body.dob[0] : req.body.dob
+            let age = (req.body.age && isObject(req.body.age) ) ? req.body.age[0] : req.body.age
             let street = req.body.street
             let city = req.body.city
             let state = req.body.state
             let postal = req.body.postal
             let zipCode = req.body.zipcode
             let country = req.body.country
-            let phone1 = req.body.phone
-            let phone2 = req.body.phone2
+            let phone1 =  (req.body.phone && isObject(req.body.phone) ) ? req.body.phone[0] : req.body.phone
+            let phone2 =  (req.body.phone && isObject(req.body.phone) ) ? req.body.phone[1] : req.body.phone
             let email = req.body.email
     
             //Buyer Info
-            let buyerFirstName = req.body.first_name2
-            let buyerLastName = req.body.last_name2
-            let buyerGender = req.body.gender2
-            let buyerDob = req.body.dob2
-            let buyerAge = req.body.age2
+            let buyerFirstName = (req.body.firstname && isObject( req.body.firstname)) ? req.body.firstname[1] : req.body.firstname
+            let buyerLastName = (req.body.lastname && isObject(req.body.lastname)) ? req.body.lastname[1] : req.body.lastname
+            let buyerGender = (req.body.gender && isObject(req.body.gender)) ? req.body.gender[1] : req.body.gender
+            let buyerDob = (req.body.dob && isObject(req.body.dob)) ? req.body.dob[1] : req.body.dob
+            let buyerAge = (req.body.age && isObject(req.body.age)) ? req.body.age[1] : req.body.age
     
             //custom info
             let leadsTracing = req.body.leads
     
             let form = await Form.findOne({_id: formId})
-            form.submission += 1
+            form.number_of_submissions += 1
             await form.save()
     
             let newmember = await addmember()
@@ -100,21 +107,21 @@ router.post("/process/newstudent/:formId", async(req,res) => {
             newmember.buyerInfo.dob = buyerDob
             newmember.buyerInfo.age = buyerAge
 
+            //await newmember.save() 
+
             console.log("newmember:::", newmember)
-            res.render("/success",{
+            res.render("success",{
                status: "Form Submitted Successfully",
                formId: formId
             })
 
-           
-
             //res.sendFile()
     
-            //await newmember.save()  
+             
          }catch(error){
              console.log("Err:",error)
 
-             res.render("/error",{
+             res.render("error",{
                 formId: formId
             })
          }  
