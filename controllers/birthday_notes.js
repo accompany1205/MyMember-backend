@@ -1027,6 +1027,13 @@ exports.birth_this_week = async (req, res) => {
             firstName: 1,
             dob: {
               $dateFromParts: {
+                year: { $year: "$dob" },
+                month: { $month: "$dob" },
+                day: { $dayOfMonth: "$dob" },
+              },
+            },
+            birthDate: {
+              $dateFromParts: {
                 year: { $year: todays },
                 month: { $month: "$dob" },
                 day: { $dayOfMonth: "$dob" },
@@ -1051,7 +1058,7 @@ exports.birth_this_week = async (req, res) => {
         },
         {
           $match: {
-            $expr: { $eq: [{ $week: "$dob" }, { $week: todays }] },
+            $expr: { $eq: [{ $week: "$birthDate" }, { $week: todays }] },
             daysTillBirthday: { $gte: -1 },
           },
         },
