@@ -18,17 +18,20 @@ const FormSchema = mongoose.Schema({
         default: 0
     },
     formBody: {
-        type: String
+        type: String,
+        default: ""
     },
     formStyle: {
-        type: String
+        type: String,
+        default: ""
     },
     formScript: {
-        type: String
+        type: String,
+        default: ""
     },
     enabled: {
-	type: Boolean,
-	default: true
+	    type: Boolean,
+	    default: true
     },
     deleted: {
        type: Boolean,
@@ -43,10 +46,11 @@ const FormSchema = mongoose.Schema({
        default: false
     },
     action: {
-	type: String
+	    type: String
     },
     formData: {
-	type: String
+	    type: String,
+        default: "{}"
     }
 
 })

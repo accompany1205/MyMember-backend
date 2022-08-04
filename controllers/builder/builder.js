@@ -40,6 +40,14 @@ exports.createForm = async (req,res) => {
         form.title = title;
         form.formBody = formBody,
         form.created_by = created_by
+        form.formData = JSON.stringify({
+                         "gjs-css":"",
+                         "gjs-html":"",
+                         "gjs-assets":"[]",
+                         "gjs-styles":"",
+                         "gjs-components":"[ {\"tagName\":\"h1\",\"type\":\"text\",\"attributes\":{\"id\":\"imc6s\"},\"components\":[ {\"type\":\"textnode\",\"content\":\"Form\"} ]}]"
+                        })
+        //'{{"tagName":"h5","type":"text","attributes":{"id":"imc6s"},"components":[{"type":"textnode","content":"Form"}]}}'
         form.save();
 
         res.status(200).json({
