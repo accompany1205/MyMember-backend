@@ -50,6 +50,7 @@ exports.getRecommededForTest = async (req, res) => {
             msg: "Please include the userId in the parameters!"
         })
     }
+    
 
     let students = await RecommendedForTest.find({
         "eventId": eventId,
@@ -77,6 +78,7 @@ exports.getRecommededForTest = async (req, res) => {
             msg: "There was no data found!"
         })
     }
+
     res.json({
         success: true,
         data: students,
