@@ -72,8 +72,6 @@ exports.processForm = async(req,res) => {
         let buyerDob = (req.body.dob && Array.isArray(req.body.dob)) ? req.body.dob[1] : req.body.dob
         let buyerAge = (req.body.age && Array.isArray(req.body.age)) ? req.body.age[1] : req.body.age
 
-        console.log("fifff:", firstName, lastName)
-
         //custom info
         let leadsTracing = req.body.leads
 
