@@ -73,14 +73,19 @@ exports.processForm = async(req,res) => {
         let buyerAge = (req.body.age && Array.isArray(req.body.age)) ? req.body.age[1] : req.body.age
 
         //custom info
-        let leadsTracing = req.body.leads
+        let leadsTracking = req.body.leads
 
         let form = await Form.findOne({_id: formId})
         form.number_of_submissions += 1
         await form.save()
 
         let newmember = await addmember()
+
+        //contact info
         newmember.studentType = memberType
+        newmember.memberId = memberId
+
+        //member info
         newmember.firstName = firstName
         newmember.lastName = lastName
         newmember.dob = dob
@@ -95,21 +100,24 @@ exports.processForm = async(req,res) => {
         newmember.country = country
         newmember.zipPostalCode = zipCode
 
+        //buyer info
         newmember.buyerInfo.firstName = buyerFirstName
         newmember.buyerInfo.lastName = buyerLastName
         newmember.buyerInfo.gender = buyerGender
         newmember.buyerInfo.dob = buyerDob
         newmember.buyerInfo.age = buyerAge
 
-        //await newmember.save() 
+        //custom info
+        newmember.leadsTracking = leadsTracking
+        newmember.tags = []
 
-        console.log("newmember:::", newmember)
+        await newmember.save() 
+
+        //console.log("newmember:::", newmember)
         res.render("success",{
            status: "Form Submitted Successfully",
            formId: formId
         })
-
-        //res.sendFile()
 
          
      }catch(error){
