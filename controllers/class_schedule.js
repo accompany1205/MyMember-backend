@@ -209,10 +209,10 @@ exports.updateAll = async (req, res) => {
       let repeat_weekly_on = reqBody.repeat_weekly_on;
       let startTimeH = moment(reqBody.start_time).format("hh");
       let startTimeM = moment(reqBody.start_time).format("mm");
-      let startTimeA = moment(reqBody.start_time).format("a");
+      let startTimeA = moment(reqBody.start_time).format("A");
       let endTimeH = moment(reqBody.end_time).format("hh");
       let endTimeM = moment(reqBody.end_time).format("mm");
-      let endTimeP = moment(reqBody.end_time).format("a");
+      let endTimeP = moment(reqBody.end_time).format("A");
       const dates = dateRange(start_time, end_time);
 
       let allAttendance = [];
@@ -225,11 +225,11 @@ exports.updateAll = async (req, res) => {
           moment(d).set({
             hour: Number(startTimeH),
             minute: Number(startTimeM),
-            a:  startTimeA
+            A:  startTimeA
           })
         );
         let dateE = new Date(
-          moment(d).set({ hour: Number(endTimeH), minute: Number(endTimeM), a: endTimeP})
+          moment(d).set({ hour: Number(endTimeH), minute: Number(endTimeM), A: endTimeP})
         );
         let dayName = moment(new Date(date)).format("dddd").toLowerCase();
         if (repeat_weekly_on.includes(dayName)) {
