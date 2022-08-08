@@ -214,6 +214,7 @@ exports.updateAll = async (req, res) => {
       let endTimeM = moment(reqBody.end_time).format("mm");
       let endTimeP = moment(reqBody.end_time).format("A");
       const dates = dateRange(start_time, end_time);
+      consol.log(startTimeA)
 
       let allAttendance = [];
       for (let index in dates) {
