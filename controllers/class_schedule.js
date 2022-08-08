@@ -215,6 +215,7 @@ exports.updateAll = async (req, res) => {
       let endTimeP = moment(reqBody.end_time).format("A");
       const dates = dateRange(start_time, end_time);
       console.log(startTimeA)
+      console.log(endTimeP)
 
       let allAttendance = [];
       for (let index in dates) {
@@ -229,9 +230,11 @@ exports.updateAll = async (req, res) => {
             A:  startTimeA
           })
         );
+        caonsoel.log(date)
         let dateE = new Date(
           moment(d).set({ hour: Number(endTimeH), minute: Number(endTimeM), A: endTimeP})
         );
+        console.log(dateE)
         let dayName = moment(new Date(date)).format("dddd").toLowerCase();
         if (repeat_weekly_on.includes(dayName)) {
           let NewEvent = {
