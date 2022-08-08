@@ -227,12 +227,12 @@ exports.updateAll = async (req, res) => {
           moment(d).set({
             hour: Number(startTimeH),
             minute: Number(startTimeM),
-            A:  startTimeA
+            meridiem:  startTimeA
           })
         );
         caonsoel.log(date)
         let dateE = new Date(
-          moment(d).set({ hour: Number(endTimeH), minute: Number(endTimeM), A: endTimeP})
+          moment(d).set({ hour: Number(endTimeH), minute: Number(endTimeM), meridiem: endTimeP})
         );
         console.log(dateE)
         let dayName = moment(new Date(date)).format("dddd").toLowerCase();
