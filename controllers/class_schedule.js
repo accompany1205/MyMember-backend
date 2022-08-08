@@ -230,7 +230,7 @@ exports.updateAll = async (req, res) => {
             meridiem:  startTimeA
           })
         );
-        caonsoel.log(date)
+        console.log(date)
         let dateE = new Date(
           moment(d).set({ hour: Number(endTimeH), minute: Number(endTimeM), meridiem: endTimeP})
         );
