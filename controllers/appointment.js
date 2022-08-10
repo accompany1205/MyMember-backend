@@ -479,7 +479,6 @@ exports.read = async (req, res) => {
   } else {
     finalDate = `${newYear}-${updateM}-${newDate}`;
   }
-  console.log(finalDate)
   appoint.find({
     $and: [{ userId: req.params.userId },
     { start: { $gte: (nStartDate), $lt: (finalDate) } }

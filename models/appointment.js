@@ -105,7 +105,7 @@ const appointSchema = new schema(
         ticketAvailabeQuantity: {
             type:String
         },
-        ticktePrice : {
+        ticketPrice : {
             type:String
         },
         totalIncome : {
