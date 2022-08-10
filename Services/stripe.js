@@ -1,11 +1,59 @@
 'use strict';
 const StripeCustomers = require('../models/stripe_customers')
+const Members = require("../models/addmember")
 const StripeCards = require('../models/stripe_cards')
 const StoreTransaction = require('../models/store_transactions')
 const uuid = require('uuid').v4
 const Config = require("../config/stripe")
 const stripe = require("stripe")(Config["secretKey"])
 const _ = require('lodash')
+
+
+
+exports.createStudents = async (req, res) => {
+    const id = req.params.student
+    try {
+        const data = await Members.find({ userId: id });
+        console.log(data)
+        let customerObj;
+        let promise = [];
+        for (let studentData of data) {
+            let customer = await stripe.customers.create({
+                email: studentData.email,
+                metadata: {
+                    account_id: "frank",
+                }
+            });
+            studentData.customer_id = customer.id
+            let dataObj = {
+                "id": studentData.customer_id,
+                "email": studentData.email,
+                "account_id": "frank",
+                "name": studentData.firstName
+            }
+            console.log(dataObj)
+            if (dataObj.email) {
+                let findCustomer = await StripeCustomers.findOne({ "email": studentData.email })
+                console.log(findCustomer)
+                if (findCustomer) {
+                    // throw { "status": false, "message": "customer already existed" }
+                    console.log(findCustomer);
+                } else {
+                    customerObj = await StripeCustomers.create(dataObj)
+                    promise.push(customerObj);
+                }
+
+            }
+
+        }
+        await Promise.all(promise);
+        return res.send(promise)
+    } catch (error) {
+        res.send(error)
+    }
+
+
+}
 
 exports.createCustomer = async (req, res, next) => {
     let customerData = req.body
@@ -18,26 +66,25 @@ exports.createCustomer = async (req, res, next) => {
         });
         customerData.customer_id = customer.id
         let dataObj = {
-            "id":customerData.customer_id,
-            "email":customerData.email,
-            "account_id":customerData.account_id,
-            "name":customerData.name
+            "id": customerData.customer_id,
+            "email": customerData.email,
+            "account_id": customerData.account_id,
+            "name": customerData.name
         }
-        let findCustomer = await StripeCustomers.findOne({"email":customerData.email})
+        let findCustomer = await StripeCustomers.findOne({ "email": customerData.email })
         console.log(findCustomer)
-        if(findCustomer)
-        {
-            throw {"status":false,"message":"customer already existed"}
+        if (findCustomer) {
+            throw { "status": false, "message": "customer already existed" }
         }
         //Create a new customer in DB           
         let customerObj = await StripeCustomers.create(dataObj)
-        
+
         res.send(customerObj)
 
     } catch (error) {
         console.log("Error--->", error)
         res.send(error)
-    }  
+    }
 };
 
 exports.createCard = async (req, res) => {
@@ -51,7 +98,7 @@ exports.createCard = async (req, res) => {
         let cardToken = await createCardToken({ cardNumber, cardExpiryMonth, cardExpiryYear, cardCvc })
         let findCustomer = await StripeCustomers.findOne({ "email": email })
         let customerId
-        let cardCheck = await StripeCards.findOne({ "card_number": cardNumber,"email":email })
+        let cardCheck = await StripeCards.findOne({ "card_number": cardNumber, "email": email })
         if (cardCheck) {
             return { "status": false, "message": "card already existed with this customer email" }
         }
@@ -71,14 +118,14 @@ exports.createCard = async (req, res) => {
                 "card_id": cardId.id,
                 "card_number": cardNumber,
                 "email": email,
-                "phone":phone
+                "phone": phone
             }
         )
 
         return cardId
     }
     catch (error) {
-        console.log("--------------",JSON.parse(JSON.stringify(error)))
+        console.log("--------------", JSON.parse(JSON.stringify(error)))
         return error
     }
 };
@@ -102,12 +149,10 @@ let createCardToken = async (body, res) => {
 
 exports.listCustomers = async (req, res) => {
     let findObject = {}
-    if(req.body.email)
-    {
+    if (req.body.email) {
         findObject.email = req.body.email
     }
-    if(req.body.account_id)
-    {
+    if (req.body.account_id) {
         findObject.account_id = req.body.account_id
     }
     let customersList = await StripeCustomers.find(findObject);
@@ -136,16 +181,13 @@ exports.confirmPayment = async (req, res) => {
 
 exports.listCards = async (req, res) => {
     let findObject = {}
-    if(req.body.email)
-    {
+    if (req.body.email) {
         findObject.email = req.body.email
     }
-    if(req.body.card_id)
-    {
+    if (req.body.card_id) {
         findObject.card_id = req.body.card_id
     }
-    if(req.body.customer_id)
-    {
+    if (req.body.customer_id) {
         findObject.customer_id = req.body.customer_id
     }
     let cardsList = await StripeCards.find(findObject);
@@ -158,7 +200,7 @@ exports.createPayment = async (req, res) => {
         if (findCustomer == null) {
             throw { "status": false, "message": "customer not existed" }
         }
-        console.log("amount is ------------",req.body.amount,req.body.card_id,)
+        console.log("amount is ------------", req.body.amount, req.body.card_id,)
         let paymentIntent = await stripe.paymentIntents.create({
             amount: (req.body.amount) * 100, //stripe uses cents
             currency: 'usd',
@@ -178,9 +220,9 @@ exports.createPayment = async (req, res) => {
 
 
 let createChargeId = async (body, res) => {
-     /*
-    This function is used to create a refund charge id in stripe 
-    */
+    /*
+   This function is used to create a refund charge id in stripe 
+   */
     try {
         let amount = body.amount
         let currency = body.currency
@@ -222,7 +264,7 @@ exports.createRefund = async (req, res) => {
             description: req.body.description
         })
         let refund = await stripe.refunds.create({
-          charge: createChargeIdResponse["id"],
+            charge: createChargeIdResponse["id"],
         });
         let storeTransaction = await StoreTransaction.create(refund)
         res.send(refund)
