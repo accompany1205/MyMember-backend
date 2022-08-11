@@ -1,13 +1,15 @@
 
 const express = require("express");
 const router = express.Router();
-const { create, remove, updateNote, seven_to_forteen, fifteen_to_thirty, Thirty_to_sixty, more_than_sixty, listApp_and_callHistory, more_than_forteen ,missclasses} = require("../controllers/misucall_notes");
+const { create, remove, updateNote, seven_to_forteen, fifteen_to_thirty, Thirty_to_sixty, more_than_sixty, listApp_and_callHistory, more_than_forteen ,missclasses,all_data} = require("../controllers/misucall_notes");
 const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 
 router.get("/missyouCall/seven_to_fourteen_miss/:userId/:page_no/:per_page", verifySchool, seven_to_forteen)
 router.get("/missyouCall/fifteen_to_thirty_miss/:userId/:page_no/:per_page", verifySchool, fifteen_to_thirty)
 router.get("/missyouCall/thirty_to_sixty/:userId/:page_no/:per_page", verifySchool, Thirty_to_sixty)
 router.get("/missyouCall/more_than_sixty/:userId/:page_no/:per_page", verifySchool, more_than_sixty)
+
+router.get("/missyouCall/all_data/:userId/:page_no/:per_page/:multiple_data",verifySchool,all_data)
 // for dashboard
 router.get("/missYouCall/more_than_forteen/:userId/:page_no/:per_page", verifySchool, more_than_forteen)
 

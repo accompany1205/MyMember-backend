@@ -11,7 +11,7 @@ const programSchema = new schema(
             maxlength: 32
         },
         color: {
-            type: String,
+            type: String, 
 
         },
         lable: {

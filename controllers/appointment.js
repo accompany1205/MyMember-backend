@@ -1,5 +1,8 @@
 const appoint = require("../models/appointment");
+const recommended = require("../models/recommendedForTest")
 const _ = require("lodash");
+const program_rank = require('../models/program_rank')
+const program = require('../models/program')
 const Invitee = require("../models/eventInvitee")
 const EventRegistered = require("../models/eventRegistered");
 const Member = require('../models/addmember');
@@ -154,7 +157,7 @@ exports.getInvitees = async (req, res) => {
   return res.json({
     success: true,
     data: invitees,
-    count:{invitees:invitees.length,attendee:attendee.length,registeredInvitee:registeredInvitee.length}
+    count: { invitees: invitees.length, attendee: attendee.length, registeredInvitee: registeredInvitee.length }
   })
 }
 
@@ -213,6 +216,69 @@ exports.eventPay = async (req, res) => {
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false })
   }
+}
+
+
+exports.eventBeltCount = async (req, res) => {
+  let eventId = req.params.eventId;
+  let userId = req.params.userId;
+  let studentsBelts = await recommended.find({
+    eventId: eventId, isDeleted: false
+  },
+    { _id: 0, current_rank_name: 1 }
+  )
+  let programBelts = await program.aggregate([
+    {
+      $match: {
+        $or: [
+          { userId: userId }, { adminId: process.env.ADMINID }
+        ]
+      }
+    },
+    { $project: { "program_rank": 1, "_id":0 } }, 
+    { $unwind: "$program_rank" },
+    // {
+    //   $lookup:
+    //   {
+    //     from: "Program_ranks",
+    //     localField: "program_rank",
+    //     foreignField: "_id",
+    //     as: "data"
+    //   }
+    // }
+  ])
+  let data = await program_rank.populate(programBelts,{
+    path: "program_rank",
+    model: "Program_rank",
+    select: "rank_name -_id"
+  });
+  
+  
+  
+  
+
+  // console.log(studentsBelts)
+  // console.log(data)
+
+  // console.log(programBelts)
+//   let belts=[]
+//   for(let i of programBelts){
+//     // console.log(i.program_rank.rank_name)
+//     belts.push(i.program_rank.rank_name)
+//   }
+//   for(let i of studentsBelts){
+//     let count=0
+//     for(let j of belts){
+//       if(i.current_rank_name==j){
+//         count++
+//       }
+//       console.log({rankname:j,count:count})
+//     }
+//     // console.log(count)
+
+//   }
+//   // console.log(studentsBelts)
+//   // console.log(belts)
 }
 
 exports.addToAttended = async (req, res) => {
