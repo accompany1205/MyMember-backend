@@ -247,6 +247,7 @@ exports.getFilteredStudents = async (req, res) => {
                         current_rank_name: "$current_rank_name",
                         next_rank_name: "$next_rank_name",
                         candidate: "$candidate",
+                        current_rank_img:"$current_rank_img",
                         month: { $month: "$createdAt" },
                         year: {
                             $year: "$createdAt",
