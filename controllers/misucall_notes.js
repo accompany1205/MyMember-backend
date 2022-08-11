@@ -9,6 +9,701 @@ const daysRemaining = require("../Services/daysremaining");
 var mongo = require("mongoose");
 const misucall_notes = require("../models/misucall_notes");
 
+
+
+
+exports.all_data=async (req,res)=>{
+  if(req.params.multiple_data==14){
+    try {
+      let userId = req.params.userId;
+      var per_page = parseInt(req.params.per_page) || 10;
+      var page_no = parseInt(req.params.page_no) || 0;
+      var pagination = {
+        limit: per_page,
+        skip: per_page * page_no,
+      };
+      const studentType = req.query.studentType;
+      const filter =
+        userId && studentType
+          ? {
+              userId,
+              studentType,
+            }
+          : {
+              userId,
+            };
+      await student
+        .aggregate([
+          {
+            $match: filter,
+          },
+          {
+            $project: {
+              primaryPhone:1,
+              street:1,
+              town:1,
+              state:1,
+              zipPostalCode:1,
+              email:1,
+              firstName: 1,
+              lastName: 1,
+              status: 1,
+              memberprofileImage: 1,
+              last_attended_date: 1,
+              attendedclass_count: 1,
+              followup_notes: 1,
+              studentType: 1,
+            },
+          },
+          {
+            $lookup: {
+              from: "followupnotes",
+              localField: "followup_notes",
+              foreignField: "_id",
+              as: "followup_notes",
+              pipeline: [
+                {
+                  $project: {
+                    note: 1,
+                    time: 1,
+                    date: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $addFields: {
+              last_attended_date: {
+                $toDate: {
+                  $dateToString: {
+                    format: "%Y-%m-%d",
+                    date: {
+                      $toDate: "$last_attended_date",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          {
+            $match: {
+              last_attended_date: {
+                $ne: null,
+              },
+            },
+          },
+          {
+            $addFields: {
+              last_attended_date: {
+                $toDate: {
+                  $dateToString: {
+                    format: "%Y-%m-%d",
+                    date: {
+                      $toDate: "$last_attended_date",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          {
+            $project: {
+              notes: {
+                $arrayElemAt: ["$followup_notes", -1],
+              },
+              firstName: 1,
+              lastName: 1,
+              status: 1,
+              memberprofileImage: 1,
+              last_attended_date: 1,
+              attendedclass_count: 1,
+              studentType: 1,
+              primaryPhone:1,
+              street:1,
+              town:1,
+              state:1,
+              zipPostalCode:1,
+              email:1
+            },
+          },
+          {
+            $addFields: {
+              dayssince: {
+                $floor: {
+                  $divide: [
+                    {
+                      $subtract: ["$$NOW", "$last_attended_date"],
+                    },
+                    1000 * 60 * 60 * 24,
+                  ],
+                },
+              },
+            },
+          },
+          {
+            $match: {
+              dayssince: {
+                $gte: 7,
+                $lte: 14,
+              },
+            },
+          },
+          { $sort: { dayssince: 1 } },
+          {
+            $facet: {
+              paginatedResults: [
+                { $skip: pagination.skip },
+                { $limit: pagination.limit },
+              ],
+              totalCount: [
+                {
+                  $count: "count",
+                },
+              ],
+            },
+          },
+        ])
+        .exec((err, memberdata) => {
+          if (err) {
+            res.send({
+              error: err,
+            });
+          } else {
+            let data = memberdata[0].paginatedResults;
+            if (data.length > 0) {
+              res.send({
+                data: data,
+                totalCount: memberdata[0].totalCount[0].count,
+                success: true,
+              });
+            } else {
+              res.send({ msg: "data not found", success: false });
+            }
+          }
+        });
+    } catch (err) {
+      throw new Error(err);
+    }
+  }else if(req.params.multiple_data==30){
+    try {
+      let userId = req.params.userId;
+      var per_page = parseInt(req.params.per_page) || 10;
+      var page_no = parseInt(req.params.page_no) || 0;
+      var pagination = {
+        limit: per_page,
+        skip: per_page * page_no,
+      };
+      const studentType = req.query.studentType;
+      const filter =
+        userId && studentType
+          ? {
+              userId,
+              studentType,
+            }
+          : {
+              userId,
+            };
+      await student
+        .aggregate([
+          {
+            $match: filter,
+          },
+          {
+            $project: {
+              firstName: 1,
+              lastName: 1,
+              status: 1,
+              memberprofileImage: 1,
+              last_attended_date: 1,
+              attendedclass_count: 1,
+              followup_notes: 1,
+              studentType: 1, primaryPhone:1,
+              street:1,
+              town:1,
+              state:1,
+              zipPostalCode:1,
+              email:1
+            },
+          },
+          {
+            $lookup: {
+              from: "followupnotes",
+              localField: "followup_notes",
+              foreignField: "_id",
+              as: "followup_notes",
+              pipeline: [
+                {
+                  $project: {
+                    note: 1,
+                    time: 1,
+                    date: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $addFields: {
+              last_attended_date: {
+                $toDate: {
+                  $dateToString: {
+                    format: "%Y-%m-%d",
+                    date: {
+                      $toDate: "$last_attended_date",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          {
+            $match: {
+              last_attended_date: {
+                $ne: null,
+              },
+            },
+          },
+          {
+            $addFields: {
+              last_attended_date: {
+                $toDate: {
+                  $dateToString: {
+                    format: "%Y-%m-%d",
+                    date: {
+                      $toDate: "$last_attended_date",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          {
+            $project: {
+              notes: {
+                $arrayElemAt: ["$followup_notes", -1],
+              },
+              firstName: 1,
+              lastName: 1,
+              status: 1,
+              memberprofileImage: 1,
+              last_attended_date: 1,
+              attendedclass_count: 1,
+              studentType: 1, primaryPhone:1,
+              street:1,
+              town:1,
+              state:1,
+              zipPostalCode:1,
+              email:1
+            },
+          },
+          {
+            $addFields: {
+              dayssince: {
+                $floor: {
+                  $divide: [
+                    {
+                      $subtract: ["$$NOW", "$last_attended_date"],
+                    },
+                    1000 * 60 * 60 * 24,
+                  ],
+                },
+              },
+            },
+          },
+          {
+            $match: {
+              dayssince: {
+                $gte: 15,
+                $lte: 30,
+              },
+            },
+          },
+          { $sort: { dayssince: 1 } },
+          {
+            $facet: {
+              paginatedResults: [
+                { $skip: pagination.skip },
+                { $limit: pagination.limit },
+              ],
+              totalCount: [
+                {
+                  $count: "count",
+                },
+              ],
+            },
+          },
+        ])
+        .exec((err, memberdata) => {
+          if (err) {
+            res.send({
+              error: err,
+            });
+          } else {
+            let data = memberdata[0].paginatedResults;
+            if (data.length > 0) {
+              res.send({
+                data: data,
+                totalCount: memberdata[0].totalCount[0].count,
+                success: true,
+              });
+            } else {
+              res.send({ msg: "data not found", success: false });
+            }
+          }
+        });
+    } catch (err) {
+      throw new Error(err);
+    }
+
+  }else if(req.params.multiple_data==60){
+    try {
+      let userId = req.params.userId;
+      var per_page = parseInt(req.params.per_page) || 10;
+      var page_no = parseInt(req.params.page_no) || 0;
+      var pagination = {
+        limit: per_page,
+        skip: per_page * page_no,
+      };
+      const studentType = req.query.studentType;
+      const filter =
+        userId && studentType
+          ? {
+              userId,
+              studentType,
+            }
+          : {
+              userId,
+            };
+      await student
+        .aggregate([
+          {
+            $match: filter,
+          },
+          {
+            $project: {
+              firstName: 1,
+              lastName: 1,
+              status: 1,
+              memberprofileImage: 1,
+              last_attended_date: 1,
+              attendedclass_count: 1,
+              followup_notes: 1,
+              studentType: 1, primaryPhone:1,
+              street:1,
+              town:1,
+              state:1,
+              zipPostalCode:1,
+              email:1
+            },
+          },
+          {
+            $lookup: {
+              from: "followupnotes",
+              localField: "followup_notes",
+              foreignField: "_id",
+              as: "followup_notes",
+              pipeline: [
+                {
+                  $project: {
+                    note: 1,
+                    time: 1,
+                    date: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $addFields: {
+              last_attended_date: {
+                $toDate: {
+                  $dateToString: {
+                    format: "%Y-%m-%d",
+                    date: {
+                      $toDate: "$last_attended_date",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          {
+            $match: {
+              last_attended_date: {
+                $ne: null,
+              },
+            },
+          },
+          {
+            $addFields: {
+              last_attended_date: {
+                $toDate: {
+                  $dateToString: {
+                    format: "%Y-%m-%d",
+                    date: {
+                      $toDate: "$last_attended_date",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          {
+            $project: {
+              notes: {
+                $arrayElemAt: ["$followup_notes", -1],
+              },
+              firstName: 1,
+              lastName: 1,
+              status: 1,
+              memberprofileImage: 1,
+              last_attended_date: 1,
+              attendedclass_count: 1,
+              studentType: 1,
+              primaryPhone:1,
+              street:1,
+              town:1,
+              state:1,
+              zipPostalCode:1,
+              email:1,
+            },
+          },
+          {
+            $addFields: {
+              dayssince: {
+                $floor: {
+                  $divide: [
+                    {
+                      $subtract: ["$$NOW", "$last_attended_date"],
+                    },
+                    1000 * 60 * 60 * 24,
+                  ],
+                },
+              },
+            },
+          },
+          {
+            $match: {
+              dayssince: {
+                $gte: 31,
+                $lte: 60,
+              },
+            },
+          },
+          { $sort: { dayssince: 1 } },
+          {
+            $facet: {
+              paginatedResults: [
+                { $skip: pagination.skip },
+                { $limit: pagination.limit },
+              ],
+              totalCount: [
+                {
+                  $count: "count",
+                },
+              ],
+            },
+          },
+        ])
+        .exec((err, memberdata) => {
+          if (err) {
+            res.send({
+              error: err,
+            });
+          } else {
+            let data = memberdata[0].paginatedResults;
+            if (data.length > 0) {
+              res.send({
+                data: data,
+                totalCount: memberdata[0].totalCount[0].count,
+                success: true,
+              });
+            } else {
+              res.send({ msg: "data not found", success: false });
+            }
+          }
+        });
+    } catch (err) {
+      throw new Error(err);
+    }
+  }else if (req.params.multiple_data>60){
+    try {
+      let userId = req.params.userId;
+      var per_page = parseInt(req.params.per_page) || 10;
+      var page_no = parseInt(req.params.page_no) || 0;
+      var pagination = {
+        limit: per_page,
+        skip: per_page * page_no,
+      };
+      const studentType = req.query.studentType;
+      const filter =
+        userId && studentType
+          ? {
+              userId,
+              studentType,
+            }
+          : {
+              userId,
+            };
+      await student
+        .aggregate([
+          {
+            $match: filter,
+          },
+          {
+            $project: {
+              firstName: 1,
+              lastName: 1,
+              status: 1,
+              memberprofileImage: 1,
+              last_attended_date: 1,
+              attendedclass_count: 1,
+              followup_notes: 1,
+              studentType: 1, primaryPhone:1,
+              street:1,
+              town:1,
+              state:1,
+              zipPostalCode:1,
+              email:1
+            },
+          },
+          {
+            $lookup: {
+              from: "followupnotes",
+              localField: "followup_notes",
+              foreignField: "_id",
+              as: "followup_notes",
+              pipeline: [
+                {
+                  $project: {
+                    note: 1,
+                    time: 1,
+                    date: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $addFields: {
+              last_attended_date: {
+                $toDate: {
+                  $dateToString: {
+                    format: "%Y-%m-%d",
+                    date: {
+                      $toDate: "$last_attended_date",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          {
+            $match: {
+              last_attended_date: {
+                $ne: null,
+              },
+            },
+          },
+          {
+            $addFields: {
+              last_attended_date: {
+                $toDate: {
+                  $dateToString: {
+                    format: "%Y-%m-%d",
+                    date: {
+                      $toDate: "$last_attended_date",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          {
+            $project: {
+              notes: {
+                $arrayElemAt: ["$followup_notes", -1],
+              },
+              firstName: 1,
+              lastName: 1,
+              status: 1,
+              memberprofileImage: 1,
+              last_attended_date: 1,
+              attendedclass_count: 1,
+              studentType: 1,
+              primaryPhone:1,
+              street:1,
+              town:1,
+              state:1,
+              zipPostalCode:1,
+              email:1
+            },
+          },
+          {
+            $addFields: {
+              dayssince: {
+                $floor: {
+                  $divide: [
+                    {
+                      $subtract: ["$$NOW", "$last_attended_date"],
+                    },
+                    1000 * 60 * 60 * 24,
+                  ],
+                },
+              },
+            },
+          },
+          {
+            $match: {
+              dayssince: {
+                $gte: 61,
+              },
+            },
+          },
+          { $sort: { dayssince: 1 } },
+          {
+            $facet: {
+              paginatedResults: [
+                { $skip: pagination.skip },
+                { $limit: pagination.limit },
+              ],
+              totalCount: [
+                {
+                  $count: "count",
+                },
+              ],
+            },
+          },
+        ])
+        .exec((err, memberdata) => {
+          if (err) {
+            res.send({
+              error: err,
+            });
+          } else {
+            let data = memberdata[0].paginatedResults;
+            if (data.length > 0) {
+              res.send({
+                data: data,
+                totalCount: memberdata[0].totalCount[0].count,
+                success: true,
+              });
+            } else {
+              res.send({ msg: "data not found", success: false });
+            }
+          }
+        });
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+}
+
+
+
+
+
 exports.seven_to_forteen = async (req, res) => {
   try {
     let userId = req.params.userId;
