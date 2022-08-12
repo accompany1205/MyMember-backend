@@ -27,7 +27,8 @@ router.delete("/deleteRegistered/:userId", verifySchool, appointment.deleteRegis
 router.post("/eventManager/filterEvent/:userId", verifySchool, appointment.filterEvents);
 router.get("/allAppt/:userId",verifySchool, appointment.allEvents);
 router.put("/eventManager/eventPay/:userId/:eventRegisteredId",verifySchool, appointment.eventPay);
-router.get("/event_belt_count/:userId/:eventId",verifySchool,appointment.eventBeltCount)
+router.get("/promotion_belt_count/:userId/:eventId",verifySchool,appointment.promotionBeltCount)
+router.get("/general_belt_count/:userId/:eventId",verifySchool,appointment.generalBeltCount)
 
 
 module.exports = router;

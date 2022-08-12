@@ -636,7 +636,7 @@ exports.read = (req, res) => {
 };
 exports.active_Std = async (req, res) => {
   // var order = req.query.order || 1;
-  // let sortBy = req.query.sortBy || "firstName";
+  // let sortBy = req..sortBy || "firstName";
   // var totalCount = await addmemberModal
   //   .find({
   //     userId: req.params.userId,
