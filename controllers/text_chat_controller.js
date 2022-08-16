@@ -4,8 +4,11 @@ const textContact = require("../models/text_contact");
 const member = require("../models/addmember");
 const user = require("../models/user");
 const mongoose = require("mongoose");
+const fcm = require('fcm-notification')
 //const Socket = require("../Services/scoket.io")
 //var soc = Socket();
+let key = require('../fcm_key')
+var FCM = new fcm(key);
 const socketIo = io("http://localhost:3001", { transports: ['websocket'] })
 socketIo.on("connect_error", (err) => {
   console.log(`connect_error due to - ${err.message}`);
@@ -244,3 +247,39 @@ exports.listenIncomingSMS = async (req, res) => {
     res.send({ error: 'txt msg not send due to wrong twilio or phone number' });
   }
 }
+
+exports.notification = async (req,res) => {
+  let push_notification = (firebase_token,text_msg) =>{
+    const token = 'dsfJhffJsjilteAOQGWkBj:APA91bHTMgmPP0UQDAYC85J1fRQRruuVVaBwQHlEVIrNmJiqTXubwcuDC_Pc5_zNC1do72eRbVmwUhirV4F1B7ftjM4vtt-jat8TDIULsOv91-Xq3I_yo0ESR9JrSbEqFU85R98fslfM'
+    const msg = {}
+    const notification = {}
+    const webpush = {}
+    notification.title = "My Member"
+    notification.body = text_msg
+    notification.icon = "http://www.mymember.com/static/media/logo.940eab8a.png"
+    webpush.notification = notification
+    msg.webpush = webpush
+    msg.token = token  
+    return new Promise ((resolve,reject)=>{
+    FCM.send(msg,(err, response) => {
+    if(err){
+        reject({msg:false,resp:err})
+    }else {
+        resolve({msg:true,resp:response}) 
+    }
+  })
+  })
+  }
+  let twilio = '+17406406682'
+  let msg = 'hy'
+  let userData = await user.findOne({ twilio: twilio }).exec()
+  if(userData){
+    let result = await push_notification(userData.firebase_token,msg)
+    if(result.msg){
+      res.json({success:true,msg:'notification send success',data:result.resp})
+    }else{
+      res.json({success:false,msg:'notification not send' ,data:result.resp})
+    }
+  }
+}
+

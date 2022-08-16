@@ -317,3 +317,45 @@ exports.taskFilter = async (req, res) => {
         res.send({ error: err.message.replace(/\"/g, ""), success: false })
     }
 };
+
+exports.notificationTodayTask = async (req, res) => {
+    try{
+       const todayTask = await tasks.aggregate([
+            {
+                $match: {
+                    $and: [
+                    {userId: req.params.userId},
+                    {isSeen: false},                        
+                    { $expr: { $eq: [{ $year: '$createdAt' },{ $year: '$$NOW' }] } },    
+                    { $expr: { $eq: [{ $month: '$createdAt' },{ $month: '$$NOW' }] } },
+                    { $expr: { $eq: [{ $dayOfMonth: '$createdAt' },{ $dayOfMonth: '$$NOW' }]} },
+                    ]
+                },
+            },
+            {
+               $project: {
+                    _id:1,
+                    name:1
+                }
+            }
+        ]);
+        res.send({ success: true, taskCount:todayTask.length ,data: todayTask })
+    }catch(err){
+        res.send({ error: err.message.replace(/\"/g, ""), success: false })  
+    }
+}
+
+exports.seenTasks = async (req,res) => {
+    try{
+        const taskIds = req.body.taskIds
+        console.log('id',taskIds)
+        const seenTasks = await tasks.updateMany(
+                {_id: { $in: taskIds } },
+                { $set: { isSeen : true } }
+            )
+            console.log('updatetask', seenTasks)
+            res.send({ success: true, msg:'task seen successfully' }) 
+    }catch(err){
+        res.send({ error: err.message.replace(/\"/g, ""), success: false })
+    }
+}
