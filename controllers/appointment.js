@@ -783,18 +783,17 @@ exports.read = async (req, res) => {
     } else {
       finalDate = `${newYear}-${updateM}-${newDate}`;
     }
-    let events = await appoint.find({
+     appoint.find({
       $and: [{ userId: req.params.userId },
       { start: { $gte: (nStartDate), $lt: (finalDate) } }
       ]
+    }).then((result) => {
+      res.send({ success: true, data: result });
     })
-    console.log(events)
-      // .then((result) => {
-      //   res.send({ success: true, data: result });
-      // })
-      // .catch((err) => {
-      //   res.send({ msg: "No data!", err: err, success: false });
-      // });
+    .catch((err) => {
+      res.send({ msg: "No data!", err: err, success: false });
+    });
+      
   } catch (err) {
     console.log(err)
   }
