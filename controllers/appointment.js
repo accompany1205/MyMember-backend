@@ -1,8 +1,8 @@
 const appoint = require("../models/appointment");
 const recommended = require("../models/recommendedForTest")
-const registeredForTest=require('../models/registerdForTest')
-const invitee=require('../models/eventInvitee')
-const registered=require("../models/eventRegistered")
+const registeredForTest = require('../models/registerdForTest')
+const invitee = require('../models/eventInvitee')
+const registered = require("../models/eventRegistered")
 const _ = require("lodash");
 const program_rank = require('../models/program_rank')
 const program = require('../models/program')
@@ -773,7 +773,6 @@ exports.read = async (req, res) => {
   let newYear = startDate.slice(-4);
   let updateM = ("0" + (parseInt(newMonth) + 1)).slice(-2);
   let nStartDate = `${newYear}-${nNewMonth}-${newDate}`
-  console.log(nStartDate);
   let finalDate;
   if (newMonth === "12") {
     let newupdateM = "01";
@@ -782,17 +781,77 @@ exports.read = async (req, res) => {
   } else {
     finalDate = `${newYear}-${updateM}-${newDate}`;
   }
-  appoint.find({
+  let events = await appoint.find({
     $and: [{ userId: req.params.userId },
     { start: { $gte: (nStartDate), $lt: (finalDate) } }
     ]
   })
-    .then((result) => {
-      res.send({ success: true, data: result });
-    })
-    .catch((err) => {
-      res.send({ msg: "No data!", err: err, success: false });
-    });
+  // for(let i of events){
+  //   const obj={name:'kash'}
+  //   _.defaults(i,obj)
+  //   console.log(i)
+  // }
+  // Promise.all(events.map(async (object) => {
+    // const a=await Object.assign(object, { color: "red" })
+    // console.log(a)
+    // const a={a:1}
+    // console.log(obj)
+    // console.log(a);
+
+  // }))
+
+  // })).then(resp1 => {
+  //   console.log("--->", resp1)
+  // }).catch(err => {
+  //   console.log("-->", err)
+  // });
+  // console.log(data);
+  // console.log(event1);
+  // .then(async (result) => {
+  // res.send({ success: true, data: result });
+  // let events = result
+  // console.log("events----> ", events);
+  // const events =result.forEach(object => {
+  //   object.color = "red";
+  // })
+  // console.log(events)
+  // let promises = [];
+  // let arr = events.map(async i => {
+  //   let obj = {};
+  //   let eventInfo
+  //   if (i.appointment_type === "Promotion Test") {
+  //     let recommendedTest = await recommended.find({ eventId: i._id, isDeleted: false })
+  //     let registeredTest = await registeredForTest.find({ eventId: i._id, isDeleted: false })
+  //     let promotedTest = await registeredForTest.find({ eventId: i._id, isDeleted: true })
+
+  // obj.recommendedCount = recommendedTest.length
+  // obj.registeredCount = registeredTest.length
+  // obj.promotedCount = promotedTest.length
+  // eventInfo = i;
+
+  // } else if (i.appointment_type === "General Event") {
+  // let eventInvitee = await invitee.find({ eventId: i._id, isDeleted: false })
+  // console.log(inviteeTest)
+  // let eventRegister = await registered.find({ eventId: i._id, isDeleted: false })
+  // console.log(registerTest)
+  // let eventAttended = await registered.find({ eventId: i._id, isDeleted: true })
+  // console.log(attendedTest)          
+  //     obj.eventInvitee = eventInvitee.length
+  //     obj.eventRegister = eventRegister.length
+  //     obj.eventAttended = eventAttended.length
+  //     eventInfo = i;
+  //   }
+  //   return {...obj,eventInfo};
+  // })
+  // let data = await Promise.all(arr)
+  //console.log(await Promise.all(promises, arr))
+  // console.log(data)
+  // res.send(data);
+
+  // })
+  // .catch((err) => {
+  //   res.send({ msg: "No data!", err: err.message.replace(/\"/g, ""), success: false });
+  // });
   // let startDate = (req.params.dates);
   // console.log("wrwjreirj-->")
   // let userId = req.params.userId;
