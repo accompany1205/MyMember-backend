@@ -795,7 +795,7 @@ exports.read = async (req, res) => {
     });
       
   } catch (err) {
-    console.log(err)
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
   }
 
   // for(let i of events){
