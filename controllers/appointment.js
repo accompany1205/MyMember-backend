@@ -765,38 +765,51 @@ exports.filterEvents = async (req, res) => {
 }
 
 exports.read = async (req, res) => {
-  let startDate = req.params.dates;
-  let newMonth = startDate.slice(0, 2)
-  let nNewMonth = ("0" + (parseInt(newMonth))).slice(-2)
-  // let newDate = startDate.slice(3, 5)
-  let newDate = "01"
-  let newYear = startDate.slice(-4);
-  let updateM = ("0" + (parseInt(newMonth) + 1)).slice(-2);
-  let nStartDate = `${newYear}-${nNewMonth}-${newDate}`
-  let finalDate;
-  if (newMonth === "12") {
-    let newupdateM = "01";
-    let updateY = ("" + (parseInt(newYear) + 1))
-    finalDate = `${updateY}-${newupdateM}-${newDate}`;
-  } else {
-    finalDate = `${newYear}-${updateM}-${newDate}`;
+  try {
+    let startDate = req.params.dates;
+    let newMonth = startDate.slice(0, 2)
+    let nNewMonth = ("0" + (parseInt(newMonth))).slice(-2)
+    // let newDate = startDate.slice(3, 5)
+    let newDate = "01"
+    let newYear = startDate.slice(-4);
+    let updateM = ("0" + (parseInt(newMonth) + 1)).slice(-2);
+    let nStartDate = `${newYear}-${nNewMonth}-${newDate}`
+    console.log(nStartDate);
+    let finalDate;
+    if (newMonth === "12") {
+      let newupdateM = "01";
+      let updateY = ("" + (parseInt(newYear) + 1))
+      finalDate = `${updateY}-${newupdateM}-${newDate}`;
+    } else {
+      finalDate = `${newYear}-${updateM}-${newDate}`;
+    }
+    let events = await appoint.find({
+      $and: [{ userId: req.params.userId },
+      { start: { $gte: (nStartDate), $lt: (finalDate) } }
+      ]
+    })
+    console.log(events)
+      // .then((result) => {
+      //   res.send({ success: true, data: result });
+      // })
+      // .catch((err) => {
+      //   res.send({ msg: "No data!", err: err, success: false });
+      // });
+  } catch (err) {
+    console.log(err)
   }
-  let events = await appoint.find({
-    $and: [{ userId: req.params.userId },
-    { start: { $gte: (nStartDate), $lt: (finalDate) } }
-    ]
-  })
+
   // for(let i of events){
   //   const obj={name:'kash'}
   //   _.defaults(i,obj)
   //   console.log(i)
   // }
   // Promise.all(events.map(async (object) => {
-    // const a=await Object.assign(object, { color: "red" })
-    // console.log(a)
-    // const a={a:1}
-    // console.log(obj)
-    // console.log(a);
+  // const a=await Object.assign(object, { color: "red" })
+  // console.log(a)
+  // const a={a:1}
+  // console.log(obj)
+  // console.log(a);
 
   // }))
 
