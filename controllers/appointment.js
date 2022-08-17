@@ -786,15 +786,19 @@ exports.read = async (req, res) => {
     { start: { $gte: (nStartDate), $lt: (finalDate) } }
     ]
   })
-  const event1=JSON.stringify(events)
-  console.log(event1)
-  // Promise.all(events.map(object => {
-    // object.color = "red";
-    // Object.assign(object, { color: "red" })
-    // console.log(object)
-    // return object
-  //   object.coun = "Name"
-  //   console.log(object)
+  // for(let i of events){
+  //   const obj={name:'kash'}
+  //   _.defaults(i,obj)
+  //   console.log(i)
+  // }
+  // Promise.all(events.map(async (object) => {
+    // const a=await Object.assign(object, { color: "red" })
+    // console.log(a)
+    // const a={a:1}
+    // console.log(obj)
+    // console.log(a);
+
+  // }))
 
   // })).then(resp1 => {
   //   console.log("--->", resp1)
