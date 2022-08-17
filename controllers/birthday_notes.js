@@ -95,6 +95,11 @@ exports.updateNote = (req, res) => {
   });
 };
 
+
+exports.all_data=async (req,res)=>{
+  
+}
+
 exports.seven_to_forteen = async (req, res) => {
   try {
     var per_page = parseInt(req.params.per_page) || 5;
