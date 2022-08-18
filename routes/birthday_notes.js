@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { create, remove, updateNote, birth_this_week, seven_to_forteen, fifteen_to_thirty, moreThirty, thirtyToSixty, sixtyToNinety, this_month, next_month } = require("../controllers/birthday_notes")
 const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
-const { all_data } = require("../controllers/misucall_notes");
+const { all_data } = require("../controllers/birthday_notes");
 
 router.get("/birthday/seven_to_fourteen/:userId/:page_no/:per_page", verifySchool, seven_to_forteen)
 router.get("/birthday/fifteen_to_thirty/:userId/:page_no/:per_page", verifySchool, fifteen_to_thirty)

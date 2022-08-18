@@ -98,101 +98,117 @@ exports.updateNote = (req, res) => {
 
 exports.all_data=async (req,res)=>{
   if(req.params.multiple_data==="This week"){
-    var per_page = parseInt(req.params.per_page) || 5;
-    var page_no = parseInt(req.params.page_no) || 0;
-    var pagination = {
-      limit: per_page,
-      skip: per_page * page_no,
-    };
-    let todays = new Date();
-  
-    let userId = req.params.userId;
-    const studentType = req.query.studentType;
-    const filter =
-      userId && studentType
-        ? {
-            userId,
-            studentType,
-          }
-        : {
-            userId,
-          };
     try {
-      await student
-        .aggregate([
-          { $match: filter },
+      var per_page = parseInt(req.params.per_page) || 5;
+      var page_no = parseInt(req.params.page_no) || 0;
+      var pagination = {
+        limit: per_page,
+        skip: per_page * page_no,
+      };
+      let todays = new Date();
+      let userId = req.params.userId;
   
+      let birthdayData = await student
+        .aggregate([
+          { $match: { userId: userId } },
           {
             $project: {
               firstName: 1,
-              dob: {
-                $dateFromParts: {
-                  year: { $year: "$dob" },
-                  month: { $month: "$dob" },
-                  day: { $dayOfMonth: "$dob" },
-                },
-              },
-              birthDate: {
-                $dateFromParts: {
-                  year: { $year: todays },
-                  month: { $month: "$dob" },
-                  day: { $dayOfMonth: "$dob" },
-                },
-              },
-              status: 1,
-              studentType: 1,
               lastName: 1,
-              primaryPhone: 1,
-              current_rank_img: 1,
+              status: 1,
+              memberprofileImage: 1,
+              notes: 1,
+              birthday_notes: 1,
               program: 1,
-              followup_notes: 1,
-              daysTillBirthday: {
-                $subtract: [
+              dob: 1,
+              primaryPhone:1,
+              street:1,
+              town:1,
+              state:1,
+              zipPostalCode:1,
+              email:1,
+              todayDayOfYear: { $dayOfYear: new Date() },
+              leap: {
+                $or: [
+                  { $eq: [0, { $mod: [{ $year: "$dob" }, 400] }] },
                   {
-                    $subtract: [{ $dayOfMonth: "$dob" }, { $dayOfMonth: todays }],
+                    $and: [
+                      { $eq: [0, { $mod: [{ $year: "$dob" }, 4] }] },
+                      { $ne: [0, { $mod: [{ $year: "$dob" }, 100] }] },
+                    ],
                   },
-                  1,
+                ],
+              },
+              dayOfYear: { $dayOfYear: "$dob" },
+            },
+          },
+          {
+            $project: {
+              firstName: 1,
+              lastName: 1,
+              status: 1,
+              memberprofileImage: 1,
+              notes: 1,
+              birthday_notes: 1,
+              program: 1,
+              dob: 1,
+              leap: 1,
+              todayDayOfYear: 1, primaryPhone:1,
+              street:1,
+              town:1,
+              state:1,
+              zipPostalCode:1,
+              email:1,
+              dayOfYear: {
+                $subtract: [
+                  "$dayOfYear",
+                  {
+                    $cond: [
+                      { $and: ["$leap", { $gt: ["$dayOfYear", 59] }] },
+                      1,
+                      0,
+                    ],
+                  },
                 ],
               },
             },
           },
           {
-            $match: {
-              $expr: { $eq: [{ $week: "$birthDate" }, { $week: todays }] },
-              daysTillBirthday: { $gte: -1 },
-            },
-          },
-          {
-            $lookup: {
-              from: "followupnotes",
-              localField: "followup_notes",
-              foreignField: "_id",
-              as: "followup_notes",
-              pipeline: [
-                {
-                  $project: {
-                    note: 1,
-                    time: 1,
-                    date: 1,
-                  },
-                },
-              ],
-            },
-          },
-          {
             $project: {
               firstName: 1,
-              status: 1,
               lastName: 1,
-              dob: 1,
-              primaryPhone: 1,
-              studentType: 1,
+              status: 1,
+              memberprofileImage: 1,
+              notes: 1,
+              birthday_notes: 1,
               program: 1,
-              current_rank_img: 1,
-              daysTillBirthday: 1,
-              notes: { $arrayElemAt: ["$followup_notes", -1] },
+              dob: 1,
+              primaryPhone:1,
+              street:1,
+              town:1,
+              state:1,
+              zipPostalCode:1,
+              email:1,
+              daysTillBirthday: {
+                $subtract: [
+                  {
+                    $add: [
+                      "$dayOfYear",
+                      {
+                        $cond: [
+                          { $lt: ["$dayOfYear", "$todayDayOfYear"] },
+                          365,
+                          0,
+                        ],
+                      },
+                    ],
+                  },
+                  "$todayDayOfYear",
+                ],
+              },
             },
           },
+          { $match: { daysTillBirthday: { $lt: 14 } } },
           { $sort: { daysTillBirthday: 1 } },
           {
             $facet: {
@@ -227,8 +243,8 @@ exports.all_data=async (req,res)=>{
             }
           }
         });
-    } catch (er) {
-      throw new Error(er);
+    } catch (err) {
+      throw new Error(err);
     }
   }else if(req.params.multiple_data==="This month"){
     var per_page = parseInt(req.params.per_page) || 5;
