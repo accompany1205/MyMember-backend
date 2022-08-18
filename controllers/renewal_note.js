@@ -98,6 +98,8 @@ exports.updateNote = (req, res) => {
 };
 
 
+
+
 exports.all_data_std = async (req, res) => {
   if(req.params.multiple_data==="30"){
     try {
@@ -971,7 +973,250 @@ exports.all_data_std = async (req, res) => {
     } catch (e) {
       res.send({ error: "frozen student data not fount" });
     }
-  }  
+  }else if(req.params.multiple_data==="expired"){
+    try {
+      let userId = req.params.userId;
+      var per_page = parseInt(req.params.per_page) || 5;
+      var page_no = parseInt(req.params.page_no) || 0;
+      var pagination = {
+        limit: per_page,
+        skip: per_page * page_no,
+      };
+      const studentType = req.query.studentType;
+      const filter =
+        userId && studentType
+          ? {
+            userId,
+            studentType,
+          }
+          : {
+            userId,
+          };
+  
+      buymembership
+        .aggregate([
+          { $match: { userId: userId } },
+  
+          {
+            $project: {
+              membership_name: 1,
+              membership_type: 1,
+              membership_status: 1,
+              studentInfo: 1,
+              expiry_date: {
+                $toDate: "$expiry_date",
+              },
+            },
+          },
+          {
+            $addFields: {
+              days_till_Expire: {
+                $multiply: [
+                  {
+                    $floor: {
+                      $divide: [
+                        {
+                          $subtract: [new Date(), "$expiry_date"],
+                        },
+                        1000 * 60 * 60 * 24,
+                      ],
+                    },
+                  },
+                  -1,
+                ],
+              },
+            },
+          },
+          {
+            $match: {
+              days_till_Expire: {
+                $lte: 0,
+              },
+            },
+          },
+          {
+            $unwind: "$studentInfo",
+          },
+          {
+            $lookup: {
+              from: "members",
+              localField: "studentInfo",
+              foreignField: "_id",
+              as: "members",
+              pipeline: [
+                {
+                  $project: {
+                    firstName: 1,
+                    lastName: 1,
+                    program: 1,
+                    notes: 1,
+                    primaryPhone: 1,
+                    studentType: 1,
+                    last_attended_date: 1,
+                    memberprofileImage: 1,
+                    status: 1,
+                    followup_notes: 1,
+                    userId: 1,
+                    primaryPhone: 1,
+                    street: 1,
+                    town: 1,
+                    state: 1,
+                    zipPostalCode: 1,
+                    email: 1,
+                  },
+                },
+                {
+                  $match: filter,
+                },
+              ],
+            },
+          },
+          {
+            $match: {
+              members: {
+                $ne: [],
+              },
+            },
+          },
+          {
+            $unwind: "$members",
+          },
+          {
+            $lookup: {
+              from: "followupnotes",
+              localField: "members.followup_notes",
+              foreignField: "_id",
+              as: "followup_notes",
+              pipeline: [
+                {
+                  $project: {
+                    time: 1,
+                    note: 1,
+                    date: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            $project: {
+              studentInfo: 1,
+              membership_name: 1,
+              membership_type: 1,
+              membership_status: 1,
+              expiry_date: 1,
+              days_till_Expire: 1,
+              members: 1,
+              primaryPhone: 1,
+              street: 1,
+              town: 1,
+              state: 1,
+              zipPostalCode: 1,
+              email: 1,
+              notes: {
+                $arrayElemAt: ["$followup_notes", -1],
+              },
+            },
+          },
+          {
+            $group: {
+              _id: "$studentInfo",
+              no_of_Memberships: {
+                $sum: 1,
+              },
+              primaryPhone: {
+                $first: "$members.primaryPhone",
+              },
+              street: {
+                $first: "$members.street",
+              },
+              town: {
+                $first: "$members.town",
+              },
+              state: {
+                $first: "$members.state",
+              },
+              zipPostalCode: {
+                $first: "$members.zipPostalCode",
+              },
+              email: {
+                $first: "$members.email",
+              },
+              firstName: {
+                $first: "$members.firstName",
+              },
+              lastName: {
+                $first: "$members.lastName",
+              },
+              notes: {
+                $first: "$notes",
+              },
+              program: {
+                $first: "$members.program",
+              },
+              primaryPhone: {
+                $first: "$members.primaryPhone",
+              },
+              studentType: {
+                $first: "$members.studentType",
+              },
+              last_attended_date: {
+                $first: "$members.last_attended_date",
+              },
+              memberprofileImage: {
+                $first: "$members.memberprofileImage",
+              },
+              status: {
+                $first: "$members.status",
+              },
+              memberships: {
+                $push: {
+                  membership_name: "$membership_name",
+                  membership_type: "$membership_type",
+                  membership_status: "$membership_status",
+                  expiry_date: "$expiry_date",
+                  days_till_Expire: "$days_till_Expire",
+                  whenFreeze: "$whenFreeze",
+                },
+              },
+            },
+          },
+          {
+            $facet: {
+              paginatedResults: [
+                { $skip: pagination.skip },
+                { $limit: pagination.limit },
+              ],
+              totalCount: [
+                {
+                  $count: "count",
+                },
+              ],
+            },
+          },
+        ])
+        .exec((err, memberdata) => {
+          if (err) {
+            res.send({
+              error: err,
+            });
+          } else {
+            let data = memberdata[0].paginatedResults;
+            if (data.length > 0) {
+              res.send({
+                data: data,
+                totalCount: memberdata[0].totalCount[0].count,
+                success: true,
+              });
+            } else {
+              res.send({ msg: "data not found", success: false });
+            }
+          }
+        });
+    } catch (e) {
+      res.send({ error: "expire student data not fount", a: e });
+    }
+  }
 }
 
 
