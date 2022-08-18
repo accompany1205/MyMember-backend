@@ -296,7 +296,7 @@ exports.promotionBeltCount = async (req, res) => {
   let userId = req.params.userId;
   let event = req.query.event;
   try {
-    if (event === "Recommended") {
+    const recommendedData = async () => {
       try {
         let studentsBelts = await recommended.find({
           eventId: eventId, isDeleted: false
@@ -304,139 +304,51 @@ exports.promotionBeltCount = async (req, res) => {
           { _id: 0, current_rank_name: 1, program: 1 }
         )
 
-        let programBelts = await program.aggregate([
-          {
-            $match: {
-              $or: [
-                { userId: userId }, { adminId: process.env.ADMINID }
-              ]
-            }
-          },
-          { $project: { "program_rank": 1, "_id": 0 } },
-          { $unwind: "$program_rank" },
-        ])
-        let data = await program_rank.populate(programBelts, {
-          path: "program_rank",
-          model: "Program_rank",
-          select: "rank_name programName rank_image -_id"
-        });
-        let belts = []
-        for (let i of programBelts) {
-          belts.push(i.program_rank)
-        }
-        let beltInfo = []
-        for (i of belts) {
-          let count = 0
-
-          for (j of studentsBelts) {
-            if (i.programName === j.program && i.rank_name === j.current_rank_name) {
-              count++
-            }
-          }
-          beltInfo.push({ programName: i.programName, belt: i.rank_name, rank_image: i.rank_image, count: count, })
-        }
-        return res.send(beltInfo)
-
+        const beltInfo = await loopingForBelts(userId, studentsBelts);
+        return beltInfo;
       } catch (err) {
         res.send({ msg: err.message.replace(/\"/g, ""), success: false })
       }
-
-    } else if (event === "Register") {
-      try {
-        let studentsBelts = await registeredForTest.find({
-          eventId: eventId, isDeleted: false
-        },
-          { _id: 0, current_rank_name: 1, program: 1 }
-        )
-
-        let programBelts = await program.aggregate([
-          {
-            $match: {
-              $or: [
-                { userId: userId }, { adminId: process.env.ADMINID }
-              ]
-            }
-          },
-          { $project: { "program_rank": 1, "_id": 0 } },
-          { $unwind: "$program_rank" },
-        ])
-        let data = await program_rank.populate(programBelts, {
-          path: "program_rank",
-          model: "Program_rank",
-          select: "rank_name programName -_id rank_image"
-        });
-        let belts = []
-        for (let i of programBelts) {
-          belts.push(i.program_rank)
-        }
-        let beltInfo = []
-        for (i of belts) {
-          let count = 0
-
-          for (j of studentsBelts) {
-            if (i.programName === j.program && i.rank_name === j.current_rank_name) {
-              count++
-            }
-          }
-          beltInfo.push({ programName: i.programName, belt: i.rank_name, rank_image: i.rank_image, count: count, })
-        }
-        return res.send(beltInfo)
-
-      } catch (err) {
-        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
-      }
-
-    } else if (event == "Promoted") {
-      try {
-        let studentsBelts = await registeredForTest.find({
-          eventId: eventId, isDeleted: true
-        },
-          { _id: 0, current_rank_name: 1, program: 1 }
-        )
-
-        let programBelts = await program.aggregate([
-          {
-            $match: {
-              $or: [
-                { userId: userId }, { adminId: process.env.ADMINID }
-              ]
-            }
-          },
-          { $project: { "program_rank": 1, "_id": 0 } },
-          { $unwind: "$program_rank" },
-        ])
-        let data = await program_rank.populate(programBelts, {
-          path: "program_rank",
-          model: "Program_rank",
-          select: "rank_name programName -_id rank_image"
-        });
-        let belts = []
-        for (let i of programBelts) {
-          belts.push(i.program_rank)
-        }
-        let beltInfo = []
-        for (i of belts) {
-          let count = 0
-
-          for (j of studentsBelts) {
-            if (i.programName === j.program && i.rank_name === j.current_rank_name) {
-              count++
-            }
-          }
-          beltInfo.push({ programName: i.programName, belt: i.rank_name, rank_image: i.rank_image, count: count, })
-        }
-        return res.send(beltInfo)
-
-      } catch (err) {
-        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
-      }
-
-
     }
+
+
+    const registerData = async (is_delete) => {
+      try {
+        let studentsBelts = await registeredForTest.find({
+          eventId: eventId, isDeleted: is_delete
+        },
+          { _id: 0, current_rank_name: 1, program: 1 }
+        )
+
+        const beltInfo = await loopingForBelts(userId, studentsBelts);
+        return beltInfo;
+      } catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+      }
+    }
+    const promotedData = async (is_delete) => {
+      try {
+        let studentsBelts = await registeredForTest.find({
+          eventId: eventId, isDeleted: is_delete
+        },
+          { _id: 0, current_rank_name: 1, program: 1 }
+        )
+
+        const beltInfo = await loopingForBelts(userId, studentsBelts);
+        return beltInfo;
+      } catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+      }
+    }
+    const recommended_data = await recommendedData();
+    const register_data = await registerData(false);
+    const promoted_data = await promotedData(true);
+    return res.send({recommended:recommended_data,register:register_data,promoted:promoted_data})
+
+
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false })
   }
-
 }
 
 exports.addToAttended = async (req, res) => {
