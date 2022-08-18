@@ -248,8 +248,9 @@ exports.generalBeltCount = async (req, res) => {
         let data = await program_rank.populate(programBelts, {
           path: "program_rank",
           model: "Program_rank",
-          select: "rank_name programName -_id"
+          select: "rank_name programName rank_image -_id"
         });
+        console.log(programBelts)
         let belts = []
         for (let i of programBelts) {
           belts.push(i.program_rank)
@@ -263,9 +264,11 @@ exports.generalBeltCount = async (req, res) => {
               count++
             }
           }
-          beltInfo.push({ programName: i.programName, belt: i.rank_name, count: count, })
+          beltInfo.push({ programName: i.programName, belt: i.rank_name,rank_image: i.rank_image, count: count, })
         }
+        console.log(beltInfo)
         return res.send(beltInfo)
+
 
       } catch (err) {
         res.send({ msg: err.message.replace(/\"/g, ""), success: false })
@@ -293,7 +296,7 @@ exports.generalBeltCount = async (req, res) => {
         let data = await program_rank.populate(programBelts, {
           path: "program_rank",
           model: "Program_rank",
-          select: "rank_name programName -_id"
+          select: "rank_name programName rank_image -_id"
         });
         let belts = []
         for (let i of programBelts) {
@@ -308,7 +311,7 @@ exports.generalBeltCount = async (req, res) => {
               count++
             }
           }
-          beltInfo.push({ programName: i.programName, belt: i.rank_name, count: count, })
+          beltInfo.push({ programName: i.programName, belt: i.rank_name,rank_image: i.rank_image, count: count, })
         }
         return res.send(beltInfo)
 
@@ -338,7 +341,7 @@ exports.generalBeltCount = async (req, res) => {
         let data = await program_rank.populate(programBelts, {
           path: "program_rank",
           model: "Program_rank",
-          select: "rank_name programName -_id"
+          select: "rank_name programName rank_image -_id"
         });
         let belts = []
         for (let i of programBelts) {
@@ -353,8 +356,8 @@ exports.generalBeltCount = async (req, res) => {
               count++
             }
           }
-          beltInfo.push({ programName: i.programName, belt: i.rank_name, count: count, })
-        }
+          beltInfo.push({ programName: i.programName, belt: i.rank_name,rank_image: i.rank_image, count: count, })
+        }invitee
         return res.send(beltInfo)
 
       } catch (err) {
@@ -397,7 +400,7 @@ exports.promotionBeltCount = async (req, res) => {
         let data = await program_rank.populate(programBelts, {
           path: "program_rank",
           model: "Program_rank",
-          select: "rank_name programName -_id"
+          select: "rank_name programName rank_image -_id"
         });
         let belts = []
         for (let i of programBelts) {
@@ -412,7 +415,7 @@ exports.promotionBeltCount = async (req, res) => {
               count++
             }
           }
-          beltInfo.push({ programName: i.programName, belt: i.rank_name, count: count, })
+          beltInfo.push({ programName: i.programName, belt: i.rank_name, rank_image: i.rank_image, count: count, })
         }
         return res.send(beltInfo)
 
@@ -442,7 +445,7 @@ exports.promotionBeltCount = async (req, res) => {
         let data = await program_rank.populate(programBelts, {
           path: "program_rank",
           model: "Program_rank",
-          select: "rank_name programName -_id"
+          select: "rank_name programName -_id rank_image"
         });
         let belts = []
         for (let i of programBelts) {
@@ -457,7 +460,7 @@ exports.promotionBeltCount = async (req, res) => {
               count++
             }
           }
-          beltInfo.push({ programName: i.programName, belt: i.rank_name, count: count, })
+          beltInfo.push({ programName: i.programName, belt: i.rank_name, rank_image: i.rank_image, count: count, })
         }
         return res.send(beltInfo)
 
@@ -487,7 +490,7 @@ exports.promotionBeltCount = async (req, res) => {
         let data = await program_rank.populate(programBelts, {
           path: "program_rank",
           model: "Program_rank",
-          select: "rank_name programName -_id"
+          select: "rank_name programName -_id rank_image"
         });
         let belts = []
         for (let i of programBelts) {
@@ -502,7 +505,7 @@ exports.promotionBeltCount = async (req, res) => {
               count++
             }
           }
-          beltInfo.push({ programName: i.programName, belt: i.rank_name, count: count, })
+          beltInfo.push({ programName: i.programName, belt: i.rank_name,rank_image: i.rank_image, count: count, })
         }
         return res.send(beltInfo)
 
