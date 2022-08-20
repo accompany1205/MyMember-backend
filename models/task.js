@@ -24,7 +24,7 @@ const taskSchema = schema(
 			type: String
 		},
 		start: {
-			type: Date,
+			type: String,
 			required: true
 		},
 		end: {
