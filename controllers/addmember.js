@@ -1,5 +1,5 @@
 const { functions, add } = require("lodash");
-var addmemberModal = require("../models/addmember");
+var addmemberModel = require("../models/addmember");
 var student_info_ranks = require("../models/student_info_Rank");
 const class_schedule = require("../models/class_schedule");
 const moment = require("moment");
@@ -37,6 +37,37 @@ const mergeMultipleFiles = require("../Services/mergeMultipleFiles");
 //         }
 //     })
 // }
+
+
+
+exports.StatisticsCount = async (req, res) => {
+  let userId = req.params.userId;
+  try{
+    let statisticsCount = await addmemberModel.aggregate([
+      { $match: { userId: userId } },
+      { $project : {studentType:1} },
+      { 
+        $group : {_id : {studentType:"$studentType"}, total : { $sum : 1 }}
+          }
+    ])
+    const studentDetails=[]
+    let sum=0
+    statisticsCount.map(i=>{
+      let studentType=i._id.studentType
+      let count=i.total
+      studentDetails.push({studentType:studentType,count:count})
+      sum+=i.total
+    })
+    studentDetails.push({totalCount:sum})
+    return res.send({
+      success: true,
+      data: studentDetails
+    })
+  }catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+  }  
+}
+
 
 exports.getStudentsByProgramm = async (req, res) => {
   let userId = req.params.userId;

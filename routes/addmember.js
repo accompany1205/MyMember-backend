@@ -51,7 +51,8 @@ const { addmember,
     collectionModify,
     mergeMultipleDoc,
     multipleFilter,
-    test
+    test,
+    StatisticsCount
 
 } = require("../controllers/addmember")
 
@@ -146,6 +147,8 @@ router.get('/member/get_students_by_Active_Status/:userId', requireSignin, Activ
 router.get('/member/get_Active_member_by_Program/:userId/:programName', ActiveMemberslistByProgramName)
 
 //Statistics
+
+router.get('/member/students_count_Statistics/:userId',requireSignin,StatisticsCount)
 
 
 
