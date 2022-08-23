@@ -19,6 +19,10 @@ const TextMessageSchema = schema({
     default: true,
     require:true
   },
+  isSeen:{
+    type: String,
+    default:null
+  },
   time: {
     type:String,
     default: new Date().toLocaleString('en-US', {  timeZone: 'America/New_York'})

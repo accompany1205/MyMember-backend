@@ -238,6 +238,7 @@ exports.listenIncomingSMS = async (req, res) => {
     text.save().then(async (textMessage) => {
       console.log(socketIo)
       socketIo.emit("textAlertWebhook", uidObj);
+      socketIo.emit("push-notification", obj.userId);
       await member.findOneAndUpdate({ _id: stuid }, { $set: { time: new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }), textContent: msg } })
       res.send({ msg: 'text sms sent successfully' })
     }).catch(error => {

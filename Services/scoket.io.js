@@ -1,6 +1,7 @@
 const textMessage = require('../models/text_message');
 const member = require('../models/addmember');
 const User = require('../models/user');
+const tasks = require('../models/task')
 const location = require('../models/admin/settings/location');
 const jwt = require('jsonwebtoken');
 const ChatUser = require('../models/chat_user');
@@ -33,6 +34,46 @@ class SocketEngine {
         } catch (err) {
           console.log(err);
         }
+      });
+      // in the userObj we need 3 parameter userId for task get and (msg to) for chat 
+      socket.on('push-notification', async (userId) =>{
+        let notification = {}
+    
+        let todayTask = await tasks.find(
+          {
+            userId: userId,
+            start: currDate,
+            $or:[{'isSeen':null}, {'isSeen':false}]
+          },
+          {name: 1,start: 1}
+        );
+
+       let text_chat = await textMessage.aggregate([
+          {"$match": {"$and":[{ userId:userId },{'isSeen':null} ]}},
+          { "$addFields": { "uid": { "$toObjectId": "$uid" }}},
+          {
+            "$lookup": {
+              "from": "members",
+              "localField": "uid",
+              "foreignField": "_id",
+              "as": "to"
+            }
+       },
+       {
+          $project:{
+              id:1,
+              textContent:1,
+              to:{
+                firstName:1,
+                lastName:1
+              }
+            }
+       }
+      ])
+         notification.count = (todayTask.length + text_chat.length)
+         notification.tasks = todayTask  
+         notification.chat = text_chat
+         io.emit('getNotification',notification) 
       });
 
       socket.on('textAlertWebhook', async (uidObj) => {
