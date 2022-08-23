@@ -1,5 +1,5 @@
 const { functions, add } = require("lodash");
-var addmemberModel = require("../models/addmember");
+var addmemberModal = require("../models/addmember");
 var student_info_ranks = require("../models/student_info_Rank");
 const class_schedule = require("../models/class_schedule");
 const moment = require("moment");
@@ -43,7 +43,7 @@ const mergeMultipleFiles = require("../Services/mergeMultipleFiles");
 exports.StatisticsCount = async (req, res) => {
   let userId = req.params.userId;
   try{
-    let statisticsCount = await addmemberModel.aggregate([
+    let statisticsCount = await addmemberModal.aggregate([
       { $match: { userId: userId } },
       { $project : {studentType:1} },
       { 
@@ -82,7 +82,7 @@ exports.getStudentsByProgramm = async (req, res) => {
     userId: userId,
     program: program,
   };
-  let studentsByProgram = await addmemberModel.find(filter);
+  let studentsByProgram = await addmemberModal.find(filter);
   if (!studentsByProgram) {
     res.json({
       success: false,
@@ -110,7 +110,7 @@ exports.getStudentsByCategory = async (req, res) => {
     userId: userId,
     category: category,
   };
-  let studentsByCategory = await addmemberModel.find(filter);
+  let studentsByCategory = await addmemberModal.find(filter);
   if (!studentsByCategory) {
     res.json({
       success: false,
