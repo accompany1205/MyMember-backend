@@ -2,6 +2,7 @@ const taskSubFolder = require("../models/task_subfolder");
 const taskFolder = require("../models/task_folder");
 const tasks = require("../models/task");
 const cloudUrl = require("../gcloud/imageUrl");
+const textMessage = require('../models/text_message');
 
 exports.Create = async (req, res) => {
   const Task = req.body;
@@ -339,13 +340,18 @@ exports.notificationTodayTask = async (req, res) => {
 exports.seenTasks = async (req, res) => {
   try {
     const taskIds = req.body.taskIds;
-    console.log("id", taskIds);
+    const textIds = req.body.chatIds;
+  
     const seenTasks = await tasks.updateMany(
       { _id: { $in: taskIds } },
       { $set: { isSeen: true } }
     );
-    console.log("updatetask", seenTasks);
-    res.send({ success: true, msg: "task seen successfully" });
+    const seenText = await textMessage.updateMany(
+      { _id: { $in: textIds } },
+      { $set: { isSeen: "true" } }
+    );
+    console.log("updatetask", seenTasks,"updateText",seenText);
+    res.send({ success: true, msg: "task and text seen successfully" });
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }

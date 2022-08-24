@@ -35,10 +35,10 @@ class SocketEngine {
           console.log(err);
         }
       });
-      // in the userObj we need 3 parameter userId for task get and (msg to) for chat 
+    
       socket.on('push-notification', async (userId) =>{
         let notification = {}
-    
+        let currDate = new Date().toISOString().slice(0, 10);
         let todayTask = await tasks.find(
           {
             userId: userId,
@@ -73,9 +73,9 @@ class SocketEngine {
          notification.count = (todayTask.length + text_chat.length)
          notification.tasks = todayTask  
          notification.chat = text_chat
-         io.emit('getNotification',notification) 
+         io.to(userId).emit('getNotification',notification) 
       });
-
+      // in the userObj we need 3 parameter userId for task get and (msg to) for chat 
       socket.on('textAlertWebhook', async (uidObj) => {
         let uid = uidObj.uid;
         let { userId } = await member.findOne({ _id: uid });
