@@ -2,6 +2,7 @@ const tempList = require("../models/std_temp_list");
 // const async = require('async');
 const program = require('../models/program');
 const program_rank = require('../models/program_rank');
+const buy_membership = require('../models/buy_membership')
 const Member = require('../models/addmember');
 const { dateRangeBuild } = require('./../utilities/dateRangeProcess');
 const leadsTracking = require('../models/leads_tracking')
@@ -243,8 +244,8 @@ exports.leadsFilter = async (req, res) => {
         dataObj.count = counter[obje];
         leadData.push(dataObj);
       })
-      
-      return res.send({ success: true, data:leadData, leads:leads.map(e => e.leads_category)})
+
+      return res.send({ success: true, data: leadData, leads: leads.map(e => e.leads_category) })
     } else {
       let monthyInfo = await Member.aggregate(
         [
@@ -333,7 +334,7 @@ exports.leadsFilter = async (req, res) => {
         dataObj.count = counter[obje];
         leadData.push(dataObj);
       })
-      return res.send({ success: true, data: leadData, leads:leads.map(e => e.leads_category)})
+      return res.send({ success: true, data: leadData, leads: leads.map(e => e.leads_category) })
     }
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false });
@@ -531,6 +532,63 @@ exports.getRanksByProgram = async (req, res) => {
     return res.status(500).json({ message: "Data not Found" });
   }
 };
+
+exports.getMembershipData = async (req, res) => {
+  const d = new Date();
+  let year = d.getFullYear();
+  let userId = req.params.userId;
+  let membership_type = req.params.membership_type;
+  try {
+    buy_membership.aggregate([
+      {
+        $match: {
+          userId: userId,
+          membership_type: membership_type
+        },
+
+      },
+      {
+        $project: {
+          _id: 0,
+          month: {
+            $month: "$createdAt",
+          },
+          year: {
+            $year: "$createdAt",
+          },
+        }
+      },
+      {
+        $group: {
+          _id: "$month",
+          count: { $count: {} }
+        }
+      }
+    ]).then(resp => {
+      resp.sort((a, b) => {
+        return a._id - b._id;
+      });
+      let dataArray = []
+      for (let i of resp) {
+        let dataObj = {};
+        dataObj["month"] = i._id;
+        dataObj["count"] = i.count;
+        dataArray.push(dataObj)
+      }
+      return res.send(dataArray)
+    }).catch(err => {
+      res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+    })
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+  }
+}
+
+
+
+
+
+
 
 exports.getMemberByProgram = async (req, res) => {
   try {

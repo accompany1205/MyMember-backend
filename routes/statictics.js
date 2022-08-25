@@ -9,7 +9,8 @@ const {
 	getRanksReportByProgram,
 	statisticsFilter,
 	statisticsFilterMember,
-	leadsFilter
+	leadsFilter,
+	getMembershipData
 } = require('../controllers/statictics');
 const { requireSignin, verifySchool } = require('../controllers/auth');
 router.get('/statictics/all-program/:userId', requireSignin, getAllProgram);
@@ -39,4 +40,9 @@ router.get(
 	requireSignin, verifySchool,
 	getMemberByProgram
 );
+
+
+
+router.get('/statics/get-membership-data/:userId/:membership_type',requireSignin, verifySchool,getMembershipData)
+
 module.exports = router;
