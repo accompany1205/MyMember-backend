@@ -565,17 +565,23 @@ exports.getMembershipData = async (req, res) => {
         }
       }
     ]).then(resp => {
-      resp.sort((a, b) => {
-        return a._id - b._id;
-      });
       let dataArray = []
-      for (let i of resp) {
-        let dataObj = {};
-        dataObj["month"] = i._id;
-        dataObj["count"] = i.count;
-        dataArray.push(dataObj)
+      let i = 1;
+      let checkArr = []
+      resp.map(e => {
+        dataArray.push({ month: e._id, count: e.count })
+        checkArr.push(e._id);
+      })
+      while (i <= 12) {
+        if (!checkArr.includes(i)) {
+          dataArray.push({ month: i, count: 0 })
+        }
+        i++;
       }
-      return res.send(dataArray)
+      dataArray.sort((a, b) => {
+        return a.month - b.month;
+      });
+      return res.send({ success: true, data: dataArray, msg: "data!" })
     }).catch(err => {
       res.send({ msg: err.message.replace(/\"/g, ""), success: false });
     })
