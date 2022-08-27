@@ -45,7 +45,7 @@ class SocketEngine {
             start: currDate,
             $or:[{'isSeen':null}, {'isSeen':false}]
           },
-          {name: 1,start: 1}
+          {id:1, name: 1,start: 1}
         );
 
        let text_chat = await textMessage.aggregate([

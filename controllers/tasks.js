@@ -317,19 +317,41 @@ exports.notificationTodayTask = async (req, res) => {
   try {
     let currDate = new Date().toISOString().slice(0, 10);
     console.log(currDate, typeof currDate);
-    let todayTask = await tasks.find(
+    // let todayTask = await tasks.find(
+    //   {
+    //     userId: req.params.userId,
+    //     start: currDate,
+    //     $or:[ 
+    //         {'isSeen':null}, {'isSeen':false} 
+    //     ]
+    //   },
+    //   {
+    //     name: 1,
+    //     start: 1,
+    //   }
+    // );
+    let todayTask =  await textMessage.aggregate([
+      {"$match": {"$and":[{ userId:"606aea95a145ea2d26e0f1aa" },{'isSeen':null} ]}},
+      { "$addFields": { "uid": { "$toObjectId": "$uid" }}},
       {
-        userId: req.params.userId,
-        start: currDate,
-        $or:[ 
-            {'isSeen':null}, {'isSeen':false} 
-        ]
-      },
-      {
-        name: 1,
-        start: 1,
-      }
-    );
+        "$lookup": {
+          "from": "members",
+          "localField": "uid",
+          "foreignField": "_id",
+          "as": "to"
+        }
+   },
+   {
+      $project:{
+          id:1,
+          textContent:1,
+          to:{
+            firstName:1,
+            lastName:1
+          }
+        }
+   }
+  ])
 
     res.send({ success: true, taskCount: todayTask.length, data: todayTask });
   } catch (err) {
