@@ -15,5 +15,7 @@ router.put("/admin/update_user/:adminId/:userId",isAdmin,upload.single('logo'),u
 router.put("/admin/update_user_by_admin/:adminId/:userId",isAdmin,update_user_by_admin)
 router.put("/admin/update_user_by_admin/stripe/:adminId/:userId", isAdmin,update_user_stripe_info)
 router.get("/admin/get_user_by_admin/stripe/:adminId/:userId",isAdmin,get_user_stripe_info)
+router.put("/admin/update_user_by_user/stripe/:userId", isAdmin,update_user_stripe_info)
+
 
 module.exports = router;
