@@ -267,9 +267,8 @@ exports.update_user_stripe_info = async (req, res) => {
   let data = req.body;
   const userId = req.params.userId;
   try {
-    const salt = await bcrypt.genSalt(10);
-    const stripe_sec = await bcrypt.hash(req.body.stripe_sec, salt);
-    const stripe_pub = await bcrypt.hash(req.body.stripe_pub, salt)
+    const stripe_sec = req.body.stripe_sec;
+    const stripe_pub = req.body.stripe_pub;
     data.stripe_sec = stripe_sec;
     data.stripe_pub = stripe_pub;
 

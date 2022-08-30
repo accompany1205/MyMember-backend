@@ -10,15 +10,19 @@ const {
 	statisticsFilter,
 	statisticsFilterMember,
 	leadsFilter,
-	getMembershipData
+	getMembershipData,
+	allStaticsData
 } = require('../controllers/statictics');
 const { requireSignin, verifySchool } = require('../controllers/auth');
 router.get('/statictics/all-program/:userId', requireSignin, getAllProgram);
 router.get('/statictics/state-by-type/:userId', requireSignin, getStateByType);
-router.post('/statictics/graphFetch/:userId', requireSignin, statisticsFilter);
+router.post('/statictics/graphFetch/trials_statics/:userId', requireSignin, statisticsFilter);
 router.post('/statictics/graphFetchMember/:userId', requireSignin, statisticsFilterMember);
 router.get('/statictics/leadsFilter/:userId/:studentType/:date', requireSignin, leadsFilter);
 //leads_tracking/get_all_leads
+
+router.get('/statics/graphFetchStatics/:userId/:staticsType/:year',requireSignin,allStaticsData)
+
 
 router.get(
 	'/statictics/yearly-join-quit-data/:userId',
