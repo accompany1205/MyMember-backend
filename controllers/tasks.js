@@ -3,7 +3,7 @@ const taskFolder = require("../models/task_folder");
 const tasks = require("../models/task");
 const cloudUrl = require("../gcloud/imageUrl");
 const textMessage = require('../models/text_message');
-
+const member =  require("../models/addmember")
 exports.Create = async (req, res) => {
   const Task = req.body;
   let userId = req.params.userId;
@@ -330,30 +330,50 @@ exports.notificationTodayTask = async (req, res) => {
     //     start: 1,
     //   }
     // );
-    let todayTask =  await textMessage.aggregate([
-      {"$match": {"$and":[{ userId:"606aea95a145ea2d26e0f1aa" },{'isSeen':null} ]}},
-      { "$addFields": { "uid": { "$toObjectId": "$uid" }}},
-      {
-        "$lookup": {
-          "from": "members",
-          "localField": "uid",
-          "foreignField": "_id",
-          "as": "to"
-        }
-   },
-   {
-      $project:{
-          id:1,
-          textContent:1,
-          to:{
-            firstName:1,
-            lastName:1
-          }
-        }
-   }
-  ])
+  //   let todayTask =  await textMessage.aggregate([
+  //     {"$match": {"$and":[{ userId:"606aea95a145ea2d26e0f1aa" },{'isSeen':null} ]}},
+  //     { "$addFields": { "uid": { "$toObjectId": "$uid" }}},
+  //     {
+  //       "$lookup": {
+  //         "from": "members",
+  //         "localField": "uid",
+  //         "foreignField": "_id",
+  //         "as": "to"
+  //       }
+  //  },
+  //  {
+  //     $project:{
+  //         id:1,
+  //         textContent:1,
+  //         to:{
+  //           firstName:1,
+  //           lastName:1
+  //         }
+  //       }
+  //  }
+  // ])
+  let todayBirthday = await member.aggregate([
+    {
+    $match: {
+      $and: [
+        {userId:req.params.userId},
+        {'isSeen':null},
+        { $expr: { $eq: [{ $dayOfMonth: '$dob' },{ $dayOfMonth: '$$NOW' }]} }, 
+        { $expr: { $eq: [{ $month: '$dob' },{ $month: '$$NOW' }] } }
+      ]
+  }
+  },
+  {
+    $project:{
+      firstName:1,
+      lastName:1,
+      age:1,
+      dob:1
+  }
+  }
+])
 
-    res.send({ success: true, taskCount: todayTask.length, data: todayTask });
+    res.send({ success: true, taskCount: todayBirthday.length, data: todayBirthday });
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
@@ -363,16 +383,23 @@ exports.seenTasks = async (req, res) => {
   try {
     const taskIds = req.body.taskIds;
     const textIds = req.body.chatIds;
+    const memberIds = req.body.memberIds
   
     const seenTasks = await tasks.updateMany(
       { _id: { $in: taskIds } },
       { $set: { isSeen: true } }
     );
+
+    const seenMember = await member.updateMany(
+      { _id: { $in: memberIds } },
+      { $set: { isSeen: "true" } }
+    );
+
     const seenText = await textMessage.updateMany(
       { _id: { $in: textIds } },
       { $set: { isSeen: "true" } }
     );
-    console.log("updatetask", seenTasks,"updateText",seenText);
+    console.log("updatetask", seenTasks,"updateText",seenText,"seenmember",seenMember);
     res.send({ success: true, msg: "task and text seen successfully" });
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });

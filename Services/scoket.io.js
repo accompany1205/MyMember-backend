@@ -48,7 +48,7 @@ class SocketEngine {
           {id:1, name: 1,start: 1}
         );
 
-       let text_chat = await textMessage.aggregate([
+        let text_chat = await textMessage.aggregate([
           {"$match": {"$and":[{ userId:userId },{'isSeen':null} ]}},
           { "$addFields": { "uid": { "$toObjectId": "$uid" }}},
           {
@@ -69,10 +69,34 @@ class SocketEngine {
               }
             }
        }
-      ])
-         notification.count = (todayTask.length + text_chat.length)
+        ])
+
+        let todayBirthday = await member.aggregate([
+          {
+          $match: {
+            $and: [
+              {userId:userId},
+              {'isSeen':null},
+              { $expr: { $eq: [{ $dayOfMonth: '$dob' },{ $dayOfMonth: '$$NOW' }]} }, 
+              { $expr: { $eq: [{ $month: '$dob' },{ $month: '$$NOW' }] } }
+            ]
+        }
+        },
+        {
+          $project:{
+            id:1,
+            firstName:1,
+            lastName:1,
+            age:1,
+            dob:1
+        }
+        }
+        ])
+
+         notification.count = (todayTask.length + text_chat.length + todayBirthday.length)
          notification.tasks = todayTask  
          notification.chat = text_chat
+         notification.todayBirthday = todayBirthday
          io.to(userId).emit('getNotification',notification) 
       });
       // in the userObj we need 3 parameter userId for task get and (msg to) for chat 

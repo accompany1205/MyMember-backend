@@ -295,6 +295,10 @@ const addmemberSchema = new schema(
     textContent: {
       type: String,
     },
+    isSeen:{
+      type: String,
+      default:null
+    }
   },
 
   { timestamps: true }
