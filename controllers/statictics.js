@@ -148,16 +148,16 @@ exports.statisticsFilter = async (req, res) => {
 exports.allStaticsData = async (req, res) => {
   let userId = req.params.userId;
   let staticsType = req.params.staticsType;
-  let year1 = req.params.year;
-  console.log(year1)
+  let year1 = parseInt(req.params.year);
   if (staticsType == "memberStatics") {
     try {
       const join = await Member.aggregate([
         {
           $match: {
-            $and:[{
-            userId: userId},
-            {studentType: "Active Student"}]
+            $and: [{
+              userId: userId
+            },
+            { studentType: "Active Student" }]
           },
 
         },
@@ -172,20 +172,41 @@ exports.allStaticsData = async (req, res) => {
             },
           }
         },
-        {
-          $match:{
-            month:"4"
-          }
-        },
+        // {
+        //   $match:{
+        //     month:"4"
+        //   }
+        // },
         {
           $group: {
             _id: "$month",
+            year: { $first: "$year" },
             count: { $count: {} }
           }
         }
       ])
-      console.log(join)
-
+      if (join.length === 0) {
+        return res.send({ msg: "No Data!", success: true, data: [] });
+      }
+      let dataArray = []
+      let i = 1;
+      let checkArr = []
+      join.map(e => {
+        if (e.year === year1) {
+          dataArray.push({ month: e._id, count: e.count })
+          checkArr.push(e._id);
+        }
+      })
+      while (i <= 12) {
+        if (!checkArr.includes(i)) {
+          dataArray.push({ month: i, count: 0 })
+        }
+        i++;
+      }
+      dataArray.sort((a, b) => {
+        return a.month - b.month;
+      });
+      return res.send({ msg: "Data!", data: dataArray, success: true })
     } catch (err) {
       res.send({ msg: err.message.replace(/\"/g, ""), success: false });
     }
@@ -211,8 +232,8 @@ exports.allStaticsData = async (req, res) => {
           }
         },
         {
-          $match:{
-            month:"2"
+          $match: {
+            month: "2"
           }
         }
 
