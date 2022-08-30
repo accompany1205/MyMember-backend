@@ -143,113 +143,78 @@ exports.statisticsFilter = async (req, res) => {
   }
 };
 
+const dataStatics=async(studentType,userId,year1)=>{
 
+    const join = await Member.aggregate([
+      {
+        $match: {
+          $and: [{
+            userId: userId
+          },
+          { studentType: studentType}]
+        },
+
+      },
+      {
+        $project: {
+          _id: 0,
+          month: {
+            $month: "$createdAt",
+          },
+          year: {
+            $year: "$createdAt",
+          },
+        }
+      },
+      {
+        $group: {
+          _id: "$month",
+          year: { $first: "$year" },
+          count: { $count: {} }
+        }
+      }
+    ])
+    if (join.length === 0) {
+      return res.send({ msg: "No Data!", success: true, data: [] });
+    }
+    let dataArray = []
+    let i = 1;
+    let checkArr = []
+    join.map(e => {
+      if (e.year === year1) {
+        dataArray.push({ month: e._id, count: e.count })
+        checkArr.push(e._id);
+      }
+    })
+    while (i <= 12) {
+      if (!checkArr.includes(i)) {
+        dataArray.push({ month: i, count: 0 })
+      }
+      i++;
+    }
+    dataArray.sort((a, b) => {
+      return a.month - b.month;
+    });
+    return dataArray
+}
 
 exports.allStaticsData = async (req, res) => {
   let userId = req.params.userId;
   let staticsType = req.params.staticsType;
   let year1 = parseInt(req.params.year);
-  if (staticsType == "memberStatics") {
-    try {
-      const join = await Member.aggregate([
-        {
-          $match: {
-            $and: [{
-              userId: userId
-            },
-            { studentType: "Active Student" }]
-          },
+  if (staticsType == "MemberStatics") {
+    const join=await dataStatics("Active Student",userId,year1)
+    const quite=await dataStatics("Former Student",userId,year1)
+    return res.send({join:join,quite:quite,msg: "Data!",success: true})
 
-        },
-        {
-          $project: {
-            _id: 0,
-            month: {
-              $month: "$createdAt",
-            },
-            year: {
-              $year: "$createdAt",
-            },
-          }
-        },
-        // {
-        //   $match:{
-        //     month:"4"
-        //   }
-        // },
-        {
-          $group: {
-            _id: "$month",
-            year: { $first: "$year" },
-            count: { $count: {} }
-          }
-        }
-      ])
-      if (join.length === 0) {
-        return res.send({ msg: "No Data!", success: true, data: [] });
-      }
-      let dataArray = []
-      let i = 1;
-      let checkArr = []
-      join.map(e => {
-        if (e.year === year1) {
-          dataArray.push({ month: e._id, count: e.count })
-          checkArr.push(e._id);
-        }
-      })
-      while (i <= 12) {
-        if (!checkArr.includes(i)) {
-          dataArray.push({ month: i, count: 0 })
-        }
-        i++;
-      }
-      dataArray.sort((a, b) => {
-        return a.month - b.month;
-      });
-      return res.send({ msg: "Data!", data: dataArray, success: true })
-    } catch (err) {
-      res.send({ msg: err.message.replace(/\"/g, ""), success: false });
-    }
-  } else if (staticsType == "trailStatics") {
-    try {
-      const join = await Member.aggregate([
-        {
-          $match: {
-            userId: userId,
-            studentType: "Former Trial"
-          },
+  } else if (staticsType == "TrialStatics") {
+    const join=await dataStatics("Active Trial",userId,year1)
+    const quite=await dataStatics("Former Trial",userId,year1)
+    return res.send({join:join,quite:quite,msg: "Data!",success: true})
 
-        },
-        {
-          $project: {
-            _id: 0,
-            month: {
-              $month: "$createdAt",
-            },
-            year: {
-              $year: "$createdAt",
-            },
-          }
-        },
-        {
-          $match: {
-            month: "2"
-          }
-        }
-
-        // {
-        //   $group: {
-        //     _id: "$month",
-        //     count: { $count: {} }
-        //   }
-        // }
-      ])
-      console.log(join)
-
-    } catch (err) {
-      res.send({ msg: err.message.replace(/\"/g, ""), success: false });
-    }
-
+  }else if(staticsType=="leadsStatics"){
+    const join=await dataStatics("Leads",userId,year1)
+    return res.send({join:join,msg: "Data!",success: true})
   }
 }
 
