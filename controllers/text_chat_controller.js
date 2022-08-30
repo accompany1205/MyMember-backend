@@ -201,7 +201,7 @@ exports.getTextContactsDetails = async (req, res) => {
           }
         }
       ]);
-      return res.send(data)
+      return res.send({data:data,msg:"Success!", success:true});
     }
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false });
