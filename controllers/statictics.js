@@ -143,6 +143,95 @@ exports.statisticsFilter = async (req, res) => {
   }
 };
 
+
+
+exports.allStaticsData = async (req, res) => {
+  let userId = req.params.userId;
+  let staticsType = req.params.staticsType;
+  let year1 = req.params.year;
+  console.log(year1)
+  if (staticsType == "memberStatics") {
+    try {
+      const join = await Member.aggregate([
+        {
+          $match: {
+            $and:[{
+            userId: userId},
+            {studentType: "Active Student"}]
+          },
+
+        },
+        {
+          $project: {
+            _id: 0,
+            month: {
+              $month: "$createdAt",
+            },
+            year: {
+              $year: "$createdAt",
+            },
+          }
+        },
+        {
+          $match:{
+            month:"4"
+          }
+        },
+        {
+          $group: {
+            _id: "$month",
+            count: { $count: {} }
+          }
+        }
+      ])
+      console.log(join)
+
+    } catch (err) {
+      res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+    }
+  } else if (staticsType == "trailStatics") {
+    try {
+      const join = await Member.aggregate([
+        {
+          $match: {
+            userId: userId,
+            studentType: "Former Trial"
+          },
+
+        },
+        {
+          $project: {
+            _id: 0,
+            month: {
+              $month: "$createdAt",
+            },
+            year: {
+              $year: "$createdAt",
+            },
+          }
+        },
+        {
+          $match:{
+            month:"2"
+          }
+        }
+
+        // {
+        //   $group: {
+        //     _id: "$month",
+        //     count: { $count: {} }
+        //   }
+        // }
+      ])
+      console.log(join)
+
+    } catch (err) {
+      res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+    }
+
+  }
+}
+
 // Active Student
 // Active Trial
 // Leads

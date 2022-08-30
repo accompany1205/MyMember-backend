@@ -222,6 +222,7 @@ exports.all_data_std = async (req, res) => {
                     time: 1,
                     note: 1,
                     date: 1,
+                    createdAt:1,
                   },
                 },
               ],
@@ -331,6 +332,9 @@ exports.all_data_std = async (req, res) => {
             });
           } else {
             let data = memberdata[0].paginatedResults;
+            data.sort((a,b)=>{
+              return a.notes.createdAt-b.notes.createdAt
+            })
             if (data.length > 0) {
               res.send({
                 data: data,
@@ -462,6 +466,7 @@ exports.all_data_std = async (req, res) => {
                   $project: {
                     note: 1,
                     date: 1,
+                    createdAt:1,
                   },
                 },
               ],
@@ -565,6 +570,9 @@ exports.all_data_std = async (req, res) => {
             });
           } else {
             let data = memberdata[0].paginatedResults;
+            data.sort((a,b)=>{
+              return a.notes.createdAt-b.notes.createdAt
+            })
             if (data.length > 0) {
               res.send({
                 data: data,
@@ -696,6 +704,7 @@ exports.all_data_std = async (req, res) => {
                   $project: {
                     note: 1,
                     date: 1,
+                    createdAt:1,
                   },
                 },
               ],
@@ -799,6 +808,9 @@ exports.all_data_std = async (req, res) => {
             });
           } else {
             let data = memberdata[0].paginatedResults;
+            data.sort((a,b)=>{
+              return a.notes.createdAt-b.notes.createdAt
+            })
             if (data.length > 0) {
               res.send({
                 data: data,
@@ -910,6 +922,7 @@ exports.all_data_std = async (req, res) => {
                   $project: {
                     note: 1,
                     date: 1,
+                    createdAt:1,
                   },
                 },
               ],
@@ -959,6 +972,9 @@ exports.all_data_std = async (req, res) => {
             });
           } else {
             let data = memberdata[0].paginatedResults;
+            data.sort((a,b)=>{
+              return a.notes.createdAt-b.notes.createdAt
+            })
             if (data.length > 0) {
               res.send({
                 data: data,
@@ -1093,6 +1109,7 @@ exports.all_data_std = async (req, res) => {
                     time: 1,
                     note: 1,
                     date: 1,
+                    createdAt:1,
                   },
                 },
               ],
@@ -1202,6 +1219,9 @@ exports.all_data_std = async (req, res) => {
             });
           } else {
             let data = memberdata[0].paginatedResults;
+            data.sort((a,b)=>{
+              return a.notes.createdAt-b.notes.createdAt;
+            })
             if (data.length > 0) {
               res.send({
                 data: data,
