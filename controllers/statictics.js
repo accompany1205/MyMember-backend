@@ -190,7 +190,7 @@ const dataStatics=async(studentType,userId,year1)=>{
       if (!checkArr.includes(i)) {
         dataArray.push({ month: i, count: 0 })
       }
-      i++;
+      i++; 
     }
     dataArray.sort((a, b) => {
       return a.month - b.month;
@@ -205,16 +205,32 @@ exports.allStaticsData = async (req, res) => {
   if (staticsType == "MemberStatics") {
     const join=await dataStatics("Active Student",userId,year1)
     const quite=await dataStatics("Former Student",userId,year1)
-    return res.send({join:join,quite:quite,msg: "Data!",success: true})
-
+    let arr=[]
+    let i=0;
+    while(i<12){
+      arr.push({month:i+1,join:join[i].count,quite:quite[i].count})
+      i++
+    }     
+    return res.send({data:arr,msg: "Data!",success: true})
   } else if (staticsType == "TrialStatics") {
     const join=await dataStatics("Active Trial",userId,year1)
     const quite=await dataStatics("Former Trial",userId,year1)
-    return res.send({join:join,quite:quite,msg: "Data!",success: true})
-
+    let arr=[]
+    let i=0;
+    while(i<12){
+      arr.push({month:i+1,join:join[i].count,quite:quite[i].count})
+      i++
+    }     
+    return res.send({data:arr,msg: "Data!",success: true})
   }else if(staticsType=="leadsStatics"){
     const join=await dataStatics("Leads",userId,year1)
-    return res.send({join:join,msg: "Data!",success: true})
+    let arr=[]
+    let i=0;
+    while(i<12){
+      arr.push({month:i+1,join:join[i].count})
+      i++
+    }     
+    return res.send({data:arr,msg: "Data!",success: true})
   }
 }
 

@@ -448,7 +448,7 @@ exports.all_data_std = async (req, res) => {
                   $project: {
                     note: 1,
                     date: 1,
-                    createdAt: 1,
+                    day: { $dayOfMonth: "$createdAt" },
                   },
                 },
               ],
@@ -627,7 +627,7 @@ exports.all_data_std = async (req, res) => {
                 time: 1,
                 note: 1,
                 date: 1,
-                createdAt: 1,
+                // createdAt: 1,
               },
             },
           ],
@@ -731,9 +731,12 @@ exports.all_data_std = async (req, res) => {
 
     data = data[0].paginatedResults;
     data.sort((a, b) => {
-      return a.notes.createdAt - b.notes.createdAt
+      return a.notes.date - b.notes.date
     })
     if (data.length > 0) {
+      data.sort((a, b) => {
+        return a.notes.date - b.notes.date
+      })
       return res.send({ msg: "data!", success: true, data: data, totalCount: data.length });
     } else {
       return res.send({ msg: "data not found!", success: false });
