@@ -315,8 +315,14 @@ const { isIsoDate } = require("@hapi/joi/lib/common");
 
 exports.notificationTodayTask = async (req, res) => {
   try {
-    let currDate = new Date().toISOString().slice(0, 10);
-    console.log(currDate, typeof currDate);
+  //   let today = moment().startOf('day');
+  // // "2018-12-05T00:00:00.00
+    
+    
+
+  // ("2018-12-05T23:59:59.999
+    // let currDate = new Date().toISOString().slice(0, 10);
+    // console.log(currDate, typeof currDate);
     // let todayTask = await tasks.find(
     //   {
     //     userId: req.params.userId,
@@ -352,28 +358,60 @@ exports.notificationTodayTask = async (req, res) => {
   //       }
   //  }
   // ])
-  let todayBirthday = await member.aggregate([
-    {
-    $match: {
-      $and: [
-        {userId:req.params.userId},
-        {'isSeen':null},
-        { $expr: { $eq: [{ $dayOfMonth: '$dob' },{ $dayOfMonth: '$$NOW' }]} }, 
-        { $expr: { $eq: [{ $month: '$dob' },{ $month: '$$NOW' }] } }
-      ]
-  }
-  },
-  {
-    $project:{
-      firstName:1,
-      lastName:1,
-      age:1,
-      dob:1
-  }
-  }
-])
+  // const tomorrow  = new Date(); // The Date object returns today's timestamp
+  // tomorrow.setDate(tomorrow.getDate() + 1);
+  //   console.log(tomorrow,'date')
+  // let todayBirthday = await member.find({ userId:req.params.userId,dob:tomorrow }, {id:1, dob: 1,firstName: 1})
+//   let data = await member.aggregate([
+//     {
+//     $match: {
+//       $and: [
+//         {userId:req.params.userId},
+//         // {'isSeen':null},
+//         // { $expr: { $eq: [{ $dayOfMonth: '$dob' },{ $add: [{ $dayOfMonth: "$$NOW" },1] },]} }, 
+//         // { $expr: { $eq: [{ $month: '$dob' },{ $month: '$$NOW' }] } }
+//       ]
+//   }
+//   },
+//   {
+//     $project:{
+//       // firstName:1,
+//       // lastName:1,
+//       // age:1,
+//       today: {  $dayOfMonth: new Date() },
+//       tomrow: { $add: [{ $dayOfMonth: new Date() },1] },
+//   }
+//   }
+// ])
+// let today = new Date()
+// let tomorrow = moment(today,'YYYY-MM-DD').add(1);
+// var now = new Date();
+// var day = now.getDate();        // funny method name but that's what it is
+// var month = now.getMonth() + 1;
+// console.log(now,day,month,tomorrow)
+// let today = moment();
+// let tomorrow = moment().add(1,'days');
+// let tomorrowBirthday = await member.aggregate([
+//     {
+//     $match: {
+//       $and: [
+//         {userId:req.params.userId},
+//         {'isSeen':null},
+//         { $expr: { $eq: [{ $dayOfMonth: '$dob' },{ $dayOfMonth: new Date(tomorrow)}]} }, 
+//         { $expr: { $eq: [{ $month: '$dob' },{ $month: new Date(tomorrow) }] } }
+//       ]
+//   }
+//   },
+//   {
+//     $project:{
+//       firstName:1,
+//       lastName:1,
+//       age:1,
+//   }
+//   }
+// ])
 
-    res.send({ success: true, taskCount: todayBirthday.length, data: todayBirthday });
+    res.send({ success: true, /*taskCount: todayBirthday.length,*/ data: tomorrowBirthday });
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
