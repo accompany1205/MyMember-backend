@@ -1500,7 +1500,8 @@ exports.IncomeReportWithFilters = async (req, res) => {
 					year: { $year: '$createdAt' },
 					status: 'paid',
 					membership_name:1,
-					membershipIds:1
+					membershipIds:1,
+					payment_type:1
 				},
 			},
 			{
@@ -1521,8 +1522,10 @@ exports.IncomeReportWithFilters = async (req, res) => {
 					status: '$schedulePayments.status',
 					ptype: '$schedulePayments.ptype',
 					emiId: '$schedulePayments.Id',
+					amount:'$schedulePayments.Amount',
 					membership_name:1,
-					membershipIds:1
+					membershipIds:1,
+					payment_type:1
 				},
 			},
 			{
