@@ -68,7 +68,7 @@ exports.sendTextMessage = async (req, res) => {
           } else {
             let remainingCredit = textCredit - 1;
             await member.findOneAndUpdate({ _id: uid }, { $set: { time: new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }), textContent: textContent } })
-            await user.findOneAndUpdate({_id:req.params.userId}, {$set:{textCredit:remainingCredit}})
+            await user.findOneAndUpdate({ _id: req.params.userId }, { $set: { textCredit: remainingCredit } })
             res.send({ textMessage: data, success: true, msg: "Message Successfully sent!" });
           }
         });
@@ -167,26 +167,70 @@ exports.getTextMessages = async (req, res) => {
 };
 
 // Get members details
-exports.getTextContactsDetails = (req, res) => {
-  let body = req.body;
-  let ids = [];
-  if (body.hasOwnProperty('ids')) {
-    body.ids.forEach(id => {
-      ids.push(mongoose.Types.ObjectId(id));
-    });
+exports.getTextContactsDetails = async (req, res) => {
+  const userId = req.params.userId;
+  const studentType = req.query.studentType;
+  let data;
+  try {
+    if (studentType === 'Active Trial') {
+      data = await contactInfo(userId, studentType)
+      return res.send({data:data,msg:"Success!", success:true});
+    } else if (studentType === 'Leads') {
+      data = await contactInfo(userId, studentType)
+      return res.send({data:data,msg:"Success!", success:true});
+    } else if (studentType === 'Former Student') {
+      data = await contactInfo(userId, studentType)
+      return res.send({data:data,msg:"Success!", success:true});
+    } else if (studentType === 'Former Trial') {
+      data = await contactInfo(userId, studentType)
+      return res.send({data:data,msg:"Success!", success:true});
+    } else {
+      data = await member.aggregate([
+        {
+          $match: {
+            userId: userId,
+            studentType: "Active Student"
+          }
+        },
+        {
+          $project: {
+            primaryPhone: 1,
+            firstName: 1,
+            lastName: 1,
+            memberprofileImage: 1
+          }
+        }
+      ]);
+      return res.send({data:data,msg:"Success!", success:true});
+    }
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }
-  member.find({ '_id': { $in: ids } })
-    .populate('textContacts')
-    .exec((err, textContactList) => {
-      if (err) {
-        res.send({ error: 'text contact list not found' })
-      }
-      else {
-        res.send(textContactList)
-      }
-    });
 };
 
+async function contactInfo(userId, type) {
+  try {
+    const data = await member.aggregate([
+      {
+        $match: {
+          userId: userId,
+          studentType: type
+        }
+      },
+      {
+        $project: {
+          primaryPhone: 1,
+          firstName: 1,
+          lastName: 1,
+          memberprofileImage: 1
+        }
+      }
+    ])
+    return data
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+  }
+}
 
 // Incoming Message API to test SMS
 exports.listenIncomingSMS = async (req, res) => {
