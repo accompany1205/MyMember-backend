@@ -101,7 +101,7 @@ exports.updateNote = (req, res) => {
 
 
 exports.all_data_std = async (req, res) => {
-  if(req.params.multiple_data==="30"){
+  if (req.params.multiple_data === "30") {
     try {
       let userId = req.params.userId;
       var per_page = parseInt(req.params.per_page) || 5;
@@ -120,11 +120,11 @@ exports.all_data_std = async (req, res) => {
           : {
             userId,
           };
-  
+
       buymembership
         .aggregate([
           { $match: { userId: userId } },
-  
+
           {
             $project: {
               membership_name: 1,
@@ -222,7 +222,7 @@ exports.all_data_std = async (req, res) => {
                     time: 1,
                     note: 1,
                     date: 1,
-                    createdAt:1,
+                    createdAt: 1,
                   },
                 },
               ],
@@ -332,9 +332,11 @@ exports.all_data_std = async (req, res) => {
             });
           } else {
             let data = memberdata[0].paginatedResults;
-            data.sort((a,b)=>{
-              return a.notes.createdAt-b.notes.createdAt
-            })
+            // data.sort((a, b) => {
+            //   if (a.notes != null && b.notes != null) {
+            //     return a.notes.createdAt - b.notes.createdAt
+            //   }
+            // })
             if (data.length > 0) {
               res.send({
                 data: data,
@@ -349,7 +351,7 @@ exports.all_data_std = async (req, res) => {
     } catch (e) {
       res.send({ error: "expire student data not fount", a: e });
     }
-  }else if(req.params.multiple_data==="60"){
+  } else if (req.params.multiple_data === "60") {
     try {
       let userId = req.params.userId;
       var per_page = parseInt(req.params.per_page) || 5;
@@ -371,7 +373,7 @@ exports.all_data_std = async (req, res) => {
       buymembership
         .aggregate([
           { $match: { userId: userId } },
-  
+
           {
             $project: {
               membership_name: 1,
@@ -466,7 +468,7 @@ exports.all_data_std = async (req, res) => {
                   $project: {
                     note: 1,
                     date: 1,
-                    createdAt:1,
+                    createdAt: 1,
                   },
                 },
               ],
@@ -570,9 +572,18 @@ exports.all_data_std = async (req, res) => {
             });
           } else {
             let data = memberdata[0].paginatedResults;
-            data.sort((a,b)=>{
-              return a.notes.createdAt-b.notes.createdAt
-            })
+            // console.log(data)
+            // for (let i of data) {
+            //   if (i.notes != null) {
+            //     console.log(i.notes)
+
+            //   }
+            // }
+            // data.sort((a, b) => {
+            //   if (a.notes != null && b.notes != null) {
+            //     return a.notes.createdAt - b.notes.createdAt
+            //   }
+            // })
             if (data.length > 0) {
               res.send({
                 data: data,
@@ -587,7 +598,7 @@ exports.all_data_std = async (req, res) => {
     } catch (e) {
       res.send({ error: "expire student data not fount" });
     }
-  }else if(req.params.multiple_data==="90"){
+  } else if (req.params.multiple_data === "90") {
     try {
       let userId = req.params.userId;
       var per_page = parseInt(req.params.per_page) || 5;
@@ -609,7 +620,7 @@ exports.all_data_std = async (req, res) => {
       buymembership
         .aggregate([
           { $match: { userId: userId } },
-  
+
           {
             $project: {
               membership_name: 1,
@@ -704,7 +715,7 @@ exports.all_data_std = async (req, res) => {
                   $project: {
                     note: 1,
                     date: 1,
-                    createdAt:1,
+                    createdAt: 1,
                   },
                 },
               ],
@@ -808,9 +819,9 @@ exports.all_data_std = async (req, res) => {
             });
           } else {
             let data = memberdata[0].paginatedResults;
-            data.sort((a,b)=>{
-              return a.notes.createdAt-b.notes.createdAt
-            })
+            // data.sort((a, b) => {
+            //   return a.notes.createdAt - b.notes.createdAt
+            // })
             if (data.length > 0) {
               res.send({
                 data: data,
@@ -825,7 +836,7 @@ exports.all_data_std = async (req, res) => {
     } catch (e) {
       res.send({ error: "expire student data not fount" });
     }
-  }else if(req.params.multiple_data==="frozenmembership"){
+  } else if (req.params.multiple_data === "frozenmembership") {
     try {
       let userId = req.params.userId;
       var per_page = parseInt(req.params.per_page) || 5;
@@ -847,7 +858,7 @@ exports.all_data_std = async (req, res) => {
       student
         .aggregate([
           { $match: { userId: userId } },
-  
+
           {
             $project: {
               firstName: 1,
@@ -922,7 +933,7 @@ exports.all_data_std = async (req, res) => {
                   $project: {
                     note: 1,
                     date: 1,
-                    createdAt:1,
+                    createdAt: 1,
                   },
                 },
               ],
@@ -972,9 +983,9 @@ exports.all_data_std = async (req, res) => {
             });
           } else {
             let data = memberdata[0].paginatedResults;
-            data.sort((a,b)=>{
-              return a.notes.createdAt-b.notes.createdAt
-            })
+            // data.sort((a, b) => {
+            //   return a.notes.createdAt - b.notes.createdAt
+            // })
             if (data.length > 0) {
               res.send({
                 data: data,
@@ -989,7 +1000,7 @@ exports.all_data_std = async (req, res) => {
     } catch (e) {
       res.send({ error: "frozen student data not fount" });
     }
-  }else if(req.params.multiple_data==="expired"){
+  } else if (req.params.multiple_data === "expired") {
     try {
       let userId = req.params.userId;
       var per_page = parseInt(req.params.per_page) || 5;
@@ -1008,11 +1019,11 @@ exports.all_data_std = async (req, res) => {
           : {
             userId,
           };
-  
+
       buymembership
         .aggregate([
           { $match: { userId: userId } },
-  
+
           {
             $project: {
               membership_name: 1,
@@ -1109,7 +1120,7 @@ exports.all_data_std = async (req, res) => {
                     time: 1,
                     note: 1,
                     date: 1,
-                    createdAt:1,
+                    createdAt: 1,
                   },
                 },
               ],
@@ -1219,9 +1230,9 @@ exports.all_data_std = async (req, res) => {
             });
           } else {
             let data = memberdata[0].paginatedResults;
-            data.sort((a,b)=>{
-              return a.notes.createdAt-b.notes.createdAt;
-            })
+            // data.sort((a, b) => {
+            //   return a.notes.createdAt - b.notes.createdAt;
+            // })
             if (data.length > 0) {
               res.send({
                 data: data,
