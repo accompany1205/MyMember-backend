@@ -1501,7 +1501,8 @@ exports.IncomeReportWithFilters = async (req, res) => {
 					status: 'paid',
 					membership_name:1,
 					membershipIds:1,
-					payment_type:1
+					payment_type:1,
+					balance:1
 				},
 			},
 			{
@@ -1525,7 +1526,8 @@ exports.IncomeReportWithFilters = async (req, res) => {
 					amount:'$schedulePayments.Amount',
 					membership_name:1,
 					membershipIds:1,
-					payment_type:1
+					payment_type:1,
+					balance:1
 				},
 			},
 			{
