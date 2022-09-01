@@ -107,10 +107,20 @@ exports.all_data = async (req, res) => {
       };
       let todays = new Date();
       let userId = req.params.userId;
+      const studentType = req.query.studentType;
+      const filter =
+        userId && studentType
+          ? {
+            userId,
+            studentType,
+          }
+          : {
+            userId,
+          };
 
       let birthdayData = await student
         .aggregate([
-          { $match: { userId: userId } },
+          { $match: { filter } },
           {
             $project: {
               firstName: 1,
@@ -226,161 +236,151 @@ exports.all_data = async (req, res) => {
         ])
         .exec((err, memberdata) => {
           if (err) {
-            res.send({
+            return res.send({
               error: err,
               success: false,
             });
-          } else {
-            let data = memberdata[0].paginatedResults;
-            if (data.length > 0) {
-              res.send({
-                data: data,
-                totalCount: memberdata[0].totalCount[0].count,
-                success: true,
-              });
-            } else {
-              res.send({ msg: "data not found", success: false });
-            }
           }
+          let data = memberdata[0].paginatedResults;
+          return res.send({
+            data: data,
+            totalCount: memberdata[0].totalCount[0] ? memberdata[0].totalCount[0].count : 0,
+            success: true,
+          });
         });
     } catch (err) {
       throw new Error(err);
     }
-  } else if(req.params.multiple_data === "Thees week"){
+  } else if (req.params.multiple_data === "Thees week") {
     var per_page = parseInt(req.params.per_page) || 5;
-  var page_no = parseInt(req.params.page_no) || 0;
-  var pagination = {
-    limit: per_page,
-    skip: per_page * page_no,
-  };
-  let todays = new Date();
+    var page_no = parseInt(req.params.page_no) || 0;
+    var pagination = {
+      limit: per_page,
+      skip: per_page * page_no,
+    };
+    let todays = new Date();
 
-  let userId = req.params.userId;
-  const studentType = req.query.studentType;
-  const filter =
-    userId && studentType
-      ? {
-        userId,
-        studentType,
-      }
-      : {
-        userId,
-      };
-  try {
-    await student
-      .aggregate([
-        { $match: filter },
+    let userId = req.params.userId;
+    const studentType = req.query.studentType;
+    const filter =
+      userId && studentType
+        ? {
+          userId,
+          studentType,
+        }
+        : {
+          userId,
+        };
+    try {
+      await student
+        .aggregate([
+          { $match: filter },
 
-        {
-          $project: {
-            firstName: 1,
-            dob: {
-              $dateFromParts: {
-                year: { $year: "$dob" },
-                month: { $month: "$dob" },
-                day: { $dayOfMonth: "$dob" },
-              },
-            },
-            birthDate: {
-              $dateFromParts: {
-                year: { $year: todays },
-                month: { $month: "$dob" },
-                day: { $dayOfMonth: "$dob" },
-              },
-            },
-            status: 1,
-            studentType: 1,
-            lastName: 1,
-            primaryPhone: 1,
-            current_rank_img: 1,
-            program: 1,
-            followup_notes: 1,
-            daysTillBirthday: {
-              $subtract: [
-                {
-                  $subtract: [{ $dayOfMonth: "$dob" }, { $dayOfMonth: todays }],
+          {
+            $project: {
+              firstName: 1,
+              dob: {
+                $dateFromParts: {
+                  year: { $year: "$dob" },
+                  month: { $month: "$dob" },
+                  day: { $dayOfMonth: "$dob" },
                 },
-                1,
+              },
+              birthDate: {
+                $dateFromParts: {
+                  year: { $year: todays },
+                  month: { $month: "$dob" },
+                  day: { $dayOfMonth: "$dob" },
+                },
+              },
+              status: 1,
+              studentType: 1,
+              lastName: 1,
+              primaryPhone: 1,
+              current_rank_img: 1,
+              program: 1,
+              followup_notes: 1,
+              daysTillBirthday: {
+                $subtract: [
+                  {
+                    $subtract: [{ $dayOfMonth: "$dob" }, { $dayOfMonth: todays }],
+                  },
+                  1,
+                ],
+              },
+            },
+          },
+          {
+            $match: {
+              $expr: { $eq: [{ $week: "$birthDate" }, { $week: todays }] },
+              daysTillBirthday: { $gte: -1 },
+            },
+          },
+          {
+            $lookup: {
+              from: "followupnotes",
+              localField: "followup_notes",
+              foreignField: "_id",
+              as: "followup_notes",
+              pipeline: [
+                {
+                  $project: {
+                    note: 1,
+                    time: 1,
+                    date: 1,
+                  },
+                },
               ],
             },
           },
-        },
-        {
-          $match: {
-            $expr: { $eq: [{ $week: "$birthDate" }, { $week: todays }] },
-            daysTillBirthday: { $gte: -1 },
+          {
+            $project: {
+              firstName: 1,
+              status: 1,
+              lastName: 1,
+              dob: 1,
+              primaryPhone: 1,
+              studentType: 1,
+              program: 1,
+              current_rank_img: 1,
+              daysTillBirthday: 1,
+              notes: { $arrayElemAt: ["$followup_notes", -1] },
+            },
           },
-        },
-        {
-          $lookup: {
-            from: "followupnotes",
-            localField: "followup_notes",
-            foreignField: "_id",
-            as: "followup_notes",
-            pipeline: [
-              {
-                $project: {
-                  note: 1,
-                  time: 1,
-                  date: 1,
+          { $sort: { daysTillBirthday: 1 } },
+          {
+            $facet: {
+              paginatedResults: [
+                { $skip: pagination.skip },
+                { $limit: pagination.limit },
+              ],
+              totalCount: [
+                {
+                  $count: "count",
                 },
-              },
-            ],
+              ],
+            },
           },
-        },
-        {
-          $project: {
-            firstName: 1,
-            status: 1,
-            lastName: 1,
-            dob: 1,
-            primaryPhone: 1,
-            studentType: 1,
-            program: 1,
-            current_rank_img: 1,
-            daysTillBirthday: 1,
-            notes: { $arrayElemAt: ["$followup_notes", -1] },
-          },
-        },
-        { $sort: { daysTillBirthday: 1 } },
-        {
-          $facet: {
-            paginatedResults: [
-              { $skip: pagination.skip },
-              { $limit: pagination.limit },
-            ],
-            totalCount: [
-              {
-                $count: "count",
-              },
-            ],
-          },
-        },
-      ])
-      .exec((err, memberdata) => {
-        if (err) {
-          res.send({
-            error: err,
-            success: false,
-          });
-        } else {
-          let data = memberdata[0].paginatedResults;
-          if (data.length > 0) {
-            res.send({
-              data: data,
-              totalCount: memberdata[0].totalCount[0].count,
-              success: true,
+        ])
+        .exec((err, memberdata) => {
+          if (err) {
+            return res.send({
+              error: err,
+              success: false,
             });
-          } else {
-            res.send({ msg: "data not found", success: false });
           }
-        }
-      });
-  } catch (er) {
-    throw new Error(er);
-  }
+          let data = memberdata[0].paginatedResults;
+          return res.send({
+            data: data,
+            totalCount: memberdata[0].totalCount[0] ? memberdata[0].totalCount[0].count : 0,
+            success: true,
+          });
+        });
+    } catch (er) {
+      throw new Error(er);
+    }
 
-  } 
+  }
   else if (req.params.multiple_data === "This month") {
     var per_page = parseInt(req.params.per_page) || 5;
     var page_no = parseInt(req.params.page_no) || 0;
@@ -498,19 +498,13 @@ exports.all_data = async (req, res) => {
               error: err,
               success: false,
             });
-          } else {
-            let data = memberdata[0].paginatedResults;
-            console.log(data)
-            if (data.length > 0) {
-              res.send({
-                data: data,
-                totalCount: memberdata[0].totalCount[0].count,
-                success: true,
-              });
-            } else {
-              res.send({ msg: "data not found", success: false });
-            }
           }
+          let data = memberdata[0].paginatedResults;
+          return res.send({
+            data: data,
+            totalCount: memberdata[0].totalCount[0] ? memberdata[0].totalCount[0].count : 0,
+            success: true,
+          });
         });
     } catch (er) {
       throw new Error(er);
@@ -707,18 +701,13 @@ exports.all_data = async (req, res) => {
               error: err,
               success: false,
             });
-          } else {
-            let data = memberdata[0].paginatedResults;
-            if (data.length > 0) {
-              res.send({
-                data: data,
-                totalCount: memberdata[0].totalCount[0].count,
-                success: true,
-              });
-            } else {
-              res.send({ msg: "data not found", success: false });
-            }
           }
+          let data = memberdata[0].paginatedResults;
+          return res.send({
+            data: data,
+            totalCount: memberdata[0].totalCount[0] ? memberdata[0].totalCount[0].count : 0,
+            success: true,
+          });
         });
     } catch (er) {
       throw new Error(er);
@@ -901,22 +890,17 @@ exports.all_data = async (req, res) => {
         ])
         .exec((err, memberdata) => {
           if (err) {
-            res.send({
+            return res.send({
               error: err,
               success: false,
             });
-          } else {
-            let data = memberdata[0].paginatedResults;
-            if (data.length > 0) {
-              res.send({
-                data: data,
-                totalCount: memberdata[0].totalCount[0].count,
-                success: true,
-              });
-            } else {
-              res.send({ msg: "data not found", success: false });
-            }
           }
+          let data = memberdata[0].paginatedResults;
+          return res.send({
+            data: data,
+            totalCount: memberdata[0].totalCount[0] ? memberdata[0].totalCount[0].count : 0,
+            success: true,
+          });
         });
     } catch (err) {
       throw new Error(err);
@@ -1104,18 +1088,13 @@ exports.all_data = async (req, res) => {
               error: err,
               success: false,
             });
-          } else {
-            let data = memberdata[0].paginatedResults;
-            if (data.length > 0) {
-              res.send({
-                data: data,
-                totalCount: memberdata[0].totalCount[0].count,
-                success: true,
-              });
-            } else {
-              res.send({ msg: "data not found", success: false });
-            }
           }
+          let data = memberdata[0].paginatedResults;
+          return res.send({
+            data: data,
+            totalCount: memberdata[0].totalCount[0] ? memberdata[0].totalCount[0].count : 0,
+            success: true,
+          });
         });
     } catch (err) {
       throw new Error(err);
