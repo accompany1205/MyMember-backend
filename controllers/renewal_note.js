@@ -332,25 +332,19 @@ exports.all_data_std = async (req, res) => {
   const studentType = req.query.studentType;
   if (req.params.multiple_data === "30") {
     let data = await renewalDaysData(userId, per_page, page_no, studentType, 30, 0)
-    if (data.length > 0) {
-      return res.send({ msg: "data!", success: true, data: data, totalCount: data.length });
-    } else {
-      return res.send({ msg: "data not found!", success: false });
-    }
+
+    return res.send({ msg: "data!", success: true, data: data, totalCount: data.length });
+
   } else if (req.params.multiple_data === "60") {
     let data = await renewalDaysData(userId, per_page, page_no, studentType, 60, 29)
-    if (data.length > 0) {
-      return res.send({ msg: "data!", success: true, data: data, totalCount: data.length });
-    } else {
-      return res.send({ msg: "data not found!", success: false });
-    }
+
+    return res.send({ msg: "data!", success: true, data: data, totalCount: data.length });
+
   } else if (req.params.multiple_data === "90") {
     let data = await renewalDaysData(userId, per_page, page_no, studentType, 90, 59)
-    if (data.length > 0) {
-      return res.send({ msg: "data!", success: true, data: data, totalCount: data.length });
-    } else {
-      return res.send({ msg: "data not found!", success: false });
-    }
+
+    return res.send({ msg: "data!", success: true, data: data, totalCount: data.length });
+
   } else if (req.params.multiple_data === "frozenmembership") {
     try {
       let userId = req.params.userId;
@@ -498,15 +492,13 @@ exports.all_data_std = async (req, res) => {
             data.sort((a, b) => {
               return a.notes.createdAt - b.notes.createdAt
             })
-            if (data.length > 0) {
-              res.send({
-                data: data,
-                totalCount: data.length,
-                success: true,
-              });
-            } else {
-              res.send({ msg: "data not found", success: false });
-            }
+
+            return res.send({
+              data: data,
+              totalCount: data.length,
+              success: true,
+            });
+
           }
         });
     } catch (e) {
@@ -729,27 +721,20 @@ exports.all_data_std = async (req, res) => {
     ])
 
     data = data[0].paginatedResults;
-    function Sort(data){
+    function Sort(data) {
       for (var i = 0; i < data.length - 1; i++) {
         if (data[i]["notes"]["date"] > data[i + 1]["notes"]["date"]) {
-            var temp = data[i];
-            data[i] = data[i + 1];
-            data[i + 1] = temp;
+          var temp = data[i];
+          data[i] = data[i + 1];
+          data[i + 1] = temp;
         }
       }
       return data
+    }
 
-    }
-    
-    console.log(Sort(data))
-    if (data.length > 0) {
-      // data.sort((a, b) => {
-      //   return a.notes.date - b.notes.date
-      // })
-      return res.send({ msg: "data!", success: true, data: data, totalCount: data.length });
-    } else {
-      return res.send({ msg: "data not found!", success: false });
-    }
+
+    return res.send({ msg: "data!", success: true, data: Sort(data), totalCount: data.length });
+
   }
 }
 
