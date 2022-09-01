@@ -513,7 +513,6 @@ exports.all_data_std = async (req, res) => {
       res.send({ error: "frozen student data not fount" });
     }
   } else if (req.params.multiple_data === "expired") {
-    // let data = await renewalDaysData(userId, per_page, page_no, studentType, 0, undefined)
     var pagination = {
       limit: per_page,
       skip: per_page * page_no,
@@ -730,13 +729,23 @@ exports.all_data_std = async (req, res) => {
     ])
 
     data = data[0].paginatedResults;
-    data.sort((a, b) => {
-      return a.notes.date - b.notes.date
-    })
+    function Sort(data){
+      for (var i = 0; i < data.length - 1; i++) {
+        if (data[i]["notes"]["date"] > data[i + 1]["notes"]["date"]) {
+            var temp = data[i];
+            data[i] = data[i + 1];
+            data[i + 1] = temp;
+        }
+      }
+      return data
+
+    }
+    
+    console.log(Sort(data))
     if (data.length > 0) {
-      data.sort((a, b) => {
-        return a.notes.date - b.notes.date
-      })
+      // data.sort((a, b) => {
+      //   return a.notes.date - b.notes.date
+      // })
       return res.send({ msg: "data!", success: true, data: data, totalCount: data.length });
     } else {
       return res.send({ msg: "data not found!", success: false });
