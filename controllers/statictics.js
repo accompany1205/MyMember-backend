@@ -143,59 +143,59 @@ exports.statisticsFilter = async (req, res) => {
   }
 };
 
-const dataStatics=async(studentType,userId,year1)=>{
+const dataStatics = async (studentType, userId, year1) => {
 
-    const join = await Member.aggregate([
-      {
-        $match: {
-          $and: [{
-            userId: userId
-          },
-          { studentType: studentType}]
+  const join = await Member.aggregate([
+    {
+      $match: {
+        $and: [{
+          userId: userId
         },
+        { studentType: studentType }]
+      },
 
-      },
-      {
-        $project: {
-          _id: 0,
-          month: {
-            $month: "$createdAt",
-          },
-          year: {
-            $year: "$createdAt",
-          },
-        }
-      },
-      {
-        $group: {
-          _id: "$month",
-          year: { $first: "$year" },
-          count: { $count: {} }
-        }
+    },
+    {
+      $project: {
+        _id: 0,
+        month: {
+          $month: "$createdAt",
+        },
+        year: {
+          $year: "$createdAt",
+        },
       }
-    ])
-    if (join.length === 0) {
-      return res.send({ msg: "No Data!", success: true, data: [] });
+    },
+    {
+      $group: {
+        _id: "$month",
+        year: { $first: "$year" },
+        count: { $count: {} }
+      }
     }
-    let dataArray = []
-    let i = 1;
-    let checkArr = []
-    join.map(e => {
-      if (e.year === year1) {
-        dataArray.push({ month: e._id, count: e.count })
-        checkArr.push(e._id);
-      }
-    })
-    while (i <= 12) {
-      if (!checkArr.includes(i)) {
-        dataArray.push({ month: i, count: 0 })
-      }
-      i++; 
+  ])
+  if (join.length === 0) {
+    return res.send({ msg: "No Data!", success: true, data: [] });
+  }
+  let dataArray = []
+  let i = 1;
+  let checkArr = []
+  join.map(e => {
+    if (e.year === year1) {
+      dataArray.push({ month: e._id, count: e.count })
+      checkArr.push(e._id);
     }
-    dataArray.sort((a, b) => {
-      return a.month - b.month;
-    });
-    return dataArray
+  })
+  while (i <= 12) {
+    if (!checkArr.includes(i)) {
+      dataArray.push({ month: i, count: 0 })
+    }
+    i++;
+  }
+  dataArray.sort((a, b) => {
+    return a.month - b.month;
+  });
+  return dataArray
 }
 
 exports.allStaticsData = async (req, res) => {
@@ -203,34 +203,34 @@ exports.allStaticsData = async (req, res) => {
   let staticsType = req.params.staticsType;
   let year1 = parseInt(req.params.year);
   if (staticsType == "MemberStatics") {
-    const join=await dataStatics("Active Student",userId,year1)
-    const quite=await dataStatics("Former Student",userId,year1)
-    let arr=[]
-    let i=0;
-    while(i<12){
-      arr.push({month:i+1,join:join[i].count,quite:quite[i].count})
+    const join = await dataStatics("Active Student", userId, year1)
+    const quite = await dataStatics("Former Student", userId, year1)
+    let arr = []
+    let i = 0;
+    while (i < 12) {
+      arr.push({ month: i + 1, join: join[i].count, quite: quite[i].count })
       i++
-    }     
-    return res.send({data:arr,msg: "Data!",success: true})
+    }
+    return res.send({ data: arr, msg: "Data!", success: true })
   } else if (staticsType == "TrialStatics") {
-    const join=await dataStatics("Active Trial",userId,year1)
-    const quite=await dataStatics("Former Trial",userId,year1)
-    let arr=[]
-    let i=0;
-    while(i<12){
-      arr.push({month:i+1,join:join[i].count,quite:quite[i].count})
+    const join = await dataStatics("Active Trial", userId, year1)
+    const quite = await dataStatics("Former Trial", userId, year1)
+    let arr = []
+    let i = 0;
+    while (i < 12) {
+      arr.push({ month: i + 1, join: join[i].count, quite: quite[i].count })
       i++
-    }     
-    return res.send({data:arr,msg: "Data!",success: true})
-  }else if(staticsType=="leadsStatics"){
-    const join=await dataStatics("Leads",userId,year1)
-    let arr=[]
-    let i=0;
-    while(i<12){
-      arr.push({month:i+1,join:join[i].count})
+    }
+    return res.send({ data: arr, msg: "Data!", success: true })
+  } else if (staticsType == "leadsStatics") {
+    const join = await dataStatics("Leads", userId, year1)
+    let arr = []
+    let i = 0;
+    while (i < 12) {
+      arr.push({ month: i + 1, join: join[i].count })
       i++
-    }     
-    return res.send({data:arr,msg: "Data!",success: true})
+    }
+    return res.send({ data: arr, msg: "Data!", success: true })
   }
 }
 
@@ -628,6 +628,7 @@ exports.getMembershipData = async (req, res) => {
   const d = new Date();
   let year = d.getFullYear();
   let userId = req.params.userId;
+  let year1 = parseInt(req.params.year);
   let membership_type = req.params.membership_type;
   try {
     buy_membership.aggregate([
@@ -652,6 +653,7 @@ exports.getMembershipData = async (req, res) => {
       {
         $group: {
           _id: "$month",
+          year: { $first: "$year" },
           count: { $count: {} }
         }
       }
@@ -660,8 +662,10 @@ exports.getMembershipData = async (req, res) => {
       let i = 1;
       let checkArr = []
       resp.map(e => {
-        dataArray.push({ month: e._id, count: e.count })
-        checkArr.push(e._id);
+        if (e.year === year1) {
+          dataArray.push({ month: e._id, count: e.count})
+          checkArr.push(e._id);
+        }
       })
       while (i <= 12) {
         if (!checkArr.includes(i)) {

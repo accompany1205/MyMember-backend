@@ -47,6 +47,6 @@ router.get(
 
 
 
-router.get('/statics/get-membership-data/:userId/:membership_type',requireSignin, verifySchool,getMembershipData)
+router.get('/statics/get-membership-data/:userId/:membership_type/:year',requireSignin, verifySchool,getMembershipData)
 
 module.exports = router;
