@@ -222,7 +222,9 @@ async function contactInfo(userId, type) {
           primaryPhone: 1,
           firstName: 1,
           lastName: 1,
-          memberprofileImage: 1
+          memberprofileImage: 1,
+          time:1,
+          textContent:1
         }
       }
     ])
