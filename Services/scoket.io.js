@@ -27,12 +27,19 @@ class SocketEngine {
 
       socket.on('alertGetTexts', async (getText) => {
         try {
+          console.log(getText)
           const { userId, uid } = getText;
           const textList = await textMessage.find(getText);
           io.to(`${userId}${uid}`).emit('getText', textList);
         } catch (err) {
           console.log(err);
         }
+      });
+
+      socket.on('memberText', async (member) => {
+        let {uid, userId} = member;
+        let data = await textMessage.find({$and:[{userId:userId},{uid:uid}]});
+        io.to(userId).emit('memberTextList', data)
       });
 
       socket.on('textAlertWebhook', async (uidObj) => {
