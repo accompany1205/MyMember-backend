@@ -174,16 +174,16 @@ exports.getTextContactsDetails = async (req, res) => {
   try {
     if (studentType === 'Active Trial') {
       data = await contactInfo(userId, studentType)
-      return res.send({data:data,msg:"Success!", success:true});
+      return res.send({ data: data, msg: "Success!", success: true });
     } else if (studentType === 'Leads') {
       data = await contactInfo(userId, studentType)
-      return res.send({data:data,msg:"Success!", success:true});
+      return res.send({ data: data, msg: "Success!", success: true });
     } else if (studentType === 'Former Student') {
       data = await contactInfo(userId, studentType)
-      return res.send({data:data,msg:"Success!", success:true});
+      return res.send({ data: data, msg: "Success!", success: true });
     } else if (studentType === 'Former Trial') {
       data = await contactInfo(userId, studentType)
-      return res.send({data:data,msg:"Success!", success:true});
+      return res.send({ data: data, msg: "Success!", success: true });
     } else {
       data = await member.aggregate([
         {
@@ -197,11 +197,13 @@ exports.getTextContactsDetails = async (req, res) => {
             primaryPhone: 1,
             firstName: 1,
             lastName: 1,
-            memberprofileImage: 1
+            memberprofileImage: 1,
+            time: 1,
+            textContent: 1
           }
         }
       ]);
-      return res.send({data:data,msg:"Success!", success:true});
+      return res.send({ data: data, msg: "Success!", success: true });
     }
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false });
@@ -223,8 +225,8 @@ async function contactInfo(userId, type) {
           firstName: 1,
           lastName: 1,
           memberprofileImage: 1,
-          time:1,
-          textContent:1
+          time: 1,
+          textContent: 1
         }
       }
     ])
