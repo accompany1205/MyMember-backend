@@ -30,11 +30,13 @@ const EmailSchema = schema({
    },
    userId:{
        type:String,
-       require:true
+       require:true,
+       index:true
    },
    folderId:{
        type:String,
-       require:true
+       require:true,
+       index:true
    },
    ACCOUNT_SID:{
        type:String,
@@ -50,7 +52,8 @@ const EmailSchema = schema({
    },
    twillo_no:{
        type:String,
-       require:true
+       require:true,
+       index:true
    }
 
 },

@@ -143,7 +143,8 @@ const EventSchema = new mongoose.Schema(
         },
 
         userId: {
-            type: String
+            type: String,
+            index: true
         }
     },
     { timestamps: true }

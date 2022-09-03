@@ -22,10 +22,12 @@ const followUpNotes = new schema({
         type: String,
     },
     userId: {
-        type: String
+        type: String,
+        index: true
     },
     memberId:{
-        type: String
+        type: String,
+        index: true
     },
     firstName: {
         type: String

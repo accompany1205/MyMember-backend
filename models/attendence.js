@@ -22,7 +22,8 @@ const attendenceSchema = schema({
         default: ""
     },
     userId: {
-        type: schema.Types.ObjectId
+        type: schema.Types.ObjectId,
+        index: true
     },
     scheduleId: {
         type: schema.Types.ObjectId

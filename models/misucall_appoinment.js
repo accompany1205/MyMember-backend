@@ -29,7 +29,8 @@ const misuCallAppoinmentSchema = schema({
         required:true
     },  
     userId:{
-        type:schema.Types.ObjectId
+        type:schema.Types.ObjectId,
+        index:true
     }
 },
 { timestamps:true }

@@ -4,7 +4,8 @@ const schema = mongoose.Schema
 const stripe_cards_schema = new schema({
     customer_id:{
         type:String,
-        required:true
+        required:true,
+        index:true
     },
     card_id:{
         type:String,

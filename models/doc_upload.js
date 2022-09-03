@@ -12,15 +12,19 @@ const documentSchema = new schema({
     },
     subFolderId: {
         type: String,
+        index:true
     },
     rootFolderId: {
         type: String,
+        index:true
     },
     userId: {
-        type: String
+        type: String,
+        index:true
     },
     adminId: {
-        type: String
+        type: String,
+        index:true
     }
 },
     { timestamps: true }

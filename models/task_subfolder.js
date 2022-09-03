@@ -15,13 +15,16 @@ const docSubFolder = new schema({
     ],
     folderId: {
         type: String,
-        ref:"taskfolder"
+        ref:"taskfolder",
+        index:true
     },
     userId: {
-        type: String
+        type: String,
+        index:true
     },
     adminId: {
-        type: String
+        type: String,
+        index:true
     }
 })
 

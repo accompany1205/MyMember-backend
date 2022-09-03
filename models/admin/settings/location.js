@@ -40,7 +40,8 @@ const locationSchema = schema({
         type: String
     },
     userId: {
-        type: String
+        type: String,
+        index: true 
     },
     createdBy: {
         type: String

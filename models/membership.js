@@ -70,9 +70,11 @@ const membershipSchema = schema(
 		},
 		userId: {
 			type: String,
+			index:true
 		},
 		adminId: {
 			type: String,
+			index:true
 		},
 		regular_price:{
 			type:Number

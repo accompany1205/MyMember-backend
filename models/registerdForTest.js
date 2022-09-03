@@ -4,16 +4,20 @@ const registerdForTest = new mongoose.Schema({
 
     studentId: {
         type: String,
-        ref: "member"
+        ref: "member",
+        index:true
     },
     userId: {
-        type: String
+        type: String,
+        index:true
     },
     eventId: {
-        type:String
+        type:String,
+        index:true
     },
     testId: {
-        type: String
+        type: String,
+        index:true
     },
     firstName: {
         type: String

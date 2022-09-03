@@ -15,10 +15,12 @@ const systemCategorySchema = schema({
         ref: 'systemFolder'
     }],
     adminId: {
-        type: String
+        type: String,
+        index:true
     },
     userId: {
-        type: String
+        type: String,
+        index:true
     },
     createdBy: {
         type: String

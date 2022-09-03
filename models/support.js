@@ -30,7 +30,8 @@ const supportSchema = new mongoose.Schema(
             enum: ["Open", "Closed", "Archived", "OnHold", "Pending"] 
         },
         userId:{
-            type:String
+            type:String,
+            index:true
         }
     }
 );

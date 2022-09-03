@@ -118,6 +118,7 @@ const productSchema = new schema(
 		userId: {
 			type: String,
 			required: true,
+			index:true
 		},
 	},
 	{ timestamps: true }
