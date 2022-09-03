@@ -58,6 +58,7 @@ const goalSchema = new schema(
         },
         userId: {
             type: String,
+            index: true
         }
     },
     { timestamps: true }

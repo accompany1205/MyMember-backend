@@ -15,7 +15,8 @@ const textGenSchema = schema({
         ref:'generalFolder'
     }],
    userId:{
-       type:String 
+       type:String,
+       index:true 
    }
 },
 { timestamps:true }

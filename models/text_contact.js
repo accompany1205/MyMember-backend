@@ -6,6 +6,7 @@ const TextContactSchema = schema({
     type:String,
     require:true,
     unique:true,
+    index:true
   },
   from: {
     type:String,
@@ -14,6 +15,7 @@ const TextContactSchema = schema({
   isSeen: {
     type: Boolean,
     default: false,
+    index:true
   },
   isPinned: {
     type: Boolean,

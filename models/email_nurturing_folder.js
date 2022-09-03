@@ -11,10 +11,12 @@ const nurturingfolderSchema = schema({
         ref: 'sentOrscheduleEmail'
     }],
     userId: {
-        type: String
+        type: String,
+        index:true
     },
     adminId: {
-        type: String
+        type: String,
+        index:true
     }
 
 },

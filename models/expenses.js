@@ -28,12 +28,15 @@ const expenseSchema = new schema(
 		date: {
 			type: Date,
 			required: true,
+			index: true
 		},
 		dateM: {
 			type: String,
+			index: true
 		},
 		userId: {
 			type: schema.Types.ObjectId,
+			index: true
 		},
 	},
 	{ timestamps: true }

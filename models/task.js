@@ -25,7 +25,8 @@ const taskSchema = schema(
 		},
 		start: {
 			type: String,
-			required: true
+			required: true,
+			index: true
 		},
 		end: {
 			type: String,
@@ -88,6 +89,7 @@ const taskSchema = schema(
 		},
 		userId: {
 			type: String,
+			index: true
 		},
 		subfolderId: {
 			type: String,
@@ -95,7 +97,8 @@ const taskSchema = schema(
 		},
 		isSeen:{
 			type: Boolean,
-			default: false
+			default: false,
+			index: true
 		}
 	},
 	{ timestamps: true }

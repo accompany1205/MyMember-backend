@@ -11,10 +11,12 @@ const templateFolder = new schema({
     ref: 'templateSubFolder'
   }],
   userId: {
-    type: String
+    type: String,
+    index:true
   },
   adminId: {
-    type: String
+    type: String,
+    index:true
   },
   createdBy: {
     type: String

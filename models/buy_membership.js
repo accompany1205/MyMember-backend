@@ -29,6 +29,7 @@ const Membershipschema = new schema(
     isTerminate: {
       type: Boolean,
       default: false,
+      index:true
     },
     whenTerminate: {
       type: Array,
@@ -140,6 +141,7 @@ const Membershipschema = new schema(
     membership_status: {
       type: String,
       required: true,
+      index: true
     },
     createdBy: {
       type: String,
@@ -148,6 +150,7 @@ const Membershipschema = new schema(
     userId: {
       type: String,
       required: true,
+      index: true
     },
     transactionId: {},
     subscription_id: {

@@ -21,7 +21,8 @@ const renewalNotesSchema = new schema({
        default:new Date().toLocaleTimeString()
    },
    userId:{
-       type:String
+       type:String,
+       index:true
    },
    firstName:{
        type:String

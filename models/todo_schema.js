@@ -10,7 +10,8 @@ const todoSchema = schema(
         },
         todoDate: {
             type: String,
-            required: true
+            required: true,
+            index:true
         },
         todoTime: {
             type: String,
@@ -18,11 +19,13 @@ const todoSchema = schema(
         },
         tag: {
             type: String,
-            required: true
+            required: true,
+            index:true
         },
         status: {
             type: String,
-            required: true
+            required: true,
+            index:true
         },
         is_Favorite: {
             type: Boolean,
@@ -32,6 +35,7 @@ const todoSchema = schema(
 
         userId: {
             type: String,
+            index:true
         }
     },
     { timestamps: true }

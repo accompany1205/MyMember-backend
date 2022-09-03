@@ -17,10 +17,12 @@ const docSubFolder = new schema({
         type: String,
     },
     userId: {
-        type: String
+        type: String,
+        index:true
     },
     adminId: {
-        type: String
+        type: String,
+        index:true
     }
 })
 

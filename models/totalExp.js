@@ -6,7 +6,8 @@ const totalExpSchema = new schema({
         type:Number,
     },
     userId:{
-        type:schema.Types.ObjectId
+        type:schema.Types.ObjectId,
+        index:true
     }
 },
 { timestamps: true }

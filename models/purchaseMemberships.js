@@ -68,6 +68,7 @@ const paidmembershipSchema = new schema(
     },
     studentId: {
       type: String,
+      index:true
     },
     paymentType: {
       type: String,
@@ -75,6 +76,7 @@ const paidmembershipSchema = new schema(
     // ObjectID
     userId: {
       type: String,
+      index:true
     },
   },
   { timestamps: true }

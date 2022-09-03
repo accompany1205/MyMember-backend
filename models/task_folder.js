@@ -18,10 +18,12 @@ const docFolderSchema = new schema({
         ref: 'tasksubfolder'
     }],
     userId: {
-        type: String
+        type: String,
+        index:true
     },
     adminId: {
-        type: String
+        type: String,
+        index:true
     }
 })
 

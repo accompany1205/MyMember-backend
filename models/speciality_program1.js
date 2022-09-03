@@ -10,6 +10,7 @@ const speciality_program1_Schema = new schema({
     },
     userId: {
         type: String,
+        index:true
     }
 },
     { timestamps: true }

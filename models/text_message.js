@@ -4,11 +4,14 @@ const schema =  mongoose.Schema;
 const TextMessageSchema = schema({
   userId:{
     type:String,
-    require:true
+    require:true,
+    index: true,
+    index:true
   },
   uid:{
     type:String,
-    require:true
+    require:true,
+    index:true
   },
   textContent: {
     type:String,
@@ -21,7 +24,9 @@ const TextMessageSchema = schema({
   },
   isSeen:{
     type: String,
-    default:null
+    default:null,
+    index: true,
+    index:true
   },
   time: {
     type:String,

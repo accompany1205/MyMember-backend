@@ -3,7 +3,8 @@ const schema = mongoose.Schema
 
 const EventSchema = new schema({
     user_id: {
-        type: String
+        type: String,
+        index:true
     }
     ,
 
