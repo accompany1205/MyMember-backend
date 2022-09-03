@@ -47,7 +47,7 @@ class SocketEngine {
             start: currDate,
             $or:[{'isSeen':null}, {'isSeen':false}]
           },
-          {id:1, name: 1,start: 1}
+          {id:1, name: 1,start: 1,description:1}
         );
 
         let text_chat = await textMessage.aggregate([
@@ -65,9 +65,11 @@ class SocketEngine {
           $project:{
               id:1,
               textContent:1,
+              time:1,
               to:{
                 firstName:1,
-                lastName:1
+                lastName:1,
+                memberprofileImage:1
               }
             }
        }
@@ -90,7 +92,8 @@ class SocketEngine {
             firstName:1,
             lastName:1,
             age:1,
-            dob:1
+            dob:1,
+            memberprofileImage:1
         }
         }
         ])
@@ -108,9 +111,12 @@ class SocketEngine {
               },
               {
                 $project:{
+                id:1,  
                 firstName:1,
                 lastName:1,
+                dob:1,
                 age:1,
+                memberprofileImage:1
                 }
               }
         ])
