@@ -31,7 +31,7 @@ class SocketEngine {
         let data = await textMessage.find({$and:[{userId:userId},{uid:uid}]});
         io.to(userId).emit('memberTextList', data)
       });
-      
+
       socket.on('alertGetTexts', async (getText) => {
         try {
           console.log(getText)
@@ -109,7 +109,7 @@ class SocketEngine {
             {
               $match: {
                       $and: [
-                            {userId:req.params.userId},
+                            {userId:userId},
                             {'isSeen':null},
                             { $expr: { $eq: [{ $dayOfMonth: '$dob' },{ $dayOfMonth: new Date(tomorrow)}]} }, 
                             { $expr: { $eq: [{ $month: '$dob' },{ $month: new Date(tomorrow) }] } }
