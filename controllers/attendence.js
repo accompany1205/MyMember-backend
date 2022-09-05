@@ -306,6 +306,34 @@ exports.list_attendence = (req, res) => {
 }
 
 
+exports.attendeceDate = async (req, res) => {
+  let userId = req.params.userId;
+  var per_page = parseInt(req.params.per_page) || 10;
+  var page_no = parseInt(req.params.page_no) || 0;
+  var pagination = {
+    limit: per_page,
+    skip: per_page * page_no,
+  };
+  const data = await schedule.aggregate([
+    { $match: { userId: userId, } },
+    {
+      $project: {
+        start_date: 1
+      }
+    }])
+
+  const memberData=await student.aggregate([
+    {
+      $match:{
+        userId:userId
+      }
+    }
+  ])
+  res.send(memberData);
+  
+}
+
+
 exports.getStudentAttendence = (req, res) => {
   try {
     let userId = req.params.userId
