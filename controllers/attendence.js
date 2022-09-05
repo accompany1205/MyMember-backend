@@ -34,6 +34,7 @@ exports.search_std = (req, res) => {
 
 exports.create = async (req, res) => {
   try {
+    console.log("run")
     const studentId = req.params.studentId
     var objId = mongo.Types.ObjectId(studentId)
     let time = req.body.time

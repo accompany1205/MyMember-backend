@@ -15,9 +15,11 @@ const membershipFolderSchema = schema(
     ],
     userId: {
       type: String,
+      index:true
     },
     adminId: {
       type: String,
+      index:true
     },
   },
   { timestamps: true }

@@ -10,13 +10,15 @@ const scheduleSchema = new schema(
 			trim: true,
 			required: true,
 			maxlength: 32,
+			index:true
 		},
 		program_color: {
 			type: String,
 		},
 		class_name: {
 			type: String,
-			required: true
+			required: true,
+			index:true
 		},
 		series_id: {
 			type: ObjectId,
@@ -24,11 +26,13 @@ const scheduleSchema = new schema(
 		},
 		isActive: {
 			type: Boolean,
-			default: true
+			default: true,
+			index:true
 		},
 		start_date: {
 			type: String,
 			required: true,
+			index:true
 		},
 		end_date: {
 			type: String,
@@ -55,6 +59,7 @@ const scheduleSchema = new schema(
 		},
 		userId: {
 			type: String,
+			index:true
 		},
 		class_attendanceArray: {
 			type: Array,

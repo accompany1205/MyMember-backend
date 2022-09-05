@@ -12,10 +12,12 @@ const docFolderSchema = new schema({
         ref: 'goalssubfolder'
     }],
     userId: {
-        type: String
+        type: String,
+        index: true
     },
     adminId: {
-        type: String
+        type: String,
+        index: true
     }
 })
 

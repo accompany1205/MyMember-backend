@@ -27,13 +27,15 @@ const changeRankSchema = new schema({
         default:""
     },
     stdId:{
-        type:String
+        type:String,
+        index:true
     },
     programID:{
         type:String
     },
     userId:{
-        type:String
+        type:String,
+        index:true
     } 
 })
 

@@ -14,10 +14,12 @@ const docFolderSchema = new schema({
         },
     ],
     userId: {
-        type: String
+        type: String,
+        index:true
     },
     adminId: {
-        type: String
+        type: String,
+        index:true
     },
 
 })

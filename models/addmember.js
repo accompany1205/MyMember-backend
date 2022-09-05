@@ -5,12 +5,15 @@ const addmemberSchema = new schema(
   {
     studentType: {
       type: String,
+      index:true
     },
     firstName: {
       type: String,
+      index: true
     },
     lastName: {
       type: String,
+      index: true
     },
     status: {
       type: String,
@@ -22,6 +25,7 @@ const addmemberSchema = new schema(
     },
     dob: {
       type: Date,
+      index: true
     },
     day_left: {
       type: String,
@@ -157,6 +161,7 @@ const addmemberSchema = new schema(
     rating: {
       type: Number,
       default: 0,
+      index: true
     },
     last_attended_date: {
       type: Number,
@@ -186,6 +191,7 @@ const addmemberSchema = new schema(
     },
     userId: {
       type: String,
+      index: true
     },
     rankFromRecomendedTest: {
       type: Array,
@@ -295,6 +301,11 @@ const addmemberSchema = new schema(
     textContent: {
       type: String,
     },
+    isSeen:{
+      type: String,
+      default:null,
+      index: true
+    }
   },
 
   { timestamps: true }

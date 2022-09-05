@@ -4,7 +4,8 @@ const schema = mongoose.Schema
 const userSchema = new schema(
     {
         userId:{
-            type:String
+            type:String,
+            index:true
         },
         rolename: {
             type: String,

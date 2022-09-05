@@ -17,6 +17,7 @@ const Finance_infoSchema = new schema(
     },
     uid: {
       type: Number,
+      index:true
     },
     amount: {
       type: Number,
@@ -71,10 +72,12 @@ const Finance_infoSchema = new schema(
       type: Number,
     },
     studentId: {
-      type: String
+      type: String,
+      index:true
     },
     userId: {
-      type: String
+      type: String,
+      index:true
     },
   },
   { timestamps: true }

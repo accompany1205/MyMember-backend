@@ -20,7 +20,8 @@ const organization_setup = new mongoose.Schema(
         },
         school_id: {
             type: Number,
-            required: true
+            required: true,
+            index:true
         },
         Website: {
             type: String,

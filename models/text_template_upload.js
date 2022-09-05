@@ -10,15 +10,19 @@ const templateUpload = new schema({
   },
   subFolderId: {
     type: String,
+    index:true
   },
   rootFolderId: {
     type: String,
+    index:true
   },
   userId: {
     type: String,
+    index:true
   },
   adminId: {
     type: String,
+    index:true
   }
 })
 

@@ -14,7 +14,8 @@ const textLibrarySchema = schema({
        ref:'txt_library_Folder'
    }],
    userId:{
-       type:String 
+       type:String,
+       index:true 
    }
 },
 { timestamps:true }

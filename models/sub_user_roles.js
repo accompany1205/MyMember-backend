@@ -16,13 +16,15 @@ const userSchema = new schema(
         twilio: {
             trim: true,
             type: String,
+            index:true
 
         },
         profile_img: {
             type: String
         },
         userId: {
-            type: String
+            type: String,
+            index:true
         },
         phone: {
             type: String,

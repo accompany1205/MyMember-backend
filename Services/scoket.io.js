@@ -1,6 +1,7 @@
 const textMessage = require('../models/text_message');
 const member = require('../models/addmember');
 const User = require('../models/user');
+const tasks = require('../models/task')
 const location = require('../models/admin/settings/location');
 const jwt = require('jsonwebtoken');
 const ChatUser = require('../models/chat_user');
@@ -25,6 +26,12 @@ class SocketEngine {
         socket.leave(room);
       });
 
+      socket.on('memberText', async (member) => {
+        let {uid, userId} = member;
+        let data = await textMessage.find({$and:[{userId:userId},{uid:uid}]});
+        io.to(userId).emit('memberTextList', data)
+      });
+      
       socket.on('alertGetTexts', async (getText) => {
         try {
           console.log(getText)
@@ -35,13 +42,100 @@ class SocketEngine {
           console.log(err);
         }
       });
+    
+      socket.on('push-notification', async (userId) =>{
+        let notification = {}
+        let tomorrow = moment().add(1,'days');
+        let currDate = new Date().toISOString().slice(0, 10);
+        
+        let todayTask = await tasks.find(
+          {
+            userId: userId,
+            start: currDate,
+            $or:[{'isSeen':null}, {'isSeen':false}]
+          },
+          {id:1, name: 1,start: 1,description:1}
+        );
 
-      socket.on('memberText', async (member) => {
-        let {uid, userId} = member;
-        let data = await textMessage.find({$and:[{userId:userId},{uid:uid}]});
-        io.to(userId).emit('memberTextList', data)
+        let text_chat = await textMessage.aggregate([
+          {"$match": {"$and":[{ userId:userId },{'isSeen':null} ]}},
+          { "$addFields": { "uid": { "$toObjectId": "$uid" }}},
+          {
+            "$lookup": {
+              "from": "members",
+              "localField": "uid",
+              "foreignField": "_id",
+              "as": "to"
+            }
+       },
+       {
+          $project:{
+              id:1,
+              textContent:1,
+              time:1,
+              to:{
+                firstName:1,
+                lastName:1,
+                memberprofileImage:1
+              }
+            }
+       }
+        ])
+
+        let todayBirthday = await member.aggregate([
+          {
+          $match: {
+            $and: [
+              {userId:userId},
+              {'isSeen':null},
+              { $expr: { $eq: [{ $dayOfMonth: '$dob' },{ $dayOfMonth: '$$NOW' }]} }, 
+              { $expr: { $eq: [{ $month: '$dob' },{ $month: '$$NOW' }] } }
+            ]
+        }
+        },
+        {
+          $project:{
+            id:1,
+            firstName:1,
+            lastName:1,
+            age:1,
+            dob:1,
+            memberprofileImage:1
+        }
+        }
+        ])
+        
+        let tomorrowBirthday = await member.aggregate([
+            {
+              $match: {
+                      $and: [
+                            {userId:req.params.userId},
+                            {'isSeen':null},
+                            { $expr: { $eq: [{ $dayOfMonth: '$dob' },{ $dayOfMonth: new Date(tomorrow)}]} }, 
+                            { $expr: { $eq: [{ $month: '$dob' },{ $month: new Date(tomorrow) }] } }
+                            ]
+                       }
+              },
+              {
+                $project:{
+                id:1,  
+                firstName:1,
+                lastName:1,
+                dob:1,
+                age:1,
+                memberprofileImage:1
+                }
+              }
+        ])
+
+         notification.count = (todayTask.length + text_chat.length + todayBirthday.length + tomorrowBirthday.length)
+         notification.tasks = todayTask  
+         notification.chat = text_chat
+         notification.todayBirthday = todayBirthday
+         notification.tomorrowBirthday = tomorrowBirthday
+         io.to(userId).emit('getNotification',notification) 
       });
-
+      // in the userObj we need 3 parameter userId for task get and (msg to) for chat 
       socket.on('textAlertWebhook', async (uidObj) => {
         let uid = uidObj.uid;
         let { userId } = await member.findOne({ _id: uid });

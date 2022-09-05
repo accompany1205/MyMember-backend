@@ -10,7 +10,8 @@ const appointSchema = new schema(
         },
         category: {
             type: String,
-            required: true
+            required: true,
+            index: true
         },
         interval: {
             type: String
@@ -20,14 +21,16 @@ const appointSchema = new schema(
         },
         appointment_type: {
             type: String,
-            required: true
+            required: true,
+            index: true
         },
         app_color: {
             type: String
         },
         start: {
             type: String,
-            required: true
+            required: true,
+            index: true
         },
         end: {
             type: String,
@@ -61,7 +64,8 @@ const appointSchema = new schema(
             type: Array
         },
         userId: {
-            type: String
+            type: String,
+            index: true
         },
         ticketType : {
             type:String

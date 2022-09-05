@@ -28,7 +28,8 @@ const TestSchema = new schema({
 
     },
     programId:{
-        type:String
+        type:String,
+        index:true
     },
     start_date:{
         type:String
@@ -67,7 +68,8 @@ const TestSchema = new schema({
     },
   
     userId:{
-        type:String
+        type:String,
+        index:true
     }
 
 })
