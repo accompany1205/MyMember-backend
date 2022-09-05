@@ -15,14 +15,19 @@ const {getForms,
        storeForm,
        loadForm,
        favouriteForm,
-       archiveForm
+       archiveForm,
+       processStripeConnect
     } = require("../../controllers/builder/builder")
+
+const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 
 router.use((req,res,next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
 });
+
+router.post("/verifyStripe", processStripeConnect)
 
 /**
  * @swagger
@@ -43,7 +48,7 @@ router.get('/test', (req,res)=>{
  *   get:
  *     description: process form
  */
- router.get('/process/newstudent/:id/:userId', processForm)
+ router.get('/process/newstudent/:id/:userId', requireSignin, processForm)
 
 /**
  * @swagger
@@ -57,7 +62,7 @@ router.get('/test', (req,res)=>{
  *       200:
  *         description: Created
  */
-router.post('/new', createForm)
+router.post('/new', requireSignin, createForm)
 
 /**
  * @swagger
@@ -73,7 +78,7 @@ router.post('/new', createForm)
  *             schema:
  *               $ref: '#/components/schemas/ArrayOfForms'
  */
-router.get('/', getForms)
+router.get('/', requireSignin, getForms)
 
 /**
  * @swagger
