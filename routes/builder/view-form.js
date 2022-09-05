@@ -9,9 +9,9 @@ const {viewForm, processForm} = require("../../controllers/builder/view-form")
 *
 */
 
-router.get('/:formId', viewForm)
+router.get('/:formId/:userId', viewForm)
 
-router.post("/process/newstudent/:formId", processForm)
+router.post("/process/newstudent/:formId/:userId", processForm)
 
 
 module.exports = router
