@@ -21,14 +21,14 @@ class SocketEngine {
         socket.join(room);
       });
 
-      
+
       socket.on('leaveTextChatRoom', async (room) => {
         socket.leave(room);
       });
 
       socket.on('memberText', async (member) => {
-        let {uid, userId} = member;
-        let data = await textMessage.find({$and:[{userId:userId},{uid:uid}]});
+        let { uid, userId } = member;
+        let data = await textMessage.find({ $and: [{ userId: userId }, { uid: uid }] });
         io.to(userId).emit('memberTextList', data)
       });
 
@@ -42,24 +42,24 @@ class SocketEngine {
           console.log(err);
         }
       });
-    
-      socket.on('push-notification', async (userId) =>{
+
+      socket.on('push-notification', async (userId) => {
         let notification = {}
-        let tomorrow = moment().add(1,'days');
+        let tomorrow = moment().add(1, 'days');
         let currDate = new Date().toISOString().slice(0, 10);
-        
+
         let todayTask = await tasks.find(
           {
             userId: userId,
             start: currDate,
-            $or:[{'isSeen':null}, {'isSeen':false}]
+            $or: [{ 'isSeen': null }, { 'isSeen': false }]
           },
-          {id:1, name: 1,start: 1,description:1}
+          { id: 1, name: 1, start: 1, description: 1 }
         );
 
         let text_chat = await textMessage.aggregate([
-          {"$match": {"$and":[{ userId:userId },{'isSeen':null} ]}},
-          { "$addFields": { "uid": { "$toObjectId": "$uid" }}},
+          { "$match": { "$and": [{ userId: userId }, { "isSeen": null }] } },
+          { "$addFields": { "uid": {$convert: {input: '$uid', to : 'objectId', onError: '',onNull: ''}} } },
           {
             "$lookup": {
               "from": "members",
@@ -67,73 +67,73 @@ class SocketEngine {
               "foreignField": "_id",
               "as": "to"
             }
-       },
-       {
-          $project:{
-              id:1,
-              textContent:1,
-              time:1,
-              to:{
-                firstName:1,
-                lastName:1,
-                memberprofileImage:1
+          },
+          {
+            $project: {
+              id: 1,
+              textContent: 1,
+              time: 1,
+              to: {
+                firstName: 1,
+                lastName: 1,
+                memberprofileImage: 1
               }
             }
-       }
+          }
         ])
-
+        console.log("-->", text_chat)
         let todayBirthday = await member.aggregate([
           {
-          $match: {
-            $and: [
-              {userId:userId},
-              {'isSeen':null},
-              { $expr: { $eq: [{ $dayOfMonth: '$dob' },{ $dayOfMonth: '$$NOW' }]} }, 
-              { $expr: { $eq: [{ $month: '$dob' },{ $month: '$$NOW' }] } }
-            ]
-        }
-        },
-        {
-          $project:{
-            id:1,
-            firstName:1,
-            lastName:1,
-            age:1,
-            dob:1,
-            memberprofileImage:1
-        }
-        }
-        ])
-        
-        let tomorrowBirthday = await member.aggregate([
-            {
-              $match: {
-                      $and: [
-                            {userId:userId},
-                            {'isSeen':null},
-                            { $expr: { $eq: [{ $dayOfMonth: '$dob' },{ $dayOfMonth: new Date(tomorrow)}]} }, 
-                            { $expr: { $eq: [{ $month: '$dob' },{ $month: new Date(tomorrow) }] } }
-                            ]
-                       }
-              },
-              {
-                $project:{
-                id:1,  
-                firstName:1,
-                lastName:1,
-                dob:1,
-                age:1,
-                memberprofileImage:1
-                }
-              }
+            $match: {
+              $and: [
+                { userId: userId },
+                { 'isSeen': null },
+                { $expr: { $eq: [{ $dayOfMonth: '$dob' }, { $dayOfMonth: '$$NOW' }] } },
+                { $expr: { $eq: [{ $month: '$dob' }, { $month: '$$NOW' }] } }
+              ]
+            }
+          },
+          {
+            $project: {
+              id: 1,
+              firstName: 1,
+              lastName: 1,
+              age: 1,
+              dob: 1,
+              memberprofileImage: 1
+            }
+          }
         ])
 
-         notification.count = (todayTask.length + text_chat.length + todayBirthday.length + tomorrowBirthday.length)
-         notification.tasks = todayTask  
-         notification.chat = text_chat
-         notification.todayBirthday = todayBirthday
-         notification.tomorrowBirthday = tomorrowBirthday
-         io.to(userId).emit('getNotification',notification) 
+        let tomorrowBirthday = await member.aggregate([
+          {
+            $match: {
+              $and: [
+                { userId: userId },
+                { 'isSeen': null },
+                { $expr: { $eq: [{ $dayOfMonth: '$dob' }, { $dayOfMonth: new Date(tomorrow) }] } },
+                { $expr: { $eq: [{ $month: '$dob' }, { $month: new Date(tomorrow) }] } }
+              ]
+            }
+          },
+          {
+            $project: {
+              id: 1,
+              firstName: 1,
+              lastName: 1,
+              dob: 1,
+              age: 1,
+              memberprofileImage: 1
+            }
+          }
+        ])
+
+        notification.count = (todayTask.length + text_chat.length + todayBirthday.length + tomorrowBirthday.length)
+        notification.tasks = todayTask
+        notification.chat = text_chat
+        notification.todayBirthday = todayBirthday
+        notification.tomorrowBirthday = tomorrowBirthday
+        io.to(userId).emit('getNotification', notification)
       });
       // in the userObj we need 3 parameter userId for task get and (msg to) for chat 
       socket.on('textAlertWebhook', async (uidObj) => {
