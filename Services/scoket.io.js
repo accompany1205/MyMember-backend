@@ -26,6 +26,12 @@ class SocketEngine {
         socket.leave(room);
       });
 
+      socket.on('memberText', async (member) => {
+        let {uid, userId} = member;
+        let data = await textMessage.find({$and:[{userId:userId},{uid:uid}]});
+        io.to(userId).emit('memberTextList', data)
+      });
+      
       socket.on('alertGetTexts', async (getText) => {
         try {
           console.log(getText)
@@ -50,12 +56,6 @@ class SocketEngine {
           },
           {id:1, name: 1,start: 1,description:1}
         );
-
-      socket.on('memberText', async (member) => {
-        let {uid, userId} = member;
-        let data = await textMessage.find({$and:[{userId:userId},{uid:uid}]});
-        io.to(userId).emit('memberTextList', data)
-      });
 
         let text_chat = await textMessage.aggregate([
           {"$match": {"$and":[{ userId:userId },{'isSeen':null} ]}},
