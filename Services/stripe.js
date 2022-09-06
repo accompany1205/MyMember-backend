@@ -1,6 +1,7 @@
 'use strict';
 const StripeCustomers = require('../models/stripe_customers')
 const Members = require("../models/addmember")
+const User = require("../models/user");
 const StripeCards = require('../models/stripe_cards')
 const StoreTransaction = require('../models/store_transactions')
 const uuid = require('uuid').v4
@@ -57,8 +58,11 @@ exports.createStudents = async (req, res) => {
 
 exports.createCustomer = async (req, res, next) => {
     let customerData = req.body
+    let userId = req.params.userId;
     try {
-        let customer = await stripe.customers.create({
+        let { stripe_sec } = await User.findOne({ _id: userId });
+        var cli = await require("stripe")(stripe_sec);
+        let customer = await cli.customers.create({
             email: customerData.email,
             metadata: {
                 account_id: customerData.account_id,

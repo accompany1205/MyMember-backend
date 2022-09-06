@@ -112,6 +112,7 @@ let createPayment = async (req, resp) => {
             throw { "status": false, "message": "customer not existed" }
         }
         console.log("amount is ------------", req.body.amount, req.body.card_id,)
+        console.log(resp)
         let paymentIntent = await resp.paymentIntents.create({
             amount: (req.body.amount) * 100, //stripe uses cents
             currency: 'usd',
@@ -150,6 +151,7 @@ exports.buy_product_stripe = async (req, res) => {
             productData.due_status = "paid";
             if (ptype === 'credit card') {
                 if (stripePayload.pan) {
+                    var cli = await require("stripe")(stripe_sec);
                     let cardId
                     let findExistingCard = await StripeCards.findOne({ "card_number": stripePayload.card_number })
                     console.log(findExistingCard)
@@ -157,7 +159,7 @@ exports.buy_product_stripe = async (req, res) => {
                         cardId = findExistingCard["card_id"]
                     }
                     else {
-                        var cli = await require("stripe")(stripe_sec);
+                        console.log(cli)
                         if (!cli) {
                             return res.send({ msg: "please add stipe Keys!", success: false })
                         }
@@ -185,6 +187,7 @@ exports.buy_product_stripe = async (req, res) => {
                             "email": stripePayload.email
                         }
                     }, cli)
+                    console.log(createPaymentResponse);
                     res.send(createPaymentResponse)
                 }
                 else {

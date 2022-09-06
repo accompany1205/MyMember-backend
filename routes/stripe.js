@@ -4,7 +4,7 @@ const { createCustomer,listCustomers, createCard, listCards, createPayment, crea
 const { verifySchool } = require("../controllers/auth");
 
 
-router.post("/create_customer", createCustomer);
+router.post("/create_customer/:userId", createCustomer);
 router.get("/create_student/:student", createStudents)
 router.get("/list_customers", listCustomers);
 // router.post("/create_card_token", createCardToken);

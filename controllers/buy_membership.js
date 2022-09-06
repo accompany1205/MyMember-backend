@@ -989,6 +989,7 @@ let createPayment = async (req, resp) => {
           description: req.body.description
       });
       let storeTransaction = await StoreTransaction.create(paymentIntent)
+      console.log(paymentIntent)
       return paymentIntent
   }
   catch (err) {
@@ -1291,6 +1292,7 @@ exports.buyMembershipStripe = async (req, res) => {
         membershipData.membership_status = "Active";
         if (stripePayload && ptype === "credit card") {
           console.log("payment method entered")
+          var cli = await require("stripe")(stripe_sec);
           let cardId
           let findExistingCard = await StripeCards.findOne({ "card_number": stripePayload.card_number })
           console.log(findExistingCard)
@@ -1298,7 +1300,6 @@ exports.buyMembershipStripe = async (req, res) => {
             cardId = findExistingCard["card_id"]
           }
           else {
-            var cli = await require("stripe")(stripe_sec);
             if(!cli){
               return res.send({msg:"please add stipe Keys!", success:false})
             }
