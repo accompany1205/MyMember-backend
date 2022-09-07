@@ -6,18 +6,23 @@ const stripe = require('stripe')('sk_test_v9')
 
 exports.viewForm = async(req,res) => {
 
-    console.log("FormID: ", req.params.formId)
+    console.log("FormID: ", req.params.formId, "UserID: ", req.params.userId)
     
     let id = req.params.formId
+    let userId = req.params.userId //"606aea95a145ea2d26e0f1ab"
     let form = await Form.findOne({_id: req.params.formId})
     let includePayment = form.includePayment
     let html = form.formBody
 
     if(includePayment == true){
-        html = html.replace('<body>', '<body><form method="post" id="payment-form" action="/builder/view/process/newstudent/'+ id +'">')
+        //html = html.replace('<body>', '<body><form method="post" id="payment-form" action="/builder/view/process/newstudent/'+ id +'">')
+        html = html.replace('<body>', '<body><form method="post" id="payment-form" action="/builder/view/process/newstudent/'+ id + '/' + userId +'">')
     }else{
-        html = html.replace('<body>', '<body><form method="post" action="/builder/view/process/newstudent/'+ id +'">')
+        //html = html.replace('<body>', '<body><form method="post" action="/builder/view/process/newstudent/'+ id +'">')
+        html = html.replace('<body>', '<body><form method="post" action="/builder/view/process/newstudent/'+ id + '/' + userId +'">')
     }
+
+    //html = html.replace('<body>', '<body><form method="post" action="/builder/view/process/newstudent/'+ id + '/' + userId +'">')
     html = html.replace('</body>', '</form></body>')
     
     let css = form.formStyle
@@ -91,8 +96,10 @@ exports.processForm = async(req,res) => {
         let formId = req.params.formId
         let userId = req.params.userId
 
+        console.log("userId::", userId, "formId:", formId)
+
         //Contact Info
-        let memberType = req.body.memberTyp
+        let memberType = "Leads" || req.body.memberType
         let memberId = req.body.memberId
 
         // Member Info
@@ -126,6 +133,8 @@ exports.processForm = async(req,res) => {
         await form.save()
 
         let newmember = await addmember()
+
+        newmember.userId = userId
 
         //contact info
         newmember.studentType = memberType

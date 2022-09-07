@@ -11,13 +11,13 @@ const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 *
 */
 
-router.get('/:formId', viewForm)
+router.get('/:formId/:userId', verifySchool, viewForm)
 
-router.post("/process/newstudent/:formId", processForm)
+router.post("/process/newstudent/:formId/:userId", verifySchool, processForm)
 
-router.get('/payment-status', viewPaymentStatus)
-router.get('/payment-success', showPaymentSuccess)
-router.get('/payment-error', showPaymentError)
+router.get('/payment-status', requireSignin, viewPaymentStatus)
+router.get('/payment-success', requireSignin, showPaymentSuccess)
+router.get('/payment-error', requireSignin, showPaymentError)
 
 
 module.exports = router

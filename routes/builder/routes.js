@@ -27,7 +27,7 @@ router.use((req,res,next) => {
     next();
 });
 
-router.post("/verifyStripe", processStripeConnect)
+router.post("/verifyStripe", requireSignin, processStripeConnect)
 
 /**
  * @swagger
@@ -48,7 +48,7 @@ router.get('/test', (req,res)=>{
  *   get:
  *     description: process form
  */
- router.get('/process/newstudent/:id/:userId', requireSignin, processForm)
+ router.get('/process/newstudent/:id/:userId', verifySchool, processForm)
 
 /**
  * @swagger
@@ -97,7 +97,7 @@ router.get('/', requireSignin, getForms)
  *       200:
  *         descripton: update form
  */
-router.patch('/update/settings/:id', updateFormSettings)
+router.patch('/update/settings/:id', requireSignin, updateFormSettings)
 
 /**
  * @swagger
@@ -116,12 +116,12 @@ router.patch('/update/settings/:id', updateFormSettings)
  *       200:
  *         descripton: update form
  */
- router.patch('/update/data/:id', updateFormData)
+ router.patch('/update/data/:id', requireSignin, updateFormData)
 
  
  //router.patch('/favourite/:id', favouriteForm)
 
- router.patch('/archive/:id', archiveForm)
+ router.patch('/archive/:id', requireSignin, archiveForm)
  
 
 /**
@@ -138,7 +138,7 @@ router.patch('/update/settings/:id', updateFormSettings)
  *         required: true
  *         descripton: ID of the form to delete
  */
-router.delete('/delete/:id', deleteForm)
+router.delete('/delete/:id', requireSignin, deleteForm)
 
 /**
  * @swagger
@@ -153,7 +153,7 @@ router.delete('/delete/:id', deleteForm)
  *           type: String
  *         required: true
  */
-router.patch('/trash/:id', moveToTrash)
+router.patch('/trash/:id', requireSignin, moveToTrash)
 
 
 /**
@@ -169,7 +169,7 @@ router.patch('/trash/:id', moveToTrash)
  *           type: String
  *         required: true
  */
-router.patch('/favourite/:id', markAsFavourite)
+router.patch('/favourite/:id', requireSignin, markAsFavourite)
 
 /**
  * @swagger
@@ -184,7 +184,7 @@ router.patch('/favourite/:id', markAsFavourite)
  *           type: String
  *         required: true
  */
- router.post('/favourites', getFavourites)
+ router.post('/favourites', requireSignin, getFavourites)
 
 /**
  * @swagger
@@ -193,7 +193,7 @@ router.patch('/favourite/:id', markAsFavourite)
  *     summary: store form
  *     description: store form
  */
- router.post('/store/:id', storeForm)
+ router.post('/store/:id', requireSignin, storeForm)
 
 /**
  * @swagger
@@ -202,7 +202,7 @@ router.patch('/favourite/:id', markAsFavourite)
  *     summary: load form
  *     description: load form
  */
- router.get('/load/:id', loadForm)
+ router.get('/load/:id', requireSignin, loadForm)
 
 /**
  * @swagger
@@ -218,7 +218,7 @@ router.patch('/favourite/:id', markAsFavourite)
  *             schema:
  *               $ref: '#/components/schemas/ArrayOfForms'
  */
-router.get('/:id', getForm)
+router.get('/:id', requireSignin, getForm)
 
 
 module.exports = router;
