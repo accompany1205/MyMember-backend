@@ -22,7 +22,6 @@ exports.recomendStudent = async (req, res) => {
         firstName: Joi.string().required(),
         lastName: Joi.string().required(),
         status: Joi.string().required(),
-        memberprofileImage: Joi.string(),
         phone: Joi.string(),
         program: Joi.string().required(),
         rating: Joi.number().required(),
@@ -34,7 +33,6 @@ exports.recomendStudent = async (req, res) => {
         next_rank_name: Joi.string(),
         current_rank_img: Joi.string(),
         next_rank_img: Joi.string(),
-        isRecomCandidate: Joi.boolean().required()
     })
     try {
         if (!students.length) {

@@ -11,7 +11,7 @@ router.put("/attendence/update_attendence/:userId/:scheduleId/:studentId", verif
 router.post("/attendence/search/:userId/:page_no/:per_page", verifySchool, searchAttendance)
 router.delete("/attendence/remove_attendence/:userId/:scheduleId/:studentId", requireSignin, remove)
 router.put("/attendence/update_rating", update_rating)
-router.put("/add_last_attendence_date/:userId",verifySchool,attendeceDate)
+// router.put("/add_last_attendence_date/:userId",verifySchool,attendeceDate)
 
 
 module.exports = router;
