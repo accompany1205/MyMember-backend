@@ -247,7 +247,7 @@ exports.getFilteredStudents = async (req, res) => {
                         current_rank_name: "$current_rank_name",
                         next_rank_name: "$next_rank_name",
                         candidate: "$candidate",
-                        current_rank_img:"$current_rank_img",
+                        current_rank_img: "$current_rank_img",
                         month: { $month: "$createdAt" },
                         year: {
                             $year: "$createdAt",
@@ -268,6 +268,22 @@ exports.getFilteredStudents = async (req, res) => {
         return res.send({ data: data, success: true, msg: "No data for This filter!" })
     } catch (err) {
         res.send({ error: err.message.replace(/\"/g, ""), success: false })
+    }
+}
+
+exports.searchRecommendedStudentByName = async (req, res) => {
+    const search = req.query.search;
+    try {
+        const data = await RecommendedCandidateModel.find({
+            $or: [
+                { lastName: { $regex: search, $options: 'i' } },
+                { firstName: { $regex: search, $options: 'i' } }
+            ]
+        });
+        res.send({ data: data, success: true })
+
+    } catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ''), success: false })
     }
 }
 
