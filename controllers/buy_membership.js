@@ -1478,6 +1478,101 @@ function createFinanceDoc(data) {
     // }
   });
 }
+
+
+exports.checkData=async (req,res)=>{
+  let userId=req.params.userId;
+  const expired_LastaMembership = await AddMember.aggregate([
+    {
+      $match:{
+        userId:userId
+      }
+    },
+    {
+      $project: {
+        last_membership: {
+          $arrayElemAt: ["$membership_details", -1],
+        },  
+        status:1,
+      },
+    },
+    {
+      $match: {
+        status: { $nin: ["Expired"] },
+        last_membership: {
+          $nin: [null],
+        },
+      },
+    },
+    // {
+    //   $lookup: {
+    //     from: "buy_memberships",
+    //     localField: "last_membership",
+    //     foreignField: "_id",
+    //     as: "membership",
+    //     pipeline: [
+    //       {
+    //         $project: {
+    //           expiry_date: {
+    //             // $toDate: "$expiry_date",ghfjhgfgh
+    //             $convert: {
+    //               input: "$expiry_date",
+    //               to: "date",
+    //               onError: "$expiry_date",
+    //               onNull: "$expiry_date",
+    //             },
+    //           },
+    //           membership_status: 1,
+    //         },
+    //       },
+          // {jkghgjh
+          //   $match: {
+          //     membership_status: {
+          //       $ne: ["Expired"],
+          //     },
+          //   },
+          // },jhbjbhbh
+    //     ],
+    //   },
+    // },
+    // {
+    //   $unwind: "$membership",
+    // },
+   
+    // {
+    //   $match: {
+    //     "membership.expiry_date": {
+    //       $lte: new Date(),
+    //     },
+    //   },
+    // },
+    // {
+    //   $project: {
+    //     membershipId: "$membership._id",
+    //   },
+    // },
+  ]);
+  console.log(expired_LastaMembership)
+}
+
+function update_LastMembershipStatus(member) {
+  let { _id, membershipId } = member;
+  return new Promise((resolve, reject) => {
+    AddMember.updateOne({ _id: _id.toString() }, { $set: { status: "Expired" } })
+      .then((resp) => {
+        buyMembership
+          .updateOne(
+            { _id: membershipId.toString() },
+            { $set: { membership_status: "Expired" } }
+          )
+          .then((resp) => resolve(resp))
+          .catch((err) => reject(err));
+      })
+      .catch((err) => reject(err));
+  });
+}
+
+
 // async function cronForEmiStatus() {
 //   current_Date = moment().format("YYYY-MM-DD");
 //   const EmiData = await buyMembership.find({ isEMI: true });

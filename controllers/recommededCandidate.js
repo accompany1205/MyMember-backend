@@ -335,6 +335,41 @@ exports.removeAll = async (req, res) => {
     }
 }
 
+
+exports.recomendData=async(req,res)=>{
+    let userId=req.params.userId;
+    try{
+        let data=await RecommendedCandidateModel.aggregate([
+            {
+                $match:{
+                    userId:userId
+                }
+            },
+            {
+                $project:{
+                    candidate:1,
+                    last_stripe_given:1,
+                    rating:1,
+                    candidate_status:1,
+                    firstName:1,
+                    lastName:1
+                }
+            }
+        ])
+        return res.send({
+            success: true,
+            msg: "data!",
+            data:data
+        })
+        
+    }catch (err) {
+        res.send({ error: err.message.replace(/\"/g, ""), success: false });
+
+    }
+    
+    
+}
+
 exports.removeFromRecomended = async (req, res) => {
     try {
         let recommededId = req.params.recommededCandidateId;
