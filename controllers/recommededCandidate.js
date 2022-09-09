@@ -22,7 +22,6 @@ exports.recomendStudent = async (req, res) => {
         firstName: Joi.string().required(),
         lastName: Joi.string().required(),
         status: Joi.string().required(),
-        memberprofileImage: Joi.string(),
         phone: Joi.string(),
         program: Joi.string().required(),
         rating: Joi.number().required(),
@@ -34,7 +33,6 @@ exports.recomendStudent = async (req, res) => {
         next_rank_name: Joi.string(),
         current_rank_img: Joi.string(),
         next_rank_img: Joi.string(),
-        isRecomCandidate: Joi.boolean().required()
     })
     try {
         if (!students.length) {
@@ -351,6 +349,41 @@ exports.removeAll = async (req, res) => {
     } catch (err) {
         res.send({ msg: err.message.replace(/\"/g, ""), success: false })
     }
+}
+
+
+exports.recomendData=async(req,res)=>{
+    let userId=req.params.userId;
+    try{
+        let data=await RecommendedCandidateModel.aggregate([
+            {
+                $match:{
+                    userId:userId
+                }
+            },
+            {
+                $project:{
+                    candidate:1,
+                    last_stripe_given:1,
+                    rating:1,
+                    candidate_status:1,
+                    firstName:1,
+                    lastName:1
+                }
+            }
+        ])
+        return res.send({
+            success: true,
+            msg: "data!",
+            data:data
+        })
+        
+    }catch (err) {
+        res.send({ error: err.message.replace(/\"/g, ""), success: false });
+
+    }
+    
+    
 }
 
 exports.removeFromRecomended = async (req, res) => {

@@ -43,12 +43,12 @@ var expiredLastMembership = async () => {
       $project: {
         last_membership: {
           $arrayElemAt: ["$membership_details", -1],
-        },
+        },  
       },
     },
     {
       $match: {
-        status: { $nin: ["Expired"] },
+        // status: { $nin: ["Expired"] },
         last_membership: {
           $nin: [null],
         },
