@@ -50,6 +50,14 @@ const userSchema = new schema(
                 type: Boolean,
                 default: false
             },
+            event_manager:{
+                type:Boolean,
+                default:false
+            },
+            form_builder:{
+                type:Boolean,
+                default:false
+            },
             documents: {
                 type: Boolean,
                 default: false
