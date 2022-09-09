@@ -238,7 +238,22 @@ exports.allStaticsData = async (req, res) => {
   if (staticsType == "MemberStatics") {
     const join = await dataStatics("Active Student", userId, year1)
     const quite = await dataStatics("Former Student", userId, year1)
-    return res.send({ join: join, quite: quite, msg: "Data!", success: true })
+    let arr=[]    
+    for(let i=0;i<join.length;i++){
+      let obj={
+        month:0,
+        join:{count:0,data:0},
+        quite:{count:0,data:0}
+      }
+      obj.month=join[i].month;
+      obj.join.count=join[i].count;
+      obj.join.data=(join[i].data)
+      obj.quite.count=quite[i].count;
+      obj.quite.data=(quite[i].data)
+      arr.push(obj)
+    }  
+    return res.send(arr)
+    // return res.send({ join: join, quite: quite, msg: "Data!", success: true })
     // let arr = []
     // let i = 0;
     // while (i < 12) {
@@ -249,7 +264,22 @@ exports.allStaticsData = async (req, res) => {
   } else if (staticsType == "TrialStatics") {
     const join = await dataStatics("Active Trial", userId, year1)
     const quite = await dataStatics("Former Trial", userId, year1)
-    return res.send({ join: join, quite: quite, msg: "Data!", success: true })
+    let arr=[]    
+    for(let i=0;i<join.length;i++){
+      let obj={
+        month:0,
+        join:{count:0,data:0},
+        quite:{count:0,data:0}
+      }
+      obj.month=join[i].month;
+      obj.join.count=join[i].count;
+      obj.join.data=(join[i].data)
+      obj.quite.count=quite[i].count;
+      obj.quite.data=(quite[i].data)
+      arr.push(obj)
+    }  
+    return res.send(arr)
+    // return res.send({ join: join, quite: quite, msg: "Data!", success: true })
 
     // let arr = []
     // let i = 0;
@@ -260,7 +290,20 @@ exports.allStaticsData = async (req, res) => {
     // return res.send({ data: arr, msg: "Data!", success: true })
   } else if (staticsType == "leadsStatics") {
     const join = await dataStatics("Leads", userId, year1)
-    return res.send({ join: join, msg: "Data!", success: true })
+    let arr=[]    
+    for(let i=0;i<join.length;i++){
+      let obj={
+        month:0,
+        join:{count:0,data:0},
+      
+      }
+      obj.month=join[i].month;
+      obj.join.count=join[i].count;
+      obj.join.data=(join[i].data)
+      arr.push(obj)
+    }  
+    return res.send(arr)
+    // return res.send({ join: join, msg: "Data!", success: true })
 
     // let arr = []
     // let i = 0;
