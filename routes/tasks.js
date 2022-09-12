@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Create, read, tasksInfo, remove, tasksUpdate, taskFilter, todayTask,notificationTodayTask,seenTasks } = require('../controllers/tasks')
+const { Create, read, tasksInfo, remove, tasksUpdate, taskFilter, todayTask,notificationTodayTask,seenTasks, seenRead } = require('../controllers/tasks')
 const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 const upload = require('../handler/multer')
 
@@ -10,6 +10,7 @@ router.get('/tasks/today_tasks/:userId', verifySchool, todayTask)
 router.put('/tasks/update_tasks/:userId/:taskId', upload.array('docs'), verifySchool, tasksUpdate)
 router.delete('/tasks/delete_tasks/:userId/:taskId', verifySchool, remove)
 router.get('/tasks/notification_today_tasks/:userId',notificationTodayTask)
-router.put('/notification_seen/:userId',seenTasks)
+router.put('/notification_seen',seenTasks)
+router.put('/notification_read',seenRead)
 
 module.exports = router;

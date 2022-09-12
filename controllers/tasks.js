@@ -410,7 +410,7 @@ exports.notificationTodayTask = async (req, res) => {
 //   }
 //   }
 // ])
-
+    
     res.send({ success: true, /*taskCount: todayBirthday.length,*/ data: tomorrowBirthday });
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
@@ -419,27 +419,74 @@ exports.notificationTodayTask = async (req, res) => {
 
 exports.seenTasks = async (req, res) => {
   try {
-    const taskIds = req.body.taskIds;
-    const textIds = req.body.chatIds;
-    const memberIds = req.body.memberIds
-  
-    const seenTasks = await tasks.updateMany(
-      { _id: { $in: taskIds } },
-      { $set: { isSeen: true } }
-    );
+    const taskId = req.query.taskId;
+    const textId = req.query.chatId;
+    const memberId = req.query.memberId
+    
+    if(Object.keys(req.query).length === 0 ){
+      res.send({ success: false, msg: "at least one parameter send in query parameter" });
+    }else{
+      if(taskId != undefined){
+        const seenTasks = await tasks.updateOne(
+          { _id: taskId },
+          { $set: { isSeen: true } }
+        );
+        }
+        else if(memberId != undefined){
+        const seenMember = await member.updateOne(
+          { _id: memberId },
+          { $set: { isSeen: "true" } }
+        );
+        }
+        else if(textId != undefined){
+        const seenText = await textMessage.updateOne(
+          { _id: textId },
+          { $set: { isSeen: "true" } }
+        );
+      }
+      res.send({ success: true, msg: "notification seen successfully" });
+    }
 
-    const seenMember = await member.updateMany(
-      { _id: { $in: memberIds } },
-      { $set: { isSeen: "true" } }
-    );
-
-    const seenText = await textMessage.updateMany(
-      { _id: { $in: textIds } },
-      { $set: { isSeen: "true" } }
-    );
-    console.log("updatetask", seenTasks,"updateText",seenText,"seenmember",seenMember);
-    res.send({ success: true, msg: "task and text seen successfully" });
+    // console.log("updatetask", seenTasks,"updateText",seenText,"seenmember",seenMember);
+    
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
 };
+
+exports.seenRead = async (req, res) => {
+  try {
+    const taskId = req.query.taskId;
+    const textId = req.query.chatId;
+    const memberId = req.query.memberId
+    
+    if(Object.keys(req.query).length === 0 ){
+      res.send({ success: false, msg: "at least one parameter send in query parameter" });
+    }else{
+      if(taskId != undefined){
+        const seenTasks = await tasks.updateOne(
+          { _id: taskId },
+          { $set: { isRead: true } }
+        );
+        }
+        else if(memberId != undefined){
+        const seenMember = await member.updateOne(
+          { _id: memberId },
+          { $set: { isRead: true } }
+        );
+        }
+        else if(textId != undefined){
+        const seenText = await textMessage.updateOne(
+          { _id: textId },
+          { $set: { isRead: true } }
+        );
+      }
+      res.send({ success: true, msg: "notification read successfully" });
+    }
+
+    // console.log("updatetask", seenTasks,"updateText",seenText,"seenmember",seenMember);
+    
+  } catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+  }
+}
