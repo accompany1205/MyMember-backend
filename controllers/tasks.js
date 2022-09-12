@@ -336,37 +336,37 @@ exports.notificationTodayTask = async (req, res) => {
     //     start: 1,
     //   }
     // );
-    // let text_chat = await textMessage.aggregate([
-    //   { "$match": { "$and": [{ userId: "606aea95a145ea2d26e0f1ab" }, { 'isRead': false  },{ 'isSent': false  },{count:{$eq:"false"}}] } },
+    let text_chat = await textMessage.aggregate([
+      { "$match": { "$and": [{ userId: "606aea95a145ea2d26e0f1ab" }, { 'isRead': false  },{ 'isSent': false  }] } },
      
-    //   { "$addFields": { "uid": {$convert: {input: '$uid', to : 'objectId', onError: '',onNull: ''}} } },
-    //   {
-    //     "$lookup": {
-    //       "from": "members",
-    //       "localField": "uid",
-    //       "foreignField": "_id",
-    //       "as": "to"
-    //     }
-    //   },
+      { "$addFields": { "uid": {$convert: {input: '$uid', to : 'objectId', onError: '',onNull: ''}} } },
+      {
+        "$lookup": {
+          "from": "members",
+          "localField": "uid",
+          "foreignField": "_id",
+          "as": "to"
+        }
+      },
 
-    //   {
-    //     $project: {
-    //       id: 1,
-    //       textContent: 1,
-    //       time: 1,
-    //       isSeen: 1,
+      {
+        $project: {
+          id: 1,
+          textContent: 1,
+          time: 1,
+          isSeen: 1,
           
-    //       to: {
-    //         firstName: 1,
-    //         lastName: 1,
-    //         memberprofileImage: 1
-    //       }
-    //     }
-    //   },
+          to: {
+            firstName: 1,
+            lastName: 1,
+            memberprofileImage: 1
+          }
+        }
+      },
      
-    //   { $sort: { createdAt: -1 } },
+      { $sort: { time: -1 } },
      
-    // ])
+    ])
   // const tomorrow  = new Date(); // The Date object returns today's timestamp
   // tomorrow.setDate(tomorrow.getDate() + 1);
   //   console.log(tomorrow,'date')

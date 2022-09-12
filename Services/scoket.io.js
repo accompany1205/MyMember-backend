@@ -81,7 +81,7 @@ class SocketEngine {
               }
             }
           },
-          { $sort: { createdAt: -1 } }
+          { $sort: { time: -1 } }
         ])
         console.log("-->", text_chat)
         let todayBirthday = await member.aggregate([
