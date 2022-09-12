@@ -1002,8 +1002,8 @@ exports.allMemberships = async (req, res) => {
 			{
 				$lookup: {
 					from: 'members',
-					localField: 'studentId',
-					foreignField: '_id',
+					localField: '_id',
+					foreignField: 'studentId',
 					as: 'student',
 				},
 			},
@@ -1265,7 +1265,7 @@ exports.memberByMembershipType = async (req, res) => {
 					membership_type: 1,
 					rank: '',
 					status: '',
-					lastStrive: '',
+					lastStripe: '',
 				},
 			},
 			{

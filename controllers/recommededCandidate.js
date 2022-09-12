@@ -22,17 +22,18 @@ exports.recomendStudent = async (req, res) => {
         firstName: Joi.string().required(),
         lastName: Joi.string().required(),
         status: Joi.string().required(),
-        phone: Joi.string(),
+        phone: Joi.string().allow(null).allow(''),
         program: Joi.string().required(),
         rating: Joi.number().required(),
-        candidate: Joi.string(),
-        current_stripe: Joi.string(),
-        current_rank_name: Joi.string(),
-        current_rank_name: Joi.string(),
+        candidate: Joi.string().allow(null).allow(''),
+        current_stripe: Joi.string().allow(null).allow(''),
+        current_rank_name: Joi.string().allow(null).allow(''),
+        current_rank_name: Joi.string().allow(null).allow(''),
         userId: Joi.string().required(),
-        next_rank_name: Joi.string(),
-        current_rank_img: Joi.string(),
-        next_rank_img: Joi.string(),
+        next_rank_name: Joi.string().allow(null).allow(''),
+        current_rank_img: Joi.string().allow(null).allow(''),
+        next_rank_img: Joi.string().allow(null).allow(''),
+        memberprofileImage: Joi.string().allow(null).allow(''),
     })
     try {
         if (!students.length) {
@@ -352,39 +353,92 @@ exports.removeAll = async (req, res) => {
 }
 
 
-exports.recomendData=async(req,res)=>{
-    let userId=req.params.userId;
-    try{
-        let data=await RecommendedCandidateModel.aggregate([
+exports.recomendData = async (req, res) => {
+    let userId = req.params.userId;
+    try {
+        let data = await RecommendedCandidateModel.aggregate([
             {
-                $match:{
-                    userId:userId
+                $match: {
+                    userId: userId
                 }
             },
             {
-                $project:{
-                    candidate:1,
-                    last_stripe_given:1,
-                    rating:1,
-                    candidate_status:1,
-                    firstName:1,
-                    lastName:1
+                $project: {
+                    candidate: 1,
+                    last_stripe_given: 1,
+                    rating: 1,
+                    candidate_status: 1,
+                    firstName: 1,
+                    lastName: 1
                 }
             }
         ])
         return res.send({
             success: true,
             msg: "data!",
-            data:data
+            data: data
         })
-        
-    }catch (err) {
+
+    } catch (err) {
         res.send({ error: err.message.replace(/\"/g, ""), success: false });
 
     }
-    
-    
+
+
 }
+
+exports.dashboardCandidateInfo = async (req, res) => {
+    let userId = req.params.userId;
+    let candidate = req.params.candidate;
+    try {
+        let data = await RecommendedCandidateModel.aggregate([
+            {
+                $match: {
+                    userId: userId,
+                    candidate: candidate
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    firstName: 1,
+                    lastName: 1,
+                    current_rank_name: 1,
+                    last_stripe_given: 1,
+                    studentId: 1,
+                }
+            },
+            { $addFields: { "studentId": { "$toObjectId": "$studentId" } } },
+            {
+                $lookup:
+                {
+                    from: "members",
+                    localField: "studentId",
+                    foreignField: "_id",
+                    as: "statusInfo",
+                }
+            },
+            {
+                $project: {
+                    firstName: 1,
+                    lastName: 1,
+                    current_rank_name: 1,
+                    last_stripe_given: 1,
+                    status: { $arrayElemAt: ["$statusInfo.status", 0] },
+                }
+            }
+        ])
+        return res.send({
+            data: data,
+            msg: "Data!",
+            success: true
+        })
+    } catch (err) {
+        res.send({ error: err.message.replace(/\"/g, ""), success: false });
+    }
+
+}
+
 
 exports.removeFromRecomended = async (req, res) => {
     try {
