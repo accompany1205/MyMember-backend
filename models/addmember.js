@@ -305,6 +305,11 @@ const addmemberSchema = new schema(
       type: String,
       default:null,
       index: true
+    },
+    isRead:{
+      type: Boolean,
+      default: false,
+      index: true
     }
   },
 

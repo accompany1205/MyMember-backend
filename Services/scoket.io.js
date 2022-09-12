@@ -52,13 +52,13 @@ class SocketEngine {
           {
             userId: userId,
             start: currDate,
-            $or: [{ 'isSeen': null }, { 'isSeen': false }]
+            $or: [{ 'isRead': null }, { 'isRead': false }]
           },
-          { id: 1, name: 1, start: 1, description: 1 }
+          { id: 1, name: 1, start: 1, description: 1, isSeen: 1 }
         );
 
         let text_chat = await textMessage.aggregate([
-          { "$match": { "$and": [{ userId: userId }, { "isSeen": null }] } },
+          { "$match": { "$and": [{ userId: userId }, { 'isRead': false  },{ 'isSent': false  }] } },
           { "$addFields": { "uid": {$convert: {input: '$uid', to : 'objectId', onError: '',onNull: ''}} } },
           {
             "$lookup": {
@@ -73,13 +73,15 @@ class SocketEngine {
               id: 1,
               textContent: 1,
               time: 1,
+              isSeen: 1,
               to: {
                 firstName: 1,
                 lastName: 1,
                 memberprofileImage: 1
               }
             }
-          }
+          },
+          { $sort: { time: -1 } }
         ])
         console.log("-->", text_chat)
         let todayBirthday = await member.aggregate([
@@ -87,7 +89,7 @@ class SocketEngine {
             $match: {
               $and: [
                 { userId: userId },
-                { 'isSeen': null },
+                { 'isRead': false  },
                 { $expr: { $eq: [{ $dayOfMonth: '$dob' }, { $dayOfMonth: '$$NOW' }] } },
                 { $expr: { $eq: [{ $month: '$dob' }, { $month: '$$NOW' }] } }
               ]
@@ -100,7 +102,8 @@ class SocketEngine {
               lastName: 1,
               age: 1,
               dob: 1,
-              memberprofileImage: 1
+              memberprofileImage: 1,
+              isSeen: 1
             }
           }
         ])
@@ -110,7 +113,7 @@ class SocketEngine {
             $match: {
               $and: [
                 { userId: userId },
-                { 'isSeen': null },
+                { 'isRead': false  },
                 { $expr: { $eq: [{ $dayOfMonth: '$dob' }, { $dayOfMonth: new Date(tomorrow) }] } },
                 { $expr: { $eq: [{ $month: '$dob' }, { $month: new Date(tomorrow) }] } }
               ]
@@ -123,7 +126,8 @@ class SocketEngine {
               lastName: 1,
               dob: 1,
               age: 1,
-              memberprofileImage: 1
+              memberprofileImage: 1,
+              isSeen: 1
             }
           }
         ])

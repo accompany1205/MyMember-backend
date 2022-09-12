@@ -26,12 +26,17 @@ const TextMessageSchema = schema({
     type: String,
     default:null,
     index: true,
-    index:true
   },
+  isRead:{
+    type: Boolean,
+    default: false,
+    index: true
+  }, 
   time: {
     type:String,
     default: new Date().toLocaleString('en-US', {  timeZone: 'America/New_York'})
   }
-});
+},
+{ timestamps: true });
 
 module.exports = mongoose.model('text_message', TextMessageSchema);
