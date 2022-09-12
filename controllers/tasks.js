@@ -336,28 +336,37 @@ exports.notificationTodayTask = async (req, res) => {
     //     start: 1,
     //   }
     // );
-  //   let todayTask =  await textMessage.aggregate([
-  //     {"$match": {"$and":[{ userId:"606aea95a145ea2d26e0f1aa" },{'isSeen':null} ]}},
-  //     { "$addFields": { "uid": { "$toObjectId": "$uid" }}},
-  //     {
-  //       "$lookup": {
-  //         "from": "members",
-  //         "localField": "uid",
-  //         "foreignField": "_id",
-  //         "as": "to"
-  //       }
-  //  },
-  //  {
-  //     $project:{
-  //         id:1,
-  //         textContent:1,
-  //         to:{
-  //           firstName:1,
-  //           lastName:1
-  //         }
-  //       }
-  //  }
-  // ])
+    // let text_chat = await textMessage.aggregate([
+    //   { "$match": { "$and": [{ userId: "606aea95a145ea2d26e0f1ab" }, { 'isRead': false  },{ 'isSent': false  },{count:{$eq:"false"}}] } },
+     
+    //   { "$addFields": { "uid": {$convert: {input: '$uid', to : 'objectId', onError: '',onNull: ''}} } },
+    //   {
+    //     "$lookup": {
+    //       "from": "members",
+    //       "localField": "uid",
+    //       "foreignField": "_id",
+    //       "as": "to"
+    //     }
+    //   },
+
+    //   {
+    //     $project: {
+    //       id: 1,
+    //       textContent: 1,
+    //       time: 1,
+    //       isSeen: 1,
+          
+    //       to: {
+    //         firstName: 1,
+    //         lastName: 1,
+    //         memberprofileImage: 1
+    //       }
+    //     }
+    //   },
+     
+    //   { $sort: { createdAt: -1 } },
+     
+    // ])
   // const tomorrow  = new Date(); // The Date object returns today's timestamp
   // tomorrow.setDate(tomorrow.getDate() + 1);
   //   console.log(tomorrow,'date')
@@ -410,8 +419,8 @@ exports.notificationTodayTask = async (req, res) => {
 //   }
 //   }
 // ])
-    
-    res.send({ success: true, /*taskCount: todayBirthday.length,*/ data: tomorrowBirthday });
+    console.log(text_chat.length)
+    res.send({ success: true, /*taskCount: todayBirthday.length,*/ data: text_chat });
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
@@ -419,34 +428,29 @@ exports.notificationTodayTask = async (req, res) => {
 
 exports.seenTasks = async (req, res) => {
   try {
-    const taskId = req.query.taskId;
-    const textId = req.query.chatId;
-    const memberId = req.query.memberId
+    const taskId = req.body.taskId;
+    const textId = req.body.chatId;
+    const memberId = req.body.memberId
     
-    if(Object.keys(req.query).length === 0 ){
-      res.send({ success: false, msg: "at least one parameter send in query parameter" });
-    }else{
-      if(taskId != undefined){
+       if(taskId != undefined || taskId.length > 0){
         const seenTasks = await tasks.updateOne(
-          { _id: taskId },
+          { _id: { $in: taskId }  },
           { $set: { isSeen: true } }
         );
         }
-        else if(memberId != undefined){
+        else if(memberId != undefined || memberId.length > 0){
         const seenMember = await member.updateOne(
-          { _id: memberId },
+          { _id: { $in: memberId }},
           { $set: { isSeen: "true" } }
         );
         }
-        else if(textId != undefined){
+        else if(textId != undefined || textId.length > 0){
         const seenText = await textMessage.updateOne(
-          { _id: textId },
+          { _id: { $in: textId} },
           { $set: { isSeen: "true" } }
         );
       }
-      res.send({ success: true, msg: "notification seen successfully" });
-    }
-
+    res.send({ success: true, msg: "notification seen successfully" });
     // console.log("updatetask", seenTasks,"updateText",seenText,"seenmember",seenMember);
     
   } catch (err) {
@@ -456,34 +460,29 @@ exports.seenTasks = async (req, res) => {
 
 exports.seenRead = async (req, res) => {
   try {
-    const taskId = req.query.taskId;
-    const textId = req.query.chatId;
-    const memberId = req.query.memberId
+    const taskId = req.body.taskId;
+    const textId = req.body.chatId;
+    const memberId = req.body.memberId
     
-    if(Object.keys(req.query).length === 0 ){
-      res.send({ success: false, msg: "at least one parameter send in query parameter" });
-    }else{
-      if(taskId != undefined){
+       if(taskId != undefined || taskId.length > 0){
         const seenTasks = await tasks.updateOne(
-          { _id: taskId },
+          { _id: { $in: taskId }  },
           { $set: { isRead: true } }
         );
         }
-        else if(memberId != undefined){
+        else if(memberId != undefined || memberId.length > 0){
         const seenMember = await member.updateOne(
-          { _id: memberId },
+          { _id: { $in: memberId }},
           { $set: { isRead: true } }
         );
         }
-        else if(textId != undefined){
+        else if(textId != undefined || textId.length > 0){
         const seenText = await textMessage.updateOne(
-          { _id: textId },
+          { _id: { $in: textId} },
           { $set: { isRead: true } }
         );
       }
-      res.send({ success: true, msg: "notification read successfully" });
-    }
-
+    res.send({ success: true, msg: "notification seen successfully" });
     // console.log("updatetask", seenTasks,"updateText",seenText,"seenmember",seenMember);
     
   } catch (err) {
