@@ -408,6 +408,7 @@ exports.dashboardCandidateInfo = async (req, res) => {
             {
                 $project: {
                     _id: 0,
+                    candidate:1,
                     firstName: 1,
                     lastName: 1,
                     current_rank_name: 1,
@@ -429,6 +430,7 @@ exports.dashboardCandidateInfo = async (req, res) => {
                 $project: {
                     firstName: 1,
                     lastName: 1,
+                    candidate:1,
                     current_rank_name: 1,
                     last_stripe_given: 1,
                     status: { $arrayElemAt: ["$statusInfo.status", 0] },
