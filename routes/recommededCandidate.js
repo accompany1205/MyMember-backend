@@ -13,7 +13,7 @@ router.delete("/recomend_candidate/remove/:userId/:recommededCandidateId", requi
 router.delete("/recomend_candidate/removeAll/:userId", requireSignin, removeAll);
 router.get("/recommended/search", requireSignin, searchRecommendedStudentByName);
 router.get("/recomend_candidate/data/:userId",requireSignin,recomendData)
-router.get("/dashboard/recomended_candidate/candidate_name/:userId/:candidate",requireSignin,dashboardCandidateInfo)
+router.get("/dashboard/recomended_candidate/candidate_name/:userId/:candidate/:per_page/:page_no",requireSignin,dashboardCandidateInfo)
 
 
 module.exports = router;
