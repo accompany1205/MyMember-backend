@@ -25,6 +25,7 @@ exports.recomendStudent = async (req, res) => {
         phone: Joi.string().allow(null).allow(''),
         program: Joi.string().required(),
         rating: Joi.number().required(),
+        isRecomCandidate:Joi.boolean(),
         candidate: Joi.string().allow(null).allow(''),
         current_stripe: Joi.string().allow(null).allow(''),
         current_rank_name: Joi.string().allow(null).allow(''),
@@ -37,7 +38,7 @@ exports.recomendStudent = async (req, res) => {
     })
     try {
         if (!students.length) {
-            res.json({
+            return res.json({
                 status: students,
                 msg: "You haven't selected any student!"
             })
@@ -65,7 +66,7 @@ exports.recomendStudent = async (req, res) => {
             return res.send({
                 recommendedCandidates,
                 success: false,
-                msg: `${alredyRecomend} These students are already on the recommended list!`
+                msg: `${alredyRecomend} already on the recommended list!`
             })
         }
 
@@ -374,6 +375,12 @@ exports.recomendData = async (req, res) => {
 exports.dashboardCandidateInfo = async (req, res) => {
     let userId = req.params.userId;
     let candidate = req.params.candidate;
+    var per_page = parseInt(req.params.per_page) || 5;
+    var page_no = parseInt(req.params.page_no) || 0;
+    var pagination = {
+      limit: per_page,
+      skip: per_page * page_no,
+    };
     try {
         let data = await RecommendedCandidateModel.aggregate([
             {
@@ -410,11 +417,26 @@ exports.dashboardCandidateInfo = async (req, res) => {
                     last_stripe_given: 1,
                     status: { $arrayElemAt: ["$statusInfo.status", 0] },
                 }
-            }
+            },
+            {
+                $facet: {
+                  paginatedResults: [
+                    { $skip: pagination.skip },
+                    { $limit: pagination.limit },
+                  ],
+                  totalCount: [
+                    {
+                      $count: "count",
+                    },
+                  ],
+                },
+              },
         ])
+        let result = data[0].paginatedResults
         return res.send({
-            data: data,
+            data: result,
             msg: "Data!",
+            totalCount: data[0].totalCount[0].count,
             success: true
         })
     } catch (err) {
