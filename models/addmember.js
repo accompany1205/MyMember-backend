@@ -303,7 +303,7 @@ const addmemberSchema = new schema(
     },
     isSeen:{
       type: String,
-      default:null,
+      default:false,
       index: true
     },
     isRead:{

@@ -132,7 +132,13 @@ class SocketEngine {
           }
         ])
 
-        notification.count = (todayTask.length + text_chat.length + todayBirthday.length + tomorrowBirthday.length)
+        let chat_count = text_chat.filter((item)=> item.isSeen == 'false').length;
+        let todayBirthday_count = todayBirthday.filter((item)=> item.isSeen == 'false').length;
+        let tomorrowBirthday_count = tomorrowBirthday.filter((item)=> item.isSeen == 'false').length;
+        let todayTask_count = todayTask.filter((item)=> item.isSeen == false).length;
+
+
+        notification.count = (chat_count + todayBirthday_count + tomorrowBirthday_count + todayTask_count)
         notification.tasks = todayTask
         notification.chat = text_chat
         notification.todayBirthday = todayBirthday
