@@ -343,7 +343,7 @@ exports.promotionBeltCount = async (req, res) => {
     const recommended_data = await recommendedData();
     const register_data = await registerData(false);
     const promoted_data = await promotedData(true);
-    return res.send({recommended:recommended_data,register:register_data,promoted:promoted_data})
+    return res.send({ recommended: recommended_data, register: register_data, promoted: promoted_data })
 
 
   } catch (err) {
@@ -594,6 +594,19 @@ exports.filterEvents = async (req, res) => {
 
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
+}
+
+exports.singleRead = async (req, res) => {
+  let apptId = req.params.apptId;
+  if(!apptId){
+    return res.send({ msg: "pass apptId in params!", success: false })
+  }
+  try {
+    let data = await appoint.findOne({ _id: apptId });
+    return res.send({data:data, success:true})
+  } catch (err) {
+    return res.send({ msg: err.message.replace(/\"/g, ""), success: false })
   }
 }
 
