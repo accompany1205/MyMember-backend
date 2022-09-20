@@ -491,7 +491,7 @@ async function DailyTriggeredMails() {
       }
     }, 3000);
   } catch (err) {
-    console.log({ msg: err.message.replace(/\"/g, ""), success: false });
+    console.log({ msg: err.message.replace(/\"/g, ""), success: false } );
   }
 }
 
