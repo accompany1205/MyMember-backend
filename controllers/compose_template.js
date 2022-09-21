@@ -34,16 +34,29 @@ function timefun(sd, st) {
   return (curdat = new Date(y, mo, d, h, mi, se, mil));
 }
 
+exports.sendImageResp = (req, res) => {
+  if (req.files) {
+    (req.files).map(file => {
+      cloudUrl.imageUrl(file).then(data => {
+        return res.send({ msg: "Image", success: true, data:data });
+      })
+    })
+
+  } else {
+    res.send({ msg: "No image uploaded", success: false })
+  }
+}
+
 exports.getData = (req, res) => {
   let options = {
-      timeZone: "Asia/Kolkata",
-      hour: "numeric",
-      year: "numeric",
-      month: "numeric",
-      day: "numeric",
-      minute: "numeric",
-      second: "numeric",
-    },
+    timeZone: "Asia/Kolkata",
+    hour: "numeric",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    minute: "numeric",
+    second: "numeric",
+  },
     formatter = new Intl.DateTimeFormat([], options);
 
   var a = formatter.format(new Date());
