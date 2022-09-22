@@ -305,7 +305,7 @@ exports.all_data = async (req, res) => {
                   {
                     $subtract: [{ $dayOfMonth: "$dob" }, { $dayOfMonth: todays }],
                   },
-                  1,
+                  0,
                 ],
               },
             },
@@ -429,7 +429,7 @@ exports.all_data = async (req, res) => {
                   {
                     $subtract: [{ $dayOfMonth: "$dob" }, { $dayOfMonth: todays }],
                   },
-                  1,
+                  0,
                 ],
               },
             },
