@@ -59,7 +59,7 @@ router.get('/test', (req,res)=>{
  *       200:
  *         description: Created
  */
-router.post('/new', requireSignin, createForm)
+router.get('/new', requireSignin, createForm)
 
 /**
  * @swagger
