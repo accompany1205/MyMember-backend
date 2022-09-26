@@ -2209,6 +2209,21 @@ exports.ActiveMemberslistByProgramName = async (req, res) => {
   }
 };
 
+exports.leadUpdate = async (req, res) => {
+  const userId = req.params.userId;
+  const studentId = req.params.studentId;
+  let leadStatus = req.body.leadStatus;
+  try {
+    let data = await addmemberModal.updateOne({_id:studentId}, {$set:{leadStatus:leadStatus}})
+    if(data.nModified ===0){
+      return res.send({msg:"not updated!", success:false})
+    }
+    return res.send({msg:"updated successfuly!", success:true})
+  }catch (err){
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
+}
+
 exports.searchStudentbyType = async (req, res) => {
   const userId = req.params.userId;
   const studentType = req.params.studentType;
