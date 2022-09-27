@@ -95,9 +95,9 @@ exports.createForm = async (req,res) => {
         let title = "Form Title"
 		let created_by = new mongoose.Types.ObjectId
 
-        let form = new Form;
-        form.title = title;
-        form.formBody = formBody,
+        let form = new Form
+        form.title = title
+        form.formBody = formBody
         form.created_by = created_by
         form.formData = JSON.stringify({
                          "gjs-css":"",
