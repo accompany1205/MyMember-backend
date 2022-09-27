@@ -11,6 +11,6 @@ router.put('/tasks/update_tasks/:userId/:taskId', upload.array('docs'), verifySc
 router.delete('/tasks/delete_tasks/:userId/:taskId', verifySchool, remove)
 router.get('/tasks/notification_today_tasks/:userId',notificationTodayTask)
 router.put('/notification_seen',seenTasks)
-router.put('/notification_read',seenRead)
+router.put('/notification_remove',seenRead)
 
 module.exports = router;
