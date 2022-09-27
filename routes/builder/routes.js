@@ -19,11 +19,7 @@ const {getForms,
        processStripeConnect
     } = require("../../controllers/builder/builder")
 
-<<<<<<< HEAD
-const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
-=======
 const { requireSignin, isAuth, verifySchool } = require("../../controllers/auth");
->>>>>>> 08cd781aa0369ced9d8298a468b869107609a837
 
 router.use((req,res,next) => {
     res.header("Access-Control-Allow-Origin", "*");
@@ -66,7 +62,7 @@ router.get('/test', (req,res)=>{
  *       200:
  *         description: Created
  */
-router.post('/new', requireSignin, createForm)
+router.get('/new', requireSignin, createForm)
 
 /**
  * @swagger
@@ -173,11 +169,7 @@ router.patch('/trash/:id', requireSignin, moveToTrash)
  *           type: String
  *         required: true
  */
-<<<<<<< HEAD
-router.patch('/favourite/:id', requireSignin, markAsFavourite)
-=======
 router.patch('/favourite/:id',requireSignin, markAsFavourite)
->>>>>>> 08cd781aa0369ced9d8298a468b869107609a837
 
 /**
  * @swagger
