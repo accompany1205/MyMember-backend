@@ -3,7 +3,7 @@ const addmember = require("../../models/addmember.js")
 const mongoose = require("mongoose")
 
 //const stripe = require('stripe')('sk_test_v9')
-const config = require('../config/stripe');
+const config = require('../../config/stripe');
 const stripe = require('stripe')(config.secretKey);
 const httpBuildQuery = require('http-build-query');
 
