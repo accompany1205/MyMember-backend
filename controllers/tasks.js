@@ -409,13 +409,13 @@ exports.seenTasks = async (req, res) => {
           { $set: { isSeen: true } }
         );
         }
-        else if(memberId != undefined || memberId.length > 0){
+        if(memberId != undefined || memberId.length > 0){
         const seenMember = await member.updateOne(
           { _id: { $in: memberId }},
           { $set: { isSeen: "true" } }
         );
         }
-        else if(textId != undefined || textId.length > 0){
+        if(textId != undefined || textId.length > 0){
         const seenText = await textMessage.updateOne(
           { _id: { $in: textId} },
           { $set: { isSeen: "true" } }
@@ -434,23 +434,25 @@ exports.seenRead = async (req, res) => {
     const taskId = req.body.taskId;
     const textId = req.body.chatId;
     const memberId = req.body.memberId
+   
     
        if(taskId != undefined || taskId.length > 0){
         const seenTasks = await tasks.updateOne(
           { _id: { $in: taskId }  },
-          { $set: { isRead: true } }
+          { $set: { isRead: true,isSeen: false } }
         );
         }
-        else if(memberId != undefined || memberId.length > 0){
+        if(memberId != undefined || memberId.length > 0){
         const seenMember = await member.updateOne(
           { _id: { $in: memberId }},
-          { $set: { isRead: true } }
+          { $set: { isRead: true, isSeen: "false"  } }
         );
+        console.log('data',seenMember)
         }
-        else if(textId != undefined || textId.length > 0){
+        if(textId != undefined || textId.length > 0){
         const seenText = await textMessage.updateOne(
           { _id: { $in: textId} },
-          { $set: { isRead: true } }
+          { $set: { isRead: true, isSeen: "false" } }
         );
       }
     res.send({ success: true, msg: "notification remove successfully" });
