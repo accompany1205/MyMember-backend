@@ -1,9 +1,12 @@
 const taskSubFolder = require("../models/task_subfolder");
 const taskFolder = require("../models/task_folder");
 const tasks = require("../models/task");
+const user = require("../models/user")
 const cloudUrl = require("../gcloud/imageUrl");
 const textMessage = require('../models/text_message');
 const member =  require("../models/addmember")
+const mongoose = require('mongoose');
+
 exports.Create = async (req, res) => {
   const Task = req.body;
   let userId = req.params.userId;
@@ -323,19 +326,16 @@ exports.notificationTodayTask = async (req, res) => {
   // ("2018-12-05T23:59:59.999
     // let currDate = new Date().toISOString().slice(0, 10);
     // console.log(currDate, typeof currDate);
-    // let todayTask = await tasks.find(
-    //   {
-    //     userId: req.params.userId,
-    //     start: currDate,
-    //     $or:[ 
-    //         {'isSeen':null}, {'isSeen':false} 
-    //     ]
-    //   },
-    //   {
-    //     name: 1,
-    //     start: 1,
-    //   }
-    // );
+    let rest
+
+    let users = await user.findOne({_id: "6138893333c9482cb41d88d5"},{_id: 1,task_setting: 1,birthday_setting:1,chat_setting:1})
+    let notification ={}
+    if(users.task_setting){
+      notification.task = [users]
+    }else{
+      notification.task = []
+    }
+    
   // const tomorrow  = new Date(); // The Date object returns today's timestamp
   // tomorrow.setDate(tomorrow.getDate() + 1);
   //   console.log(tomorrow,'date')
@@ -389,9 +389,9 @@ exports.notificationTodayTask = async (req, res) => {
 //   }
 // ])
    
-   let count  =  text_chat.filter((item)=> item.isSeen == 'false').length;
+  //  let count  =  text_chat.filter((item)=> item.isSeen == 'false').length;
 
-    res.send({ success: true, taskCount: count, data: text_chat });
+    res.send({ success: true, data: notification });
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
@@ -409,13 +409,13 @@ exports.seenTasks = async (req, res) => {
           { $set: { isSeen: true } }
         );
         }
-        else if(memberId != undefined || memberId.length > 0){
+        if(memberId != undefined || memberId.length > 0){
         const seenMember = await member.updateOne(
           { _id: { $in: memberId }},
           { $set: { isSeen: "true" } }
         );
         }
-        else if(textId != undefined || textId.length > 0){
+        if(textId != undefined || textId.length > 0){
         const seenText = await textMessage.updateOne(
           { _id: { $in: textId} },
           { $set: { isSeen: "true" } }
@@ -434,29 +434,56 @@ exports.seenRead = async (req, res) => {
     const taskId = req.body.taskId;
     const textId = req.body.chatId;
     const memberId = req.body.memberId
+   
     
        if(taskId != undefined || taskId.length > 0){
         const seenTasks = await tasks.updateOne(
           { _id: { $in: taskId }  },
-          { $set: { isRead: true } }
+          { $set: { isRead: true,isSeen: false } }
         );
         }
-        else if(memberId != undefined || memberId.length > 0){
+        if(memberId != undefined || memberId.length > 0){
         const seenMember = await member.updateOne(
           { _id: { $in: memberId }},
-          { $set: { isRead: true } }
+          { $set: { isRead: true, isSeen: "false"  } }
         );
+        console.log('data',seenMember)
         }
-        else if(textId != undefined || textId.length > 0){
+        if(textId != undefined || textId.length > 0){
         const seenText = await textMessage.updateOne(
           { _id: { $in: textId} },
-          { $set: { isRead: true } }
+          { $set: { isRead: true, isSeen: "false" } }
         );
       }
     res.send({ success: true, msg: "notification remove successfully" });
     // console.log("updatetask", seenTasks,"updateText",seenText,"seenmember",seenMember);
     
   } catch (err) {
+    res.send({ error: err.message.replace(/\"/g, ""), success: false });
+  }
+}
+
+exports.notificationOnOFF = async (req, res) => {
+  try{
+    let task_setting = req.query.taskSetting
+    let chat_setting = req.query.chatSetting
+    let birthday_setting = req.query.birthdaySetting
+    let query = {}
+    if(task_setting != undefined){
+      query.task_setting = task_setting
+    }
+    else if(chat_setting != undefined){
+      query.chat_setting = chat_setting
+    }
+    else if(birthday_setting != undefined){
+      query.birthday_setting = birthday_setting
+    }
+    let userId =  req.params.userId
+    const id = mongoose.Types.ObjectId(userId);
+    console.log(query,id)
+    await user.updateOne({_id:id},{$set:query})
+    res.send({ success: true, msg: "notification setting update successfully" });
+  }catch(err){
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
 }
