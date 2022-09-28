@@ -1,6 +1,8 @@
 const Form = require("../../models/builder/Form.js")
 const addmember = require("../../models/addmember.js")
 
+const stripe = require('stripe')('sk_test_v9')
+
 
 exports.viewForm = async(req,res) => {
 
@@ -9,18 +11,23 @@ exports.viewForm = async(req,res) => {
     let id = req.params.formId
     let userId = req.params.userId //"606aea95a145ea2d26e0f1ab"
     let form = await Form.findOne({_id: req.params.formId})
+    let includePayment = form.includePayment
     let html = form.formBody
-    html = html.replace('<body>', '<body><form method="post" action="/builder/view/process/newstudent/'+ id + '/' + userId +'">')
+
+    if(includePayment == true){
+        //html = html.replace('<body>', '<body><form method="post" id="payment-form" action="/builder/view/process/newstudent/'+ id +'">')
+        html = html.replace('<body>', '<body><form method="post" id="payment-form" action="/builder/view/process/newstudent/'+ id + '/' + userId +'">')
+    }else{
+        //html = html.replace('<body>', '<body><form method="post" action="/builder/view/process/newstudent/'+ id +'">')
+        html = html.replace('<body>', '<body><form method="post" action="/builder/view/process/newstudent/'+ id + '/' + userId +'">')
+    }
+
+    //html = html.replace('<body>', '<body><form method="post" action="/builder/view/process/newstudent/'+ id + '/' + userId +'">')
     html = html.replace('</body>', '</form></body>')
+    
     let css = form.formStyle
     let js = form.formScript
     let title = form.title
-
-    /*let html="<div class='s0'>Hello</div><div class='s1'><input type='text' placeholder='hello' class='test'/></div>"
-    let css = "body{color: blue; background-color: red;}"
-    let js = "console.log('Hi! How are you?')"
-    let title = "Form Title"
-    */
 
     res.render("index",{
         title: title,
@@ -28,6 +35,49 @@ exports.viewForm = async(req,res) => {
         css: css,
         js: js
     })
+
+}
+
+exports.viewPaymentStatus = async(req,res) => {
+    res.sendFile(path.join(__dirname +'/template/payment-status.html'));
+}
+
+exports.showPaymentSuccess = async(req,res) => {
+    res.sendFile(path.join(__dirname +'/template/payment-success.html'));
+}
+
+exports.showPaymentError = async(req,res) => {
+    res.sendFile(path.join(__dirname +'/template/payment-error.html'));
+}
+
+exports.createSecret = async(req,res) => {
+    try{
+
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount: 1099,
+            currency: 'eur',
+            automatic_payment_methods: {
+              enabled: true,
+            },
+            application_fee_amount: 123,
+            transfer_data: {
+              destination: '{{CONNECTED_ACCOUNT_ID}}',
+            },
+        });
+        res.json({client_secret: paymentIntent.client_secret});
+
+
+    }catch(error){
+
+    }
+
+}
+
+exports.chargeAccount = async(req,res) => {
+
+    const stripe = require('stripe')('sk_test_4eC39HqLyjWDarjtT1zdp7dc');
+
+    
 
 }
 

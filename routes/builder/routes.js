@@ -15,7 +15,8 @@ const {getForms,
        storeForm,
        loadForm,
        favouriteForm,
-       archiveForm
+       archiveForm,
+       processStripeConnect
     } = require("../../controllers/builder/builder")
 
 const { requireSignin, isAuth, verifySchool } = require("../../controllers/auth");
@@ -25,6 +26,8 @@ router.use((req,res,next) => {
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
 });
+
+router.post("/verifyStripe", requireSignin, processStripeConnect)
 
 /**
  * @swagger

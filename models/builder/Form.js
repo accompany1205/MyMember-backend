@@ -51,6 +51,10 @@ const FormSchema = mongoose.Schema({
     formData: {
 	    type: String,
         default: "{}"
+    },
+    includePayment: {
+        type: Boolean,
+        default: false
     }
 
 })
