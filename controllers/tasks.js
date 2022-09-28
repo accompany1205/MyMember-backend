@@ -453,7 +453,7 @@ exports.seenRead = async (req, res) => {
           { $set: { isRead: true } }
         );
       }
-    res.send({ success: true, msg: "notification seen successfully" });
+    res.send({ success: true, msg: "notification remove successfully" });
     // console.log("updatetask", seenTasks,"updateText",seenText,"seenmember",seenMember);
     
   } catch (err) {
