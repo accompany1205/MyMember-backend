@@ -42,30 +42,30 @@ const mergeMultipleFiles = require("../Services/mergeMultipleFiles");
 
 exports.StatisticsCount = async (req, res) => {
   let userId = req.params.userId;
-  try{
+  try {
     let statisticsCount = await addmemberModal.aggregate([
       { $match: { userId: userId } },
-      { $project : {studentType:1} },
-      { 
-        $group : {_id : {studentType:"$studentType"}, total : { $sum : 1 }}
-          }
+      { $project: { studentType: 1 } },
+      {
+        $group: { _id: { studentType: "$studentType" }, total: { $sum: 1 } }
+      }
     ])
-    const studentDetails=[]
-    let sum=0
-    statisticsCount.map(i=>{
-      let studentType=i._id.studentType
-      let count=i.total
-      studentDetails.push({studentType:studentType,count:count})
-      sum+=i.total
+    const studentDetails = []
+    let sum = 0
+    statisticsCount.map(i => {
+      let studentType = i._id.studentType
+      let count = i.total
+      studentDetails.push({ studentType: studentType, count: count })
+      sum += i.total
     })
-    studentDetails.push({totalCount:sum})
+    studentDetails.push({ totalCount: sum })
     return res.send({
       success: true,
       data: studentDetails
     })
-  }catch (err) {
+  } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false });
-  }  
+  }
 }
 
 
@@ -1269,6 +1269,27 @@ exports.trial_this_month = (req, res) => {
   );
 };
 
+exports.filterLeads = async (req, res) => {
+  const leadFilter = req.body.leadFilter;
+  console.log(leadFilter)
+  const userId = req.params.userId;
+  try {
+    const data = await addmemberModal.aggregate([
+      {
+        $match: {
+          $and: [
+            {userId:userId}, {leadsTracking:{$in:leadFilter}}
+          ]
+        }
+      }
+    ]);
+    console.log(data);
+    res.send(data)
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+  }
+}
+
 exports.mergeMultipleDoc = async (req, res) => {
   let studentsIds = req.body.studentsIds;
   let docBody = req.body.docBody;
@@ -2214,12 +2235,12 @@ exports.leadUpdate = async (req, res) => {
   const studentId = req.params.studentId;
   let leadStatus = req.body.leadStatus;
   try {
-    let data = await addmemberModal.updateOne({_id:studentId}, {$set:{leadStatus:leadStatus}})
-    if(data.nModified ===0){
-      return res.send({msg:"not updated!", success:false})
+    let data = await addmemberModal.updateOne({ _id: studentId }, { $set: { leadStatus: leadStatus } })
+    if (data.nModified === 0) {
+      return res.send({ msg: "not updated!", success: false })
     }
-    return res.send({msg:"updated successfuly!", success:true})
-  }catch (err){
+    return res.send({ msg: "updated successfuly!", success: true })
+  } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false })
   }
 }
