@@ -3,7 +3,7 @@ const addmember = require("../../models/addmember.js")
 
 const stripe = require('stripe')('sk_test_v9')
 
-const BASE_URL = "mymember.com"
+const BASE_URL = "https://mymember.com"
 
 exports.viewForm = async(req,res) => {
 
