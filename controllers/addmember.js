@@ -1271,7 +1271,6 @@ exports.trial_this_month = (req, res) => {
 
 exports.filterLeads = async (req, res) => {
   const leadFilter = req.body.leadFilter;
-  console.log(leadFilter)
   const userId = req.params.userId;
   try {
     const data = await addmemberModal.aggregate([
@@ -1283,8 +1282,7 @@ exports.filterLeads = async (req, res) => {
         }
       }
     ]);
-    console.log(data);
-    res.send(data)
+    res.send({data:data, success:true})
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }
