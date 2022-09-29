@@ -3,6 +3,7 @@ const addmember = require("../../models/addmember.js")
 
 const stripe = require('stripe')('sk_test_v9')
 
+const BASE_URL = "mymember.com"
 
 exports.viewForm = async(req,res) => {
 
@@ -16,10 +17,10 @@ exports.viewForm = async(req,res) => {
 
     if(includePayment == true){
         //html = html.replace('<body>', '<body><form method="post" id="payment-form" action="/builder/view/process/newstudent/'+ id +'">')
-        html = html.replace('<body>', '<body><form method="post" id="payment-form" action="/builder/view/process/newstudent/'+ id + '/' + userId +'">')
+        html = html.replace('<body>', '<body><form method="post" id="payment-form" action=' + BASE_URL + '"/builder/view/process/newstudent/'+ id + '/' + userId +'">')
     }else{
         //html = html.replace('<body>', '<body><form method="post" action="/builder/view/process/newstudent/'+ id +'">')
-        html = html.replace('<body>', '<body><form method="post" action="/builder/view/process/newstudent/'+ id + '/' + userId +'">')
+        html = html.replace('<body>', '<body><form method="post" action='+ BASE_URL + '"/builder/view/process/newstudent/'+ id + '/' + userId +'">')
     }
 
     //html = html.replace('<body>', '<body><form method="post" action="/builder/view/process/newstudent/'+ id + '/' + userId +'">')
