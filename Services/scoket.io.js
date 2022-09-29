@@ -47,7 +47,7 @@ class SocketEngine {
         let notification = {}
         let tomorrow = moment().add(1, 'days');
         let currDate = new Date().toISOString().slice(0, 10);
-        let users = await user.findOne({_id: userId},{_id: 1,task_setting: 1,birthday_setting:1,chat_setting:1})
+        let users = await User.findOne({_id: userId},{_id: 1,task_setting: 1,birthday_setting:1,chat_setting:1})
       
         if(users.task_setting){
         var todayTask = await tasks.find(
