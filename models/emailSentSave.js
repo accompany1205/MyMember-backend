@@ -52,18 +52,22 @@ const EmailSchema = schema({
     // },
     userId: {
         type: String,
+        index:true
     },
     folderId: {
         type: String,
+        index:true
     },
     createdBy: {
         type: String,
     },
     adminId: {
-        type: String
+        type: String,
+        index:true
     },
     templete_Id: {
-        type: String
+        type: String,
+        index:true
     },
     is_Favorite: {
         type: Boolean,

@@ -1,5 +1,11 @@
 const appoint = require("../models/appointment");
+const recommended = require("../models/recommendedForTest")
+const registeredForTest = require('../models/registerdForTest')
+const invitee = require('../models/eventInvitee')
+const registered = require("../models/eventRegistered")
 const _ = require("lodash");
+const program_rank = require('../models/program_rank')
+const program = require('../models/program')
 const Invitee = require("../models/eventInvitee")
 const EventRegistered = require("../models/eventRegistered");
 const Member = require('../models/addmember');
@@ -60,8 +66,9 @@ exports.sendEmailToGuest = async (req, res) => {
   } catch (err) {
     return res.send({ error: err.message.replace(/\"/g, ""), success: false })
   }
-
 }
+
+
 
 
 exports.apptCreate = async (req, res) => {
@@ -139,6 +146,10 @@ exports.getInvitees = async (req, res) => {
   let invitees = await Invitee.find({
     "userId": userId, "eventId": eventId, "isDeleted": false
   });
+  let attendee = await EventRegistered.find({
+    "userId": userId, "eventId": eventId, "isDeleted": true
+  });
+  let registeredInvitee = await EventRegistered.find({ "userId": userId, "eventId": eventId, "isDeleted": false });
   if (!invitees.length) {
     return res.json({
       data: [],
@@ -149,6 +160,7 @@ exports.getInvitees = async (req, res) => {
   return res.json({
     success: true,
     data: invitees,
+    count: { invitees: invitees.length, attendee: attendee.length, registeredInvitee: registeredInvitee.length }
   })
 }
 
@@ -204,6 +216,136 @@ exports.eventPay = async (req, res) => {
       }).catch(err => {
         return res.send({ msg: err.message.replace(/\"/g, ""), success: false, })
       })
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
+}
+
+exports.generalBeltCount = async (req, res) => {
+  let eventId = req.params.eventId;
+  let userId = req.params.userId;
+  try {
+    const inviteeData = async () => {
+      try {
+        let studentsBelts = await invitee.find({
+          eventId: eventId, isDeleted: false
+        },
+          { _id: 0, current_rank_name: 1, program: 1 }
+        )
+        const beltInfo = await loopingForBelts(userId, studentsBelts);
+        return beltInfo;
+      } catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+      }
+    }
+    const registerData = async (is_delete) => {
+      try {
+        let studentsBelts = await registered.find({
+          eventId: eventId, isDeleted: is_delete
+        },
+          { _id: 0, current_rank_name: 1, program: 1 }
+        )
+        const beltInfo = await loopingForBelts(userId, studentsBelts);
+        return beltInfo
+      } catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+      }
+    }
+    const invitee_data = await inviteeData();
+    const register_data = await registerData(false);
+    const attended_data = await registerData(true);
+    return res.send({ invitee: invitee_data, register: register_data, attended: attended_data })
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
+}
+
+async function loopingForBelts(userId, studentsBelts) {
+  let programBelts = await program.aggregate([
+    {
+      $match: {
+        $or: [
+          { userId: userId }, { adminId: process.env.ADMINID }
+        ]
+      }
+    },
+    { $project: { "program_rank": 1, "_id": 0 } },
+    { $unwind: "$program_rank" },
+  ])
+  await program_rank.populate(programBelts, {
+    path: "program_rank",
+    model: "Program_rank",
+    select: "rank_name programName rank_image -_id"
+  });
+  let belts = programBelts.map(i => i.program_rank);
+  let beltInfo = []
+  for (i of belts) {
+    let count = 0
+    for (j of studentsBelts) {
+      if (i.programName === j.program && i.rank_name === j.current_rank_name) {
+        count++
+      }
+    }
+    beltInfo.push({ programName: i.programName, belt: i.rank_name, rank_image: i.rank_image, count: count, })
+  }
+  return beltInfo;
+}
+
+exports.promotionBeltCount = async (req, res) => {
+  let eventId = req.params.eventId;
+  let userId = req.params.userId;
+  let event = req.query.event;
+  try {
+    const recommendedData = async () => {
+      try {
+        let studentsBelts = await recommended.find({
+          eventId: eventId, isDeleted: false
+        },
+          { _id: 0, current_rank_name: 1, program: 1 }
+        )
+
+        const beltInfo = await loopingForBelts(userId, studentsBelts);
+        return beltInfo;
+      } catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+      }
+    }
+
+
+    const registerData = async (is_delete) => {
+      try {
+        let studentsBelts = await registeredForTest.find({
+          eventId: eventId, isDeleted: is_delete
+        },
+          { _id: 0, current_rank_name: 1, program: 1 }
+        )
+
+        const beltInfo = await loopingForBelts(userId, studentsBelts);
+        return beltInfo;
+      } catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+      }
+    }
+    const promotedData = async (is_delete) => {
+      try {
+        let studentsBelts = await registeredForTest.find({
+          eventId: eventId, isDeleted: is_delete
+        },
+          { _id: 0, current_rank_name: 1, program: 1 }
+        )
+
+        const beltInfo = await loopingForBelts(userId, studentsBelts);
+        return beltInfo;
+      } catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+      }
+    }
+    const recommended_data = await recommendedData();
+    const register_data = await registerData(false);
+    const promoted_data = await promotedData(true);
+    return res.send({ recommended: recommended_data, register: register_data, promoted: promoted_data })
+
+
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false })
   }
@@ -455,36 +597,118 @@ exports.filterEvents = async (req, res) => {
   }
 }
 
-exports.read = async (req, res) => {
-  let startDate = req.params.dates;
-  let newMonth = startDate.slice(0, 2)
-  let nNewMonth = ("0" + (parseInt(newMonth))).slice(-2)
-  // let newDate = startDate.slice(3, 5)
-  let newDate = "01"
-  let newYear = startDate.slice(-4);
-  let updateM = ("0" + (parseInt(newMonth) + 1)).slice(-2);
-  let nStartDate = `${newYear}-${nNewMonth}-${newDate}`
-  console.log(nStartDate);
-  let finalDate;
-  if (newMonth === "12") {
-    let newupdateM = "01";
-    let updateY = ("" + (parseInt(newYear) + 1))
-    finalDate = `${updateY}-${newupdateM}-${newDate}`;
-  } else {
-    finalDate = `${newYear}-${updateM}-${newDate}`;
+exports.singleRead = async (req, res) => {
+  let apptId = req.params.apptId;
+  if(!apptId){
+    return res.send({ msg: "pass apptId in params!", success: false })
   }
-  console.log(finalDate)
-  appoint.find({
-    $and: [{ userId: req.params.userId },
-    { start: { $gte: (nStartDate), $lt: (finalDate) } }
-    ]
-  })
-    .then((result) => {
+  try {
+    let data = await appoint.findOne({ _id: apptId });
+    return res.send({data:data, success:true})
+  } catch (err) {
+    return res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
+}
+
+exports.read = async (req, res) => {
+  try {
+    let startDate = req.params.dates;
+    let newMonth = startDate.slice(0, 2)
+    let nNewMonth = ("0" + (parseInt(newMonth))).slice(-2)
+    // let newDate = startDate.slice(3, 5)
+    let newDate = "01"
+    let newYear = startDate.slice(-4);
+    let updateM = ("0" + (parseInt(newMonth) + 1)).slice(-2);
+    let nStartDate = `${newYear}-${nNewMonth}-${newDate}`
+    console.log(nStartDate);
+    let finalDate;
+    if (newMonth === "12") {
+      let newupdateM = "01";
+      let updateY = ("" + (parseInt(newYear) + 1))
+      finalDate = `${updateY}-${newupdateM}-${newDate}`;
+    } else {
+      finalDate = `${newYear}-${updateM}-${newDate}`;
+    }
+    appoint.find({
+      $and: [{ userId: req.params.userId },
+      { start: { $gte: (nStartDate), $lt: (finalDate) } }
+      ]
+    }).then((result) => {
       res.send({ success: true, data: result });
     })
-    .catch((err) => {
-      res.send({ msg: "No data!", err: err, success: false });
-    });
+      .catch((err) => {
+        res.send({ msg: "No data!", err: err, success: false });
+      });
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
+
+  // for(let i of events){
+  //   const obj={name:'kash'}
+  //   _.defaults(i,obj)
+  //   console.log(i)
+  // }
+  // Promise.all(events.map(async (object) => {
+  // const a=await Object.assign(object, { color: "red" })
+  // console.log(a)
+  // const a={a:1}
+  // console.log(obj)
+  // console.log(a);
+
+  // }))
+
+  // })).then(resp1 => {
+  //   console.log("--->", resp1)
+  // }).catch(err => {
+  //   console.log("-->", err)
+  // });
+  // console.log(data);
+  // console.log(event1);
+  // .then(async (result) => {
+  // res.send({ success: true, data: result });
+  // let events = result
+  // console.log("events----> ", events);
+  // const events =result.forEach(object => {
+  //   object.color = "red";
+  // })
+  // console.log(events)
+  // let promises = [];
+  // let arr = events.map(async i => {
+  //   let obj = {};
+  //   let eventInfo
+  //   if (i.appointment_type === "Promotion Test") {
+  //     let recommendedTest = await recommended.find({ eventId: i._id, isDeleted: false })
+  //     let registeredTest = await registeredForTest.find({ eventId: i._id, isDeleted: false })
+  //     let promotedTest = await registeredForTest.find({ eventId: i._id, isDeleted: true })
+
+  // obj.recommendedCount = recommendedTest.length
+  // obj.registeredCount = registeredTest.length
+  // obj.promotedCount = promotedTest.length
+  // eventInfo = i;
+
+  // } else if (i.appointment_type === "General Event") {
+  // let eventInvitee = await invitee.find({ eventId: i._id, isDeleted: false })
+  // console.log(inviteeTest)
+  // let eventRegister = await registered.find({ eventId: i._id, isDeleted: false })
+  // console.log(registerTest)
+  // let eventAttended = await registered.find({ eventId: i._id, isDeleted: true })
+  // console.log(attendedTest)          
+  //     obj.eventInvitee = eventInvitee.length
+  //     obj.eventRegister = eventRegister.length
+  //     obj.eventAttended = eventAttended.length
+  //     eventInfo = i;
+  //   }
+  //   return {...obj,eventInfo};
+  // })
+  // let data = await Promise.all(arr)
+  //console.log(await Promise.all(promises, arr))
+  // console.log(data)
+  // res.send(data);
+
+  // })
+  // .catch((err) => {
+  //   res.send({ msg: "No data!", err: err.message.replace(/\"/g, ""), success: false });
+  // });
   // let startDate = (req.params.dates);
   // console.log("wrwjreirj-->")
   // let userId = req.params.userId;

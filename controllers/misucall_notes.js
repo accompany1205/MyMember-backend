@@ -9,38 +9,22 @@ const daysRemaining = require("../Services/daysremaining");
 var mongo = require("mongoose");
 const misucall_notes = require("../models/misucall_notes");
 
-exports.seven_to_forteen = async (req, res) => {
+
+async function misucallData(filter, pagination, gte, lte) {
   try {
-    let userId = req.params.userId;
-    var per_page = parseInt(req.params.per_page) || 10;
-    var page_no = parseInt(req.params.page_no) || 0;
-    var pagination = {
-      limit: per_page,
-      skip: per_page * page_no,
-    };
-    const studentType = req.query.studentType;
-    const filter =
-      userId && studentType
-        ? {
-            userId,
-            studentType,
-          }
-        : {
-            userId,
-          };
-    await student
+    let data = await student
       .aggregate([
         {
           $match: filter,
         },
         {
           $project: {
-            primaryPhone:1,
-            street:1,
-            town:1,
-            state:1,
-            zipPostalCode:1,
-            email:1,
+            primaryPhone: 1,
+            street: 1,
+            town: 1,
+            state: 1,
+            zipPostalCode: 1,
+            email: 1,
             firstName: 1,
             lastName: 1,
             status: 1,
@@ -115,12 +99,229 @@ exports.seven_to_forteen = async (req, res) => {
             last_attended_date: 1,
             attendedclass_count: 1,
             studentType: 1,
-            primaryPhone:1,
-            street:1,
-            town:1,
-            state:1,
-            zipPostalCode:1,
-            email:1
+            primaryPhone: 1,
+            street: 1,
+            town: 1,
+            state: 1,
+            zipPostalCode: 1,
+            email: 1
+          },
+        },
+        {
+          $addFields: {
+            dayssince: {
+              $floor: {
+                $divide: [
+                  {
+                    $subtract: ["$$NOW", "$last_attended_date"],
+                  },
+                  1000 * 60 * 60 * 24,
+                ],
+              },
+            },
+          },
+        },
+        {
+          $match: {
+            dayssince: {
+              $gte: gte,
+              $lte: lte,
+            },
+          },
+        },
+        { $sort: { dayssince: 1 } },
+        {
+          $facet: {
+            paginatedResults: [
+              { $skip: pagination.skip },
+              { $limit: pagination.limit },
+            ],
+            totalCount: [
+              {
+                $count: "count",
+              },
+            ],
+          },
+        },
+      ])
+    return data
+  } catch (err) {
+    throw new Error(err);
+  }
+
+}
+
+exports.all_data = async (req, res) => {
+  let userId = req.params.userId;
+  var per_page = parseInt(req.params.per_page) || 10;
+  var page_no = parseInt(req.params.page_no) || 0;
+  var pagination = {
+    limit: per_page,
+    skip: per_page * page_no,
+  };
+  const studentType = req.query.studentType;
+  const filter =
+    userId && studentType
+      ? {
+        userId,
+        studentType,
+      }
+      : {
+        userId,
+      };
+  if (req.params.multiple_data === "14") {
+    let data = await misucallData(filter, pagination, 7, 14)
+    let filterData = data[0].paginatedResults;
+    return res.send({
+      data: filterData,
+      totalCount: data[0].totalCount[0] ? data[0].totalCount[0].count : 0,
+      success: true,
+    })
+
+  } else if (req.params.multiple_data === "30") {
+    let data = await misucallData(filter, pagination, 15, 30)
+    let filterData = data[0].paginatedResults;
+    return res.send({
+      data: filterData,
+      totalCount: data[0].totalCount[0] ? data[0].totalCount[0].count : 0,
+      success: true,
+    })
+
+  } else if (req.params.multiple_data === "60") {
+    let data = await misucallData(filter, pagination, 31, 60)
+    let filterData = data[0].paginatedResults;
+    return res.send({
+      data: filterData,
+      totalCount: data[0].totalCount[0] ? data[0].totalCount[0].count : 0,
+      success: true,
+    })
+  } else if (req.params.multiple_data === "90") {
+    let data = await misucallData(filter, pagination, 61, 1000)
+    let filterData = data[0].paginatedResults;
+    return res.send({
+      data: filterData,
+      totalCount: data[0].totalCount[0] ? data[0].totalCount[0].count : 0,
+      success: true,
+    })
+  }
+}
+
+
+
+
+
+exports.seven_to_forteen = async (req, res) => {
+  try {
+    let userId = req.params.userId;
+    var per_page = parseInt(req.params.per_page) || 10;
+    var page_no = parseInt(req.params.page_no) || 0;
+    var pagination = {
+      limit: per_page,
+      skip: per_page * page_no,
+    };
+    const studentType = req.query.studentType;
+    const filter =
+      userId && studentType
+        ? {
+          userId,
+          studentType,
+        }
+        : {
+          userId,
+        };
+    await student
+      .aggregate([
+        {
+          $match: filter,
+        },
+        {
+          $project: {
+            primaryPhone: 1,
+            street: 1,
+            town: 1,
+            state: 1,
+            zipPostalCode: 1,
+            email: 1,
+            firstName: 1,
+            lastName: 1,
+            status: 1,
+            memberprofileImage: 1,
+            last_attended_date: 1,
+            attendedclass_count: 1,
+            followup_notes: 1,
+            studentType: 1,
+          },
+        },
+        {
+          $lookup: {
+            from: "followupnotes",
+            localField: "followup_notes",
+            foreignField: "_id",
+            as: "followup_notes",
+            pipeline: [
+              {
+                $project: {
+                  note: 1,
+                  time: 1,
+                  date: 1,
+                },
+              },
+            ],
+          },
+        },
+        {
+          $addFields: {
+            last_attended_date: {
+              $toDate: {
+                $dateToString: {
+                  format: "%Y-%m-%d",
+                  date: {
+                    $toDate: "$last_attended_date",
+                  },
+                },
+              },
+            },
+          },
+        },
+        {
+          $match: {
+            last_attended_date: {
+              $ne: null,
+            },
+          },
+        },
+        {
+          $addFields: {
+            last_attended_date: {
+              $toDate: {
+                $dateToString: {
+                  format: "%Y-%m-%d",
+                  date: {
+                    $toDate: "$last_attended_date",
+                  },
+                },
+              },
+            },
+          },
+        },
+        {
+          $project: {
+            notes: {
+              $arrayElemAt: ["$followup_notes", -1],
+            },
+            firstName: 1,
+            lastName: 1,
+            status: 1,
+            memberprofileImage: 1,
+            last_attended_date: 1,
+            attendedclass_count: 1,
+            studentType: 1,
+            primaryPhone: 1,
+            street: 1,
+            town: 1,
+            state: 1,
+            zipPostalCode: 1,
+            email: 1
           },
         },
         {
@@ -196,12 +397,12 @@ exports.fifteen_to_thirty = async (req, res) => {
     const filter =
       userId && studentType
         ? {
-            userId,
-            studentType,
-          }
+          userId,
+          studentType,
+        }
         : {
-            userId,
-          };
+          userId,
+        };
     await student
       .aggregate([
         {
@@ -216,12 +417,12 @@ exports.fifteen_to_thirty = async (req, res) => {
             last_attended_date: 1,
             attendedclass_count: 1,
             followup_notes: 1,
-            studentType: 1, primaryPhone:1,
-            street:1,
-            town:1,
-            state:1,
-            zipPostalCode:1,
-            email:1
+            studentType: 1, primaryPhone: 1,
+            street: 1,
+            town: 1,
+            state: 1,
+            zipPostalCode: 1,
+            email: 1
           },
         },
         {
@@ -287,12 +488,12 @@ exports.fifteen_to_thirty = async (req, res) => {
             memberprofileImage: 1,
             last_attended_date: 1,
             attendedclass_count: 1,
-            studentType: 1, primaryPhone:1,
-            street:1,
-            town:1,
-            state:1,
-            zipPostalCode:1,
-            email:1
+            studentType: 1, primaryPhone: 1,
+            street: 1,
+            town: 1,
+            state: 1,
+            zipPostalCode: 1,
+            email: 1
           },
         },
         {
@@ -368,12 +569,12 @@ exports.Thirty_to_sixty = async (req, res) => {
     const filter =
       userId && studentType
         ? {
-            userId,
-            studentType,
-          }
+          userId,
+          studentType,
+        }
         : {
-            userId,
-          };
+          userId,
+        };
     await student
       .aggregate([
         {
@@ -388,12 +589,12 @@ exports.Thirty_to_sixty = async (req, res) => {
             last_attended_date: 1,
             attendedclass_count: 1,
             followup_notes: 1,
-            studentType: 1, primaryPhone:1,
-            street:1,
-            town:1,
-            state:1,
-            zipPostalCode:1,
-            email:1
+            studentType: 1, primaryPhone: 1,
+            street: 1,
+            town: 1,
+            state: 1,
+            zipPostalCode: 1,
+            email: 1
           },
         },
         {
@@ -460,12 +661,12 @@ exports.Thirty_to_sixty = async (req, res) => {
             last_attended_date: 1,
             attendedclass_count: 1,
             studentType: 1,
-            primaryPhone:1,
-            street:1,
-            town:1,
-            state:1,
-            zipPostalCode:1,
-            email:1,
+            primaryPhone: 1,
+            street: 1,
+            town: 1,
+            state: 1,
+            zipPostalCode: 1,
+            email: 1,
           },
         },
         {
@@ -541,12 +742,12 @@ exports.more_than_sixty = async (req, res) => {
     const filter =
       userId && studentType
         ? {
-            userId,
-            studentType,
-          }
+          userId,
+          studentType,
+        }
         : {
-            userId,
-          };
+          userId,
+        };
     await student
       .aggregate([
         {
@@ -561,12 +762,12 @@ exports.more_than_sixty = async (req, res) => {
             last_attended_date: 1,
             attendedclass_count: 1,
             followup_notes: 1,
-            studentType: 1, primaryPhone:1,
-            street:1,
-            town:1,
-            state:1,
-            zipPostalCode:1,
-            email:1
+            studentType: 1, primaryPhone: 1,
+            street: 1,
+            town: 1,
+            state: 1,
+            zipPostalCode: 1,
+            email: 1
           },
         },
         {
@@ -633,12 +834,12 @@ exports.more_than_sixty = async (req, res) => {
             last_attended_date: 1,
             attendedclass_count: 1,
             studentType: 1,
-            primaryPhone:1,
-            street:1,
-            town:1,
-            state:1,
-            zipPostalCode:1,
-            email:1
+            primaryPhone: 1,
+            street: 1,
+            town: 1,
+            state: 1,
+            zipPostalCode: 1,
+            email: 1
           },
         },
         {

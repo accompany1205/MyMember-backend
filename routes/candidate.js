@@ -17,7 +17,7 @@ const {
 const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 
 router.get(
-  "/candidates/get-stripe-report-by-candidate/:userId",
+  "/candidates/get-stripe-report-by-candidate/:userId/:dates",
   requireSignin,
   verifySchool,
   getStripeReportByCandidate

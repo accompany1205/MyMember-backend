@@ -1451,6 +1451,7 @@ exports.IncomeReportWithFilters = async (req, res) => {
 				month: { $month: '$createdAt' },
 				year: { $year: '$createdAt' },
 				ptype: 1,
+				membership_name:1,
 			},
 		},
 		{
@@ -1469,6 +1470,7 @@ exports.IncomeReportWithFilters = async (req, res) => {
 				type: 'Product Sale-EMI',
 				status: '$schedulePayments.status',
 				ptype: '$schedulePayments.ptype',
+				membership_name:1,
 			},
 		},
 		{
@@ -1497,6 +1499,10 @@ exports.IncomeReportWithFilters = async (req, res) => {
 					month: { $month: '$createdAt' },
 					year: { $year: '$createdAt' },
 					status: 'paid',
+					membership_name:1,
+					membershipIds:1,
+					payment_type:1,
+					balance:1
 				},
 			},
 			{
@@ -1516,6 +1522,12 @@ exports.IncomeReportWithFilters = async (req, res) => {
 					type: 'Membership-EMI',
 					status: '$schedulePayments.status',
 					ptype: '$schedulePayments.ptype',
+					emiId: '$schedulePayments.Id',
+					amount:'$schedulePayments.Amount',
+					membership_name:1,
+					membershipIds:1,
+					payment_type:1,
+					balance:1
 				},
 			},
 			{

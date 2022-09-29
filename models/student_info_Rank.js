@@ -15,7 +15,8 @@ const programSchema = new mongoose.Schema(
 
         },
         studentId: {
-            type: String
+            type: String,
+            index:true
         },
         day_to_ready: {
             type: String,
@@ -33,7 +34,8 @@ const programSchema = new mongoose.Schema(
             type: String,
         },
         userId: {
-            type: String
+            type: String,
+            index:true
         },
     },
     { timestamps: true }

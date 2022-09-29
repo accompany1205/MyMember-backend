@@ -18,6 +18,7 @@ const userSchema = new schema(
         twilio: {
             type: String,
             unique: true,
+            index:true
         },
         isverify: {
             type: Boolean,
@@ -233,7 +234,10 @@ const userSchema = new schema(
             default: ''
         },
         schoolId: {
-            type: String
+            type: String,
+            index: true,
+            index:true
+           
         },
         reset_code: {
             type: String,
@@ -285,7 +289,19 @@ const userSchema = new schema(
         },
         stripe_name:{
             type:String
-        }
+        },
+        task_setting: {
+            type: Boolean,
+            default: true
+        },
+        chat_setting: {
+            type: Boolean,
+            default: true
+        },
+        birthday_setting: {
+            type: Boolean,
+            default: true
+        },
     },
     { timestamps: true }
 );

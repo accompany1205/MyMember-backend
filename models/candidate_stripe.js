@@ -20,9 +20,11 @@ const managestripeSchema = new mongoose.Schema(
         },
         userId: {
             type: String,
+            index:true
         },
         adminId: {
             type: String,
+            index:true
         },
     },
     { timestamps: true }

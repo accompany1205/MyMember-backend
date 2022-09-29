@@ -4,10 +4,12 @@ const recommendedCandidate = new mongoose.Schema({
 
     studentId: {
         type: String,
-        required: true
+        required: true,
+        index:true
     },
     userId: {
-        type: String
+        type: String,
+        index:true
     },
     firstName: {
         type: String

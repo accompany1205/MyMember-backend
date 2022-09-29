@@ -15,7 +15,8 @@ const libraryCategorySchema = schema({
        ref:'libraryFolder'
    }],
    userId:{
-       type:String 
+       type:String,
+       index:true
    }
 },
 { timestamps:true }

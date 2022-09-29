@@ -1,7 +1,17 @@
 const express = require("express");
 const router = express.Router();
 
-const { getRecommededForTest, getPromoted, recomendStudent, removeFromRecomended, removeFromRegister, payAndPromoteTheStudent, getRegisteredForTest, deleteAll, deleteAll_for_register, multipleDocMerge, registerdStudent } = require("../controllers/recommendedForTest");
+const { getRecommededForTest,
+    getPromoted,
+    recomendStudent,
+    removeFromRecomended,
+    removeFromRegister,
+    payAndPromoteTheStudent,
+    getRegisteredForTest,
+    deleteAll, deleteAll_for_register,
+    multipleDocMerge, registerdStudent,
+} = require("../controllers/recommendedForTest");
+
 const { mergedDocForTest } = require("../controllers/registeredForTest");
 
 const { requireSignin, isAuth, isAdmin, verifySchool } = require("../controllers/auth");

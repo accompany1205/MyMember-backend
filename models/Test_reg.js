@@ -21,7 +21,8 @@ const TestRegisterSchema = new schema({
         type:String,
     },
     programId:{
-        type:String
+        type:String,
+        index:true
     },
     date_paid:{
         type:String,
@@ -56,7 +57,8 @@ const TestRegisterSchema = new schema({
         default:""
     },
     userId:{
-        type:String
+        type:String,
+        index:true
     }
 })
 

@@ -69,14 +69,16 @@ const productSchema = new schema(
             type: Number
         },
         userId: {
-            type: String
+            type: String,
+            index:true
         },
         folderId: {
             type: schema.Types.ObjectId,
             ref: 'productFolder'
         },
         adminId: {
-            type: String
+            type: String,
+            index:true
         },
     }, { timestamps: true }
 );

@@ -1,10 +1,11 @@
 const student = require("../models/addmember");
 const schedule = require("../models/class_schedule");
+const User = require("../models/user");
 var mongo = require("mongoose")
 const moment = require('moment')
 
 function TimeZone() {
-  const str = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+  const str = new Date().toLocaleString("en-US", { timeZone: "America/New_York" });
   const date_time = str.split(",");
   const date = date_time[0];
   const time = date_time[1];
@@ -34,6 +35,7 @@ exports.search_std = (req, res) => {
 
 exports.create = async (req, res) => {
   try {
+    console.log("run")
     const studentId = req.params.studentId
     var objId = mongo.Types.ObjectId(studentId)
     let time = req.body.time
@@ -306,10 +308,52 @@ exports.list_attendence = (req, res) => {
 }
 
 
+// exports.attendeceDate = async (req, res) => {
+//   let userId = req.params.userId;
+
+//   let data = await schedule.aggregate([
+//     { $match: { userId: userId, } },
+//     {
+//       $project: {
+//         start_date: 1,
+//         studentId: "$class_attendanceArray.studentInfo"
+//       }
+//     },
+//     { $unwind: "$studentId" },
+
+
+//   ]);
+//   let data2 = await student.aggregate([
+//     { $match: { userId: userId } },
+//   ])
+//   for (let i = 0; i < data.length; i++) {
+//     for (let j = 0; j < data2.length; j++) {
+//       if (data[i]["studentId"].toString() === data2[j]["_id"].toString()) {
+//         if (data2[j].last_attended_date === 0) {
+//           let epoch = new Date(data[i].start_date).getTime();
+
+//           console.log(epoch);
+//           await student.updateOne({ _id: data2[j]["studentId"] },
+//             {
+//               $set:
+//                 { last_attended_date: epoch }
+//             })
+//           console.log(epoch)
+//         }
+//       }
+//     }
+//   }
+// }
+
+
+
+
+
+
+
 exports.getStudentAttendence = (req, res) => {
   try {
     let userId = req.params.userId
-
     let studentId = req.params.studentId
     var objId = mongo.Types.ObjectId(studentId)
     var per_page = parseInt(req.params.per_page) || 10;
@@ -320,7 +364,6 @@ exports.getStudentAttendence = (req, res) => {
     };
     schedule.aggregate([
       { $match: { userId: userId, "class_attendanceArray.studentInfo": objId } },
-
       {
         $project: {
           program_name: 1,

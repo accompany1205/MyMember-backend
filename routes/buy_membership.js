@@ -14,7 +14,8 @@ const {
   expiredMembership,
   thismonthMembership,
   addSubscription,
-  getMergeDoc
+  getMergeDoc,
+  checkData
 } = require("../controllers/buy_membership");
 const { requireSignin, isAuth, verifySchool } = require("../controllers/auth");
 
@@ -33,5 +34,6 @@ router.put("/membership/update_buy_memberships/:userId/:membershipId/:type", req
 router.delete("/membership/delete_buy_membership/:userId/:membershipId", requireSignin, verifySchool, remove);
 router.put("/membership/update_buy_memberships_Payments/:userId/:membershipId/:emiID", requireSignin, verifySchool, updatePayments);
 router.get("/membership/getMrgeDoc/:userId/:buyMembershipId", requireSignin, verifySchool, getMergeDoc);
+router.get("/membership/getMrgeDoc/:userId",checkData)
 
 module.exports = router;

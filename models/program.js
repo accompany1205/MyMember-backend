@@ -45,9 +45,11 @@ const programSchema = new schema(
         }],
         userId: {
             type: String,
+            index:true
         },
         adminId: {
             type: String,
+            index:true
         },
         status: {
             type: String

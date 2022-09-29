@@ -38,6 +38,37 @@ const mergeMultipleFiles = require("../Services/mergeMultipleFiles");
 //     })
 // }
 
+
+
+exports.StatisticsCount = async (req, res) => {
+  let userId = req.params.userId;
+  try{
+    let statisticsCount = await addmemberModal.aggregate([
+      { $match: { userId: userId } },
+      { $project : {studentType:1} },
+      { 
+        $group : {_id : {studentType:"$studentType"}, total : { $sum : 1 }}
+          }
+    ])
+    const studentDetails=[]
+    let sum=0
+    statisticsCount.map(i=>{
+      let studentType=i._id.studentType
+      let count=i.total
+      studentDetails.push({studentType:studentType,count:count})
+      sum+=i.total
+    })
+    studentDetails.push({totalCount:sum})
+    return res.send({
+      success: true,
+      data: studentDetails
+    })
+  }catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+  }  
+}
+
+
 exports.getStudentsByProgramm = async (req, res) => {
   let userId = req.params.userId;
   let program = req.params.program;
@@ -51,7 +82,7 @@ exports.getStudentsByProgramm = async (req, res) => {
     userId: userId,
     program: program,
   };
-  let studentsByProgram = await addmemberModel.find(filter);
+  let studentsByProgram = await addmemberModal.find(filter);
   if (!studentsByProgram) {
     res.json({
       success: false,
@@ -79,7 +110,7 @@ exports.getStudentsByCategory = async (req, res) => {
     userId: userId,
     category: category,
   };
-  let studentsByCategory = await addmemberModel.find(filter);
+  let studentsByCategory = await addmemberModal.find(filter);
   if (!studentsByCategory) {
     res.json({
       success: false,
@@ -636,7 +667,7 @@ exports.read = (req, res) => {
 };
 exports.active_Std = async (req, res) => {
   // var order = req.query.order || 1;
-  // let sortBy = req.query.sortBy || "firstName";
+  // let sortBy = req..sortBy || "firstName";
   // var totalCount = await addmemberModal
   //   .find({
   //     userId: req.params.userId,
@@ -2177,6 +2208,21 @@ exports.ActiveMemberslistByProgramName = async (req, res) => {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }
 };
+
+exports.leadUpdate = async (req, res) => {
+  const userId = req.params.userId;
+  const studentId = req.params.studentId;
+  let leadStatus = req.body.leadStatus;
+  try {
+    let data = await addmemberModal.updateOne({_id:studentId}, {$set:{leadStatus:leadStatus}})
+    if(data.nModified ===0){
+      return res.send({msg:"not updated!", success:false})
+    }
+    return res.send({msg:"updated successfuly!", success:true})
+  }catch (err){
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false })
+  }
+}
 
 exports.searchStudentbyType = async (req, res) => {
   const userId = req.params.userId;

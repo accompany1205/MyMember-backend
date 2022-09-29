@@ -14,10 +14,12 @@ var pcategorySchema = new schema(
             ref:'psubcategory'
         }],
         userId:{
-            type:String
+            type:String,
+            index:true
         },
         adminId:{
-            type:String
+            type:String,
+            index:true
         }
     },
 );

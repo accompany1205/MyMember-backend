@@ -42,13 +42,14 @@ var expiredLastMembership = async () => {
     {
       $project: {
         last_membership: {
-          $arrayElemAt: ["$membership_details", -1],
+          $cond: { if: { $eq: [{ $size: "$membership_details" }, 1] }, then: { $arrayElemAt: ["$membership_details", 0] }, else: { $arrayElemAt: ["$membership_details", -1] } }
         },
+        status: 1,
       },
     },
     {
       $match: {
-        status: { $nin: ["Expired"] },
+        // status: { $nin: ["Expired"] },
         last_membership: {
           $nin: [null],
         },
@@ -90,9 +91,15 @@ var expiredLastMembership = async () => {
     },
     {
       $match: {
-        "membership.expiry_date": {
-          $lte: new Date(),
-        },
+        $or: [{
+          "membership.expiry_date": {
+            $lte: new Date(),
+          }
+        }, {
+          "membership.membership_status": {
+            $eq: "Freeze",
+          }
+        }]
       },
     },
     {
@@ -104,7 +111,7 @@ var expiredLastMembership = async () => {
   Promise.all(
     expired_LastaMembership.map((expired_Membership) => {
       update_LastMembershipStatus(expired_Membership)
-        .then((resp) => console.log(resp.nModified))
+        .then((resp) => console.log("for test---", resp.nModified))
         .catch((err) => {
           console.log(err);
         });
@@ -113,19 +120,34 @@ var expiredLastMembership = async () => {
 };
 
 function update_LastMembershipStatus(member) {
-  let { _id, membershipId } = member;
+  // console.log(member)
+  let { _id, membership } = member;
   return new Promise((resolve, reject) => {
-    Member.updateOne({ _id: _id.toString() }, { $set: { status: "Expired" } })
-      .then((resp) => {
-        buyMembership
-          .updateOne(
-            { _id: membershipId.toString() },
-            { $set: { membership_status: "Expired" } }
-          )
-          .then((resp) => resolve(resp))
-          .catch((err) => reject(err));
-      })
-      .catch((err) => reject(err));
+    if (membership.membership_status === "Freeze") {
+      Member.updateOne({ _id: _id.toString() }, { $set: { status: "Freeze" } })
+        .then((resp) => {
+          buyMembership
+            .updateOne(
+              { _id: membership._id.toString() },
+              { $set: { membership_status: "Freeze" } }
+            )
+            .then((resp) => resolve(resp))
+            .catch((err) => reject(err));
+        })
+        .catch((err) => reject(err));
+    } else if (membership.membership_status === "Expired") {
+      Member.updateOne({ _id: _id.toString() }, { $set: { status: "Expired" } })
+        .then((resp) => {
+          buyMembership
+            .updateOne(
+              { _id: membership._id.toString() },
+              { $set: { membership_status: "Expired" } }
+            )
+            .then((resp) => resolve(resp))
+            .catch((err) => reject(err));
+        })
+        .catch((err) => reject(err));
+    }
   });
 }
 
@@ -165,7 +187,7 @@ allexpiredMemberships = async () => {
     Promise.all(
       expired_Membership.map((expired_Membership) => {
         updateAllMembershipStatus(expired_Membership)
-          .then((resp) => {})
+          .then((resp) => { })
           .catch((err) => {
             console.log(err);
           });
@@ -469,7 +491,7 @@ async function DailyTriggeredMails() {
       }
     }, 3000);
   } catch (err) {
-    console.log({ msg: err.message.replace(/\"/g, ""), success: false });
+    console.log({ msg: err.message.replace(/\"/g, ""), success: false } );
   }
 }
 

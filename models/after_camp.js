@@ -10,9 +10,11 @@ const after_camp_Schema = new schema({
     },
     userId: {
         type: String,
+        index: true
     },
     adminId: {
         type: String,
+        index: true
     }
 },
     { timestamps: true }

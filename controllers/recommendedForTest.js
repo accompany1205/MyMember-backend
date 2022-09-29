@@ -50,12 +50,25 @@ exports.getRecommededForTest = async (req, res) => {
             msg: "Please include the userId in the parameters!"
         })
     }
+    
 
     let students = await RecommendedForTest.find({
         "eventId": eventId,
         "userId": userId,
         "isDeleted": false
     }).populate('studentId')
+    let Registered = await RegisterdForTest.find(
+        {
+            "eventId": eventId,
+            "userId": userId,
+            "isDeleted": false
+        })
+    let Promoted = await RegisterdForTest.find(
+        {
+            "eventId": eventId,
+            "userId": userId,
+            "isDeleted": true
+        }) 
     // .skip(pagination.skip)
     // .limit(pagination.limit)
     // .sort({ [sortBy]: order });
@@ -65,9 +78,11 @@ exports.getRecommededForTest = async (req, res) => {
             msg: "There was no data found!"
         })
     }
+
     res.json({
         success: true,
         data: students,
+        count:{recommeded:students.length,Registered:Registered.length,Promoted:Promoted.length}
     })
 }
 

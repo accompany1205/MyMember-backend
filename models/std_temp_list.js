@@ -19,7 +19,8 @@ const tempListSchema = new schema({
         default:" "
     },
     userId:{
-        type:String
+        type:String,
+        index:true
     }
 })
 

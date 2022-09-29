@@ -4,7 +4,8 @@ const schema = mongoose.Schema
 const userSchema = new schema(
     {
         userId:{
-            type:String
+            type:String,
+            index:true
         },
         rolename: {
             type: String,
@@ -48,6 +49,14 @@ const userSchema = new schema(
             finance: {
                 type: Boolean,
                 default: false
+            },
+            event_manager:{
+                type:Boolean,
+                default:false
+            },
+            form_builder:{
+                type:Boolean,
+                default:false
             },
             documents: {
                 type: Boolean,

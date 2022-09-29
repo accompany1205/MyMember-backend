@@ -62,12 +62,15 @@ const EmailSchema = schema({
     },
     userId: {
         type: String,
+        index:true
     },
     adminId: {
-        type: String
+        type: String,
+        index:true
     },
     folderId: {
         type: String,
+        index:true
     }
 },
     { timestamps: true }

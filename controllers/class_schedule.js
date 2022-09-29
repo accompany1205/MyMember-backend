@@ -102,6 +102,8 @@ exports.class_schedule_Info = (req, res) => {
             class_name: 1,
             start_date: 1,
             end_date: 1,
+            start_time:1,
+            end_time:1,
             program_color: 1,
             class_attendanceArray: 1,
           },
@@ -120,6 +122,8 @@ exports.class_schedule_Info = (req, res) => {
             class_name: 1,
             start_date: 1,
             end_date: 1,
+            start_time:1,
+            end_time:1,
             program_color: 1,
             class_attendanceArray: 1,
             "data.firstName": 1,
@@ -209,9 +213,13 @@ exports.updateAll = async (req, res) => {
       let repeat_weekly_on = reqBody.repeat_weekly_on;
       let startTimeH = moment(reqBody.start_time).format("hh");
       let startTimeM = moment(reqBody.start_time).format("mm");
+      let startTimeA = moment(reqBody.start_time).format("A");
       let endTimeH = moment(reqBody.end_time).format("hh");
       let endTimeM = moment(reqBody.end_time).format("mm");
+      let endTimeP = moment(reqBody.end_time).format("A");
       const dates = dateRange(start_time, end_time);
+      console.log(startTimeA)
+      console.log(endTimeP)
 
       let allAttendance = [];
       for (let index in dates) {
@@ -223,11 +231,14 @@ exports.updateAll = async (req, res) => {
           moment(d).set({
             hour: Number(startTimeH),
             minute: Number(startTimeM),
+            meridiem:  startTimeA
           })
         );
+        console.log(date)
         let dateE = new Date(
-          moment(d).set({ hour: Number(endTimeH), minute: Number(endTimeM) })
+          moment(d).set({ hour: Number(endTimeH), minute: Number(endTimeM), meridiem: endTimeP})
         );
+        console.log(dateE)
         let dayName = moment(new Date(date)).format("dddd").toLowerCase();
         if (repeat_weekly_on.includes(dayName)) {
           let NewEvent = {

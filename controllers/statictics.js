@@ -2,6 +2,7 @@ const tempList = require("../models/std_temp_list");
 // const async = require('async');
 const program = require('../models/program');
 const program_rank = require('../models/program_rank');
+const buy_membership = require('../models/buy_membership')
 const Member = require('../models/addmember');
 const { dateRangeBuild } = require('./../utilities/dateRangeProcess');
 const leadsTracking = require('../models/leads_tracking')
@@ -142,6 +143,178 @@ exports.statisticsFilter = async (req, res) => {
   }
 };
 
+const dataStatics = async (studentType, userId, year1) => {
+  try {
+    const join = await Member.aggregate([
+      {
+        $match: {
+          $and: [{
+            userId: userId
+          },
+          { studentType: studentType }]
+        },
+
+      },
+      {
+        $project: {
+          _id: 0,
+          month: {
+            $month: "$createdAt",
+          },
+          year: {
+            $year: "$createdAt",
+          },
+          firstName: 1,
+          lastName: 1,
+          studentType: 1,
+          Date: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+        }
+      },
+      {
+        $match: {
+          year: year1
+        }
+      },
+      // {
+      //   $group: {
+      //     _id: "$month",
+      //     year: { $first: "$year" },
+      //     firstName:{$first:"$firstName"},
+      //     lastName:{$first:"$lastName"},
+      //     studentType:{$first:"$studentType"},
+      //     Date:{$first:"$Date"},
+      //     count: { $count: {} } 
+      //   }
+      // }
+    ])
+    // return  join;
+    let dataArray = [{ month: 1, count: 0, data: [] }, { month: 2, count: 0, data: [] }, { month: 3, count: 0, data: [] },
+    { month: 4, count: 0, data: [] }, { month: 5, count: 0, data: [] }, { month: 6, count: 0, data: [] }, { month: 7, count: 0, data: [] },
+    { month: 8, count: 0, data: [] }, { month: 9, count: 0, data: [] }, { month: 10, count: 0, data: [] }, { month: 11, count: 0, data: [] },
+    { month: 12, count: 0, data: [] },]
+    for (let i in dataArray) {
+      for (let j in join) {
+        if (dataArray[i].month === join[j].month) {
+          dataArray[i].data.push(join[j])
+        }
+      }
+      dataArray[i].count = dataArray[i].data.length;
+    }
+    return dataArray;
+
+    // if (join.length === 0) {
+    //   return res.send({ msg: "No Data!", success: true, data: [] });
+    // }
+    // let dataArray = []
+    // let i = 1;
+    // let checkArr = []
+    // join.map(e => {
+    //   if (e.year === year1) {
+    //     dataArray.push({ month: e._id, count: e.count })
+    //     checkArr.push(e._id);
+    //   }
+    // })
+    // while (i <= 12) {
+    //   if (!checkArr.includes(i)) {
+    //     dataArray.push({ month: i, count: 0 })
+    //   }
+    //   i++;
+    // }
+    // dataArray.sort((a, b) => {
+    //   return a.month - b.month;
+    // });
+    // return dataArray
+
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+  }
+
+}
+
+exports.allStaticsData = async (req, res) => {
+  let userId = req.params.userId;
+  let staticsType = req.params.staticsType;
+  let year1 = parseInt(req.params.year);
+  if (staticsType == "MemberStatics") {
+    const join = await dataStatics("Active Student", userId, year1)
+    const quite = await dataStatics("Former Student", userId, year1)
+    let arr=[]    
+    for(let i=0;i<join.length;i++){
+      let obj={
+        month:0,
+        join:{count:0,data:0},
+        quite:{count:0,data:0}
+      }
+      obj.month=join[i].month;
+      obj.join.count=join[i].count;
+      obj.join.data=(join[i].data)
+      obj.quite.count=quite[i].count;
+      obj.quite.data=(quite[i].data)
+      arr.push(obj)
+    }  
+    return res.send(arr)
+    // return res.send({ join: join, quite: quite, msg: "Data!", success: true })
+    // let arr = []
+    // let i = 0;
+    // while (i < 12) {
+    //   arr.push({ month: i + 1, join: join[i].count, quite: quite[i].count })
+    //   i++
+    // }
+    // return res.send({ data: arr, msg: "Data!", success: true })
+  } else if (staticsType == "TrialStatics") {
+    const join = await dataStatics("Active Trial", userId, year1)
+    const quite = await dataStatics("Former Trial", userId, year1)
+    let arr=[]    
+    for(let i=0;i<join.length;i++){
+      let obj={
+        month:0,
+        join:{count:0,data:0},
+        quite:{count:0,data:0}
+      }
+      obj.month=join[i].month;
+      obj.join.count=join[i].count;
+      obj.join.data=(join[i].data)
+      obj.quite.count=quite[i].count;
+      obj.quite.data=(quite[i].data)
+      arr.push(obj)
+    }  
+    return res.send(arr)
+    // return res.send({ join: join, quite: quite, msg: "Data!", success: true })
+
+    // let arr = []
+    // let i = 0;
+    // while (i < 12) {
+    //   arr.push({ month: i + 1, join: join[i].count, quite: quite[i].count })
+    //   i++
+    // }
+    // return res.send({ data: arr, msg: "Data!", success: true })
+  } else if (staticsType == "leadsStatics") {
+    const join = await dataStatics("Leads", userId, year1)
+    let arr=[]    
+    for(let i=0;i<join.length;i++){
+      let obj={
+        month:0,
+        join:{count:0,data:0},
+      
+      }
+      obj.month=join[i].month;
+      obj.join.count=join[i].count;
+      obj.join.data=(join[i].data)
+      arr.push(obj)
+    }  
+    return res.send(arr)
+    // return res.send({ join: join, msg: "Data!", success: true })
+
+    // let arr = []
+    // let i = 0;
+    // while (i < 12) {
+    //   arr.push({ month: i + 1, join: join[i].count })
+    //   i++
+    // }
+    // return res.send({ data: arr, msg: "Data!", success: true })
+  }
+}
+
 // Active Student
 // Active Trial
 // Leads
@@ -243,8 +416,8 @@ exports.leadsFilter = async (req, res) => {
         dataObj.count = counter[obje];
         leadData.push(dataObj);
       })
-      
-      return res.send({ success: true, data:leadData, leads:leads.map(e => e.leads_category)})
+
+      return res.send({ success: true, data: leadData, leads: leads.map(e => e.leads_category) })
     } else {
       let monthyInfo = await Member.aggregate(
         [
@@ -333,7 +506,7 @@ exports.leadsFilter = async (req, res) => {
         dataObj.count = counter[obje];
         leadData.push(dataObj);
       })
-      return res.send({ success: true, data: leadData, leads:leads.map(e => e.leads_category)})
+      return res.send({ success: true, data: leadData, leads: leads.map(e => e.leads_category) })
     }
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false });
@@ -531,6 +704,73 @@ exports.getRanksByProgram = async (req, res) => {
     return res.status(500).json({ message: "Data not Found" });
   }
 };
+
+exports.getMembershipData = async (req, res) => {
+  const d = new Date();
+  let year = d.getFullYear();
+  let userId = req.params.userId;
+  let year1 = parseInt(req.params.year);
+  let membership_type = req.params.membership_type;
+  try {
+    buy_membership.aggregate([
+      {
+        $match: {
+          userId: userId,
+          membership_type: membership_type
+        },
+
+      },
+      {
+        $project: {
+          _id: 0,
+          month: {
+            $month: "$createdAt",
+          },
+          year: {
+            $year: "$createdAt",
+          },
+        }
+      },
+      {
+        $group: {
+          _id: "$month",
+          year: { $first: "$year" },
+          count: { $count: {} }
+        }
+      }
+    ]).then(resp => {
+      let dataArray = []
+      let i = 1;
+      let checkArr = []
+      resp.map(e => {
+        if (e.year === year1) {
+          dataArray.push({ month: e._id, count: e.count })
+          checkArr.push(e._id);
+        }
+      })
+      while (i <= 12) {
+        if (!checkArr.includes(i)) {
+          dataArray.push({ month: i, count: 0 })
+        }
+        i++;
+      }
+      dataArray.sort((a, b) => {
+        return a.month - b.month;
+      });
+      return res.send({ success: true, data: dataArray, msg: "data!" })
+    }).catch(err => {
+      res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+    })
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+  }
+}
+
+
+
+
+
+
 
 exports.getMemberByProgram = async (req, res) => {
   try {

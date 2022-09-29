@@ -7,7 +7,8 @@ const emailAuthSchema = new schema({
         required:true
     },
     userId:{
-        type:String
+        type:String,
+        index:true
     }
 })
 

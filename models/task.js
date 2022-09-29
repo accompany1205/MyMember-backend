@@ -25,7 +25,8 @@ const taskSchema = schema(
 		},
 		start: {
 			type: String,
-			required: true
+			required: true,
+			index: true
 		},
 		end: {
 			type: String,
@@ -36,7 +37,7 @@ const taskSchema = schema(
 			required: true
 		},
 		end_time: {
-			type: String,
+			type: Date,
 			required: true
 		},
 		repeatedDates: {
@@ -88,11 +89,22 @@ const taskSchema = schema(
 		},
 		userId: {
 			type: String,
+			index: true
 		},
 		subfolderId: {
 			type: String,
 			ref: "tasksubfolder",
 		},
+		isSeen:{
+			type: Boolean,
+			default: false,
+			index: true
+		},
+		isRead:{
+			type: Boolean,
+			default: false,
+			index: true
+		} 
 	},
 	{ timestamps: true }
 );

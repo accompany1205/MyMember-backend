@@ -14,9 +14,11 @@ const expenses_category_Schema = new schema(
 		},
 		userId: {
 			type: schema.Types.ObjectId,
+			index:true
 		},
 		adminId: {
 			type: schema.Types.ObjectId,
+			index:true
 		},
 		expenses: [
 			{

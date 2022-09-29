@@ -10,6 +10,7 @@ const summer_camp_Schema = new schema({
     },
     userId: {
         type: String,
+        index:true
     }
 },
     { timestamps: true }

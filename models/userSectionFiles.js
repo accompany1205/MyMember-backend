@@ -15,10 +15,12 @@ const userSectionFiles = new schema({
         required: true
     },
     studentId: {
-        type: String
+        type: String,
+        index:true
     },
     userId: {
-        type: String
+        type: String,
+        index:true
     },
     description: {
         type: String,

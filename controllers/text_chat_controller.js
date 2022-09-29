@@ -4,8 +4,11 @@ const textContact = require("../models/text_contact");
 const member = require("../models/addmember");
 const user = require("../models/user");
 const mongoose = require("mongoose");
+const fcm = require('fcm-notification')
 //const Socket = require("../Services/scoket.io")
 //var soc = Socket();
+let key = require('../fcm_key')
+var FCM = new fcm(key);
 const socketIo = io("http://localhost:3001", { transports: ['websocket'] })
 socketIo.on("connect_error", (err) => {
   console.log(`connect_error due to - ${err.message}`);
@@ -68,7 +71,7 @@ exports.sendTextMessage = async (req, res) => {
           } else {
             let remainingCredit = textCredit - 1;
             await member.findOneAndUpdate({ _id: uid }, { $set: { time: new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }), textContent: textContent } })
-            await user.findOneAndUpdate({_id:req.params.userId}, {$set:{textCredit:remainingCredit}})
+            await user.findOneAndUpdate({ _id: req.params.userId }, { $set: { textCredit: remainingCredit } })
             res.send({ textMessage: data, success: true, msg: "Message Successfully sent!" });
           }
         });
@@ -167,26 +170,74 @@ exports.getTextMessages = async (req, res) => {
 };
 
 // Get members details
-exports.getTextContactsDetails = (req, res) => {
-  let body = req.body;
-  let ids = [];
-  if (body.hasOwnProperty('ids')) {
-    body.ids.forEach(id => {
-      ids.push(mongoose.Types.ObjectId(id));
-    });
+exports.getTextContactsDetails = async (req, res) => {
+  const userId = req.params.userId;
+  const studentType = req.query.studentType;
+  let data;
+  try {
+    if (studentType === 'Active Trial') {
+      data = await contactInfo(userId, studentType)
+      return res.send({ data: data, msg: "Success!", success: true });
+    } else if (studentType === 'Leads') {
+      data = await contactInfo(userId, studentType)
+      return res.send({ data: data, msg: "Success!", success: true });
+    } else if (studentType === 'Former Student') {
+      data = await contactInfo(userId, studentType)
+      return res.send({ data: data, msg: "Success!", success: true });
+    } else if (studentType === 'Former Trial') {
+      data = await contactInfo(userId, studentType)
+      return res.send({ data: data, msg: "Success!", success: true });
+    } else {
+      data = await member.aggregate([
+        {
+          $match: {
+            userId: userId,
+            studentType: "Active Student"
+          }
+        },
+        {
+          $project: {
+            primaryPhone: 1,
+            firstName: 1,
+            lastName: 1,
+            memberprofileImage: 1,
+            time: 1,
+            textContent: 1
+          }
+        }
+      ]);
+      return res.send({ data: data, msg: "Success!", success: true });
+    }
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }
-  member.find({ '_id': { $in: ids } })
-    .populate('textContacts')
-    .exec((err, textContactList) => {
-      if (err) {
-        res.send({ error: 'text contact list not found' })
-      }
-      else {
-        res.send(textContactList)
-      }
-    });
 };
 
+async function contactInfo(userId, type) {
+  try {
+    const data = await member.aggregate([
+      {
+        $match: {
+          userId: userId,
+          studentType: type
+        }
+      },
+      {
+        $project: {
+          primaryPhone: 1,
+          firstName: 1,
+          lastName: 1,
+          memberprofileImage: 1,
+          time: 1,
+          textContent: 1
+        }
+      }
+    ])
+    return data
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+  }
+}
 
 // Incoming Message API to test SMS
 exports.listenIncomingSMS = async (req, res) => {
@@ -235,6 +286,7 @@ exports.listenIncomingSMS = async (req, res) => {
     text.save().then(async (textMessage) => {
       console.log(socketIo)
       socketIo.emit("textAlertWebhook", uidObj);
+      socketIo.emit("push-notification", obj.userId);
       await member.findOneAndUpdate({ _id: stuid }, { $set: { time: new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }), textContent: msg } })
       res.send({ msg: 'text sms sent successfully' })
     }).catch(error => {
@@ -244,3 +296,39 @@ exports.listenIncomingSMS = async (req, res) => {
     res.send({ error: 'txt msg not send due to wrong twilio or phone number' });
   }
 }
+
+exports.notification = async (req,res) => {
+  let push_notification = (firebase_token,text_msg) =>{
+    const token = 'dsfJhffJsjilteAOQGWkBj:APA91bHTMgmPP0UQDAYC85J1fRQRruuVVaBwQHlEVIrNmJiqTXubwcuDC_Pc5_zNC1do72eRbVmwUhirV4F1B7ftjM4vtt-jat8TDIULsOv91-Xq3I_yo0ESR9JrSbEqFU85R98fslfM'
+    const msg = {}
+    const notification = {}
+    const webpush = {}
+    notification.title = "My Member"
+    notification.body = text_msg
+    notification.icon = "http://www.mymember.com/static/media/logo.940eab8a.png"
+    webpush.notification = notification
+    msg.webpush = webpush
+    msg.token = token  
+    return new Promise ((resolve,reject)=>{
+    FCM.send(msg,(err, response) => {
+    if(err){
+        reject({msg:false,resp:err})
+    }else {
+        resolve({msg:true,resp:response}) 
+    }
+  })
+  })
+  }
+  let twilio = '+17406406682'
+  let msg = 'hy'
+  let userData = await user.findOne({ twilio: twilio }).exec()
+  if(userData){
+    let result = await push_notification(userData.firebase_token,msg)
+    if(result.msg){
+      res.json({success:true,msg:'notification send success',data:result.resp})
+    }else{
+      res.json({success:false,msg:'notification not send' ,data:result.resp})
+    }
+  }
+}
+

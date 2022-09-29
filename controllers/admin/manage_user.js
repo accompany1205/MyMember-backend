@@ -262,14 +262,31 @@ exports.update_user_by_admin = async (req, res) => {
   });
 };
 
+
+
+
+exports.user_stripe_info = async (req, res) => {
+  let userId = req.params.userId;
+  try {
+    const data = await user.findOne(
+      {
+        _id: userId
+      },
+      { stripe_sec: 1, stripe_pub: 1, _id: 0 }
+    )
+    return res.send({ data: data, msg: "Data!", success: true })
+  } catch (err) {
+    return res.send({ msg: err.message.replace(/\"/g, ''), success: false });
+  }
+}
+
 // only for demo
 exports.update_user_stripe_info = async (req, res) => {
   let data = req.body;
   const userId = req.params.userId;
   try {
-    const salt = await bcrypt.genSalt(10);
-    const stripe_sec = await bcrypt.hash(req.body.stripe_sec, salt);
-    const stripe_pub = await bcrypt.hash(req.body.stripe_pub, salt)
+    const stripe_sec = req.body.stripe_sec;
+    const stripe_pub = req.body.stripe_pub;
     data.stripe_sec = stripe_sec;
     data.stripe_pub = stripe_pub;
 
@@ -294,33 +311,33 @@ exports.update_user_stripe_info = async (req, res) => {
 }
 
 exports.get_user_stripe_info = async (req, res) => {
-  try{
-    if(!req.params.userId){
+  try {
+    if (!req.params.userId) {
       return res.send({
-        msg:"no params found",
-        success:false
+        msg: "no params found",
+        success: false
       })
     }
-    user.findById({ _id: req.params.userId }, { stripe_pub: 1, stripe_sec: 1,stripe_name:1 })
-    .exec((err, data) => {
-      if (err) {
-        return res.send({
-          msg: err.message.replace(/\"/g, ''),
-          success:false        
+    user.findById({ _id: req.params.userId }, { stripe_pub: 1, stripe_sec: 1, stripe_name: 1 })
+      .exec((err, data) => {
+        if (err) {
+          return res.send({
+            msg: err.message.replace(/\"/g, ''),
+            success: false
+          })
+        }
+        res.send({
+          msg: "data",
+          data: data,
+          success: true
         })
-      }
-      res.send({
-        msg:"data",
-        data:data,
-        success:true
-      })
 
-    })
-  }catch(err){
+      })
+  } catch (err) {
     return res.send({ msg: err.message.replace(/\"/g, ''), success: false });
 
   }
- 
+
 
 }
 

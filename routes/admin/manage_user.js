@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const { isAdmin } = require("../../controllers/auth")
-const { create_user,user_List,school_list,update_user_by_admin, manage_Status,remove,update_user,userInfo ,removeAll,update_user_stripe_info,get_user_stripe_info} = require("../../controllers/admin/manage_user");
+const { isAdmin,verifySchool } = require("../../controllers/auth")
+const { create_user,user_List,school_list,update_user_by_admin, manage_Status,remove,update_user,userInfo ,removeAll,update_user_stripe_info,user_stripe_info,get_user_stripe_info} = require("../../controllers/admin/manage_user");
 const upload = require('../../handler/multer');
 
 router.get("/admin/user_list/:adminId",isAdmin,user_List);
@@ -15,5 +15,9 @@ router.put("/admin/update_user/:adminId/:userId",isAdmin,upload.single('logo'),u
 router.put("/admin/update_user_by_admin/:adminId/:userId",isAdmin,update_user_by_admin)
 router.put("/admin/update_user_by_admin/stripe/:adminId/:userId", isAdmin,update_user_stripe_info)
 router.get("/admin/get_user_by_admin/stripe/:adminId/:userId",isAdmin,get_user_stripe_info)
+router.put("/admin/update_user_by_user/stripe/:userId", verifySchool,update_user_stripe_info)
+router.get("/admin/get_userData_by_userId/stripe/:userId",verifySchool,user_stripe_info)
+
+
 
 module.exports = router;

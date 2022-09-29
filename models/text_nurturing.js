@@ -14,7 +14,8 @@ const textNurturingSchema = schema({
        ref:'txt_nurturing_Folder'
    }],
    userId:{
-       type:String 
+       type:String,
+       index:true
    }
 },
 { timestamps:true }
