@@ -13,7 +13,8 @@ const Joi = require("@hapi/joi");
 var mongo = require("mongoose");
 const ObjectId = require("mongodb").ObjectId;
 const { valorTechPaymentGateWay } = require("./valorTechPaymentGateWay");
-const daysRemaining = require("../Services/daysremaining");
+const daysRemaining = require("../controllers/remainingdays");
+//const daysRemaining = require("../Services/daysremaining");
 
 const createEMIRecord = require("../Services/createEMi");
 
@@ -400,10 +401,45 @@ function refundMembership(membershipId, payload) {
   });
 }
 
+async function freezeUnfreeze(membershipId, status) {
+  const currentMembership = await AddMember.aggregate([
+    {
+      $match: {
+        membership_details: {
+          $exists: true,
+          $ne: [],
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        membership_details: {
+          $arrayElemAt: ["$membership_details", -1],
+        },
+      },
+    },
+    {
+      $match: {
+        membership_details: ObjectId(membershipId),
+      },
+    },
+  ])
+  if (currentMembership.length === 1) {
+    if ((currentMembership[0].membership_details).toString() === membershipId.toString()) {
+      await AddMember.updateOne({ _id: (currentMembership[0].membership_details).toString() }, { $set: { status: status } })
+    }
+  } else {
+    console.log('there is no data')
+  }
+}
+
 async function freezeMembership(membershipId, payload) {
+  await freezeUnfreeze(membershipId, "Freeze")
+
   return new Promise((resolve, reject) => {
     let expiry_date = moment(payload.expiry_date)
-      .add(daysRemaining(payload.freeze_stop_date), "days")
+      .add(daysRemaining(payload.freeze_stop_date,payload.freeze_start_date), "days")
       .format("YYYY-MM-DD");
     buyMembership
       .findByIdAndUpdate(membershipId, {
@@ -431,13 +467,41 @@ async function freezeMembership(membershipId, payload) {
         }
       });
   });
+
 }
 
-function unFreezeMembership(membershipId, payload) {
+async function unFreezeMembership(membershipId, payload) {
+
+  await freezeUnfreeze(membershipId, "Active");
+  let data=await buyMembership.aggregate([
+    {
+      $match:{
+        _id:ObjectId(membershipId)
+      }
+    },
+    {
+      $project:{
+        expiry_date:1,
+        whenFreeze:1
+      }
+    },
+    { $addFields: { lastElem: { $last: "$whenFreeze" } } }
+  ])
+  let last=""
+  for(let i of data[0].whenFreeze){
+    if( i.hasOwnProperty('freeze_stop_date')){
+      last=i.freeze_stop_date
+    }
+  }
+  let expiryDate=data[0].expiry_date
+  let date=moment(new Date()).format('YYYY-MM-DD'); 
   return new Promise((resolve, reject) => {
+    let expiry_date = moment(expiryDate)
+      .subtract(daysRemaining(last,date), "days")
+      .format("YYYY-MM-DD");
     buyMembership
       .findByIdAndUpdate(membershipId, {
-        $set: { isFreeze: false, membership_status: "Active" },
+        $set: { isFreeze: false, membership_status: "Active",expiry_date:expiry_date },
         $push: {
           whenFreeze: { date: new Date(), reason: payload.reason },
         },
@@ -453,6 +517,7 @@ function unFreezeMembership(membershipId, payload) {
       });
   });
 }
+
 function lastestMembership(membershipID, status, expiry_date) {
   return new Promise((resolve, reject) => {
     AddMember.aggregate([
