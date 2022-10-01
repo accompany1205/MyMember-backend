@@ -36,120 +36,374 @@ function getUserId() {
   });
 }
 
-//Memberships
-var expiredLastMembership = async () => {
+
+const expiredMembership = async (req, res) => {
   const expired_LastaMembership = await Member.aggregate([
+
     {
       $project: {
-        last_membership: {
-          $cond: { if: { $eq: [{ $size: "$membership_details" }, 1] }, then: { $arrayElemAt: ["$membership_details", 0] }, else: { $arrayElemAt: ["$membership_details", -1] } }
-        },
+        membership_details: 1,
         status: 1,
       },
     },
     {
       $match: {
-        // status: { $nin: ["Expired"] },
-        last_membership: {
-          $nin: [null],
-        },
-      },
+        membership_details: {
+          $ne: []
+        }
+      }
+    },
+    {
+      $unwind: "$membership_details"
     },
     {
       $lookup: {
         from: "buy_memberships",
-        localField: "last_membership",
+        localField: "membership_details",
         foreignField: "_id",
         as: "membership",
-        pipeline: [
-          {
-            $project: {
-              expiry_date: {
-                // $toDate: "$expiry_date",
-                $convert: {
-                  input: "$expiry_date",
-                  to: "date",
-                  onError: "$expiry_date",
-                  onNull: "$expiry_date",
-                },
-              },
-              membership_status: 1,
-            },
-          },
-          // {
-          //   $match: {
-          //     membership_status: {
-          //       $ne: ["Expired"],
-          //     },
-          //   },
-          // },
-        ],
-      },
-    },
-    {
-      $unwind: "$membership",
-    },
-    {
-      $match: {
-        $or: [{
-          "membership.expiry_date": {
-            $lte: new Date(),
-          }
-        }, {
-          "membership.membership_status": {
-            $eq: "Freeze",
-          }
-        }]
       },
     },
     {
       $project: {
-        membershipId: "$membership._id",
+        membership_id: { $first: "$membership._id" },
+        status: 1,
+        membership_status: { $first: "$membership.membership_status" },
+        expiry_date: { $toDate: { $first: "$membership.expiry_date" } }
+      }
+    },
+    {
+      $project: {
+        membership_id: 1,
+        status: 1,
+        membership_status: 1,
+        expiry_date: 1,
+        isExpired: {
+          $cond: {
+            if: { $lte: ["$expiry_date", new Date()] },
+            then: true,
+            else: false
+          }
+        }
+      }
+    }
+  ]);
+  let buy_members = []
+  for (let i of expired_LastaMembership) {
+    if (i.isExpired === true) {
+      buy_members.push(i)
+    }
+  }
+  for (let i of buy_members) {
+    await buyMembership.updateOne({ _id: i.membership_id.toString() }, { $set: { membership_status: "Expired" } })
+  }
+  const uniqueIds = {};
+  expired_LastaMembership.forEach(element => {
+    const isDuplicate = uniqueIds[element._id]
+    if (!isDuplicate) {
+      uniqueIds[element._id] = element
+    }
+  })
+  const uniqData = Object.values(uniqueIds)
+  let array = []
+  for (let i of uniqData) {
+    let obj = { _id: "", data: [] }
+    obj._id = i._id;
+    for (let j of expired_LastaMembership) {
+      if (obj._id.toString() === j._id.toString()) {
+        obj.data.push(j.membership_status)
+      }
+    }
+    array.push(obj)
+  }
+  for (let i = 0; i < array.length; i++) {
+    if ((array[i].data).includes("Expired") && !(array[i].data).includes("Active")) {
+      await Member.updateOne({ _id: array[i]._id.toString() }, { $set: { status: "Expired" } })
+    } else if ((array[i].data).includes("Terminated")) {
+      await Member.updateOne({ _id: array[i]._id.toString() }, { $set: { status: "Expired" } })
+    }
+  }
+}
+
+const activeMembership = async (req, res) => {
+  const active = await Member.aggregate([
+    {
+      $project: {
+        membership_details: 1,
+        status: 1,
       },
     },
-  ]);
-  Promise.all(
-    expired_LastaMembership.map((expired_Membership) => {
-      update_LastMembershipStatus(expired_Membership)
-        .then((resp) => console.log("for test---", resp.nModified))
-        .catch((err) => {
-          console.log(err);
-        });
-    })
-  );
-};
-
-function update_LastMembershipStatus(member) {
-  // console.log(member)
-  let { _id, membership } = member;
-  return new Promise((resolve, reject) => {
-    if (membership.membership_status === "Freeze") {
-      Member.updateOne({ _id: _id.toString() }, { $set: { status: "Freeze" } })
-        .then((resp) => {
-          buyMembership
-            .updateOne(
-              { _id: membership._id.toString() },
-              { $set: { membership_status: "Freeze" } }
-            )
-            .then((resp) => resolve(resp))
-            .catch((err) => reject(err));
-        })
-        .catch((err) => reject(err));
-    } else if (membership.membership_status === "Expired") {
-      Member.updateOne({ _id: _id.toString() }, { $set: { status: "Expired" } })
-        .then((resp) => {
-          buyMembership
-            .updateOne(
-              { _id: membership._id.toString() },
-              { $set: { membership_status: "Expired" } }
-            )
-            .then((resp) => resolve(resp))
-            .catch((err) => reject(err));
-        })
-        .catch((err) => reject(err));
+    {
+      $match: {
+        membership_details: {
+          $ne: []
+        }
+      }
+    },
+    {
+      $unwind: "$membership_details"
+    },
+    {
+      $lookup: {
+        from: "buy_memberships",
+        localField: "membership_details",
+        foreignField: "_id",
+        as: "membership",
+      }
+    },
+    {
+      $project: {
+        _id: 1,
+        membership_id: { $first: "$membership._id" },
+        status: 1,
+        membership_status: { $first: "$membership.membership_status" },
+        expiry_date: { $toDate: { $first: "$membership.expiry_date" } }
+      }
+    },
+    {
+      $match: {
+        $or: [{ membership_status: { $eq: "Freeze" } }, { membership_status: { $eq: "Active" } }]
+      }
+    },
+    {
+      $project: {
+        _id: 1,
+        membership_id: 1,
+        status: 1,
+        membership_status: 1,
+        expiry_date: 1,
+        isExpired: {
+          $cond: {
+            if: { $lte: ["$expiry_date", new Date()] },
+            then: true,
+            else: false
+          }
+        }
+      }
     }
-  });
+
+  ])
+  const uniqueIds = {};
+  active.forEach(element => {
+    const isDuplicate = uniqueIds[element._id]
+    if (!isDuplicate) {
+      uniqueIds[element._id] = element
+    }
+  })
+  const uniqData = Object.values(uniqueIds)
+  let array = []
+  for (let i of uniqData) {
+    let obj = { _id: "", data: [] }
+    obj._id = i._id;
+    for (let j of active) {
+      if (obj._id.toString() === j._id.toString()) {
+        obj.data.push(j.membership_status)
+      }
+    }
+    array.push(obj)
+  }
+  for (let i = 0; i < array.length; i++) {
+    if ((array[i].data).includes("Freeze")) {
+      await Member.updateOne({ _id: array[i]._id }, { $set: { status: "Freeze" } })
+    } else if ((array[i].data).includes("Active") && !(array[i].data).includes("Freeze")) {
+      await Member.updateOne({ _id: array[i]._id }, { $set: { status: "Active" } })
+    }
+  }
 }
+
+//Memberships
+// expiredLastMembership = async (req,res) => {
+// const expired_LastaMembership = await Member.aggregate([
+//   {
+//     $match: {
+//       userId: "606aea95a145ea2d26e0f1ab"
+//     }
+//   },
+//   {
+//     $project: {
+//       // last_membership: {
+//       //   $cond: { if: { $eq: [{ $size: "$membership_details" }, 1] }, then: { $arrayElemAt: ["$membership_details", 0] }, else: { $arrayElemAt: ["$membership_details", -1] } }
+//       // },
+//       membership_details: 1,
+//       status: 1,
+//     },
+//   },
+//   {
+//     $match: {
+//       membership_details: {
+//         $ne: []
+//       }
+//     }
+//   },
+//   {
+//     $unwind: "$membership_details"
+//   },
+//   {
+//     $lookup: {
+//       from: "buy_memberships",
+//       localField: "membership_details",
+//       foreignField: "_id",
+//       as: "membership",
+
+// pipeline: [
+//   {
+//     $project: {
+//       expiry_date: {
+//         // $toDate: "$expiry_date",
+//         $convert: {
+//           input: "$expiry_date",
+//           to: "date",
+//           onError: "$expiry_date",
+//           onNull: "$expiry_date",
+//         },
+//       },
+//       membership_status: 1,
+//     },
+//   },
+// {
+//   $match: {
+//     membership_status: {
+//       $ne: ["Expired"],
+//     },
+//   },
+// },
+// ],
+// },
+
+// },
+// {
+//   $unwind: "$membership",
+// },
+// {
+//   $match: {
+//     $or: [{
+//       "membership.expiry_date": {
+//         $lte: new Date(),
+//       }
+//     }, {
+//       "membership.membership_status": {
+//         $eq: "Freeze",
+//       }
+//     }]
+//   },
+// },
+// {
+//   $project: {
+//     membershipId: "$membership._id",
+//   },
+//   },
+//   {
+//     $project: {
+//       membership_id: { $first: "$membership._id" },
+//       status: 1,
+//       membership_status: { $first: "$membership.membership_status" },
+//       expiry_date: { $toDate: { $first: "$membership.expiry_date" } }
+//     }
+//   },
+//   {
+//     $match: {
+//       $and: [{ membership_status: { $ne: "Freeze" } }, { membership_status: { $ne: "Terminated" } }]
+//     }
+//   },
+//   {
+//     $project: {
+//       membership_id:1,
+//       status: 1,
+//       membership_status: 1,
+//       expiry_date: 1,
+//       isExpired: {
+//         $cond: {
+//           if: { $lte: ["$expiry_date", new Date()] },
+//           then: true,
+//           else: false
+//         }
+//       }
+//     }
+//   }
+
+// ]);
+// console.log("fghjhh>>>>>>", expired_LastaMembership)
+// const uniqueIds = {};
+// expired_LastaMembership.forEach(element => {
+//   const isDuplicate = uniqueIds[element._id]
+//   if (!isDuplicate) {
+//     uniqueIds[element._id] = element
+//   }
+// })
+// const uniqData = Object.values(uniqueIds)
+// console.log(uniqData)
+// let buy_members=[]
+// for (let i of expired_LastaMembership){
+//   if(i.isExpired===true){
+//     buy_members.push(i)
+//   }
+// }
+
+// console.log(buy_members)
+
+
+
+
+// for (let i of uniqData) {
+//   for (let j of expired_LastaMembership) {
+//     if ((i._id).toString() === (j._id).toString()) {
+//       if (j.isExpired === true && j.membership_status === "Active") {
+//         await Member.updateOne({ _id: i._id.toString() }, { $set: { status: "Active" } })
+//         console.log(i)
+//       }
+//     } else if (j.membership_status === "Freeze") {
+//       await Member.updateOne({ _id: j._id.toString() }, { $set: { status: "Freeze" } })
+//     } else {
+//       await Member.updateOne({ _id: j._id.toString() }, { $set: { status: "Expired" } })
+//     }
+//   }
+// }
+
+// Promise.all(
+//   expired_LastaMembership.map((expired_Membership) => {
+//     update_LastMembershipStatus(expired_Membership)
+//       .then((resp) => console.log("for test---", resp.nModified))
+//       .catch((err) => {
+//         console.log(err);
+//       });
+//   })
+// );
+// };
+
+// expiredLastMembership()
+
+// function update_LastMembershipStatus(member) {
+//   console.log(member)
+
+// let { _id, membership } = member;
+// return new Promise((resolve, reject) => {
+//   if (membership.membership_status === "Freeze") {
+//     Member.updateOne({ _id: _id.toString() }, { $set: { status: "Freeze" } })
+//       .then((resp) => {
+//         buyMembership
+//           .updateOne(
+//             { _id: membership._id.toString() },
+//             { $set: { membership_status: "Freeze" } }
+//           )
+//           .then((resp) => resolve(resp))
+//           .catch((err) => reject(err));
+//       })
+//       .catch((err) => reject(err));
+//   } else if (membership.membership_status === "Expired") {
+//     Member.updateOne({ _id: _id.toString() }, { $set: { status: "Expired" } })
+//       .then((resp) => {
+//         buyMembership
+//           .updateOne(
+//             { _id: membership._id.toString() },
+//             { $set: { membership_status: "Expired" } }
+//           )
+//           .then((resp) => resolve(resp))
+//           .catch((err) => reject(err));
+//       })
+//       .catch((err) => reject(err));
+//   }
+// });
+// }
 
 allexpiredMemberships = async () => {
   try {
@@ -491,15 +745,15 @@ async function DailyTriggeredMails() {
       }
     }, 3000);
   } catch (err) {
-    console.log({ msg: err.message.replace(/\"/g, ""), success: false } );
+    console.log({ msg: err.message.replace(/\"/g, ""), success: false });
   }
 }
 
 // DailyTriggeredMails();
 module.exports = cron.schedule("0 1 * * *", () => {
-  collectionModify(), expiredLastMembership();
+  collectionModify(),
+  activeMembership(), expiredMembership()
 });
-
 module.exports = cron.schedule(`*/1 * * * *`, () => emailCronFucntionality());
 
 // module.exports = cron.schedule('*/20 * * * * *',function(){

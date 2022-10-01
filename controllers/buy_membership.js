@@ -13,7 +13,7 @@ const Joi = require("@hapi/joi");
 var mongo = require("mongoose");
 const ObjectId = require("mongodb").ObjectId;
 const { valorTechPaymentGateWay } = require("./valorTechPaymentGateWay");
-const daysRemaining = require("../Services/daysremaining");
+const daysRemaining = require("../controllers/remainingdays");
 
 const createEMIRecord = require("../Services/createEMi");
 
@@ -85,7 +85,7 @@ exports.update = async (req, res) => {
                 msg: "Membership freezed successfully",
                 success: true,
               });
-            } else {  
+            } else {
               console.log("i am here");
               res.status(400).send({
                 msg: "Membership not updated but valor freezed membership!",
@@ -374,6 +374,7 @@ function forfeitSubscription(membershipId, reason) {
   });
 }
 
+
 function refundMembership(membershipId, payload) {
   return new Promise((resolve, reject) => {
     buyMembership.findByIdAndUpdate(
@@ -400,10 +401,45 @@ function refundMembership(membershipId, payload) {
   });
 }
 
+async function freezeUnfreeze(membershipId, status) {
+  const currentMembership = await AddMember.aggregate([
+    {
+      $match: {
+        membership_details: {
+          $exists: true,
+          $ne: [],
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        membership_details: {
+          $arrayElemAt: ["$membership_details", -1],
+        },
+      },
+    },
+    {
+      $match: {
+        membership_details: ObjectId(membershipId),
+      },
+    },
+  ])
+  if (currentMembership.length === 1) {
+    if ((currentMembership[0].membership_details).toString() === membershipId.toString()) {
+      await AddMember.updateOne({ _id: (currentMembership[0].membership_details).toString() }, { $set: { status: status } })
+    }
+  } else {
+    console.log('there is no data')
+  }
+}
+
 async function freezeMembership(membershipId, payload) {
+  await freezeUnfreeze(membershipId, "Freeze")
+
   return new Promise((resolve, reject) => {
     let expiry_date = moment(payload.expiry_date)
-      .add(daysRemaining(payload.freeze_stop_date), "days")
+      .add(daysRemaining(payload.freeze_stop_date,payload.freeze_start_date), "days")
       .format("YYYY-MM-DD");
     buyMembership
       .findByIdAndUpdate(membershipId, {
@@ -431,13 +467,41 @@ async function freezeMembership(membershipId, payload) {
         }
       });
   });
+
 }
 
-function unFreezeMembership(membershipId, payload) {
+async function unFreezeMembership(membershipId, payload) {
+
+  await freezeUnfreeze(membershipId, "Active");
+  let data=await buyMembership.aggregate([
+    {
+      $match:{
+        _id:ObjectId(membershipId)
+      }
+    },
+    {
+      $project:{
+        expiry_date:1,
+        whenFreeze:1
+      }
+    },
+    { $addFields: { lastElem: { $last: "$whenFreeze" } } }
+  ])
+  let last=""
+  for(let i of data[0].whenFreeze){
+    if( i.hasOwnProperty('freeze_stop_date')){
+      last=i.freeze_stop_date
+    }
+  }
+  let expiryDate=data[0].expiry_date
+  let date=moment(new Date()).format('YYYY-MM-DD'); 
   return new Promise((resolve, reject) => {
+    let expiry_date = moment(expiryDate)
+      .subtract(daysRemaining(last,date), "days")
+      .format("YYYY-MM-DD");
     buyMembership
       .findByIdAndUpdate(membershipId, {
-        $set: { isFreeze: false, membership_status: "Active" },
+        $set: { isFreeze: false, membership_status: "Active",expiry_date:expiry_date },
         $push: {
           whenFreeze: { date: new Date(), reason: payload.reason },
         },
@@ -962,87 +1026,87 @@ let createCardToken = async (body, resp) => {
   let cardCvc = body.cardCvc
 
   let cardToken = await resp.tokens.create({
-      card: {
-          number: cardNumber,
-          exp_month: cardExpiryMonth,
-          exp_year: cardExpiryYear,
-          cvc: cardCvc,
-      },
+    card: {
+      number: cardNumber,
+      exp_month: cardExpiryMonth,
+      exp_year: cardExpiryYear,
+      cvc: cardCvc,
+    },
   });
   return cardToken
 };
 
 let createPayment = async (req, resp) => {
   try {
-      let findCustomer = await StripeCustomers.findOne({ "email": req.body.email })
-      if (findCustomer == null) {
-          throw { "status": false, "message": "customer not existed" }
-      }
-      console.log("amount is ------------", req.body.amount, req.body.card_id,)
-      let paymentIntent = await resp.paymentIntents.create({
-          amount: (req.body.amount) * 100, //stripe uses cents
-          currency: 'usd',
-          customer: findCustomer.get("id"),
-          payment_method_types: ['card'],
-          payment_method: req.body.card_id,
-          confirm: "true",
-          description: req.body.description
-      });
-      let storeTransaction = await StoreTransaction.create(paymentIntent)
-      console.log(paymentIntent)
-      return paymentIntent
+    let findCustomer = await StripeCustomers.findOne({ "email": req.body.email })
+    if (findCustomer == null) {
+      throw { "status": false, "message": "customer not existed" }
+    }
+    console.log("amount is ------------", req.body.amount, req.body.card_id,)
+    let paymentIntent = await resp.paymentIntents.create({
+      amount: (req.body.amount) * 100, //stripe uses cents
+      currency: 'usd',
+      customer: findCustomer.get("id"),
+      payment_method_types: ['card'],
+      payment_method: req.body.card_id,
+      confirm: "true",
+      description: req.body.description
+    });
+    let storeTransaction = await StoreTransaction.create(paymentIntent)
+    console.log(paymentIntent)
+    return paymentIntent
   }
   catch (err) {
-      return err
+    return err
   }
 };
 
 
 let createCard = async (req, resp) => {
   try {
-      let cardNumber = req.body.card_number
-      let cardExpiryMonth = req.body.card_expiry_month
-      let cardExpiryYear = req.body.card_expiry_year
-      let cardCvc = req.body.card_cvc
-      let email = req.body.email
-      let phone = req.body.phone
-      let cardToken = await createCardToken({ cardNumber, cardExpiryMonth, cardExpiryYear, cardCvc }, resp)
-      let findCustomer = await StripeCustomers.findOne({ "email": email })
-      let customerId
-      let cardCheck = await StripeCards.findOne({ "card_number": cardNumber, "email": email })
-      if (cardCheck) {
-          return { "status": false, "message": "card already existed with this customer email" }
+    let cardNumber = req.body.card_number
+    let cardExpiryMonth = req.body.card_expiry_month
+    let cardExpiryYear = req.body.card_expiry_year
+    let cardCvc = req.body.card_cvc
+    let email = req.body.email
+    let phone = req.body.phone
+    let cardToken = await createCardToken({ cardNumber, cardExpiryMonth, cardExpiryYear, cardCvc }, resp)
+    let findCustomer = await StripeCustomers.findOne({ "email": email })
+    let customerId
+    let cardCheck = await StripeCards.findOne({ "card_number": cardNumber, "email": email })
+    if (cardCheck) {
+      return { "status": false, "message": "card already existed with this customer email" }
+    }
+    if (findCustomer == null) {
+      return { "status": false, "message": "customer not existed" }
+    }
+    else {
+      customerId = findCustomer.id
+    }
+    let cardId = await resp.customers.createSource(
+      customerId,
+      { source: cardToken.id }
+    );
+    let storeCard = StripeCards.create(
+      {
+        "customer_id": customerId,
+        "card_id": cardId.id,
+        "card_number": cardNumber,
+        "email": email,
+        "phone": phone
       }
-      if (findCustomer == null) {
-          return { "status": false, "message": "customer not existed" }
-      }
-      else {
-          customerId = findCustomer.id
-      }
-      let cardId = await resp.customers.createSource(
-          customerId,
-          { source: cardToken.id }
-      );
-      let storeCard = StripeCards.create(
-          {
-              "customer_id": customerId,
-              "card_id": cardId.id,
-              "card_number": cardNumber,
-              "email": email,
-              "phone": phone
-          }
-      )
+    )
 
-      return cardId
+    return cardId
   }
   catch (error) {
-      console.log("--------------", JSON.parse(JSON.stringify(error)))
-      return error
+    console.log("--------------", JSON.parse(JSON.stringify(error)))
+    return error
   }
 };
 exports.buyMembershipStripe = async (req, res) => {
   const userId = req.params.userId;
-  let {stripe_sec} = await User.findOne({_id:userId});
+  let { stripe_sec } = await User.findOne({ _id: userId });
   const studentId = req.params.studentId;
   let stripePayload = req.body.membership_details.stripePayload
     ? req.body.membership_details.stripePayload
@@ -1300,8 +1364,8 @@ exports.buyMembershipStripe = async (req, res) => {
             cardId = findExistingCard["card_id"]
           }
           else {
-            if(!cli){
-              return res.send({msg:"please add stipe Keys!", success:false})
+            if (!cli) {
+              return res.send({ msg: "please add stipe Keys!", success: false })
             }
             let createdCard = await createCard({
               "body": {
@@ -1312,14 +1376,14 @@ exports.buyMembershipStripe = async (req, res) => {
                 "email": stripePayload.email,
                 "phone": stripePayload.phone,
               }
-            },cli)
+            }, cli)
             console.log(createdCard)
             if (createdCard.status) {
               return createdCard
             }
             cardId = createdCard["id"]
           }
-          let createPaymentResponse =  createPayment({
+          let createPaymentResponse = createPayment({
             "body": {
               "amount": stripePayload.amount,
               "card_id": cardId,
@@ -1481,20 +1545,20 @@ function createFinanceDoc(data) {
 }
 
 
-exports.checkData=async (req,res)=>{
-  let userId=req.params.userId;
+exports.checkData = async (req, res) => {
+  let userId = req.params.userId;
   const expired_LastaMembership = await AddMember.aggregate([
     {
-      $match:{
-        userId:userId
+      $match: {
+        userId: userId
       }
     },
     {
       $project: {
         last_membership: {
           $arrayElemAt: ["$membership_details", -1],
-        },  
-        status:1,
+        },
+        status: 1,
       },
     },
     {
@@ -1526,20 +1590,20 @@ exports.checkData=async (req,res)=>{
     //           membership_status: 1,
     //         },
     //       },
-          // {jkghgjh
-          //   $match: {
-          //     membership_status: {
-          //       $ne: ["Expired"],
-          //     },
-          //   },
-          // },jhbjbhbh
+    // {jkghgjh
+    //   $match: {
+    //     membership_status: {
+    //       $ne: ["Expired"],
+    //     },
+    //   },
+    // },jhbjbhbh
     //     ],
     //   },
     // },
     // {
     //   $unwind: "$membership",
     // },
-   
+
     // {
     //   $match: {
     //     "membership.expiry_date": {
