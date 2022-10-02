@@ -6,6 +6,7 @@ const location = require('../models/admin/settings/location');
 const jwt = require('jsonwebtoken');
 const ChatUser = require('../models/chat_user');
 const Chat = require('../models/chat');
+let moment = require("moment");
 
 class SocketEngine {
   constructor(io) {
@@ -45,10 +46,11 @@ class SocketEngine {
 
       socket.on('push-notification', async (userId) => {
         let notification = {}
-        let tomorrow = moment().add(1, 'days');
         let lastMonth = moment().subtract(1, 'months');
+        let nextSixtyDays = moment().add(2, 'months');
+        let nextNintyDays = moment().add(3, 'months');
         let currDate = new Date().toISOString().slice(0, 10);
-        let users = await user.findOne({_id: userId},{_id: 1,task_setting: 1,today_birthday_setting:1,tomorrow_birthday_setting:1,thisWeek_birthday_setting:1,thisMonth_birthday_setting:1,lastMonth_birthday_setting:1,chat_setting:1})
+        let users = await user.findOne({_id: userId},{_id: 1,task_setting: 1,thisWeek_birthday_setting:1,thisMonth_birthday_setting:1,lastMonth_birthday_setting:1,nextSixtyDays_birthday_setting,nextNintyDays_birthday_setting,chat_setting:1})
       
         if(users.task_setting){
         var todayTask = await tasks.find(
@@ -64,8 +66,8 @@ class SocketEngine {
         notification.todayTaskCount =  todayTask_count
         notification.tasks = todayTask
         }else{
-          notification.todayTaskCount =  ""
-          notification.tasks = []
+          notification.todayTaskCount =  0
+          notification.tasks = false
         }
         
         if(users.chat_setting){
@@ -100,19 +102,18 @@ class SocketEngine {
           notification.chatCount = chat_count
           notification.chat =  text_chat
         }else{
-          notification.chatCount = ""
-          notification.chat =  []
+          notification.chatCount = 0
+          notification.chat =  false
         }
 
-        if(users.today_birthday_setting){
-        let todayBirthday = await member.aggregate([
+        if(users.nextSixtyDays_birthday_setting){
+        let nextSixtyDaysBirthday = await member.aggregate([
           {
             $match: {
               $and: [
                 { userId: userId },
                 { 'isRead': false  },
-                { $expr: { $eq: [{ $dayOfMonth: '$dob' }, { $dayOfMonth: '$$NOW' }] } },
-                { $expr: { $eq: [{ $month: '$dob' }, { $month: '$$NOW' }] } }
+                { $expr: { $eq: [{ $month: '$dob' }, { $month: new Date(nextSixtyDays) }] } }
               ]
             }
           },
@@ -129,23 +130,22 @@ class SocketEngine {
           }
         ])
 
-        let todayBirthday_count = todayBirthday.filter((item)=> item.isSeen == 'false').length;
-        notification.todayBirthdayCount = todayBirthday_count
-        notification.todayBirthday = todayBirthday
+        let nextSixtyDaysBirthday_count = nextSixtyDaysBirthday.filter((item)=> item.isSeen == 'false').length;
+        notification.nextSixtyDaysBirthdayCount = nextSixtyDaysBirthday_count
+        notification.nextSixtyDaysBirthda = nextSixtyDaysBirthday
         }else{
-        notification.todayBirthdayCount = ""
-        notification.todayBirthday = []
+        notification.nextSixtyDaysBirthdayCount = 0
+        notification.nextSixtyDaysBirthda = false
         }
 
-        if(users.tomorrow_birthday_setting){
-        let tomorrowBirthday = await member.aggregate([
+        if(users.nextNintyDays_birthday_setting){
+        let nextNintyDaysBirthday = await member.aggregate([
           {
             $match: {
               $and: [
                 { userId: userId },
                 { 'isRead': false  },
-                { $expr: { $eq: [{ $dayOfMonth: '$dob' }, { $dayOfMonth: new Date(tomorrow) }] } },
-                { $expr: { $eq: [{ $month: '$dob' }, { $month: new Date(tomorrow) }] } }
+                { $expr: { $eq: [{ $month: '$dob' }, { $month: new Date(nextNintyDays) }] } }
               ]
             }
           },
@@ -162,12 +162,12 @@ class SocketEngine {
           }
         ])
 
-        let tomorrowBirthday_count = tomorrowBirthday.filter((item)=> item.isSeen == 'false').length;
-        notification.tomorrowBirthdayCount = tomorrowBirthday_count
-        notification.tomorrowBirthday = tomorrowBirthday
+        let nextNintyDaysBirthday_count = nextNintyDaysBirthday.filter((item)=> item.isSeen == 'false').length;
+        notification.nextNintyDaysBirthdayCount = nextNintyDaysBirthday_count
+        notification.nextNintyDaysBirthday = nextNintyDaysBirthday
         }else{
-        notification.tomorrowBirthdayCount = ""
-        notification.todayBirthday = []
+        notification.nextNintyDaysBirthdayCount = 0
+        notification.nextNintyDaysBirthday = false
         }
 
         if(users.thisWeek_birthday_setting){
@@ -198,8 +198,8 @@ class SocketEngine {
         notification.thisWeekBirthdayCount = thisWeekBirthday_count
         notification.thisWeekBirthday = thisWeekBirthday
         }else{
-          notification.thisWeekBirthdayCount = ""
-          notification.thisWeekBirthday = []
+          notification.thisWeekBirthdayCount = 0
+          notification.thisWeekBirthday = false
         }
 
         if(users.thisMonth_birthday_setting){
@@ -230,8 +230,8 @@ class SocketEngine {
         notification.thisMonthBirthdayCount = thisMonthBirthday_count
         notification.thisMonthBirthday = thisMonthBirthday
         }else{
-          notification.thisMonthBirthdayCount = ""
-          notification.thisMonthBirthday = []
+          notification.thisMonthBirthdayCount = 0
+          notification.thisMonthBirthday = false
         }
 
         if(users.lastMonth_birthday_setting){
@@ -262,22 +262,11 @@ class SocketEngine {
         notification.lastMonthBirthdayCount = lastMonthBirthday_count
         notification.lastMonthBirthday = lastMonthBirthday
         }else{
-          notification.lastMonthBirthdayCount = ""
-          notification.lastMonthBirthday = []
+          notification.lastMonthBirthdayCount = 0
+          notification.lastMonthBirthday = false
         }
 
-
-        // let chat_count = text_chat.filter((item)=> item.isSeen == 'false').length;
-        // let todayBirthday_count = todayBirthday.filter((item)=> item.isSeen == 'false').length;
-        // let tomorrowBirthday_count = tomorrowBirthday.filter((item)=> item.isSeen == 'false').length;
-        // let todayTask_count = todayTask.filter((item)=> item.isSeen == false).length;
-
-
-        // notification.count = (chat_count + todayBirthday_count + tomorrowBirthday_count + todayTask_count)
-        // notification.tasks = todayTask
-        // notification.chat = text_chat
-        // notification.todayBirthday = todayBirthday
-        // notification.tomorrowBirthday = tomorrowBirthday
+        notification.count = eval(notification.lastMonthBirthdayCount + notification.thisMonthBirthdayCount + notification.thisWeekBirthdayCount + notification.nextNintyDaysBirthdayCount + notification.nextSixtyDaysBirthdayCount + notification.chatCount + notification.todayTaskCount)
         io.to(userId).emit('getNotification', notification)
       });
       // in the userObj we need 3 parameter userId for task get and (msg to) for chat 
