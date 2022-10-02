@@ -302,6 +302,27 @@ const userSchema = new schema(
             type: Boolean,
             default: true
         },
+        today_birthday_setting:{
+            type: Boolean,
+            default: true
+        },
+        tomorrow_birthday_setting:{
+            type: Boolean,
+            default: true
+        },
+        thisWeek_birthday_setting:{
+            type: Boolean,
+            default: true
+        },
+        thisMonth_birthday_setting:{
+            type: Boolean,
+            default: true
+        },
+        lastMonth_birthday_setting:{
+            type: Boolean,
+            default: true
+        }
+
     },
     { timestamps: true }
 );

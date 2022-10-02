@@ -46,8 +46,9 @@ class SocketEngine {
       socket.on('push-notification', async (userId) => {
         let notification = {}
         let tomorrow = moment().add(1, 'days');
+        let lastMonth = moment().subtract(1, 'months');
         let currDate = new Date().toISOString().slice(0, 10);
-        let users = await user.findOne({_id: userId},{_id: 1,task_setting: 1,birthday_setting:1,chat_setting:1})
+        let users = await user.findOne({_id: userId},{_id: 1,task_setting: 1,today_birthday_setting:1,tomorrow_birthday_setting:1,thisWeek_birthday_setting:1,thisMonth_birthday_setting:1,lastMonth_birthday_setting:1,chat_setting:1})
       
         if(users.task_setting){
         var todayTask = await tasks.find(
@@ -103,7 +104,7 @@ class SocketEngine {
           notification.chat =  []
         }
 
-        if(users.birthday_setting){
+        if(users.today_birthday_setting){
         let todayBirthday = await member.aggregate([
           {
             $match: {
@@ -128,6 +129,15 @@ class SocketEngine {
           }
         ])
 
+        let todayBirthday_count = todayBirthday.filter((item)=> item.isSeen == 'false').length;
+        notification.todayBirthdayCount = todayBirthday_count
+        notification.todayBirthday = todayBirthday
+        }else{
+        notification.todayBirthdayCount = ""
+        notification.todayBirthday = []
+        }
+
+        if(users.tomorrow_birthday_setting){
         let tomorrowBirthday = await member.aggregate([
           {
             $match: {
@@ -152,19 +162,110 @@ class SocketEngine {
           }
         ])
 
-
-        let todayBirthday_count = todayBirthday.filter((item)=> item.isSeen == 'false').length;
         let tomorrowBirthday_count = tomorrowBirthday.filter((item)=> item.isSeen == 'false').length;
-        notification.todayBirthdayCount = todayBirthday_count
         notification.tomorrowBirthdayCount = tomorrowBirthday_count
-        notification.todayBirthday = todayBirthday
         notification.tomorrowBirthday = tomorrowBirthday
         }else{
-        notification.todayBirthdayCount = ""
         notification.tomorrowBirthdayCount = ""
         notification.todayBirthday = []
-        notification.tomorrowBirthday = []
-      }
+        }
+
+        if(users.thisWeek_birthday_setting){
+          let thisWeekBirthday = await member.aggregate([
+            {
+              $match: {
+                $and: [
+                  { userId: userId },
+                  { 'isRead': false  },
+                  { $expr: { $eq: [{ $week: '$dob' }, { $subtract: [{ $week: "$$NOW" },1]}] } },
+                ]
+              }
+            },
+            {
+              $project: {
+                id: 1,
+                firstName: 1,
+                lastName: 1,
+                age: 1,
+                dob: 1,
+                memberprofileImage: 1,
+                isSeen: 1
+              }
+            }
+          ])
+
+        let thisWeekBirthday_count = thisWeekBirthday.filter((item)=> item.isSeen == 'false').length;
+        notification.thisWeekBirthdayCount = thisWeekBirthday_count
+        notification.thisWeekBirthday = thisWeekBirthday
+        }else{
+          notification.thisWeekBirthdayCount = ""
+          notification.thisWeekBirthday = []
+        }
+
+        if(users.thisMonth_birthday_setting){
+          let thisMonthBirthday = await member.aggregate([
+            {
+              $match: {
+                $and: [
+                  { userId: userId },
+                  { 'isRead': false  },
+                  { $expr: { $eq: [{ $month: '$dob' }, { $month: '$$NOW' }] } }
+                ]
+              }
+            },
+            {
+              $project: {
+                id: 1,
+                firstName: 1,
+                lastName: 1,
+                age: 1,
+                dob: 1,
+                memberprofileImage: 1,
+                isSeen: 1
+              }
+            }
+          ])
+
+        let thisMonthBirthday_count = thisMonthBirthday.filter((item)=> item.isSeen == 'false').length;
+        notification.thisMonthBirthdayCount = thisMonthBirthday_count
+        notification.thisMonthBirthday = thisMonthBirthday
+        }else{
+          notification.thisMonthBirthdayCount = ""
+          notification.thisMonthBirthday = []
+        }
+
+        if(users.lastMonth_birthday_setting){
+          let lastMonthBirthday = await member.aggregate([
+            {
+              $match: {
+                $and: [
+                  { userId: userId },
+                  { 'isRead': false  },
+                  { $expr: { $eq: [{ $month: '$dob' }, { $month: new Date(lastMonth) }] } }
+                ]
+              }
+            },
+            {
+              $project: {
+                id: 1,
+                firstName: 1,
+                lastName: 1,
+                age: 1,
+                dob: 1,
+                memberprofileImage: 1,
+                isSeen: 1
+              }
+            }
+          ])
+
+        let lastMonthBirthday_count = lastMonthBirthday.filter((item)=> item.isSeen == 'false').length;
+        notification.lastMonthBirthdayCount = lastMonthBirthday_count
+        notification.lastMonthBirthday = lastMonthBirthday
+        }else{
+          notification.lastMonthBirthdayCount = ""
+          notification.lastMonthBirthday = []
+        }
+
 
         // let chat_count = text_chat.filter((item)=> item.isSeen == 'false').length;
         // let todayBirthday_count = todayBirthday.filter((item)=> item.isSeen == 'false').length;

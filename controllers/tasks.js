@@ -318,6 +318,64 @@ const { isIsoDate } = require("@hapi/joi/lib/common");
 
 exports.notificationTodayTask = async (req, res) => {
   try {
+
+    // let thisWeekBirthday = await member.aggregate([
+    //   {
+    //     $match: {
+    //       $and: [
+    //         { userId: '606aea95a145ea2d26e0f1aa' },
+    //         { 'isRead': false  },
+    //         { $expr: { $eq: [{ $week: '$dob' }, { $subtract: [{ $week: "$$NOW" },1]}] } },
+    //       ]
+    //     }
+    //   },
+    //   {
+    //     $project: {
+    //       id: 1,
+    //       firstName: 1,
+    //       lastName: 1,
+    //       age: 1,
+    //       dob: 1,
+    //       memberprofileImage: 1,
+    //       // week:{ $week: '$dob' },
+    //       // nowWeek:{ $subtract: [{ $week: "$$NOW" },1]},
+    //       isSeen: 1
+    //     }
+    //   }
+    // ])
+    const d = new Date('2019-01-24T05:03:30.000Z');
+    console.log(d,'date')
+
+   
+    // let today = moment('2022-01-24T00:00:00+05:30').startOf('day');
+    // console.log(today,'today',tomorrowMonth)
+
+    // let lastMonth = moment().subtract(1, 'months');
+    // let lastMonthBirthday = await member.aggregate([
+    //   {
+    //     $match: {
+    //       $and: [
+    //         { userId: '606aea95a145ea2d26e0f1aa' },
+    //         { 'isRead': false  },
+    //         { $expr: { $eq: [{ $month: '$dob' }, { $month: new Date(tomorrowMonth) }] } }
+    //       ]
+    //     }
+    //   },
+    //   {
+    //     $project: {
+    //       id: 1,
+    //       firstName: 1,
+    //       lastName: 1,
+    //       age: 1,
+    //       dob: 1,
+    //       memberprofileImage: 1,
+    //       // month:{ $month: '$dob' },
+    //       // nowMonth:{$subtract:[{$month:  new Date('2019-01-24T05:03:30.000Z')},1]},
+    //       // nowWeek:{ $subtract: [{ $week: "$$NOW" },1]},
+    //       isSeen: 1
+    //     }
+    //   }
+    // ])
   //   let today = moment().startOf('day');
   // // "2018-12-05T00:00:00.00
     
@@ -328,13 +386,13 @@ exports.notificationTodayTask = async (req, res) => {
     // console.log(currDate, typeof currDate);
     let rest
 
-    let users = await user.findOne({_id: "6138893333c9482cb41d88d5"},{_id: 1,task_setting: 1,birthday_setting:1,chat_setting:1})
-    let notification ={}
-    if(users.task_setting){
-      notification.task = [users]
-    }else{
-      notification.task = []
-    }
+    // let users = await user.findOne({_id: "6138893333c9482cb41d88d5"},{_id: 1,task_setting: 1,birthday_setting:1,chat_setting:1})
+    // let notification ={}
+    // if(users.task_setting){
+    //   notification.task = [users]
+    // }else{
+    //   notification.task = []
+    // }
     
   // const tomorrow  = new Date(); // The Date object returns today's timestamp
   // tomorrow.setDate(tomorrow.getDate() + 1);
@@ -391,7 +449,7 @@ exports.notificationTodayTask = async (req, res) => {
    
   //  let count  =  text_chat.filter((item)=> item.isSeen == 'false').length;
 
-    res.send({ success: true, data: notification });
+    res.send({ success: true, data: thisMonthBirthday });
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
@@ -467,7 +525,12 @@ exports.notificationOnOFF = async (req, res) => {
   try{
     let task_setting = req.query.taskSetting
     let chat_setting = req.query.chatSetting
-    let birthday_setting = req.query.birthdaySetting
+    let today_birthday_setting = req.query.todayBirthdaySetting
+    let tomorrow_birthday_setting = req.query.tomorrowBirthdaySetting
+    let thisWeek_birthday_setting = req.query.thisWeekBirthdaySetting
+    let thisMonth_birthday_setting = req.query.thisMonthBirthdaySetting
+    let lastMonth_birthday_setting = req.query.lastMonthBirthdaySetting
+    
     let query = {}
     if(task_setting != undefined){
       query.task_setting = task_setting
@@ -475,9 +538,22 @@ exports.notificationOnOFF = async (req, res) => {
     else if(chat_setting != undefined){
       query.chat_setting = chat_setting
     }
-    else if(birthday_setting != undefined){
-      query.birthday_setting = birthday_setting
+    else if(today_birthday_setting != undefined){
+      query.today_birthday_setting = today_birthday_setting
     }
+    else if(tomorrow_birthday_setting != undefined){
+      query.tomorrow_birthday_setting = tomorrow_birthday_setting
+    }
+    else if(thisWeek_birthday_setting != undefined){
+      query.thisWeek_birthday_setting = thisWeek_birthday_setting
+    }
+    else if(thisMonth_birthday_setting != undefined){
+      query.thisMonth_birthday_setting = thisMonth_birthday_setting
+    }
+    else if(lastMonth_birthday_setting != undefined){
+      query.lastMonth_birthday_setting = lastMonth_birthday_setting
+    }
+
     let userId =  req.params.userId
     const id = mongoose.Types.ObjectId(userId);
     console.log(query,id)
