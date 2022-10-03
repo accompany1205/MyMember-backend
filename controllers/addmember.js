@@ -1272,17 +1272,88 @@ exports.trial_this_month = (req, res) => {
 exports.filterLeads = async (req, res) => {
   const leadFilter = req.body.leadFilter;
   const userId = req.params.userId;
+  const month=parseInt(req.query.month);
+  const year=parseInt(req.query.year);
+  console.log(typeof(month))
   try {
-    const data = await addmemberModal.aggregate([
-      {
-        $match: {
-          $and: [
-            {userId:userId}, {leadsTracking:{$in:leadFilter}}
-          ]
+    if(month){
+      const data = await addmemberModal.aggregate([
+        {
+          $match: {
+            $and: [
+              {userId:userId}, {leadsTracking:{$in:leadFilter}}
+            ]
+          }
+        },
+        {
+          $project:{
+            month: { $month: '$createdAt' },
+            firstName:1,
+            lastName:1,
+            studentType:1,
+            leadsTracking:1,
+            age:1,
+            dob:1,
+            gender:1,
+            street:1,
+            zipPostalCode:1,
+            email:1,
+            state:1,
+            primaryPhone:1,
+            secondaryNumber:1,
+            state:1,
+            country:1,
+            city:1,            
+          }
+        },
+        {
+          $match:{
+            month:month
+          }
         }
-      }
-    ]);
-    res.send({data:data, success:true})
+      ]);
+      res.send({data:data, success:true})
+    }else if(year){
+      const data = await addmemberModal.aggregate([
+        {
+          $match: {
+            $and: [
+              {userId:userId}, {leadsTracking:{$in:leadFilter}}
+            ]
+          }
+        },
+        {
+          $project:{
+            year: { $year: '$createdAt' },
+            firstName:1,
+            lastName:1,
+            studentType:1,
+            leadsTracking:1,
+            age:1,
+            dob:1,
+            gender:1,
+            street:1,
+            zipPostalCode:1,
+            email:1,
+            state:1,
+            primaryPhone:1,
+            secondaryNumber:1,
+            state:1,
+            country:1,
+            city:1, 
+            createdAt:1,
+            updatedAt:1           
+          }
+        },
+        {
+          $match:{
+            year:year
+          }
+        }
+      ]);
+      res.send({data:data, success:true})
+    }
+    
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }
