@@ -52,7 +52,9 @@ const { addmember,
     mergeMultipleDoc,
     multipleFilter,
     test,
-    StatisticsCount
+    StatisticsCount,
+    leadUpdate,
+    filterLeads
 
 } = require("../controllers/addmember")
 
@@ -69,7 +71,9 @@ router.post('/bluck_student_add/:userId', bluckStd)
 router.get('/memeber/std_count/:userId', verifySchool, std_count)
 
 router.post("/student/mergeDocs/:userId/:studentId", requireSignin, mergedDocForTest);
+router.put("/student/leadUpdate/:userId/:studentId", requireSignin, leadUpdate);
 router.post("/student/mergeDocs/:userId", requireSignin, mergeMultipleDoc);
+router.post("/students/leads/:userId", requireSignin, filterLeads);
 
 
 //dashboard routes

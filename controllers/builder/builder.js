@@ -2,30 +2,89 @@ const Form = require("../../models/builder/Form.js")
 const addmember = require("../../models/addmember.js")
 const mongoose = require("mongoose")
 
-const stripe = require('stripe')('sk_test_v9')
+//const stripe = require('stripe')('sk_test_v9')
+const config = require('../../config/stripe');
+const stripe = require('stripe')(config.secretKey);
+const httpBuildQuery = require('http-build-query');
 
+const getToken = async (code) => {
+    let token = {};
+    try {
+        token = await stripe.oauth.token({ grant_type: 'authorization_code', code });
+    } catch (error) {
+        token.error = error.message;
+    }
+    return token;
+}
+    
+const getAccount = async (connectedAccountId) => {
+    let account = {};
+    try {
+        account = await stripe.account.retrieve(connectedAccountId);
+    } catch (error) {
+        account.error = error.message;
+    }
+    return account;
+}
 
 exports.processStripeConnect = async (req,res) => {
-    const accountLink = await stripe.accountLinks.create({
-    	account: 'acct_103',
-    	refresh_url: 'https://example.com/reauth',
-    	return_url: 'https://example.com/return',
-    	type: 'account_onboarding'
-    })
 
+    
+
+    const account = await stripe.accounts.create({type: 'standard'});
+    
+    /*
     const result = await stripe.oauth.token({
         grant_type: 'authorization_code',
-        code: req.body.code
+        code: req.query.code
     })
     .catch((err) => {
          
     })
+    const account = await stripe.accounts?.retrieve(result?.stripe_user_id)
+    ?.catch((err)=>{
+        throw error(400, `${err?.message}`)
+    })
+    */
+    let return_url = `${process.env.BASE_URL}/`
+    let refresh_url = `${process.env.BASE_URL}/`
 
-    const account = await stripe.accounts
-                                ?.retrieve(result?.stripe_user_id)
-                                ?.catch((err)=>{
-                                    throw error(400, `${err?.message}`)
-                                })
+    const accountLink = await stripe.accountLinks.create({
+    	account: account.id,
+    	refresh_url: refresh_url,
+    	return_url: return_url,
+    	type: 'account_onboarding'
+    })
+
+    let url = accountLink.url
+                         
+}
+
+exports.getIntentClientSecret = async(req,res) => {
+
+    try{
+
+        let amount = 0
+        let currency = 'eur'
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount: amount,
+            currency: currency,
+            automatic_payment_methods: {
+              enabled: true,
+            },
+            application_fee_amount: 123,
+          }, {
+            stripeAccount: '{{CONNECTED_ACCOUNT_ID}}',
+        });
+
+        res.status(200).json({client_secret: paymentIntent.client_secret, success: true});
+
+    }catch(error){
+        console.log("Error:",error)
+        res.status(500).json({
+            success: false
+        })
+    }
 
 }
 
@@ -36,9 +95,9 @@ exports.createForm = async (req,res) => {
         let title = "Form Title"
 		let created_by = new mongoose.Types.ObjectId
 
-        let form = new Form;
-        form.title = title;
-        form.formBody = formBody,
+        let form = new Form
+        form.title = title
+        form.formBody = formBody
         form.created_by = created_by
         form.formData = JSON.stringify({
                          "gjs-css":"",

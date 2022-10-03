@@ -15,6 +15,9 @@ const addmemberSchema = new schema(
       type: String,
       index: true
     },
+    leadStatus: {
+      type:String
+    },
     status: {
       type: String,
       default: "Inactive",
@@ -303,7 +306,7 @@ const addmemberSchema = new schema(
     },
     isSeen:{
       type: String,
-      default:null,
+      default:false,
       index: true
     },
     isRead:{

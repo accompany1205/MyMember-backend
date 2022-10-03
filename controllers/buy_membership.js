@@ -517,6 +517,7 @@ async function unFreezeMembership(membershipId, payload) {
       });
   });
 }
+
 function lastestMembership(membershipID, status, expiry_date) {
   return new Promise((resolve, reject) => {
     AddMember.aggregate([

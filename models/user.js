@@ -289,7 +289,19 @@ const userSchema = new schema(
         },
         stripe_name:{
             type:String
-        }
+        },
+        task_setting: {
+            type: Boolean,
+            default: true
+        },
+        chat_setting: {
+            type: Boolean,
+            default: true
+        },
+        birthday_setting: {
+            type: Boolean,
+            default: true
+        },
     },
     { timestamps: true }
 );
