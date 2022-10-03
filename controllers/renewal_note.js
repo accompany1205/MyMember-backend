@@ -815,11 +815,19 @@ exports.all_data_std = async (req, res) => {
   } else if (req.params.multiple_data === "frozenmembership") {
     let data = await expireFreezeData(userId, per_page, page_no, studentType, 30, 0, "Freeze")
     let finalData = data[0].paginatedResults;
-    return res.send({
-      data: finalData,
-      totalCount: data[0].totalCount[0].count,
-      success: true,
-    });
+    if(finalData.length>0){
+      return res.send({
+        data: finalData,
+        totalCount: data[0].totalCount[0].count,
+        success: true,
+      });
+    }else{
+      return res.send({
+        data: finalData,
+        success: true,
+      });
+    }
+    
     // try {
     //   let userId = req.params.userId;
     //   var per_page = parseInt(req.params.per_page) || 5;
