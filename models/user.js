@@ -321,6 +321,53 @@ const userSchema = new schema(
         lastMonth_birthday_setting:{
             type: Boolean,
             default: true
+        },
+        nextSixtyDays_birthday_setting:{
+            type: Boolean,
+            default: true
+        },
+        nextNintyDays_birthday_setting:{
+            type: Boolean,
+            default: true
+        },
+        event_notification_setting:{
+            type: Boolean,
+            default: true
+        },
+        seven_to_fourteen_setting:{
+            type: Boolean,
+            default: true
+        },
+        fifteen_to_thirty_setting:{
+            type: Boolean,
+            default: true
+        },
+        thirtyone_to_sixty_setting:{
+            type: Boolean,
+            default: true
+        },
+        sixtyone_plus_setting:{
+            type: Boolean,
+            default: true
+        },
+        expire_notification_setting:{
+            type: Boolean,
+            default: true
+        },
+        thirtydays_expire_notification_setting:{
+            type: Boolean,
+            default: true
+        },
+        sixtydays_expire_notification_setting:{
+            type: Boolean,
+            default: true
+        },
+        nintydays_expire_notification_setting:{
+            type: Boolean,
+            default: true
+        },
+        frozen_notification_setting:{
+
         }
 
     },

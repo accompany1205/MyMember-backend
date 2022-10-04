@@ -526,11 +526,21 @@ exports.notificationOnOFF = async (req, res) => {
   try{
     let task_setting = req.query.taskSetting
     let chat_setting = req.query.chatSetting
-    let sixtyDays_birthday_setting = req.query.sixtyDaysBirthdaySetting
-    let nintyDays_birthday_setting = req.query.nintyDaysBirthdaySetting
+    let nextSixtyDays_birthday_setting = req.query.sixtyDaysBirthdaySetting
+    let nextNintyDays_birthday_setting = req.query.nintyDaysBirthdaySetting
     let thisWeek_birthday_setting = req.query.thisWeekBirthdaySetting
     let thisMonth_birthday_setting = req.query.thisMonthBirthdaySetting
     let lastMonth_birthday_setting = req.query.lastMonthBirthdaySetting
+    let event_notification_setting = req.query.eventNotificationSetting
+    let seven_to_fourteen_setting = req.query.sevenToFourteenSetting
+    let fifteen_to_thirty_setting = req.query.fifteenToThirtySetting
+    let thirtyone_to_sixty_setting = req.query.thirtyoneToSixtySetting
+    let sixtyone_plus_setting = req.query.sixtyonePlusSetting
+    let expire_notification_setting = req.query.expireNotificationSetting
+    let thirtydays_expire_notification_setting = req.query.thirtyDaysExpireNotificationSetting
+    let sixtydays_expire_notification_setting = req.query.sixtyDaysExpireNotificationSetting
+    let nintydays_expire_notification_setting = req.query.nintyDaysExpire_notification_setting
+    let frozen_notification_setting = req.query.frozenNotificationSetting
     
     let query = {}
     if(task_setting != undefined){
@@ -539,11 +549,11 @@ exports.notificationOnOFF = async (req, res) => {
     else if(chat_setting != undefined){
       query.chat_setting = chat_setting
     }
-    else if(sixtyDays_birthday_setting != undefined){
-      query.sixtyDays_birthday_setting = sixtyDays_birthday_setting
+    else if(nextSixtyDays_birthday_setting != undefined){
+      query.nextSixtyDays_birthday_setting = nextSixtyDays_birthday_setting
     }
-    else if(nintyDays_birthday_setting != undefined){
-      query.nintyDays_birthday_setting = nintyDays_birthday_setting
+    else if(nextNintyDays_birthday_setting != undefined){
+      query.nextNintyDays_birthday_setting = nextNintyDays_birthday_setting
     }
     else if(thisWeek_birthday_setting != undefined){
       query.thisWeek_birthday_setting = thisWeek_birthday_setting
@@ -554,11 +564,42 @@ exports.notificationOnOFF = async (req, res) => {
     else if(lastMonth_birthday_setting != undefined){
       query.lastMonth_birthday_setting = lastMonth_birthday_setting
     }
+    else if(event_notification_setting != undefined){
+      query.event_notification_setting = Boolean(event_notification_setting)
+    }
+    else if(seven_to_fourteen_setting != undefined){
+      query.seven_to_fourteen_setting = Boolean(seven_to_fourteen_setting)
+    }
+    else if(fifteen_to_thirty_setting != undefined){
+      query.fifteen_to_thirty_setting = Boolean(fifteen_to_thirty_setting)
+    }
+    else if(thirtyone_to_sixty_setting != undefined){
+      query.thirtyone_to_sixty_setting = Boolean(thirtyone_to_sixty_setting)
+    } 
+    else if(sixtyone_plus_setting != undefined){
+      query.sixtyone_plus_setting = Boolean(sixtyone_plus_setting)
+    } 
+    else if(expire_notification_setting != undefined){
+      query.expire_notification_setting = Boolean(expire_notification_setting)
+    } 
+    else if(thirtydays_expire_notification_setting != undefined){
+      query.thirtydays_expire_notification_setting = Boolean(thirtydays_expire_notification_setting)
+    } 
+    else if(sixtydays_expire_notification_setting != undefined){
+      query.sixtydays_expire_notification_setting = Boolean(sixtydays_expire_notification_setting)
+    } 
+    else if(nintydays_expire_notification_setting != undefined){
+      query.nintydays_expire_notification_setting = Boolean(nintydays_expire_notification_setting)
+    } 
+    else if(frozen_notification_setting != undefined){
+      query.frozen_notification_setting = Boolean(frozen_notification_setting)
+    } 
 
     let userId =  req.params.userId
     const id = mongoose.Types.ObjectId(userId);
     console.log(query,id)
-    await user.updateOne({_id:id},{$set:query})
+    let userNotificationUpdate = await user.updateOne({_id:id},{$set:query})
+    console.log(userNotificationUpdate)
     res.send({ success: true, msg: "notification setting update successfully" });
   }catch(err){
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
