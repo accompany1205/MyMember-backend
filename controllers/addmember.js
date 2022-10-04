@@ -1274,7 +1274,6 @@ exports.filterLeads = async (req, res) => {
   const userId = req.params.userId;
   const month=parseInt(req.query.month);
   const year=parseInt(req.query.year);
-  console.log(typeof(month))
   try {
     if(month && year){
       const data = await addmemberModal.aggregate([
