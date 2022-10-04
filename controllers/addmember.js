@@ -1276,7 +1276,7 @@ exports.filterLeads = async (req, res) => {
   const year=parseInt(req.query.year);
   console.log(typeof(month))
   try {
-    if(month){
+    if(month && year){
       const data = await addmemberModal.aggregate([
         {
           $match: {
@@ -1287,6 +1287,7 @@ exports.filterLeads = async (req, res) => {
         },
         {
           $project:{
+            year: { $year: '$createdAt' },
             month: { $month: '$createdAt' },
             firstName:1,
             lastName:1,
@@ -1303,12 +1304,15 @@ exports.filterLeads = async (req, res) => {
             secondaryNumber:1,
             state:1,
             country:1,
-            city:1,            
+            city:1, 
+            createdAt:1,
+            updatedAt:1           
           }
         },
         {
           $match:{
-            month:month
+            $and:[{year:year},{month:month}]
+            
           }
         }
       ]);
@@ -1352,8 +1356,46 @@ exports.filterLeads = async (req, res) => {
         }
       ]);
       res.send({data:data, success:true})
-    }
-    
+    }else if(month){
+      const data = await addmemberModal.aggregate([
+        {
+          $match: {
+            $and: [
+              {userId:userId}, {leadsTracking:{$in:leadFilter}}
+            ]
+          }
+        },
+        {
+          $project:{
+            month: { $month: '$createdAt' },
+            firstName:1,
+            lastName:1,
+            studentType:1,
+            leadsTracking:1,
+            age:1,
+            dob:1,
+            gender:1,
+            street:1,
+            zipPostalCode:1,
+            email:1,
+            state:1,
+            primaryPhone:1,
+            secondaryNumber:1,
+            state:1,
+            country:1,
+            city:1, 
+            createdAt:1,
+            updatedAt:1           
+          }
+        },
+        {
+          $match:{
+            month:month
+          }
+        }
+      ]);
+      res.send({data:data, success:true})     
+    }    
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }
