@@ -51,7 +51,7 @@ class SocketEngine {
         let nextSixtyDays = moment().add(2, 'months');
         let nextNintyDays = moment().add(3, 'months');
         let currDate = new Date().toISOString().slice(0, 10);
-        let users = await User.findOne({_id: userId},{_id: 1,task_setting: 1,thisWeek_birthday_setting:1,thisMonth_birthday_setting:1,lastMonth_birthday_setting:1,nextSixtyDays_birthday_setting,nextNintyDays_birthday_setting,chat_setting:1,event_notification_setting:1})
+        let users = await User.findOne({_id: userId},{_id: 1,task_setting: 1,thisWeek_birthday_setting:1,thisMonth_birthday_setting:1,lastMonth_birthday_setting:1,nextSixtyDays_birthday_setting:1,nextNintyDays_birthday_setting,chat_setting:1,event_notification_setting:1})
       
         if(users.task_setting){
         var todayTask = await tasks.find(
