@@ -2,6 +2,7 @@ const textMessage = require('../models/text_message');
 const member = require('../models/addmember');
 const User = require('../models/user');
 const tasks = require('../models/task')
+const event = require("../models/appointment")
 const location = require('../models/admin/settings/location');
 const jwt = require('jsonwebtoken');
 const ChatUser = require('../models/chat_user');
@@ -50,7 +51,7 @@ class SocketEngine {
         let nextSixtyDays = moment().add(2, 'months');
         let nextNintyDays = moment().add(3, 'months');
         let currDate = new Date().toISOString().slice(0, 10);
-        let users = await user.findOne({_id: userId},{_id: 1,task_setting: 1,thisWeek_birthday_setting:1,thisMonth_birthday_setting:1,lastMonth_birthday_setting:1,nextSixtyDays_birthday_setting,nextNintyDays_birthday_setting,chat_setting:1})
+        let users = await user.findOne({_id: userId},{_id: 1,task_setting: 1,thisWeek_birthday_setting:1,thisMonth_birthday_setting:1,lastMonth_birthday_setting:1,nextSixtyDays_birthday_setting,nextNintyDays_birthday_setting,chat_setting:1,event_notification_setting:1})
       
         if(users.task_setting){
         var todayTask = await tasks.find(
@@ -69,6 +70,25 @@ class SocketEngine {
           notification.todayTaskCount =  0
           notification.tasks = false
         }
+
+        if(users.event_notification_setting){
+          var todayEvent = await event.find(
+            {
+              userId: userId,
+              start: currDate,
+              $or: [{ 'isRead': null }, { 'isRead': false }]
+            },
+            {
+               id: 1, title: 1, start: 1, notes: 1, isSeen: 1 }
+          );
+            
+          var todayEvent_count = todayEvent.filter((item)=> item.isSeen == false).length;
+          notification.todayEventCount =  todayEvent_count
+          notification.event = todayEvent
+          }else{
+            notification.todayEventCount =  0
+            notification.event = false
+          }
         
         if(users.chat_setting){
         let text_chat = await textMessage.aggregate([
@@ -266,7 +286,7 @@ class SocketEngine {
           notification.lastMonthBirthday = false
         }
 
-        notification.count = eval(notification.lastMonthBirthdayCount + notification.thisMonthBirthdayCount + notification.thisWeekBirthdayCount + notification.nextNintyDaysBirthdayCount + notification.nextSixtyDaysBirthdayCount + notification.chatCount + notification.todayTaskCount)
+        notification.count = eval(notification.lastMonthBirthdayCount + notification.thisMonthBirthdayCount + notification.thisWeekBirthdayCount + notification.nextNintyDaysBirthdayCount + notification.nextSixtyDaysBirthdayCount + notification.chatCount + notification.todayTaskCount +  notification.todayEventCount)
         io.to(userId).emit('getNotification', notification)
       });
       // in the userObj we need 3 parameter userId for task get and (msg to) for chat 

@@ -114,7 +114,17 @@ const appointSchema = new schema(
         },
         totalIncome : {
             type:String
-        }
+        },
+        isSeen:{
+			type: Boolean,
+			default: false,
+			index: true
+		},
+		isRead:{
+			type: Boolean,
+			default: false,
+			index: true
+		} 
     },
     { timestamps: true }
 );
