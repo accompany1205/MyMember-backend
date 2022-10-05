@@ -6,6 +6,7 @@ const cloudUrl = require("../gcloud/imageUrl");
 const textMessage = require('../models/text_message');
 const member =  require("../models/addmember")
 const mongoose = require('mongoose');
+const event = require("../models/appointment")
 
 exports.Create = async (req, res) => {
   const Task = req.body;
@@ -315,9 +316,19 @@ exports.taskFilter = async (req, res) => {
 };
 let moment = require("moment");
 const { isIsoDate } = require("@hapi/joi/lib/common");
-
 exports.notificationTodayTask = async (req, res) => {
   try {
+
+    // let currDate = new Date().toISOString().slice(0, 10);
+    // console.log(currDate)
+    // var todayEvent = await event.find(
+    //   {
+    //     userId: "606aea95a145ea2d26e0f1ab",
+    //     start: currDate,
+    //     $or: [{ 'isRead': null }, { 'isRead': false }]
+    //   },
+    //   { id: 1, title: 1, start: 1, notes: 1, isSeen: 1 }
+    // );
 
     // let thisWeekBirthday = await member.aggregate([
     //   {
@@ -350,33 +361,33 @@ exports.notificationTodayTask = async (req, res) => {
     // let today = moment('2022-01-24T00:00:00+05:30').startOf('day');
     // console.log(today,'today',tomorrowMonth)
 
-    let next2Month = moment().add(2, 'months');
-    console.log(next2Month)
-    let nextSixtyDays = await member.aggregate([
-      {
-        $match: {
-          $and: [
-            { userId: '606aea95a145ea2d26e0f1aa' },
-            { 'isRead': false  },
-            { $expr: { $eq: [{ $month: '$dob' }, { $month: new Date(next2Month) }] } }
-          ]
-        }
-      },
-      {
-        $project: {
-          id: 1,
-          firstName: 1,
-          lastName: 1,
-          age: 1,
-          dob: 1,
-          memberprofileImage: 1,
-          // month:{ $month: '$dob' },
-          // nowMonth:{$subtract:[{$month:  new Date('2019-01-24T05:03:30.000Z')},1]},
-          // nowWeek:{ $subtract: [{ $week: "$$NOW" },1]},
-          isSeen: 1
-        }
-      }
-    ])
+    // let next2Month = moment().add(2, 'months');
+    // console.log(next2Month)
+    // let nextSixtyDays = await member.aggregate([
+    //   {
+    //     $match: {
+    //       $and: [
+    //         { userId: '606aea95a145ea2d26e0f1aa' },
+    //         { 'isRead': false  },
+    //         { $expr: { $eq: [{ $month: '$dob' }, { $month: new Date(next2Month) }] } }
+    //       ]
+    //     }
+    //   },
+    //   {
+    //     $project: {
+    //       id: 1,
+    //       firstName: 1,
+    //       lastName: 1,
+    //       age: 1,
+    //       dob: 1,
+    //       memberprofileImage: 1,
+    //       // month:{ $month: '$dob' },
+    //       // nowMonth:{$subtract:[{$month:  new Date('2019-01-24T05:03:30.000Z')},1]},
+    //       // nowWeek:{ $subtract: [{ $week: "$$NOW" },1]},
+    //       isSeen: 1
+    //     }
+    //   }
+    // ])
   //   let today = moment().startOf('day');
   // // "2018-12-05T00:00:00.00
     
@@ -385,7 +396,7 @@ exports.notificationTodayTask = async (req, res) => {
   // ("2018-12-05T23:59:59.999
     // let currDate = new Date().toISOString().slice(0, 10);
     // console.log(currDate, typeof currDate);
-    let rest
+    // let rest
 
     // let users = await user.findOne({_id: "6138893333c9482cb41d88d5"},{_id: 1,task_setting: 1,birthday_setting:1,chat_setting:1})
     // let notification ={}
@@ -450,7 +461,7 @@ exports.notificationTodayTask = async (req, res) => {
    
   //  let count  =  text_chat.filter((item)=> item.isSeen == 'false').length;
 
-    res.send({ success: true, data: nextSixtyDays });
+    res.send({ success: true, data: todayEvent });
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
@@ -461,6 +472,7 @@ exports.seenTasks = async (req, res) => {
     const taskId = req.body.taskId;
     const textId = req.body.chatId;
     const memberId = req.body.memberId
+    const eventId = req.body.eventId
     
        if(taskId != undefined || taskId.length > 0){
         const seenTasks = await tasks.updateOne(
@@ -468,6 +480,12 @@ exports.seenTasks = async (req, res) => {
           { $set: { isSeen: true } }
         );
         }
+        if(eventId != undefined || eventId.length > 0){
+          const seenEvents = await event.updateOne(
+            { _id: { $in: eventId }  },
+            { $set: { isSeen: true } }
+          );
+          }
         if(memberId != undefined || memberId.length > 0){
         const seenMember = await member.updateOne(
           { _id: { $in: memberId }},
@@ -493,13 +511,19 @@ exports.seenRead = async (req, res) => {
     const taskId = req.body.taskId;
     const textId = req.body.chatId;
     const memberId = req.body.memberId
-   
-    
+    const eventId = req.body.eventId
+       
        if(taskId != undefined || taskId.length > 0){
         const seenTasks = await tasks.updateOne(
           { _id: { $in: taskId }  },
           { $set: { isRead: true,isSeen: false } }
         );
+        }
+        if(eventId != undefined || eventId.length > 0){
+          const seenEvents = await event.updateOne(
+            { _id: { $in: eventId }  },
+            { $set: { isRead: true,isSeen: false } }
+          );
         }
         if(memberId != undefined || memberId.length > 0){
         const seenMember = await member.updateOne(
