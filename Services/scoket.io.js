@@ -68,7 +68,7 @@ class SocketEngine {
         notification.tasks = todayTask
         }else{
           notification.todayTaskCount =  0
-          notification.tasks = false
+          notification.tasks = []
         }
 
         if(users.event_notification_setting){
@@ -87,7 +87,7 @@ class SocketEngine {
           notification.event = todayEvent
           }else{
             notification.todayEventCount =  0
-            notification.event = false
+            notification.event = []
           }
         
         if(users.chat_setting){
@@ -123,7 +123,7 @@ class SocketEngine {
           notification.chat =  text_chat
         }else{
           notification.chatCount = 0
-          notification.chat =  false
+          notification.chat =  []
         }
 
         if(users.nextSixtyDays_birthday_setting){
@@ -155,7 +155,7 @@ class SocketEngine {
         notification.nextSixtyDaysBirthda = nextSixtyDaysBirthday
         }else{
         notification.nextSixtyDaysBirthdayCount = 0
-        notification.nextSixtyDaysBirthda = false
+        notification.nextSixtyDaysBirthda = []
         }
 
         if(users.nextNintyDays_birthday_setting){
@@ -187,7 +187,7 @@ class SocketEngine {
         notification.nextNintyDaysBirthday = nextNintyDaysBirthday
         }else{
         notification.nextNintyDaysBirthdayCount = 0
-        notification.nextNintyDaysBirthday = false
+        notification.nextNintyDaysBirthday = []
         }
 
         if(users.thisWeek_birthday_setting){
@@ -219,7 +219,7 @@ class SocketEngine {
         notification.thisWeekBirthday = thisWeekBirthday
         }else{
           notification.thisWeekBirthdayCount = 0
-          notification.thisWeekBirthday = false
+          notification.thisWeekBirthday = []
         }
 
         if(users.thisMonth_birthday_setting){
@@ -251,7 +251,7 @@ class SocketEngine {
         notification.thisMonthBirthday = thisMonthBirthday
         }else{
           notification.thisMonthBirthdayCount = 0
-          notification.thisMonthBirthday = false
+          notification.thisMonthBirthday = []
         }
 
         if(users.lastMonth_birthday_setting){
@@ -283,7 +283,7 @@ class SocketEngine {
         notification.lastMonthBirthday = lastMonthBirthday
         }else{
           notification.lastMonthBirthdayCount = 0
-          notification.lastMonthBirthday = false
+          notification.lastMonthBirthday = []
         }
 
         notification.count = eval(notification.lastMonthBirthdayCount + notification.thisMonthBirthdayCount + notification.thisWeekBirthdayCount + notification.nextNintyDaysBirthdayCount + notification.nextSixtyDaysBirthdayCount + notification.chatCount + notification.todayTaskCount +  notification.todayEventCount)
