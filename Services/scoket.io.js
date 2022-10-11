@@ -187,7 +187,7 @@ class SocketEngine {
               }
             }
           ])
-          console.log("next ninty",nextNintyDaysBirthday)
+          console.log("next ninty", nextNintyDaysBirthday)
 
           let nextNintyDaysBirthday_count = nextNintyDaysBirthday.filter((item) => item.isSeen == 'false').length;
           notification.nextNintyDaysBirthdayCount = nextNintyDaysBirthday_count
@@ -204,23 +204,82 @@ class SocketEngine {
                 $and: [
                   { userId: userId },
                   { 'isRead': false },
-                  { $expr: { $eq: [{ $week: '$dob' }, { $subtract: [{ $week: "$$NOW" }, 1] }] } },
                 ]
               }
             },
             {
               $project: {
-                id: 1,
+                _id: 1,
+                afterSevenDays: {
+                  $toDate: {
+                    $dateToString: {
+                      format: "%Y-%m-%d", date: {
+                        $dateAdd:
+                        {
+                          startDate: "$$NOW",
+                          unit: "day",
+                          amount: 7
+                        }
+                      }
+                    }
+                  }
+                },
+                firstName: 1,
+                lastName: 1,
+                age: 1,
+                dob: { $toDate: "$dob" },
+                memberprofileImage: 1,
+                isSeen: 1
+              }
+            },
+            {
+              $match: { dob: { $ne: null } }
+            },
+            {
+              $project: {
+                _id: 1,
+                afterSevenDays: 1,
                 firstName: 1,
                 lastName: 1,
                 age: 1,
                 dob: 1,
                 memberprofileImage: 1,
-                isSeen: 1
+                isSeen: 1,
+                dobMonth: { $month: "$dob" },
+                sevenDaysMonth: { $month: "$afterSevenDays" },
+                daydob: { $dayOfMonth: "$dob" },
+                dayAfterSeven: { $dayOfMonth: "$afterSevenDays" }
+              }
+            },
+            {
+              $match: { $expr: { $eq: ["$dobMonth", "$sevenDaysMonth"] } }
+            },
+            {
+              $project: {
+                _id: 1,
+                afterSevenDays: 1,
+                firstName: 1,
+                lastName: 1,
+                age: 1,
+                dob: 1,
+                memberprofileImage: 1,
+                isSeen: 1,
+                dobMonth: { $month: "$dob" },
+                sevenDaysMonth: { $month: "$afterSevenDays" },
+                daydob: { $dayOfMonth: "$dob" },
+                dayAfterSeven: { $dayOfMonth: "$afterSevenDays" },
+                differencebtwdays: { $subtract: ["$dayAfterSeven", "$daydob"] }
+
+              }
+            },
+            {
+              $match: {
+                $and: [{ differencebtwdays: { $lte: 8 } }, { differencebtwdays: { $gte: 0 } }]
               }
             }
+
           ])
-          console.log("this week",thisWeekBirthday)
+          console.log("this week", thisWeekBirthday)
 
           let thisWeekBirthday_count = thisWeekBirthday.filter((item) => item.isSeen == 'false').length;
           notification.thisWeekBirthdayCount = thisWeekBirthday_count
@@ -253,7 +312,7 @@ class SocketEngine {
               }
             }
           ])
-          console.log("this month ",thisMonthBirthday)
+          console.log("this month ", thisMonthBirthday)
 
           let thisMonthBirthday_count = thisMonthBirthday.filter((item) => item.isSeen == 'false').length;
           notification.thisMonthBirthdayCount = thisMonthBirthday_count
@@ -294,52 +353,52 @@ class SocketEngine {
           notification.lastMonthBirthdayCount = 0
           notification.lastMonthBirthday = []
         }
-        // if (users.thirtydays_expire_notification_setting_renewal) {
-        //     let now = new Date();
-        //     let todaysDate = moment(now).format('YYYY/MM/DD')
-        //     const afterThirty = new Date(now.setDate(now.getDate() + 30));
-        //     const thirtyDaysExpire = moment(afterThirty).format('YYYY/MM/DD');
-        //     let thirty_days_expire = await buymembership.aggregate([
-        //     {
-        //       $match: {
-        //         $and: [
-        //           { userId: userId },
-        //           { "$expiry_date": { "$eq": thirtyDaysExpire } }
-        //         ]
-        //       }
-        //     },
-        //     {
-        //       $project: {
-        //         studentInfo: 1
-        //       }
-        //     },
-        //     { $unwind: "$studentInfo" },
-        //     {
-        //       $lookup:
-        //       {
-        //         from: "member",
-        //         localField: "studentInfo",
-        //         foreignField: "_id",
-        //         as: "members",
-        //         pipeline: [
-        //           {
-        //             $project: {
-        //               _id:1,
-        //               firstName: 1,
-        //               lastName: 1,
-        //               isSeen: 1
-        //             },
-        //           },
-        //         ],
-        //       }
-        //     }
-        //   ])
-        //   console.log("-----",thirty_days_expire)
+        if (users.thirtydays_expire_notification_setting_renewal) {
+            let now = new Date();
+            let todaysDate = moment(now).format('YYYY/MM/DD')
+            const afterThirty = new Date(now.setDate(now.getDate() + 30));
+            const thirtyDaysExpire = moment(afterThirty).format('YYYY/MM/DD');
+            let thirty_days_expire = await buymembership.aggregate([
+            {
+              $match: {
+                $and: [
+                  { userId: userId },
+                  { "$expiry_date": { "$eq": thirtyDaysExpire } }
+                ]
+              }
+            },
+            {
+              $project: {
+                studentInfo: 1
+              }
+            },
+            { $unwind: "$studentInfo" },
+            {
+              $lookup:
+              {
+                from: "member",
+                localField: "studentInfo",
+                foreignField: "_id",
+                as: "members",
+                pipeline: [
+                  {
+                    $project: {
+                      _id:1,
+                      firstName: 1,
+                      lastName: 1,
+                      isSeen: 1
+                    },
+                  },
+                ],
+              }
+            }
+          ])
+          console.log("-----",thirty_days_expire)
 
-        // }else {
-        //   notification.thirtyDaysExpireNotificationSettingRenewalCount = 0
-        //   notification.thirtyDaysExpireNotificationSettingRenewalCount = []
-        // }
+        }else {
+          notification.thirtyDaysExpireNotificationSettingRenewalCount = 0
+          notification.thirtyDaysExpireNotificationSettingRenewalCount = []
+        }
 
         notification.count = eval(notification.lastMonthBirthdayCount + notification.thisMonthBirthdayCount + notification.thisWeekBirthdayCount + notification.nextNintyDaysBirthdayCount + notification.nextSixtyDaysBirthdayCount + notification.chatCount + notification.todayTaskCount + notification.todayEventCount)
         io.to(userId).emit('getNotification', notification)
