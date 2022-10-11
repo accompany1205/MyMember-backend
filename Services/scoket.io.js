@@ -13,7 +13,7 @@ let moment = require("moment");
 class SocketEngine {
   constructor(io) {
     this.sConnection = io;
-    this.init();
+    // this.init();
   }
 
   async init() {
@@ -53,10 +53,10 @@ class SocketEngine {
         let nextNintyDays = moment().add(3, 'months');
         let currDate = new Date().toISOString().slice(0, 10);
         let users = await User.findOne({ _id: userId }, {
-          _id: 1, task_setting: 1, thisWeek_birthday_setting: 1, thisMonth_birthday_setting: 1, lastMonth_birthday_setting: 1, nextSixtyDays_birthday_setting: 1, nextNintyDays_birthday_setting: 1, chat_setting: 1, event_notification_setting: 1,
-          thirtydays_expire_notification_setting_renewal: 1, sixtydays_expire_notification_setting_renewal: 1, nintydays_expire_notification_setting_renewal: 1
+          _id: 1, task_setting: 1, thisWeek_birthday_setting: 1, thisMonth_birthday_setting: 1, lastMonth_birthday_setting: 1, nextSixtyDays_birthday_setting: 1, nextNintyDays_birthday_setting: 1, chat_setting: 1, event_notification_setting: 1, thirtydays_expire_notification_setting_renewal: 1, sixtydays_expire_notification_setting_renewal: 1, nintydays_expire_notification_setting_renewal: 1
         })
-
+        console.log("User--> ", users)
+        console.log(users.task_setting)
         if (users.task_setting) {
           var todayTask = await tasks.find(
             {
@@ -353,33 +353,42 @@ class SocketEngine {
           notification.lastMonthBirthdayCount = 0
           notification.lastMonthBirthday = []
         }
-        if (users.thirtydays_expire_notification_setting_renewal) {
-            let now = new Date();
-            let todaysDate = moment(now).format('YYYY/MM/DD')
-            const afterThirty = new Date(now.setDate(now.getDate() + 30));
-            const thirtyDaysExpire = moment(afterThirty).format('YYYY/MM/DD');
-            let thirty_days_expire = await buymembership.aggregate([
+        console.log(typeof (users["_doc"]["thirtydays_expire_notification_setting_renewal"]))
+        if (users["_doc"]["thirtydays_expire_notification_setting_renewal"]) {
+          let now = new Date();
+          let todaysDate = moment(now).format('YYYY-MM-DD')
+          const afterThirty = new Date(now.setDate(now.getDate() + 30));
+          const thirtyDaysExpire = moment(afterThirty).format('YYYY-MM-DD');
+          console.log(thirtyDaysExpire, "-> ", todaysDate)
+          let thirty_days_expire = await buymembership.aggregate([
             {
               $match: {
                 $and: [
                   { userId: userId },
-                  { "$expiry_date": { "$eq": thirtyDaysExpire } }
+                  { $expr: { $and: [{ $lte: ["$expiry_date", thirtyDaysExpire] }, { $gte: ["$expiry_date", todaysDate] }] } }
                 ]
               }
             },
             {
               $project: {
-                studentInfo: 1
+                studentInfo: 1,
+                membership_name: 1,
+                expiry_date: 1
               }
             },
             { $unwind: "$studentInfo" },
             {
+              $addFields: {
+                studentInfo: { $convert: { input: '$studentInfo', to: 'objectId', onError: '', onNull: '' } }
+              }
+            },
+            {
               $lookup:
               {
-                from: "member",
+                from: "members",
                 localField: "studentInfo",
                 foreignField: "_id",
-                as: "members",
+                as: "memberInfo",
                 pipeline: [
                   {
                     $project: {
@@ -391,13 +400,19 @@ class SocketEngine {
                   },
                 ],
               }
-            }
+            },
+            // {
+            //   $unwind:"$memberInfo"
+            // }
           ])
-          console.log("-----",thirty_days_expire)
+          console.log("thirty_days_expire-->", thirty_days_expire)
+          let thirtyDaysExpireNotificationSettingRenewalCount = thirty_days_expire.filter((item) => item.isSeen == 'false').length;
+          notification.thirtyDaysExpireNotificationSettingRenewalCounts = thirtyDaysExpireNotificationSettingRenewalCount;
+          notification.thirtyDaysExpireNotificationSettingRenewalCount = thirty_days_expire
 
-        }else {
+        } else {
           notification.thirtyDaysExpireNotificationSettingRenewalCount = 0
-          notification.thirtyDaysExpireNotificationSettingRenewalCount = []
+          notification.thirtyDaysExpireNotificationSettingRenewal = []
         }
 
         notification.count = eval(notification.lastMonthBirthdayCount + notification.thisMonthBirthdayCount + notification.thisWeekBirthdayCount + notification.nextNintyDaysBirthdayCount + notification.nextSixtyDaysBirthdayCount + notification.chatCount + notification.todayTaskCount + notification.todayEventCount)

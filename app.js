@@ -199,9 +199,12 @@ const { v4: uuidv4 } = require("uuid");
 
 const server = http.createServer(app);
 const io = socketio(server);
+
 app.set("socketio", io);
 const engineSocket = require("./Services/scoket.io");
-new engineSocket(io);
+
+Promise.resolve().then(() => new engineSocket(io).init());
+// new engineSocket(io).init()
 
 const followup_notes = require("./models/followup_notes");
 uuidv4();
