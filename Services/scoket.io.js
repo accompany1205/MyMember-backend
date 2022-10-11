@@ -53,7 +53,8 @@ class SocketEngine {
         let nextNintyDays = moment().add(3, 'months');
         let currDate = new Date().toISOString().slice(0, 10);
         let users = await User.findOne({ _id: userId }, {
-          _id: 1, task_setting: 1, thisWeek_birthday_setting: 1, thisMonth_birthday_setting: 1, lastMonth_birthday_setting: 1, nextSixtyDays_birthday_setting: 1, nextNintyDays_birthday_setting: 1, chat_setting: 1, event_notification_setting: 1, thirtydays_expire_notification_setting_renewal: 1, sixtydays_expire_notification_setting_renewal: 1, nintydays_expire_notification_setting_renewal: 1
+          _id: 1, task_setting: 1, thisWeek_birthday_setting: 1, thisMonth_birthday_setting: 1, lastMonth_birthday_setting: 1, nextSixtyDays_birthday_setting: 1, nextNintyDays_birthday_setting: 1, chat_setting: 1, event_notification_setting: 1, thirtydays_expire_notification_setting_renewal: 1, sixtydays_expire_notification_setting_renewal: 1, nintydays_expire_notification_setting_renewal: 1, expire_notification_setting: 1,
+          fourteen_missucall_notification_setting: 1, thirty_missucall_notification_setting: 1, sixtyPlus_missucall_notification_setting: 1, sixty_missucall_notification_setting: 1
         })
         console.log("User--> ", users)
         console.log(users.task_setting)
@@ -401,7 +402,7 @@ class SocketEngine {
               }
             },
             {
-              $unwind:"$memberInfo"
+              $unwind: "$memberInfo"
             }
           ])
           console.log("thirty_days_expire-->", thirty_days_expire)
@@ -414,12 +415,12 @@ class SocketEngine {
           notification.thirtyDaysExpireNotificationSettingRenewal = []
         }
 
-        if(users["_doc"]["sixtydays_expire_notification_setting_renewal"]){
+        if (users["_doc"]["sixtydays_expire_notification_setting_renewal"]) {
           let now = new Date();
           let todaysDate = moment(now).format('YYYY-MM-DD')
           const afterThirty = new Date(now.setDate(now.getDate() + 30));
-          const afterSixty=new Date(now.setDate(now.getDate() + 60))
-          const sixtyDaysExpire=moment(afterSixty).format('YYYY-MM-DD')
+          const afterSixty = new Date(now.setDate(now.getDate() + 60))
+          const sixtyDaysExpire = moment(afterSixty).format('YYYY-MM-DD')
           const thirtyDaysExpire = moment(afterThirty).format('YYYY-MM-DD');
           console.log(sixtyDaysExpire, thirtyDaysExpire)
           let sixty_days_expire = await buymembership.aggregate([
@@ -473,15 +474,15 @@ class SocketEngine {
           notification.sixtyDaysExpireNotificationSettingRenewal = sixty_days_expire;
         } else {
           notification.sixtyDaysExpireNotificationSettingRenewalCount = 0
-          notification.sixtyDaysExpireNotificationSettingRenewal= []
+          notification.sixtyDaysExpireNotificationSettingRenewal = []
         }
 
-        if(users["_doc"]["nintydays_expire_notification_setting_renewal"]){
+        if (users["_doc"]["nintydays_expire_notification_setting_renewal"]) {
           let now = new Date();
           let todaysDate = moment(now).format('YYYY-MM-DD')
           const afterNinty = new Date(now.setDate(now.getDate() + 90));
-          const afterSixty=new Date(now.setDate(now.getDate() + 60))
-          const sixtyDaysExpire=moment(afterSixty).format('YYYY-MM-DD')
+          const afterSixty = new Date(now.setDate(now.getDate() + 60))
+          const sixtyDaysExpire = moment(afterSixty).format('YYYY-MM-DD')
           const nintyDaysExpire = moment(afterNinty).format('YYYY-MM-DD');
           let ninty_days_expire = await buymembership.aggregate([
             {
@@ -534,8 +535,344 @@ class SocketEngine {
           notification.nintyDaysExpireNotificationSettingRenewal = ninty_days_expire;
         } else {
           notification.nintyDaysExpireNotificationSettingRenewalCount = 0
-          notification.nintyDaysExpireNotificationSettingRenewal= []  
+          notification.nintyDaysExpireNotificationSettingRenewal = []
         }
+
+        if (users["_doc"]["expire_notification_setting"]) {
+          let expireMembership = await buymembership.aggregate([
+            {
+              $match: {
+                $and: [
+                  { userId: userId },
+                  { membership_status: "Expired" }
+                ]
+              }
+            },
+            {
+              $project: {
+                studentInfo: 1,
+                membership_name: 1,
+                expiry_date: 1
+              }
+            },
+            { $unwind: "$studentInfo" },
+            {
+              $addFields: {
+                studentInfo: { $convert: { input: '$studentInfo', to: 'objectId', onError: '', onNull: '' } }
+              }
+            },
+            {
+              $lookup:
+              {
+                from: "member",
+                localField: "studentInfo",
+                foreignField: "_id",
+                as: "memberInfo",
+                pipeline: [
+                  {
+                    $project: {
+                      _id: 1,
+                      firstName: 1,
+                      lastName: 1,
+                      isSeen: 1
+                    },
+                  },
+                ],
+              }
+            },
+            {
+              $unwind: "$memberInfo"
+            }
+          ])
+          console.log("expireMembership-->", expireMembership)
+          let ExpireNotificationSettingRenewalCount = expireMembership.filter((item) => item.isSeen == 'false').length;
+          notification.ExpireNotificationSettingRenewalCount = ExpireNotificationSettingRenewalCount;
+          notification.ExpireNotificationSettingRenewal = expireMembership;
+        } else {
+          notification.ExpireNotificationSettingRenewalCount = 0
+          notification.ExpireNotificationSettingRenewal = []
+        }
+
+        if (users["_doc"]["fourteen_missucall_notification_setting"]) {
+          let sevenToFourteen = await member.aggregate([
+            {
+              $match: {
+                userId: userId
+              }
+            },
+            {
+              $project: {
+                firstName: 1,
+                lastName: 1,
+                last_attended_date: 1,
+                missclass_count: 1,
+                isSeen: 1
+              }
+            },
+            {
+              $addFields: {
+                last_attended_date: {
+                  $toDate: {
+                    $dateToString: {
+                      format: "%Y-%m-%d",
+                      date: {
+                        $toDate: "$last_attended_date",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            {
+              $match: {
+                last_attended_date: {
+                  $ne: null,
+                },
+              },
+            },
+            {
+              $addFields: {
+                dayssince: {
+                  $floor: {
+                    $divide: [
+                      {
+                        $subtract: ["$$NOW", "$last_attended_date"],
+                      },
+                      1000 * 60 * 60 * 24,
+                    ],
+                  },
+                },
+              }
+            },
+            {
+              $match: {
+                dayssince: {
+                  $gte: 7,
+                  $lte: 14,
+                }
+              }
+            }
+          ])
+
+          console.log("sevenToFourteen-->", sevenToFourteen)
+          let sevenToFourteenMissucallCount = sevenToFourteen.filter((item) => item.isSeen == 'false').length;
+          notification.sevenToFourteenMissucallCount = sevenToFourteenMissucallCount;
+          notification.sevenToFourteenNotification = sevenToFourteen;
+        } else {
+          notification.sevenToFourteenMissucallCount = 0
+          notification.sevenToFourteenNotification = []
+        }
+
+        if (users["_doc"]["thirty_missucall_notification_setting"]) {
+          let fourteenToThirty = await member.aggregate([
+            {
+              $match: {
+                userId: userId
+              }
+            },
+            {
+              $project: {
+                firstName: 1,
+                lastName: 1,
+                last_attended_date: 1,
+                missclass_count: 1,
+                isSeen: 1
+              }
+            },
+            {
+              $addFields: {
+                last_attended_date: {
+                  $toDate: {
+                    $dateToString: {
+                      format: "%Y-%m-%d",
+                      date: {
+                        $toDate: "$last_attended_date",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            {
+              $match: {
+                last_attended_date: {
+                  $ne: null,
+                },
+              },
+            },
+            {
+              $addFields: {
+                dayssince: {
+                  $floor: {
+                    $divide: [
+                      {
+                        $subtract: ["$$NOW", "$last_attended_date"],
+                      },
+                      1000 * 60 * 60 * 24,
+                    ],
+                  },
+                },
+              }
+            },
+            {
+              $match: {
+                dayssince: {
+                  $gte: 15,
+                  $lte: 30,
+                }
+              }
+            }
+          ])
+
+          console.log("fourteenToThirty-->", fourteenToThirty)
+          let fourteenToThirtyMissucallCount = fourteenToThirty.filter((item) => item.isSeen == 'false').length;
+          notification.fourteenToThirtyMissucallCount = fourteenToThirtyMissucallCount;
+          notification.fourteenToThirtyNotification = fourteenToThirty;
+        } else {
+          notification.fourteenToThirtyMissucallCount = 0
+          notification.fourteenToThirtyNotification = []
+        }
+
+        if (users["_doc"]["thirty_missucall_notification_setting"]) {
+          let thirtyToSixty = await member.aggregate([
+            {
+              $match: {
+                userId: userId
+              }
+            },
+            {
+              $project: {
+                firstName: 1,
+                lastName: 1,
+                last_attended_date: 1,
+                missclass_count: 1,
+                isSeen: 1
+              }
+            },
+            {
+              $addFields: {
+                last_attended_date: {
+                  $toDate: {
+                    $dateToString: {
+                      format: "%Y-%m-%d",
+                      date: {
+                        $toDate: "$last_attended_date",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            {
+              $match: {
+                last_attended_date: {
+                  $ne: null,
+                },
+              },
+            },
+            {
+              $addFields: {
+                dayssince: {
+                  $floor: {
+                    $divide: [
+                      {
+                        $subtract: ["$$NOW", "$last_attended_date"],
+                      },
+                      1000 * 60 * 60 * 24,
+                    ],
+                  },
+                },
+              }
+            },
+            {
+              $match: {
+                dayssince: {
+                  $gte: 30,
+                  $lte: 60,
+                }
+              }
+            }
+          ])
+
+          console.log("thirtyToSixty-->", thirtyToSixty)
+          let thirtyToSixtyMissucallCount = thirtyToSixty.filter((item) => item.isSeen == 'false').length;
+          notification.thirtyToSixtyMissucallCount = thirtyToSixtyMissucallCount;
+          notification.thirtyToSixtyNotification = thirtyToSixty;
+        } else {
+          notification.thirtyToSixtyMissucallCount = 0
+          notification.thirtyToSixtyNotification = []
+        }
+
+
+        if (users["_doc"]["sixtyPlus_missucall_notification_setting"]) {
+          let sixtyPlus = await member.aggregate([
+            {
+              $match: {
+                userId: userId
+              }
+            },
+            {
+              $project: {
+                firstName: 1,
+                lastName: 1,
+                last_attended_date: 1,
+                missclass_count: 1,
+                isSeen: 1
+              }
+            },
+            {
+              $addFields: {
+                last_attended_date: {
+                  $toDate: {
+                    $dateToString: {
+                      format: "%Y-%m-%d",
+                      date: {
+                        $toDate: "$last_attended_date",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            {
+              $match: {
+                last_attended_date: {
+                  $ne: null,
+                },
+              },
+            },
+            {
+              $addFields: {
+                dayssince: {
+                  $floor: {
+                    $divide: [
+                      {
+                        $subtract: ["$$NOW", "$last_attended_date"],
+                      },
+                      1000 * 60 * 60 * 24,
+                    ],
+                  },
+                },
+              }
+            },
+            {
+              $match: {
+                dayssince: {
+                  $gte: 60,
+                }
+              }
+            }
+          ])
+
+          console.log("sixtyPlus-->", sixtyPlus)
+          let sixtyPlusMissucallCount = sixtyPlus.filter((item) => item.isSeen == 'false').length;
+          notification.sixtyPlusMissucallCount = sixtyPlusMissucallCount;
+          notification.sixtyPlusNotification = sixtyPlus;
+        } else {
+          notification.sixtyPlusMissucallCount = 0
+          notification.sixtyPlusNotification = []
+        }
+
 
 
         notification.count = eval(notification.lastMonthBirthdayCount + notification.thisMonthBirthdayCount + notification.thisWeekBirthdayCount + notification.nextNintyDaysBirthdayCount + notification.nextSixtyDaysBirthdayCount + notification.chatCount + notification.todayTaskCount + notification.todayEventCount)
