@@ -395,7 +395,8 @@ class SocketEngine {
                       _id: 1,
                       firstName: 1,
                       lastName: 1,
-                      isSeen: 1
+                      isSeen: 1,
+                      memberprofileImage: 1,
                     },
                   },
                 ],
@@ -458,7 +459,8 @@ class SocketEngine {
                       _id: 1,
                       firstName: 1,
                       lastName: 1,
-                      isSeen: 1
+                      isSeen: 1,
+                      memberprofileImage: 1,
                     },
                   },
                 ],
@@ -519,7 +521,8 @@ class SocketEngine {
                       _id: 1,
                       firstName: 1,
                       lastName: 1,
-                      isSeen: 1
+                      isSeen: 1,
+                      memberprofileImage: 1,
                     },
                   },
                 ],
@@ -574,7 +577,8 @@ class SocketEngine {
                       _id: 1,
                       firstName: 1,
                       lastName: 1,
-                      isSeen: 1
+                      isSeen: 1,
+                      memberprofileImage: 1,
                     },
                   },
                 ],
@@ -606,6 +610,7 @@ class SocketEngine {
                 lastName: 1,
                 last_attended_date: 1,
                 missclass_count: 1,
+                memberprofileImage: 1,
                 isSeen: 1
               }
             },
@@ -676,6 +681,7 @@ class SocketEngine {
                 lastName: 1,
                 last_attended_date: 1,
                 missclass_count: 1,
+                memberprofileImage: 1,
                 isSeen: 1
               }
             },
@@ -746,6 +752,7 @@ class SocketEngine {
                 lastName: 1,
                 last_attended_date: 1,
                 missclass_count: 1,
+                memberprofileImage: 1,
                 isSeen: 1
               }
             },
@@ -817,6 +824,7 @@ class SocketEngine {
                 lastName: 1,
                 last_attended_date: 1,
                 missclass_count: 1,
+                memberprofileImage: 1,
                 isSeen: 1
               }
             },
