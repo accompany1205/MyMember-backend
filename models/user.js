@@ -298,77 +298,66 @@ const userSchema = new schema(
             type: Boolean,
             default: true
         },
-        birthday_setting: {
-            type: Boolean,
-            default: true
-        },
-        today_birthday_setting:{
-            type: Boolean,
-            default: true
-        },
-        tomorrow_birthday_setting:{
-            type: Boolean,
-            default: true
-        },
         thisWeek_birthday_setting:{
             type: Boolean,
-            default: true
+            default: false
         },
         thisMonth_birthday_setting:{
             type: Boolean,
-            default: true
+            default: false
         },
         lastMonth_birthday_setting:{
             type: Boolean,
-            default: true
+            default: false
         },
         nextSixtyDays_birthday_setting:{
             type: Boolean,
-            default: true
+            default: false
         },
         nextNintyDays_birthday_setting:{
             type: Boolean,
-            default: true
+            default: false
         },
         event_notification_setting:{
             type: Boolean,
             default: true
         },
-        seven_to_fourteen_setting:{
+        fourteen_missucall_notification_setting:{
             type: Boolean,
-            default: true
+            default: false
         },
-        fifteen_to_thirty_setting:{
+        thirty_missucall_notification_setting:{
             type: Boolean,
-            default: true
+            default: false
         },
-        thirtyone_to_sixty_setting:{
+        sixty_missucall_notification_setting:{
             type: Boolean,
-            default: true
+            default: false
         },
-        sixtyone_plus_setting:{
+        sixtyPlus_missucall_notification_setting:{
             type: Boolean,
-            default: true
+            default: false
+        },
+        thirtydays_expire_notification_setting_renewal:{
+            type: Boolean,
+            default: false
+        },
+        sixtydays_expire_notification_setting_renewal:{
+            type: Boolean,
+            default: false
+        },
+        nintydays_expire_notification_setting_renewal:{
+            type: Boolean,
+            default: false
         },
         expire_notification_setting:{
             type: Boolean,
-            default: true
-        },
-        thirtydays_expire_notification_setting:{
-            type: Boolean,
-            default: true
-        },
-        sixtydays_expire_notification_setting:{
-            type: Boolean,
-            default: true
-        },
-        nintydays_expire_notification_setting:{
-            type: Boolean,
-            default: true
+            default: false
         },
         frozen_notification_setting:{
-
-        }
+            type: Boolean,
+            default: false
+        },
 
     },
     { timestamps: true }
