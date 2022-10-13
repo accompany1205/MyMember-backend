@@ -4,7 +4,7 @@ const tasks = require("../models/task");
 const user = require("../models/user")
 const cloudUrl = require("../gcloud/imageUrl");
 const textMessage = require('../models/text_message');
-const member =  require("../models/addmember")
+const member = require("../models/addmember")
 const mongoose = require('mongoose');
 const event = require("../models/appointment")
 
@@ -357,7 +357,7 @@ exports.notificationTodayTask = async (req, res) => {
     // const d = new Date('2019-01-24T05:03:30.000Z');
     // console.log(d,'date')
 
-   
+
     // let today = moment('2022-01-24T00:00:00+05:30').startOf('day');
     // console.log(today,'today',tomorrowMonth)
 
@@ -388,12 +388,12 @@ exports.notificationTodayTask = async (req, res) => {
     //     }
     //   }
     // ])
-  //   let today = moment().startOf('day');
-  // // "2018-12-05T00:00:00.00
-    
-    
+    //   let today = moment().startOf('day');
+    // // "2018-12-05T00:00:00.00
 
-  // ("2018-12-05T23:59:59.999
+
+
+    // ("2018-12-05T23:59:59.999
     // let currDate = new Date().toISOString().slice(0, 10);
     // console.log(currDate, typeof currDate);
     // let rest
@@ -405,61 +405,61 @@ exports.notificationTodayTask = async (req, res) => {
     // }else{
     //   notification.task = []
     // }
-    
-  // const tomorrow  = new Date(); // The Date object returns today's timestamp
-  // tomorrow.setDate(tomorrow.getDate() + 1);
-  //   console.log(tomorrow,'date')
-  // let todayBirthday = await member.find({ userId:req.params.userId,dob:tomorrow }, {id:1, dob: 1,firstName: 1})
-//   let data = await member.aggregate([
-//     {
-//     $match: {
-//       $and: [
-//         {userId:req.params.userId},
-//         // {'isSeen':null},
-//         // { $expr: { $eq: [{ $dayOfMonth: '$dob' },{ $add: [{ $dayOfMonth: "$$NOW" },1] },]} }, 
-//         // { $expr: { $eq: [{ $month: '$dob' },{ $month: '$$NOW' }] } }
-//       ]
-//   }
-//   },
-//   {
-//     $project:{
-//       // firstName:1,
-//       // lastName:1,
-//       // age:1,
-//       today: {  $dayOfMonth: new Date() },
-//       tomrow: { $add: [{ $dayOfMonth: new Date() },1] },
-//   }
-//   }
-// ])
-// let today = new Date()
-// let tomorrow = moment(today,'YYYY-MM-DD').add(1);
-// var now = new Date();
-// var day = now.getDate();        // funny method name but that's what it is
-// var month = now.getMonth() + 1;
-// console.log(now,day,month,tomorrow)
-// let today = moment();
-// let tomorrow = moment().add(1,'days');
-// let tomorrowBirthday = await member.aggregate([
-//     {
-//     $match: {
-//       $and: [
-//         {userId:req.params.userId},
-//         {'isSeen':null},
-//         { $expr: { $eq: [{ $dayOfMonth: '$dob' },{ $dayOfMonth: new Date(tomorrow)}]} }, 
-//         { $expr: { $eq: [{ $month: '$dob' },{ $month: new Date(tomorrow) }] } }
-//       ]
-//   }
-//   },
-//   {
-//     $project:{
-//       firstName:1,
-//       lastName:1,
-//       age:1,
-//   }
-//   }
-// ])
-   
-  //  let count  =  text_chat.filter((item)=> item.isSeen == 'false').length;
+
+    // const tomorrow  = new Date(); // The Date object returns today's timestamp
+    // tomorrow.setDate(tomorrow.getDate() + 1);
+    //   console.log(tomorrow,'date')
+    // let todayBirthday = await member.find({ userId:req.params.userId,dob:tomorrow }, {id:1, dob: 1,firstName: 1})
+    //   let data = await member.aggregate([
+    //     {
+    //     $match: {
+    //       $and: [
+    //         {userId:req.params.userId},
+    //         // {'isSeen':null},
+    //         // { $expr: { $eq: [{ $dayOfMonth: '$dob' },{ $add: [{ $dayOfMonth: "$$NOW" },1] },]} }, 
+    //         // { $expr: { $eq: [{ $month: '$dob' },{ $month: '$$NOW' }] } }
+    //       ]
+    //   }
+    //   },
+    //   {
+    //     $project:{
+    //       // firstName:1,
+    //       // lastName:1,
+    //       // age:1,
+    //       today: {  $dayOfMonth: new Date() },
+    //       tomrow: { $add: [{ $dayOfMonth: new Date() },1] },
+    //   }
+    //   }
+    // ])
+    // let today = new Date()
+    // let tomorrow = moment(today,'YYYY-MM-DD').add(1);
+    // var now = new Date();
+    // var day = now.getDate();        // funny method name but that's what it is
+    // var month = now.getMonth() + 1;
+    // console.log(now,day,month,tomorrow)
+    // let today = moment();
+    // let tomorrow = moment().add(1,'days');
+    // let tomorrowBirthday = await member.aggregate([
+    //     {
+    //     $match: {
+    //       $and: [
+    //         {userId:req.params.userId},
+    //         {'isSeen':null},
+    //         { $expr: { $eq: [{ $dayOfMonth: '$dob' },{ $dayOfMonth: new Date(tomorrow)}]} }, 
+    //         { $expr: { $eq: [{ $month: '$dob' },{ $month: new Date(tomorrow) }] } }
+    //       ]
+    //   }
+    //   },
+    //   {
+    //     $project:{
+    //       firstName:1,
+    //       lastName:1,
+    //       age:1,
+    //   }
+    //   }
+    // ])
+
+    //  let count  =  text_chat.filter((item)=> item.isSeen == 'false').length;
 
     res.send({ success: true, data: todayEvent });
   } catch (err) {
@@ -471,36 +471,51 @@ exports.seenTasks = async (req, res) => {
   try {
     const taskId = req.body.taskId;
     const textId = req.body.chatId;
-    const memberId = req.body.memberId
+    const birthdayId = req.body.birthdayId;
+    const renewalId = req.body.renewalId;
+    const missucallId = req.body.missucallId;
     const eventId = req.body.eventId
-    
-       if(taskId != undefined || taskId.length > 0){
-        const seenTasks = await tasks.updateOne(
-          { _id: { $in: taskId }  },
-          { $set: { isSeen: true } }
-        );
-        }
-        if(eventId != undefined || eventId.length > 0){
-          const seenEvents = await event.updateOne(
-            { _id: { $in: eventId }  },
-            { $set: { isSeen: true } }
-          );
-          }
-        if(memberId != undefined || memberId.length > 0){
-        const seenMember = await member.updateOne(
-          { _id: { $in: memberId }},
-          { $set: { isSeen: "true" } }
-        );
-        }
-        if(textId != undefined || textId.length > 0){
-        const seenText = await textMessage.updateOne(
-          { _id: { $in: textId} },
-          { $set: { isSeen: "true" } }
-        );
-      }
+
+    if (taskId != undefined || taskId.length > 0) {
+      const seenTasks = await tasks.updateOne(
+        { _id: { $in: taskId } },
+        { $set: { isSeen: true } }
+      );
+    }
+    if (eventId != undefined || eventId.length > 0) {
+      const seenEvents = await event.updateOne(
+        { _id: { $in: eventId } },
+        { $set: { isSeen: true } }
+      );
+    }
+    if (birthdayId != undefined || birthdayId.length > 0) {
+      const seenBirthday = await member.updateOne(
+        { _id: { $in: birthdayId } },
+        { $set: { isSeen: "true" } }
+      );
+    }
+    if (renewalId != undefined || renewalId.length > 0) {
+      const seenRenewal = await member.updateOne(
+        { _id: { $in: renewalId } },
+        { $set: { isSeen: "true" } }
+      );
+    }
+
+    if (missucallId != undefined || missucallId.length > 0) {
+      const seenMissucall = await member.updateOne(
+        { _id: { $in: missucallId } },
+        { $set: { isSeen: "true" } }
+      );
+    }
+    if (textId != undefined || textId.length > 0) {
+      const seenText = await textMessage.updateOne(
+        { _id: { $in: textId } },
+        { $set: { isSeen: "true" } }
+      );
+    }
     res.send({ success: true, msg: "notification seen successfully" });
     // console.log("updatetask", seenTasks,"updateText",seenText,"seenmember",seenMember);
-    
+
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
@@ -510,44 +525,59 @@ exports.seenRead = async (req, res) => {
   try {
     const taskId = req.body.taskId;
     const textId = req.body.chatId;
-    const memberId = req.body.memberId
-    const eventId = req.body.eventId
-       
-       if(taskId != undefined || taskId.length > 0){
-        const seenTasks = await tasks.updateOne(
-          { _id: { $in: taskId }  },
-          { $set: { isRead: true,isSeen: false } }
-        );
-        }
-        if(eventId != undefined || eventId.length > 0){
-          const seenEvents = await event.updateOne(
-            { _id: { $in: eventId }  },
-            { $set: { isRead: true,isSeen: false } }
-          );
-        }
-        if(memberId != undefined || memberId.length > 0){
-        const seenMember = await member.updateOne(
-          { _id: { $in: memberId }},
-          { $set: { isRead: true, isSeen: "false"  } }
-        );
-        console.log('data',seenMember)
-        }
-        if(textId != undefined || textId.length > 0){
-        const seenText = await textMessage.updateOne(
-          { _id: { $in: textId} },
-          { $set: { isRead: true, isSeen: "false" } }
-        );
-      }
+    const birthdayId = req.body.birthdayId;
+    const renewalId = req.body.renewalId;
+    const missucallId = req.body.missucallId; 
+    const eventId = req.body.eventId;
+
+
+    if (taskId != undefined || taskId.length > 0) {
+      const seenTasks = await tasks.updateOne(
+        { _id: { $in: taskId } },
+        { $set: { isRead: true, isSeen: false } }
+      );
+    }
+    if (eventId != undefined || eventId.length > 0) {
+      const seenEvents = await event.updateOne(
+        { _id: { $in: eventId } },
+        { $set: { isRead: true, isSeen: false } }
+      );
+    }
+    if(birthdayId!=undefined|| birthdayId.length>0){
+      const seenBirthday = await member.updateOne(
+        { _id: { $in: birthdayId } },
+        { $set: { isRead: true, isSeen: false } }
+      );
+    }
+    if(renewalId!=undefined|| renewalId.length>0){
+      const seenRenewal = await member.updateOne(
+        { _id: { $in: renewalId } },
+        { $set: { isRead: true, isSeen: false } }
+      );
+    }
+    if (missucallId != undefined || missucallId.length > 0) {
+      const seenMissucall = await member.updateOne(
+        { _id: { $in: missucallId } },
+        { $set: { isRead: true, isSeen: false } }
+      );
+    }
+   
+    if (textId != undefined || textId.length > 0) {
+      const seenText = await textMessage.updateOne(
+        { _id: { $in: textId } },
+        { $set: { isRead: true, isSeen: "false" } }
+      );
+    }
     res.send({ success: true, msg: "notification remove successfully" });
     // console.log("updatetask", seenTasks,"updateText",seenText,"seenmember",seenMember);
-    
+
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
 }
 
 exports.notificationOnOFF = async (req, res) => {
-  try{
+  try {
     let task_setting = req.query.taskSetting
     let chat_setting = req.query.chatSetting
     let nextSixtyDays_birthday_setting = req.query.sixtyDaysBirthdaySetting
@@ -565,67 +595,67 @@ exports.notificationOnOFF = async (req, res) => {
     let sixtydays_expire_notification_setting = req.query.sixtyDaysExpireNotificationSetting
     let nintydays_expire_notification_setting = req.query.nintyDaysExpire_notification_setting
     let frozen_notification_setting = req.query.frozenNotificationSetting
-    
+
     let query = {}
-    if(task_setting != undefined){
+    if (task_setting != undefined) {
       query.task_setting = task_setting
     }
-    else if(chat_setting != undefined){
+    else if (chat_setting != undefined) {
       query.chat_setting = chat_setting
     }
-    else if(nextSixtyDays_birthday_setting != undefined){
+    else if (nextSixtyDays_birthday_setting != undefined) {
       query.nextSixtyDays_birthday_setting = nextSixtyDays_birthday_setting
     }
-    else if(nextNintyDays_birthday_setting != undefined){
+    else if (nextNintyDays_birthday_setting != undefined) {
       query.nextNintyDays_birthday_setting = nextNintyDays_birthday_setting
     }
-    else if(thisWeek_birthday_setting != undefined){
+    else if (thisWeek_birthday_setting != undefined) {
       query.thisWeek_birthday_setting = thisWeek_birthday_setting
     }
-    else if(thisMonth_birthday_setting != undefined){
+    else if (thisMonth_birthday_setting != undefined) {
       query.thisMonth_birthday_setting = thisMonth_birthday_setting
     }
-    else if(lastMonth_birthday_setting != undefined){
+    else if (lastMonth_birthday_setting != undefined) {
       query.lastMonth_birthday_setting = lastMonth_birthday_setting
     }
-    else if(event_notification_setting != undefined){
+    else if (event_notification_setting != undefined) {
       query.event_notification_setting = event_notification_setting
     }
-    else if(seven_to_fourteen_setting != undefined){
+    else if (seven_to_fourteen_setting != undefined) {
       query.seven_to_fourteen_setting = seven_to_fourteen_setting
     }
-    else if(fifteen_to_thirty_setting != undefined){
+    else if (fifteen_to_thirty_setting != undefined) {
       query.fifteen_to_thirty_setting = fifteen_to_thirty_setting
     }
-    else if(thirtyone_to_sixty_setting != undefined){
+    else if (thirtyone_to_sixty_setting != undefined) {
       query.thirtyone_to_sixty_setting = thirtyone_to_sixty_setting
-    } 
-    else if(sixtyone_plus_setting != undefined){
+    }
+    else if (sixtyone_plus_setting != undefined) {
       query.sixtyone_plus_setting = sixtyone_plus_setting
-    } 
-    else if(expire_notification_setting != undefined){
+    }
+    else if (expire_notification_setting != undefined) {
       query.expire_notification_setting = expire_notification_setting
-    } 
-    else if(thirtydays_expire_notification_setting != undefined){
+    }
+    else if (thirtydays_expire_notification_setting != undefined) {
       query.thirtydays_expire_notification_setting = thirtydays_expire_notification_setting
-    } 
-    else if(sixtydays_expire_notification_setting != undefined){
+    }
+    else if (sixtydays_expire_notification_setting != undefined) {
       query.sixtydays_expire_notification_setting = sixtydays_expire_notification_setting
-    } 
-    else if(nintydays_expire_notification_setting != undefined){
+    }
+    else if (nintydays_expire_notification_setting != undefined) {
       query.nintydays_expire_notification_setting = nintydays_expire_notification_setting
-    } 
-    else if(frozen_notification_setting != undefined){
+    }
+    else if (frozen_notification_setting != undefined) {
       query.frozen_notification_setting = (frozen_notification_setting)
-    } 
+    }
 
-    let userId =  req.params.userId
+    let userId = req.params.userId
     const id = mongoose.Types.ObjectId(userId);
-    console.log(query,id)
-    let userNotificationUpdate = await user.updateOne({_id:id},{$set:query})
+    console.log(query, id)
+    let userNotificationUpdate = await user.updateOne({ _id: id }, { $set: query })
     console.log(userNotificationUpdate)
     res.send({ success: true, msg: "notification setting update successfully" });
-  }catch(err){
+  } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
 }
