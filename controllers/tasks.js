@@ -622,37 +622,37 @@ exports.notificationOnOFF = async (req, res) => {
       query.event_notification_setting = event_notification_setting
     }
     else if (seven_to_fourteen_setting != undefined) {
-      query.seven_to_fourteen_setting = seven_to_fourteen_setting
+      query.fourteen_missucall_notification_setting = seven_to_fourteen_setting
     }
     else if (fifteen_to_thirty_setting != undefined) {
-      query.fifteen_to_thirty_setting = fifteen_to_thirty_setting
+      query.thirty_missucall_notification_setting = fifteen_to_thirty_setting
     }
     else if (thirtyone_to_sixty_setting != undefined) {
-      query.thirtyone_to_sixty_setting = thirtyone_to_sixty_setting
+      query.sixty_missucall_notification_setting = thirtyone_to_sixty_setting
     }
     else if (sixtyone_plus_setting != undefined) {
-      query.sixtyone_plus_setting = sixtyone_plus_setting
+      query.sixtyPlus_missucall_notification_setting = sixtyone_plus_setting
     }
     else if (expire_notification_setting != undefined) {
       query.expire_notification_setting = expire_notification_setting
     }
     else if (thirtydays_expire_notification_setting != undefined) {
-      query.thirtydays_expire_notification_setting = thirtydays_expire_notification_setting
+      query.thirtydays_expire_notification_setting_renewal = thirtydays_expire_notification_setting
     }
     else if (sixtydays_expire_notification_setting != undefined) {
-      query.sixtydays_expire_notification_setting = sixtydays_expire_notification_setting
+      query.sixtydays_expire_notification_setting_renewal = sixtydays_expire_notification_setting
     }
     else if (nintydays_expire_notification_setting != undefined) {
-      query.nintydays_expire_notification_setting = nintydays_expire_notification_setting
+      query.nintydays_expire_notification_setting_renewal = nintydays_expire_notification_setting
     }
     else if (frozen_notification_setting != undefined) {
-      query.frozen_notification_setting = (frozen_notification_setting)
+      query.frozen_notification_setting = frozen_notification_setting
     }
 
     let userId = req.params.userId
     const id = mongoose.Types.ObjectId(userId);
     console.log(query, id)
-    let userNotificationUpdate = await user.updateOne({ _id: id }, { $set: query })
+    let userNotificationUpdate = await user.updateOne({ _id: userId }, { $set: query })
     console.log(userNotificationUpdate)
     res.send({ success: true, msg: "notification setting update successfully" });
   } catch (err) {
