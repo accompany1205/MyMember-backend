@@ -4,10 +4,10 @@ const buyMembership = require("../models/buy_membership");
 const Finance_infoSchema = require("../models/finance_info");
 const AddMember = require("../models/addmember");
 const StripeApis = require("../Services/stripe");
-const StripeCards = require('../models/stripe_cards')
-const StripeCustomers = require('../models/stripe_customers')
-const StoreTransaction = require('../models/store_transactions')
-const User = require('../models/user');
+const StripeCards = require("../models/stripe_cards");
+const StripeCustomers = require("../models/stripe_customers");
+const StoreTransaction = require("../models/store_transactions");
+const User = require("../models/user");
 const _ = require("lodash");
 const Joi = require("@hapi/joi");
 var mongo = require("mongoose");
@@ -86,7 +86,6 @@ exports.update = async (req, res) => {
                 success: true,
               });
             } else {
-              console.log("i am here");
               res.status(400).send({
                 msg: "Membership not updated but valor freezed membership!",
                 success: false,
@@ -106,7 +105,6 @@ exports.update = async (req, res) => {
               success: true,
             });
           } else {
-            console.log("NO i am here");
             res.status(400).send({
               msg: "Membership not freezed please try again!",
               success: false,
@@ -374,7 +372,6 @@ function forfeitSubscription(membershipId, reason) {
   });
 }
 
-
 function refundMembership(membershipId, payload) {
   return new Promise((resolve, reject) => {
     buyMembership.findByIdAndUpdate(
@@ -424,22 +421,31 @@ async function freezeUnfreeze(membershipId, status) {
         membership_details: ObjectId(membershipId),
       },
     },
-  ])
+  ]);
   if (currentMembership.length === 1) {
-    if ((currentMembership[0].membership_details).toString() === membershipId.toString()) {
-      await AddMember.updateOne({ _id: (currentMembership[0].membership_details).toString() }, { $set: { status: status } })
+    if (
+      currentMembership[0].membership_details.toString() ===
+      membershipId.toString()
+    ) {
+      await AddMember.updateOne(
+        { _id: currentMembership[0].membership_details.toString() },
+        { $set: { status: status } }
+      );
     }
   } else {
-    console.log('there is no data')
+    console.log("there is no data");
   }
 }
 
 async function freezeMembership(membershipId, payload) {
-  await freezeUnfreeze(membershipId, "Freeze")
+  await freezeUnfreeze(membershipId, "Freeze");
 
   return new Promise((resolve, reject) => {
     let expiry_date = moment(payload.expiry_date)
-      .add(daysRemaining(payload.freeze_stop_date,payload.freeze_start_date), "days")
+      .add(
+        daysRemaining(payload.freeze_stop_date, payload.freeze_start_date),
+        "days"
+      )
       .format("YYYY-MM-DD");
     buyMembership
       .findByIdAndUpdate(membershipId, {
@@ -467,41 +473,43 @@ async function freezeMembership(membershipId, payload) {
         }
       });
   });
-
 }
 
 async function unFreezeMembership(membershipId, payload) {
-
   await freezeUnfreeze(membershipId, "Active");
-  let data=await buyMembership.aggregate([
+  let data = await buyMembership.aggregate([
     {
-      $match:{
-        _id:ObjectId(membershipId)
-      }
+      $match: {
+        _id: ObjectId(membershipId),
+      },
     },
     {
-      $project:{
-        expiry_date:1,
-        whenFreeze:1
-      }
+      $project: {
+        expiry_date: 1,
+        whenFreeze: 1,
+      },
     },
-    { $addFields: { lastElem: { $last: "$whenFreeze" } } }
-  ])
-  let last=""
-  for(let i of data[0].whenFreeze){
-    if( i.hasOwnProperty('freeze_stop_date')){
-      last=i.freeze_stop_date
+    { $addFields: { lastElem: { $last: "$whenFreeze" } } },
+  ]);
+  let last = "";
+  for (let i of data[0].whenFreeze) {
+    if (i.hasOwnProperty("freeze_stop_date")) {
+      last = i.freeze_stop_date;
     }
   }
-  let expiryDate=data[0].expiry_date
-  let date=moment(new Date()).format('YYYY-MM-DD'); 
+  let expiryDate = data[0].expiry_date;
+  let date = moment(new Date()).format("YYYY-MM-DD");
   return new Promise((resolve, reject) => {
     let expiry_date = moment(expiryDate)
-      .subtract(daysRemaining(last,date), "days")
+      .subtract(daysRemaining(last, date), "days")
       .format("YYYY-MM-DD");
     buyMembership
       .findByIdAndUpdate(membershipId, {
-        $set: { isFreeze: false, membership_status: "Active",expiry_date:expiry_date },
+        $set: {
+          isFreeze: false,
+          membership_status: "Active",
+          expiry_date: expiry_date,
+        },
         $push: {
           whenFreeze: { date: new Date(), reason: payload.reason },
         },
@@ -1021,11 +1029,11 @@ exports.buyMembership = async (req, res) => {
 };
 
 let createCardToken = async (body, resp) => {
-  let cardNumber = body.cardNumber
-  let cardExpiryMonth = body.cardExpiryMonth
-  let cardExpiryYear = body.cardExpiryYear
-  let cardCvc = body.cardCvc
-
+  let cardNumber = body.cardNumber;
+  let cardExpiryMonth = body.cardExpiryMonth;
+  let cardExpiryYear = body.cardExpiryYear;
+  let cardCvc = body.cardCvc;
+  let card_holder_name = body?.card_holder_name;
   let cardToken = await resp.tokens.create({
     card: {
       number: cardNumber,
@@ -1034,77 +1042,147 @@ let createCardToken = async (body, resp) => {
       cvc: cardCvc,
     },
   });
-  return cardToken
+  return cardToken;
 };
 
-let createPayment = async (req, resp) => {
+let createPayment = async (req, stripeObj) => {
   try {
-    let findCustomer = await StripeCustomers.findOne({ "email": req.body.email })
+    let findCustomer = await StripeCustomers.findOne({
+      email: req.body.email,
+      userId: req.body.userId,
+    });
     if (findCustomer == null) {
-      throw { "status": false, "message": "customer not existed" }
+      throw { status: false, message: "customer not existed" };
     }
-    console.log("amount is ------------", req.body.amount, req.body.card_id,)
-    let paymentIntent = await resp.paymentIntents.create({
-      amount: (req.body.amount) * 100, //stripe uses cents
-      currency: 'usd',
+    console.log("amount is ------------", req.body.amount, req.body.card_id);
+    let paymentObj = {
+      amount: req.body.amount * 100, //stripe uses cents
+      currency: "usd",
       customer: findCustomer.get("id"),
-      payment_method_types: ['card'],
+      payment_method_types: ["card"],
       payment_method: req.body.card_id,
       confirm: "true",
-      description: req.body.description
-    });
-    let storeTransaction = await StoreTransaction.create(paymentIntent)
-    console.log(paymentIntent)
-    return paymentIntent
-  }
-  catch (err) {
-    return err
+      description: req.body.description,
+    };
+    let paymentIntent = await stripeObj.paymentIntents.create(paymentObj);
+    let storeTransaction = await StoreTransaction.create(paymentIntent);
+    return paymentIntent;
+  } catch (err) {
+    return err;
   }
 };
 
-
-let createCard = async (req, resp) => {
+let createCard = async (req, stripe) => {
   try {
-    let cardNumber = req.body.card_number
-    let cardExpiryMonth = req.body.card_expiry_month
-    let cardExpiryYear = req.body.card_expiry_year
-    let cardCvc = req.body.card_cvc
-    let email = req.body.email
-    let phone = req.body.phone
-    let cardToken = await createCardToken({ cardNumber, cardExpiryMonth, cardExpiryYear, cardCvc }, resp)
-    let findCustomer = await StripeCustomers.findOne({ "email": email })
-    let customerId
-    let cardCheck = await StripeCards.findOne({ "card_number": cardNumber, "email": email })
+    let cardNumber = req.body.card_number;
+    let cardExpiryMonth = req.body.card_expiry_month;
+    let cardExpiryYear = req.body.card_expiry_year;
+    let cardCvc = req.body.card_cvc;
+    let card_holder_name = req.body.card_holder_name;
+    let email = req.body.email;
+    let phone = req.body.phone;
+    let userId = req.body.userId;
+    let studentId = req.body.studentId;
+    let cardToken = await createCardToken(
+      { cardNumber, cardExpiryMonth, cardExpiryYear, cardCvc },
+      stripe
+    );
+
+    let findCustomer = await StripeCustomers.findOne({
+      email: email,
+      studentId: studentId,
+    });
+    let customerId;
+    let cardCheck = await StripeCards.findOne({
+      card_number: cardNumber,
+      email: email,
+      studentId: studentId,
+    });
     if (cardCheck) {
-      return { "status": false, "message": "card already existed with this customer email" }
+      return {
+        id: cardCheck["card_id"],
+        success: true,
+        message: "card already existed with this customer email",
+      };
     }
     if (findCustomer == null) {
-      return { "status": false, "message": "customer not existed" }
+      // if customer is not exist in stripe and our db
+      let customer = await stripe.customers.create({
+        email: email,
+        name: card_holder_name,
+        metadata: {
+          userId: userId,
+          studentId: studentId,
+        },
+      });
+      customerId = customer.id;
+      let dataObj = {
+        id: customerId,
+        email: email,
+        studentId: studentId,
+        userId: userId,
+        name: card_holder_name ? card_holder_name : "",
+      };
+      let customerObj = await StripeCustomers.create(dataObj);
+    } else {
+      customerId = findCustomer.id;
     }
-    else {
-      customerId = findCustomer.id
-    }
-    let cardId = await resp.customers.createSource(
-      customerId,
-      { source: cardToken.id }
-    );
-    let storeCard = StripeCards.create(
-      {
-        "customer_id": customerId,
-        "card_id": cardId.id,
-        "card_number": cardNumber,
-        "email": email,
-        "phone": phone
-      }
-    )
+    // add payment method for stripe customer for future use
+    let paymentMethod = await stripe.customers.createSource(customerId, {
+      source: cardToken.id,
+    });
+    let storeCard = StripeCards.create({
+      studentId: studentId,
+      userId: userId,
+      customer_id: customerId,
+      card_id: paymentMethod.id,
+      brand: paymentMethod.brand,
+      exp_month: paymentMethod.exp_month,
+      exp_year: paymentMethod.exp_year,
+      last4: paymentMethod.last4,
+      card_number: cardNumber,
+      email: email,
+      phone: phone,
+    });
 
-    return cardId
-  }
-  catch (error) {
-    console.log("--------------", JSON.parse(JSON.stringify(error)))
-    return error
+    return paymentMethod;
+  } catch (error) {
+    return error;
   }
 };
+
+let createCustomer = async (req, res) => {
+  let customerData = req.body;
+  let userId = req.params.userId;
+  try {
+    let { stripe_sec } = await User.findOne({ _id: userId });
+    let customer = await stripe.customers.create({
+      email: customerData.email,
+      metadata: {
+        account_id: customerData.account_id,
+      },
+    });
+    customerData.customer_id = customer.id;
+    let dataObj = {
+      id: customerData.customer_id,
+      email: customerData.email,
+      account_id: customerData.account_id,
+      name: customerData.name,
+    };
+    let findCustomer = await StripeCustomers.findOne({
+      email: customerData.email,
+    });
+    if (findCustomer) {
+      throw { status: false, message: "customer already existed" };
+    }
+    //Create a new customer in DB
+    let customerObj = await StripeCustomers.create(dataObj);
+    res.send(customerObj);
+  } catch (error) {
+    res.send(error);
+  }
+};
+
 exports.buyMembershipStripe = async (req, res) => {
   const userId = req.params.userId;
   let { stripe_sec } = await User.findOne({ _id: userId });
@@ -1348,51 +1426,82 @@ exports.buyMembershipStripe = async (req, res) => {
         });
       }
     } else {
-      if (
-        !membershipData.isEMI &&
-        membershipData.balance == 0
-        // && membershipData.payment_type == 'pif'
-      ) {
+      if (!membershipData.isEMI && membershipData.balance == 0) {
         membershipData.due_status = "paid";
         membershipData.membership_status = "Active";
         if (stripePayload && ptype === "credit card") {
-          console.log("payment method entered")
-          var cli = await require("stripe")(stripe_sec);
-          let cardId
-          let findExistingCard = await StripeCards.findOne({ "card_number": stripePayload.card_number })
-          console.log(findExistingCard)
-          if (findExistingCard) {
-            cardId = findExistingCard["card_id"]
-          }
-          else {
-            if (!cli) {
-              return res.send({ msg: "please add stipe Keys!", success: false })
-            }
-            let createdCard = await createCard({
-              "body": {
-                "card_number": stripePayload.card_number,
-                "card_expiry_month": stripePayload.card_expiry_month,
-                "card_expiry_year": stripePayload.card_expiry_year,
-                "card_cvc": stripePayload.card_cvc,
-                "email": stripePayload.email,
-                "phone": stripePayload.phone,
+          var stripeObj = await require("stripe")(stripe_sec);
+          let cardId;
+          // if payment with new card
+          if (stripePayload.stripePaymentMethod === "newCard") {
+            // check if card already exist
+            let findExistingCard = await StripeCards.findOne({
+              card_number: stripePayload.card_number,
+              userId: studentId,
+            });
+            if (findExistingCard) {
+              // if card already exist with same card number
+              cardId = findExistingCard["card_id"];
+            } else {
+              //if card is not exist then create a card and save it for future use
+              if (!stripeObj) {
+                return res.send({
+                  msg: "please add stipe Keys!",
+                  success: false,
+                });
               }
-            }, cli)
-            console.log(createdCard)
-            if (createdCard.status) {
-              return createdCard
+              let createdCard = await createCard(
+                {
+                  body: {
+                    card_number: stripePayload.card_number,
+                    card_holder_name: stripePayload.card_holder_name,
+                    card_expiry_month: stripePayload.card_expiry_month,
+                    card_expiry_year: stripePayload.card_expiry_year,
+                    card_cvc: stripePayload.card_cvc,
+                    email: stripePayload.email,
+                    phone: stripePayload.phone,
+                    userId: userId,
+                    studentId: studentId,
+                  },
+                },
+                stripeObj
+              );
+
+              if (createdCard["id"]) {
+                cardId = createdCard["id"];
+              } else {
+                return res.send({
+                  msg: createdCard?.raw?.message,
+                  success: false,
+                  data: createdCard,
+                });
+              }
             }
-            cardId = createdCard["id"]
+          } else {
+            // if payment with existing card
+            cardId = stripePayload.card_id;
           }
-          let createPaymentResponse = createPayment({
-            "body": {
-              "amount": stripePayload.amount,
-              "card_id": cardId,
-              "description": stripePayload.description,
-              "email": stripePayload.email
-            }
-          }, cli)
-          res.send(createPaymentResponse)
+          // create payment start
+          if (cardId) {
+            let createPaymentResponse = await createPayment(
+              {
+                body: {
+                  amount: stripePayload.amount,
+                  card_id: cardId,
+                  description: stripePayload.description,
+                  email: stripePayload.email,
+                  userId: userId,
+                },
+              },
+              stripeObj
+            );
+            // create payment end
+            res.send({
+              msg: "Payment is completed!",
+              success: true,
+              data: createPaymentResponse,
+            });
+          }
         } else if (ptype === ("cash" || "cheque")) {
           if (!financeId) {
             valorPayload.address = Address;
@@ -1427,12 +1536,9 @@ exports.buyMembershipStripe = async (req, res) => {
       }
     }
   } catch (error) {
-    console.log("entered here")
     res.send({ msg: error.message.replace(/\"/g, ""), success: false });
   }
 };
-
-
 
 function getFormatedPayload(valorPayload) {
   const payload = valorPayload;
@@ -1545,14 +1651,13 @@ function createFinanceDoc(data) {
   });
 }
 
-
 exports.checkData = async (req, res) => {
   let userId = req.params.userId;
   const expired_LastaMembership = await AddMember.aggregate([
     {
       $match: {
-        userId: userId
-      }
+        userId: userId,
+      },
     },
     {
       $project: {
@@ -1618,13 +1723,15 @@ exports.checkData = async (req, res) => {
     //   },
     // },
   ]);
-  console.log(expired_LastaMembership)
-}
+};
 
 function update_LastMembershipStatus(member) {
   let { _id, membershipId } = member;
   return new Promise((resolve, reject) => {
-    AddMember.updateOne({ _id: _id.toString() }, { $set: { status: "Expired" } })
+    AddMember.updateOne(
+      { _id: _id.toString() },
+      { $set: { status: "Expired" } }
+    )
       .then((resp) => {
         buyMembership
           .updateOne(
@@ -1637,7 +1744,6 @@ function update_LastMembershipStatus(member) {
       .catch((err) => reject(err));
   });
 }
-
 
 // async function cronForEmiStatus() {
 //   current_Date = moment().format("YYYY-MM-DD");
@@ -1839,12 +1945,12 @@ exports.expiredMembership = async (req, res) => {
   const filter =
     userId && studentType
       ? {
-        userId,
-        studentType,
-      }
+          userId,
+          studentType,
+        }
       : {
-        userId,
-      };
+          userId,
+        };
 
   AddMember.aggregate([
     { $match: filter },
