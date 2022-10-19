@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
-const schema = mongoose.Schema
-
+const schema = mongoose.Schema;
 const stripe_cards_schema = new schema({
     customer_id:{
         type:String,
@@ -19,10 +18,7 @@ const stripe_cards_schema = new schema({
         type:String,
         required:true
     },
-    email:{
-        type:String,
-        required:true
-    }
+   
 },
     { timestamps: true }
 )

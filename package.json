@@ -30,6 +30,7 @@
     "express": "^4.17.1",
     "express-fileupload": "^1.2.0",
     "express-jwt": "^5.3.3",
+    "express-pino-logger": "^7.0.0",
     "express-validator": "^5.3.1",
     "fcm-notification": "^2.0.0",
     "force": "0.0.3",

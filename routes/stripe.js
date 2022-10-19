@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { createCustomer,listCustomers, createCard, listCards, createPayment, createRefund, confirmPayment,createStudents } = require("../Services/stripe");
+const { createCustomer, listCustomers, createCard, listCards, createPayment, createRefund, confirmPayment, createStudents, stripePayment, stripePaymentsPlans, stripePaymentSubscriptions, RecurringPayment } = require("../Services/stripe");
 const { verifySchool } = require("../controllers/auth");
 
 
@@ -13,4 +13,11 @@ router.get("/list_cards", listCards);
 // router.post("/create_payment", createPayment);
 router.post("/create_refund", createRefund);
 router.post("/confirm_payment", confirmPayment);
+router.post("/stripePayment", stripePayment)
+router.post("/stripePaymentSubscriptions", stripePaymentSubscriptions)
+router.post("/RecurringPayment", RecurringPayment)
+
+
+router.post("/stripePaymentsPlan", stripePaymentsPlans)
+
 module.exports = router;

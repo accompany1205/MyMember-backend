@@ -1272,285 +1272,88 @@ exports.trial_this_month = (req, res) => {
 exports.filterLeads = async (req, res) => {
   const leadFilter = req.body.leadFilter;
   const userId = req.params.userId;
-  const month = parseInt(req.query.month);
-  const year = parseInt(req.query.year);
+  const month=parseInt(req.query.month);
+  const year=parseInt(req.query.year);
+  console.log(typeof(month))
   try {
-    if (month && year) {
+    if(month){
       const data = await addmemberModal.aggregate([
         {
           $match: {
             $and: [
-              { userId: userId }, { leadsTracking: { $in: leadFilter } }
+              {userId:userId}, {leadsTracking:{$in:leadFilter}}
             ]
           }
         },
         {
-          $project: {
-            year: { $year: '$createdAt' },
+          $project:{
             month: { $month: '$createdAt' },
-            status: 1,
-            days_expire: 1,
-            day_left:1,
-            programColor: 1,
-            next_rank_name: 1,
-            next_rank_img: 1,
-            current_rank_name:1,
-            current_rank_id: 1,
-            subcategory: 1,
-            leadsTracking: 1,
-            after_camp: 1,
-            memberprofileImage:1,
-            rating: 1,
-            attendence_color: 1,
-            missclass_count: 1,
-            attendedclass_count: 1,
-            attendence_status: 1,
-            rankFromRecomendedTest: 1,
-            membership_details: 1,
-            product_details: 1,
-            finance_details: 1,
-            myFaimly:1,
-            myGroup: 1,
-            test_purchasing:1,
-            renewals_notes:1,
-            birthday_notes:1,
-            birthday_checklist:1,
-            last_contact_missCall:1,
-            last_contact_renewal:1,
-            missYouCall_notes: 1,
-            followup_notes:1,
-            rank_update_history:1,
-            rank_update_test_history:1,
-            isRecomCandidate:1,
-            isRecommended:1,
-            time:1,
-            isInvitee:1,
-            isSeen:1,
-            isRead: 1,
-            class_count: 1,
             firstName:1,
-            lastName: 1,
-            gender: 1,
-            dob:1,
-            age:1,
-            primaryPhone: 1,
-            email: 1,
-            secondaryNumber: 1,
-            street: 1,
-            zipPostalCode: 1,
-            town: 1,
-            country: 1,
-            notes:1,
+            lastName:1,
             studentType:1,
-            school:1,
-            location:1,
-            customId:1,
-            intrested:1,
-            program: 1,
-            category:1,
-            state: 1,
-            userId:1,
-            createdAt: 1,
-            updatedAt:1,
-            __v: 1,
-            next_rank_id: 1,
-            programID: 1,
-            current_rank_img:1,
-            rank_order: 1,
-            leadStatus:1,
+            leadsTracking:1,
+            age:1,
+            dob:1,
+            gender:1,
+            street:1,
+            zipPostalCode:1,
+            email:1,
+            state:1,
+            primaryPhone:1,
+            secondaryNumber:1,
+            state:1,
+            country:1,
+            city:1,            
           }
         },
         {
-          $match: {
-            $and: [{ year: year }, { month: month }]
-
+          $match:{
+            month:month
           }
         }
       ]);
-      res.send({ data: data, success: true })
-    } else if (year) {
+      res.send({data:data, success:true})
+    }else if(year){
       const data = await addmemberModal.aggregate([
         {
           $match: {
             $and: [
-              { userId: userId }, { leadsTracking: { $in: leadFilter } }
+              {userId:userId}, {leadsTracking:{$in:leadFilter}}
             ]
           }
         },
         {
-          $project: {
+          $project:{
             year: { $year: '$createdAt' },
-            status: 1,
-            days_expire: 1,
-            day_left:1,
-            programColor: 1,
-            next_rank_name: 1,
-            next_rank_img: 1,
-            current_rank_name:1,
-            current_rank_id: 1,
-            subcategory: 1,
-            leadsTracking: 1,
-            after_camp: 1,
-            memberprofileImage:1,
-            rating: 1,
-            attendence_color: 1,
-            missclass_count: 1,
-            attendedclass_count: 1,
-            attendence_status: 1,
-            rankFromRecomendedTest: 1,
-            membership_details: 1,
-            product_details: 1,
-            finance_details: 1,
-            myFaimly:1,
-            myGroup: 1,
-            test_purchasing:1,
-            renewals_notes:1,
-            birthday_notes:1,
-            birthday_checklist:1,
-            last_contact_missCall:1,
-            last_contact_renewal:1,
-            missYouCall_notes: 1,
-            followup_notes:1,
-            rank_update_history:1,
-            rank_update_test_history:1,
-            isRecomCandidate:1,
-            isRecommended:1,
-            time:1,
-            isInvitee:1,
-            isSeen:1,
-            isRead: 1,
-            class_count: 1,
             firstName:1,
-            lastName: 1,
-            gender: 1,
-            dob:1,
-            age:1,
-            primaryPhone: 1,
-            email: 1,
-            secondaryNumber: 1,
-            street: 1,
-            zipPostalCode: 1,
-            town: 1,
-            country: 1,
-            notes:1,
+            lastName:1,
             studentType:1,
-            school:1,
-            location:1,
-            customId:1,
-            intrested:1,
-            program: 1,
-            category:1,
-            state: 1,
-            userId:1,
-            createdAt: 1,
-            updatedAt:1,
-            __v: 1,
-            next_rank_id: 1,
-            programID: 1,
-            current_rank_img:1,
-            rank_order: 1,
-            leadStatus:1,
+            leadsTracking:1,
+            age:1,
+            dob:1,
+            gender:1,
+            street:1,
+            zipPostalCode:1,
+            email:1,
+            state:1,
+            primaryPhone:1,
+            secondaryNumber:1,
+            state:1,
+            country:1,
+            city:1, 
+            createdAt:1,
+            updatedAt:1           
           }
         },
         {
-          $match: {
-            year: year
+          $match:{
+            year:year
           }
         }
       ]);
-      res.send({ data: data, success: true })
-    } else if (month) {
-      const data = await addmemberModal.aggregate([
-        {
-          $match: {
-            $and: [
-              { userId: userId }, { leadsTracking: { $in: leadFilter } }
-            ]
-          }
-        },
-        {
-          $project: {
-            month: { $month: '$createdAt' },
-            status: 1,
-            days_expire: 1,
-            day_left:1,
-            programColor: 1,
-            next_rank_name: 1,
-            next_rank_img: 1,
-            current_rank_name:1,
-            current_rank_id: 1,
-            subcategory: 1,
-            leadsTracking: 1,
-            after_camp: 1,
-            memberprofileImage:1,
-            rating: 1,
-            attendence_color: 1,
-            missclass_count: 1,
-            attendedclass_count: 1,
-            attendence_status: 1,
-            rankFromRecomendedTest: 1,
-            membership_details: 1,
-            product_details: 1,
-            finance_details: 1,
-            myFaimly:1,
-            myGroup: 1,
-            test_purchasing:1,
-            renewals_notes:1,
-            birthday_notes:1,
-            birthday_checklist:1,
-            last_contact_missCall:1,
-            last_contact_renewal:1,
-            missYouCall_notes: 1,
-            followup_notes:1,
-            rank_update_history:1,
-            rank_update_test_history:1,
-            isRecomCandidate:1,
-            isRecommended:1,
-            time:1,
-            isInvitee:1,
-            isSeen:1,
-            isRead: 1,
-            class_count: 1,
-            firstName:1,
-            lastName: 1,
-            gender: 1,
-            dob:1,
-            age:1,
-            primaryPhone: 1,
-            email: 1,
-            secondaryNumber: 1,
-            street: 1,
-            zipPostalCode: 1,
-            town: 1,
-            country: 1,
-            notes:1,
-            studentType:1,
-            school:1,
-            location:1,
-            customId:1,
-            intrested:1,
-            program: 1,
-            category:1,
-            state: 1,
-            userId:1,
-            createdAt: 1,
-            updatedAt:1,
-            __v: 1,
-            next_rank_id: 1,
-            programID: 1,
-            current_rank_img:1,
-            rank_order: 1,
-            leadStatus:1,
-          }
-        },
-        {
-          $match: {
-            month: month
-          }
-        }
-      ]);
-      res.send({ data: data, success: true })
+      res.send({data:data, success:true})
     }
+    
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }
