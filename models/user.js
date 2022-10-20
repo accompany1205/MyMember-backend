@@ -18,7 +18,7 @@ const userSchema = new schema(
         twilio: {
             type: String,
             unique: true,
-            index:true
+            index: true
         },
         isverify: {
             type: Boolean,
@@ -236,8 +236,8 @@ const userSchema = new schema(
         schoolId: {
             type: String,
             index: true,
-            index:true
-           
+            index: true
+
         },
         reset_code: {
             type: String,
@@ -279,16 +279,16 @@ const userSchema = new schema(
             password: {
                 type: String
             },
-           
+
         }],
-        stripe_pub:{
-            type:String
+        stripe_pub: {
+            type: String
         },
-        stripe_sec:{
-            type:String
+        stripe_sec: {
+            type: String
         },
-        stripe_name:{
-            type:String
+        stripe_name: {
+            type: String
         },
         task_setting: {
             type: Boolean,
@@ -298,66 +298,73 @@ const userSchema = new schema(
             type: Boolean,
             default: true
         },
-        thisWeek_birthday_setting:{
+        thisWeek_birthday_setting: {
             type: Boolean,
             default: false
         },
-        thisMonth_birthday_setting:{
+        thisMonth_birthday_setting: {
             type: Boolean,
             default: false
         },
-        lastMonth_birthday_setting:{
+        lastMonth_birthday_setting: {
             type: Boolean,
             default: false
         },
-        nextSixtyDays_birthday_setting:{
+        nextSixtyDays_birthday_setting: {
             type: Boolean,
             default: false
         },
-        nextNintyDays_birthday_setting:{
+        nextNintyDays_birthday_setting: {
             type: Boolean,
             default: false
         },
-        event_notification_setting:{
+        event_notification_setting: {
             type: Boolean,
             default: true
         },
-        fourteen_missucall_notification_setting:{
+        fourteen_missucall_notification_setting: {
             type: Boolean,
             default: false
         },
-        thirty_missucall_notification_setting:{
+        thirty_missucall_notification_setting: {
             type: Boolean,
             default: false
         },
-        sixty_missucall_notification_setting:{
+        sixty_missucall_notification_setting: {
             type: Boolean,
             default: false
         },
-        sixtyPlus_missucall_notification_setting:{
+        sixtyPlus_missucall_notification_setting: {
             type: Boolean,
             default: false
         },
-        thirtydays_expire_notification_setting_renewal:{
+        thirtydays_expire_notification_setting_renewal: {
             type: Boolean,
             default: false
         },
-        sixtydays_expire_notification_setting_renewal:{
+        sixtydays_expire_notification_setting_renewal: {
             type: Boolean,
             default: false
         },
-        nintydays_expire_notification_setting_renewal:{
+        nintydays_expire_notification_setting_renewal: {
             type: Boolean,
             default: false
         },
-        expire_notification_setting:{
+        expire_notification_setting: {
             type: Boolean,
             default: false
         },
-        frozen_notification_setting:{
+        frozen_notification_setting: {
             type: Boolean,
             default: false
         },
+
+        facebookKey: {
+            type: String,
+        },
+        googleKey: {
+            type:String
+        }
 
     },
     { timestamps: true }

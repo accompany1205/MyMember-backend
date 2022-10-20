@@ -622,6 +622,7 @@ exports.notificationOnOFF = async (req, res) => {
       query.event_notification_setting = event_notification_setting
     }
     else if (seven_to_fourteen_setting != undefined) {
+      console.log(seven_to_fourteen_setting)
       query.fourteen_missucall_notification_setting = seven_to_fourteen_setting
     }
     else if (fifteen_to_thirty_setting != undefined) {
@@ -652,7 +653,7 @@ exports.notificationOnOFF = async (req, res) => {
     let userId = req.params.userId
     const id = mongoose.Types.ObjectId(userId);
     console.log(query, id)
-    let userNotificationUpdate = await user.updateOne({ _id: userId }, { $set: query })
+    let userNotificationUpdate = await user.updateOne({ _id: id }, { $set: query })
     console.log(userNotificationUpdate)
     res.send({ success: true, msg: "notification setting update successfully" });
   } catch (err) {

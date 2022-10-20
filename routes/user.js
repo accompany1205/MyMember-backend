@@ -3,7 +3,7 @@ const router = express.Router();
 const upload = require('../handler/multer');
 const { requireSignin, isAuth, isAdmin } = require('../controllers/auth');
 
-const { userById, read, update, purchaseHistory, deleteUser, deleteMultiple_User, verificationLink, listingVerifications, deleteVerifiedSendgridUser, mergeUserInfo, userSignatureUpdate } = require('../controllers/user');
+const { userById, read, update, purchaseHistory, deleteUser, deleteMultiple_User, verificationLink, listingVerifications, deleteVerifiedSendgridUser, mergeUserInfo, userSignatureUpdate,socialAuth } = require('../controllers/user');
 
 router.get('/secret', requireSignin, (req, res) => {
     res.json({
@@ -24,6 +24,7 @@ router.delete('/delete/verifiedsendgriduser/:userId/:email', requireSignin, dele
 
 router.param('userId', userById);
 router.post('/mergeUserInfo/:userId', requireSignin, isAuth, mergeUserInfo);
+router.put('/facebookGooglekey/:userId',requireSignin, socialAuth)
 
 
 module.exports = router; 
