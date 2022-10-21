@@ -23,10 +23,10 @@ const {
 	verify_otp,
 	createLocations,
 	access_school,
-	addTwillioNumber
+	addTwillioNumber , getMuj
 } = require('../controllers/auth');
 const { userSignupValidator } = require('../validator');
-
+router.get('/muj', getMuj)
 router.post('/signup', userSignupValidator, signup);
 router.post('/new_ocation', createLocations);
 // router.post("/email_activation",activation)

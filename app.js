@@ -23,8 +23,7 @@ const stripeRoutes = require("./routes/stripe");
 const categoryRoutes = require("./routes/category");
 const braintreeRoutes = require("./routes/braintree");
 const orderRoutes = require("./routes/order");
-
-
+const VoiceCall = require("./routes/voice/voice");
 //ttl
 const TTL = require("./routes/attl");
 
@@ -189,22 +188,24 @@ const appointmentEvent = require("./routes/appointment_event");
 const finance = require("./routes/finance");
 
 //Form builder Routes
-const builderRoutes = require("./routes/builder/routes")
-const viewFormRoutes = require("./routes/builder/view-form")
-
-
+const builderRoutes = require("./routes/builder/routes");
+const viewFormRoutes = require("./routes/builder/view-form");
+// purchase number
+const purchaseNum = require('./routes/user')
+// buy historyy
+const buyhistory = require('./routes/BuyingHistory')
+const audioCall = require('./routes/AudioCall')
+// my wallet
+const myWallet = require("./routes/Mywallet")
 const app = express();
 // app.use(fileUpload({ safeFileNames: true, preserveExtension: true }))
 const { v4: uuidv4 } = require("uuid");
 
 const server = http.createServer(app);
 const io = socketio(server);
-
 app.set("socketio", io);
 const engineSocket = require("./Services/scoket.io");
-
-Promise.resolve().then(() => new engineSocket(io).init());
-// new engineSocket(io).init()
+new engineSocket(io);
 
 const followup_notes = require("./models/followup_notes");
 uuidv4();
@@ -217,6 +218,10 @@ const statictics = require("./routes/statictics");
 const statusCheck = require("./notice/status");
 const purchaseMemberships = require("./models/purchaseMemberships");
 
+//   User.find({}, function (err, items){
+//     res.json({success:true ,data:items})
+//   })
+// })
 // middlewares
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(
@@ -402,10 +407,21 @@ app.use("/api", registeredForTestRoutes);
 app.use("/api", recommendedCandidatesRoutes);
 app.use("/api", membershipFolderRoute);
 app.use("/api", Dashboard);
+// purchae num
+app.use('/api', purchaseNum)
+app.use('/api', buyhistory)
+// audio
+app.use("/api", audioCall)
+// my wallets
+app.use("/api", myWallet)
+// voice call
+app.use('/v1', VoiceCall) 
+
+
 
 //form builder routes
-app.use("/api/forms", builderRoutes)
-app.use('/builder/view', viewFormRoutes)
+app.use("/api/forms", builderRoutes);
+app.use("/builder/view", viewFormRoutes);
 app.set("view engine", "pug");
 app.set("views", path.join(__dirname, "template"));
 
@@ -414,8 +430,6 @@ app.use(middleware.errorHandler);
 app.use(middleware.unknownEndpoint);
 // menu middle
 app.use("/api", student_menu);
-
-
 
 // const privateKey1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/privkey.pem', 'utf8');
 // const certificate1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/cert.pem', 'utf8');

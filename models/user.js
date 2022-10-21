@@ -18,7 +18,7 @@ const userSchema = new schema(
         twilio: {
             type: String,
             unique: true,
-            index:true
+            index: true
         },
         isverify: {
             type: Boolean,
@@ -236,8 +236,8 @@ const userSchema = new schema(
         schoolId: {
             type: String,
             index: true,
-            index:true
-           
+            index: true
+
         },
         reset_code: {
             type: String,
@@ -279,16 +279,16 @@ const userSchema = new schema(
             password: {
                 type: String
             },
-           
+
         }],
-        stripe_pub:{
-            type:String
+        stripe_pub: {
+            type: String
         },
-        stripe_sec:{
-            type:String
+        stripe_sec: {
+            type: String
         },
-        stripe_name:{
-            type:String
+        stripe_name: {
+            type: String
         },
         task_setting: {
             type: Boolean,
@@ -298,67 +298,26 @@ const userSchema = new schema(
             type: Boolean,
             default: true
         },
-        thisWeek_birthday_setting:{
-            type: Boolean,
-            default: false
-        },
-        thisMonth_birthday_setting:{
-            type: Boolean,
-            default: false
-        },
-        lastMonth_birthday_setting:{
-            type: Boolean,
-            default: false
-        },
-        nextSixtyDays_birthday_setting:{
-            type: Boolean,
-            default: false
-        },
-        nextNintyDays_birthday_setting:{
-            type: Boolean,
-            default: false
-        },
-        event_notification_setting:{
+        birthday_setting: {
             type: Boolean,
             default: true
         },
-        fourteen_missucall_notification_setting:{
-            type: Boolean,
-            default: false
+        purchased_Num: {
+            type: String
         },
-        thirty_missucall_notification_setting:{
-            type: Boolean,
-            default: false
+        customer_id: {
+            type: String
         },
-        sixty_missucall_notification_setting:{
-            type: Boolean,
-            default: false
+        sub_id: {
+            type: String
         },
-        sixtyPlus_missucall_notification_setting:{
+        is_Already_Purchase: {
             type: Boolean,
-            default: false
         },
-        thirtydays_expire_notification_setting_renewal:{
-            type: Boolean,
-            default: false
-        },
-        sixtydays_expire_notification_setting_renewal:{
-            type: Boolean,
-            default: false
-        },
-        nintydays_expire_notification_setting_renewal:{
-            type: Boolean,
-            default: false
-        },
-        expire_notification_setting:{
-            type: Boolean,
-            default: false
-        },
-        frozen_notification_setting:{
-            type: Boolean,
-            default: false
-        },
-
+        userPakages: {
+            type: schema.Types.ObjectId,
+            ref: "User_pakages"
+        }
     },
     { timestamps: true }
 );

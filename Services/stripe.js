@@ -6,10 +6,225 @@ const StripeCards = require('../models/stripe_cards')
 const StoreTransaction = require('../models/store_transactions')
 const uuid = require('uuid').v4
 const Config = require("../config/stripe")
-const stripe = require("stripe")(Config["secretKey"])
-const _ = require('lodash')
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY)
+const _ = require('lodash');
+const email_system_Category = require('../models/email_system_Category');
+const MyWalletModal = require('../models/Mywallet')
+exports.stripePaymentsPlans = async (req, res) => {
+    const token = await stripe.tokens.create({
+        card: {
+            number: '4242424242424242',
+            exp_month: 10,
+            exp_year: 2023,
+            cvc: '314',
+        },
+    });
+    console.log('token', token.id)
+    try {
+        stripe.customers
+            .create({
+                name: "Mujahid",
+                email: "mujahid122418@gmail.com",
+                source: token.id
+            })
+            .then(customer => {
+                console.log('customer', customer);
+                stripe.subscriptions.create({
+                    customer: customer.id,
+                    items: [
+                        { price: 'price_1LqwdbHDL8mWxP3ea7y5OG5F' },
+                    ],
+                })
+            }
+            )
+            .then(() => res.status(200).json({ success: true, message: "Payment Successful", }))
+            .catch(err => res.status(400).json({
+                success: false,
+                message: "Payment Failed"
+
+            }));
+        // const subscription = await stripe.subscriptions.create({
+        //     customer: 'cus_Ma6ueKUNbqQWHo',
+        //     items: [
+        //       {price: 'price_1LqwdbHDL8mWxP3ea7y5OG5F'},
+        //     ],
+        //   });
+        //   console.log('subscription',  subscription)
+    } catch (e) {
+        console.log("eee", e)
+    }
+}
+
+exports.stripePayment = async (req, res) => {
+    let { email, payment_method, cvc, cardNum, exp_year, exp_month, amount } = req.body
+    console.log('body payment', amount)
 
 
+    try {
+        const token = await stripe.tokens.create({
+            card: {
+                number: cardNum,
+                exp_month: exp_month,
+                exp_year: exp_year,
+                cvc: cvc,
+            },
+        });
+        console.log('token', token.id)
+        await stripe.customers
+            .create({
+                name: email,
+                email: email,
+                source: token.id
+            })
+            .then(customer => {
+                console.log("customer ", customer);
+                stripe.charges.create({
+                    amount: +amount * 100,
+                    currency: "usd",
+                    customer: customer.id
+                })
+            }
+            )
+            .then(() => res.status(200).json({ success: true, message: "Payment Successful", }))
+            .catch(err => res.status(400).json({
+                success: false,
+                message: "Payment Failed"
+
+            }));
+
+    } catch (err) {
+        console.log('err', err)
+        res.status(400).json({
+            success: false,
+            message: "Payment Failed"
+
+        })
+    }
+}
+const UpdateUserInfo = async (user_id, cus_id, sub_id) => {
+    // console.log('work', user_id, cus_id)
+    let bData = {
+        customer_id: cus_id,
+        sub_id: sub_id
+    }
+    let UserInfo = await User.findByIdAndUpdate(user_id, bData, {
+        new: true,
+        runValidators: true
+    })
+    console.log("updated")
+    // res.status(200).json({
+    //     success: true,
+    //     data: UserInfo,
+    // })
+}
+exports.RecurringPayment = async (req, res) => {
+    try {
+        // console.log("RecurringPayment", req.body)
+        let sub_id = req.body.data.object.id;
+        let user = await User.find({ sub_id: sub_id })
+        console.log("req body user", user[0]._id)
+        const doesUserExist = await MyWalletModal.findOne({ user_id: user[0]._id });
+        console.log("doesUserExist._id", doesUserExist._id)
+        if (doesUserExist) {
+            let creditsInfo = await MyWalletModal.findByIdAndUpdate(doesUserExist._id, {
+                $inc: {
+                    cretits: 300
+                }
+            }, {
+                new: true,
+                runValidators: true
+            })
+            console.log('data update')
+            // res.status(200).json({
+            //     success: true,
+            //     data: creditsInfo
+            // })
+        }
+        // console.log("res" , res)
+    } catch (e) {
+        console.log("e recurring", e)
+    }
+}
+exports.stripePaymentSubscriptions = async (req, res) => {
+    let { email, payment_method, cvc, cardNum, exp_year, exp_month, amount, userId, customer_id } = req.body
+    let user = await User.findOne({ _id: userId });
+    try {
+
+        // create token
+        const token = await stripe.tokens.create({
+            card: {
+                number: cardNum,
+                exp_month: exp_month,
+                exp_year: exp_year,
+                cvc: cvc,
+            },
+        });
+        console.log('token', token.id)
+        // create customer
+        let customer = await stripe.customers
+            .create({
+                name: email,
+                email: email,
+                source: token.id
+            })
+        console.log('customer', customer.id)
+        const product = await stripe.products.create({
+            name: 'Gold Special',
+        });
+        console.log('product', product.id)
+
+        const price = await stripe.prices.create({
+            unit_amount: 2500,
+            currency: 'usd',
+            recurring: { interval: 'month' },
+            // product: 'prod_MdBpyqSYjJwz8b',
+            product: product.id,
+        });
+        console.log('price', price.id)
+        const subscription = await stripe.subscriptions.create({
+            // customer: 'cus_MZQSpOn0dSItOX',
+            customer: customer.id,
+            items: [
+                //   {price: 'price_1LtvSJEqCRWTYE4oBLRSccCJ'},
+                { price: price.id },
+            ],
+        });
+        console.log('subscription', subscription.id)
+        UpdateUserInfo(userId, customer.id, subscription.id)
+        res.status(200).json({ success: true, message: "Payment Successful", })
+        // await stripe.customers
+        //     .create({
+        //         name: email,
+        //         email: email,
+        //         source: token.id
+        //     })
+
+        //     .then(customer => {
+        //         UpdateUserInfo(userId, customer.id)
+        //         stripe.charges.create({
+        //             amount: +amount * 100,
+        //             currency: "usd",
+        //             customer: customer.id
+        //         })
+        //     }
+        //     )
+        //     .then(() => res.status(200).json({ success: true, message: "Payment Successful", }))
+        //     .catch(err =>
+        //         res.status(400).json({
+        //             success: false,
+        //             message: "Payment Failed"
+        //         }));
+
+
+
+    } catch (err) {
+        console.log('err', err)
+        res.status(400).json({
+            success: false,
+            message: "Payment Failed"
+        })
+    }
+}
 
 exports.createStudents = async (req, res) => {
     const id = req.params.student
@@ -52,7 +267,6 @@ exports.createStudents = async (req, res) => {
     } catch (error) {
         res.send(error)
     }
-
 
 }
 
@@ -125,7 +339,6 @@ exports.createCard = async (req, res) => {
                 "phone": phone
             }
         )
-
         return cardId
     }
     catch (error) {
