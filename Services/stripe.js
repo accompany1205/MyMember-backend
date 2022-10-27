@@ -191,7 +191,7 @@ exports.stripePaymentSubscriptions = async (req, res) => {
         });
         console.log('subscription', subscription.id)
         UpdateUserInfo(userId, customer.id, subscription.id)
-        res.status(200).json({ success: true, message: "Payment Successful", })
+        res.status(200).json({ success: true, message: "Payment Successful" })
         // await stripe.customers
         //     .create({
         //         name: email,
