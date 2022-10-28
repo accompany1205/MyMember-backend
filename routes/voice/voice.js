@@ -2,7 +2,8 @@ const config = require("./config");
 const express = require("express");
 
 const router = express.Router();
-const VoiceRecord = require('../../models/voice_recording')
+const VoiceRecord = require('../../models/voice_recording');
+const MyWalletModal = require('../../models/Mywallet');
 // const bodyParser = require("body-parser");
 const pino = require("express-pino-logger")();
 const { chatToken, videoToken, voiceToken } = require("./voiceToken");
@@ -101,7 +102,6 @@ router.post("/twiml", (req, res) => {
         <Say>Goodbye</Say>
     </Response>`;
 
-
       // VoiceRecord(data).save()
       //   .then((item) => res.send({ success: true, data: item }))
       res.send(response);
@@ -115,19 +115,54 @@ router.post("/twiml", (req, res) => {
     console.log('e')
   }
 });
-router.post("/voice_recording", (req, res) => {
-  console.log("body voice req", req.url);
-  let url = "/voice_recording?user_id=606aea95a145ea2d26e0f1ab,+18323041166b"
-  console.log("url", url?.split("?user_id=")[1].split(','))
-  // console.log("body voice res", res.data);
-  let data = {
-    recording_url: req.body.RecordingUrl,
-    user_id: req?.url?.split("?user_id=")[1].split(',')[0],
-    num: req?.url?.split("?user_id=")[1].split(',')[1],
-    duration: req.body.RecordingDuration
+router.post("/voice_recording", async (req, res) => {
+  try {
+    console.log("body voice req",);
+    let url = "/voice_recording?user_id=606aea95a145ea2d26e0f1ab,+18323041166b"
+    console.log("url", url?.split("?user_id=")[1].split(','))
+    // console.log("body voice res", res.data);
+    let data = {
+      recording_url: req?.body?.RecordingUrl,
+      user_id: req?.url?.split("?user_id=")[1].split(',')[0],
+      num: req?.url?.split("?user_id=")[1].split(',')[1],
+      duration: req?.body?.RecordingDuration
+    }
+    await VoiceRecord(data).save()
+      .then((item) => {
+        res.json({ success: true, data: item })
+      })
+
+    // subtracts credits on call end
+    let callDuration = +req?.body?.RecordingDuration / 60;
+
+
+    let creditsSubtract = callDuration.toFixed(0) == 0 ? 2 : callDuration.toFixed(0) == 1 ? 2 : callDuration.toFixed(0) == 2 ? 4 : callDuration.toFixed(0)
+    console.log("creditsSubtract", creditsSubtract);
+
+    const doesUserExist = await MyWalletModal.findOne({ user_id: req?.url?.split("?user_id=")[1].split(',')[0] });
+    console.log('findUser', doesUserExist)
+    if (doesUserExist) {
+      // let findUser = await MyWalletModal.findById({user_id})
+      // console.log('findUser', findUser)
+      let creditsInfo = await MyWalletModal.findByIdAndUpdate(doesUserExist._id, { $inc: { cretits: -2, } }, {
+        new: true,
+        runValidators: true
+      })
+      res.status(200).json({
+        success: true,
+        data: creditsInfo
+      })
+    }
+    else {
+      MyWalletModal(req.body).save()
+        .then((item) => res.json({ success: true, data: item }))
+
+    }
+  } catch (e) {
+    res.json({ success: false, data: "Something went wrong" })
+    console.log("ee", e)
   }
-  VoiceRecord(data).save()
-    .then((item) => res.json({ success: true, data: item }))
+
 });
 router.get("/showCallHistory/:user_id", async (req, res) => {
   console.log('call here');
