@@ -1,5 +1,9 @@
 const cron = require("node-cron");
 const Member = require("../models/addmember");
+const moment = require("moment");
+const schedulePayment = require("../models/schedulePayment");
+const StripeCards = require("../models/stripe_cards");
+const StoreTransaction = require("../models/store_transactions");
 const User = require("../models/user");
 const class_schedule = require("../models/class_schedule");
 const buyMembership = require("../models/buy_membership");
@@ -36,10 +40,8 @@ function getUserId() {
   });
 }
 
-
 const expiredMembership = async (req, res) => {
   const expired_LastaMembership = await Member.aggregate([
-
     {
       $project: {
         membership_details: 1,
@@ -49,12 +51,12 @@ const expiredMembership = async (req, res) => {
     {
       $match: {
         membership_details: {
-          $ne: []
-        }
-      }
+          $ne: [],
+        },
+      },
     },
     {
-      $unwind: "$membership_details"
+      $unwind: "$membership_details",
     },
     {
       $lookup: {
@@ -69,8 +71,8 @@ const expiredMembership = async (req, res) => {
         membership_id: { $first: "$membership._id" },
         status: 1,
         membership_status: { $first: "$membership.membership_status" },
-        expiry_date: { $toDate: { $first: "$membership.expiry_date" } }
-      }
+        expiry_date: { $toDate: { $first: "$membership.expiry_date" } },
+      },
     },
     {
       $project: {
@@ -82,48 +84,60 @@ const expiredMembership = async (req, res) => {
           $cond: {
             if: { $lte: ["$expiry_date", new Date()] },
             then: true,
-            else: false
-          }
-        }
-      }
-    }
+            else: false,
+          },
+        },
+      },
+    },
   ]);
-  let buy_members = []
+  let buy_members = [];
   for (let i of expired_LastaMembership) {
     if (i.isExpired === true) {
-      buy_members.push(i)
+      buy_members.push(i);
     }
   }
   for (let i of buy_members) {
-    await buyMembership.updateOne({ _id: i.membership_id.toString() }, { $set: { membership_status: "Expired" } })
+    await buyMembership.updateOne(
+      { _id: i.membership_id.toString() },
+      { $set: { membership_status: "Expired" } }
+    );
   }
   const uniqueIds = {};
-  expired_LastaMembership.forEach(element => {
-    const isDuplicate = uniqueIds[element._id]
+  expired_LastaMembership.forEach((element) => {
+    const isDuplicate = uniqueIds[element._id];
     if (!isDuplicate) {
-      uniqueIds[element._id] = element
+      uniqueIds[element._id] = element;
     }
-  })
-  const uniqData = Object.values(uniqueIds)
-  let array = []
+  });
+  const uniqData = Object.values(uniqueIds);
+  let array = [];
   for (let i of uniqData) {
-    let obj = { _id: "", data: [] }
+    let obj = { _id: "", data: [] };
     obj._id = i._id;
     for (let j of expired_LastaMembership) {
       if (obj._id.toString() === j._id.toString()) {
-        obj.data.push(j.membership_status)
+        obj.data.push(j.membership_status);
       }
     }
-    array.push(obj)
+    array.push(obj);
   }
   for (let i = 0; i < array.length; i++) {
-    if ((array[i].data).includes("Expired") && !(array[i].data).includes("Active")) {
-      await Member.updateOne({ _id: array[i]._id.toString() }, { $set: { status: "Expired" } })
-    } else if ((array[i].data).includes("Terminated")) {
-      await Member.updateOne({ _id: array[i]._id.toString() }, { $set: { status: "Expired" } })
+    if (
+      array[i].data.includes("Expired") &&
+      !array[i].data.includes("Active")
+    ) {
+      await Member.updateOne(
+        { _id: array[i]._id.toString() },
+        { $set: { status: "Expired" } }
+      );
+    } else if (array[i].data.includes("Terminated")) {
+      await Member.updateOne(
+        { _id: array[i]._id.toString() },
+        { $set: { status: "Expired" } }
+      );
     }
   }
-}
+};
 
 const activeMembership = async (req, res) => {
   const active = await Member.aggregate([
@@ -136,12 +150,12 @@ const activeMembership = async (req, res) => {
     {
       $match: {
         membership_details: {
-          $ne: []
-        }
-      }
+          $ne: [],
+        },
+      },
     },
     {
-      $unwind: "$membership_details"
+      $unwind: "$membership_details",
     },
     {
       $lookup: {
@@ -149,7 +163,7 @@ const activeMembership = async (req, res) => {
         localField: "membership_details",
         foreignField: "_id",
         as: "membership",
-      }
+      },
     },
     {
       $project: {
@@ -157,13 +171,16 @@ const activeMembership = async (req, res) => {
         membership_id: { $first: "$membership._id" },
         status: 1,
         membership_status: { $first: "$membership.membership_status" },
-        expiry_date: { $toDate: { $first: "$membership.expiry_date" } }
-      }
+        expiry_date: { $toDate: { $first: "$membership.expiry_date" } },
+      },
     },
     {
       $match: {
-        $or: [{ membership_status: { $eq: "Freeze" } }, { membership_status: { $eq: "Active" } }]
-      }
+        $or: [
+          { membership_status: { $eq: "Freeze" } },
+          { membership_status: { $eq: "Active" } },
+        ],
+      },
     },
     {
       $project: {
@@ -176,40 +193,48 @@ const activeMembership = async (req, res) => {
           $cond: {
             if: { $lte: ["$expiry_date", new Date()] },
             then: true,
-            else: false
-          }
-        }
-      }
-    }
-
-  ])
+            else: false,
+          },
+        },
+      },
+    },
+  ]);
   const uniqueIds = {};
-  active.forEach(element => {
-    const isDuplicate = uniqueIds[element._id]
+  active.forEach((element) => {
+    const isDuplicate = uniqueIds[element._id];
     if (!isDuplicate) {
-      uniqueIds[element._id] = element
+      uniqueIds[element._id] = element;
     }
-  })
-  const uniqData = Object.values(uniqueIds)
-  let array = []
+  });
+  const uniqData = Object.values(uniqueIds);
+  let array = [];
   for (let i of uniqData) {
-    let obj = { _id: "", data: [] }
+    let obj = { _id: "", data: [] };
     obj._id = i._id;
     for (let j of active) {
       if (obj._id.toString() === j._id.toString()) {
-        obj.data.push(j.membership_status)
+        obj.data.push(j.membership_status);
       }
     }
-    array.push(obj)
+    array.push(obj);
   }
   for (let i = 0; i < array.length; i++) {
-    if ((array[i].data).includes("Freeze")) {
-      await Member.updateOne({ _id: array[i]._id }, { $set: { status: "Freeze" } })
-    } else if ((array[i].data).includes("Active") && !(array[i].data).includes("Freeze")) {
-      await Member.updateOne({ _id: array[i]._id }, { $set: { status: "Active" } })
+    if (array[i].data.includes("Freeze")) {
+      await Member.updateOne(
+        { _id: array[i]._id },
+        { $set: { status: "Freeze" } }
+      );
+    } else if (
+      array[i].data.includes("Active") &&
+      !array[i].data.includes("Freeze")
+    ) {
+      await Member.updateOne(
+        { _id: array[i]._id },
+        { $set: { status: "Active" } }
+      );
     }
   }
-}
+};
 
 //Memberships
 // expiredLastMembership = async (req,res) => {
@@ -341,9 +366,6 @@ const activeMembership = async (req, res) => {
 
 // console.log(buy_members)
 
-
-
-
 // for (let i of uniqData) {
 //   for (let j of expired_LastaMembership) {
 //     if ((i._id).toString() === (j._id).toString()) {
@@ -441,7 +463,7 @@ allexpiredMemberships = async () => {
     Promise.all(
       expired_Membership.map((expired_Membership) => {
         updateAllMembershipStatus(expired_Membership)
-          .then((resp) => { })
+          .then((resp) => {})
           .catch((err) => {
             console.log(err);
           });
@@ -749,12 +771,98 @@ async function DailyTriggeredMails() {
   }
 }
 
+const chargeEmiWithStripeCron = async (req, res) => {
+  const stripeObj = await require("stripe")(process.env.STRIPE_SECRET_KEY);
+  const todayDate = moment().format("yyyy-MM-DD");
+
+  await schedulePayment.find(
+    {
+      date: todayDate,
+      status: "due",
+      ptype: "credit card",
+    },
+    (error, dueEmiData) => {
+      if (error) {
+        res.send({ msg: "Data is not found!", success: false, error: error });
+      } else {
+        Promise.all(
+          dueEmiData?.map(async (dueEmiObj) => {
+            const studentId = dueEmiObj.studentId;
+            const userId = dueEmiObj.userId;
+            const amount = dueEmiObj.Amount;
+            const Id = dueEmiObj.Id;
+            const purchased_membership_id = dueEmiObj.purchased_membership_id;
+            // fetch stripe cards detail
+            const stripeDetails = await StripeCards?.findOne({
+              studentId: studentId,
+              userId: userId,
+            });
+            const card_id = stripeDetails.card_id;
+            const customer_id = stripeDetails.customer_id;
+
+            const paymentObj = {
+              amount: amount * 100, //stripe uses cents
+              currency: "usd",
+              customer: customer_id,
+              payment_method_types: ["card"],
+              payment_method: card_id,
+              confirm: "true",
+              description: "Monthly Emi installment",
+            };
+            const paymentIntent = await stripeObj.paymentIntents.create(
+              paymentObj
+            );
+            const storeTransaction = await StoreTransaction.create({
+              ...paymentIntent,
+              studentId,
+              userId,
+            });
+            if (
+              paymentIntent?.statusCode === "200" ||
+              paymentIntent?.status === "succeeded"
+            ) {
+              // update payment status
+              await schedulePayment.updateOne(
+                { studentId: studentId.toString(), Id: Id },
+                { $set: { status: "paid" } }
+              );
+              // update membership status
+              await buyMembership.updateOne(
+                { _id: ObjectId(purchased_membership_id) },
+                { $set: { membership_status: "Active" } }
+              );
+            }
+
+            return { studentId, userId, paymentIntent };
+          })
+        )
+          .then((resdata) => {
+            res.send({
+              msg: "Emi payment completed!",
+              data: resdata,
+              success: true,
+            });
+          })
+          .catch((error) => {
+            res.send({
+              msg: "Emi payment failed",
+              success: false,
+              error: error,
+            });
+          });
+      }
+    }
+  );
+};
+
 // DailyTriggeredMails();
 module.exports = cron.schedule("0 1 * * *", () => {
-  collectionModify(),
-  activeMembership(), expiredMembership()
+  collectionModify(), activeMembership(), expiredMembership();
 });
 module.exports = cron.schedule(`*/1 * * * *`, () => emailCronFucntionality());
+
+// DailyTriggeredStripe Charge script();
+module.exports = cron.schedule("0 1 * * *", () => chargeEmiWithStripeCron);
 
 // module.exports = cron.schedule('*/20 * * * * *',function(){
 //     let options = {

@@ -1,6 +1,7 @@
 const membershipModal = require("../models/membership");
 const moment = require("moment");
 const buyMembership = require("../models/buy_membership");
+const schedulePayment = require("../models/schedulePayment");
 const Finance_infoSchema = require("../models/finance_info");
 const AddMember = require("../models/addmember");
 const StripeApis = require("../Services/stripe");
@@ -1046,10 +1047,12 @@ let createCardToken = async (body, resp) => {
 };
 
 let createPayment = async (req, stripeObj) => {
+  const userId = req.body.userId;
+  const studentId = req.body.studentId;
   try {
     let findCustomer = await StripeCustomers.findOne({
       email: req.body.email,
-      userId: req.body.userId,
+      userId: userId,
     });
     if (findCustomer == null) {
       throw { status: false, message: "customer not existed" };
@@ -1065,7 +1068,11 @@ let createPayment = async (req, stripeObj) => {
       description: req.body.description,
     };
     let paymentIntent = await stripeObj.paymentIntents.create(paymentObj);
-    let storeTransaction = await StoreTransaction.create(paymentIntent);
+    let storeTransaction = await StoreTransaction.create({
+      ...paymentIntent,
+      studentId,
+      userId,
+    });
     return paymentIntent;
   } catch (err) {
     return err;
@@ -1200,290 +1207,81 @@ exports.buyMembershipStripe = async (req, res) => {
   delete req.body.membership_details.stripePayload;
   let memberShipDoc;
   membershipData.userId = userId;
+  stripePayload.address = Address;
+  stripePayload.userId = userId;
+  stripePayload.studentId = studentId;
   try {
-    if (membershipData.isEMI) {
-      if (
-        membershipData.payment_time > 0 &&
-        membershipData.balance > 0
-        //  && membershipData.payment_type != 'pif'
-      ) {
-        membershipData.schedulePayments = createEMIRecord(
-          membershipData.payment_time,
-          membershipData.payment_money,
-          membershipData.mactive_date,
-          membershipData.createdBy,
-          membershipData.payment_type,
-          membershipData.pay_latter,
-          membershipData.due_every
-        );
-        if (valorPayload && ptype == "credit card") {
-          valorPayload.descriptor = "BETA TESTING";
-          valorPayload.product_description = "Mymember brand Product";
-          const { uid } = getUidAndInvoiceNumber();
-          delete valorPayload.subscription_starts_from;
-          delete valorPayload.Subscription_valid_for;
-          let addValorPay = valorPayload;
-          valorPayload = { ...valorPayload, uid };
-          const saleFormatedPayload = getFormatedPayload(valorPayload);
-          const resp = await valorTechPaymentGateWay.saleSubscription(
-            saleFormatedPayload
-          );
-          // console.log(resp.data);
-          if (resp.data.error_no == "S00") {
-            if (
-              payLatter === "credit card" &&
-              (membershipData.payment_type === "monthly" ||
-                membershipData.payment_type === "weekly")
-            ) {
-              addValorPay = {
-                ...addValorPay,
-                amount: membershipData.payment_money,
-                subscription_starts_from:
-                  membershipData.schedulePayments[0].date.split("-").join(""),
-                Subscription_valid_for:
-                  membershipData.schedulePayments.length - 1,
-                ...getUidAndInvoiceNumber(),
-              };
-              const addFormatedPayload = getFormatedPayload(addValorPay);
-              const addresp = await valorTechPaymentGateWay.addSubscription(
-                addFormatedPayload
-              );
-              // console.log(addresp.data);
-              if (addresp.data.error_no === "S00") {
-                membershipData.subscription_id = addresp.data.subscription_id;
-                membershipData.transactionId = {
-                  rrn: resp.data.rrn,
-                  txnid: resp.data.txnid,
-                  token: resp.data.token,
-                };
-
-                if (!financeId) {
-                  valorPayload.address = Address;
-                  valorPayload.userId = userId;
-                  valorPayload.studentId = studentId;
-                  const financeDoc = await createFinanceDoc(valorPayload);
-                  if (financeDoc.success) {
-                    membershipData.membership_status = "Active";
-                    memberShipDoc = await createMemberShipDocument(
-                      membershipData,
-                      studentId
-                    );
-                    return res.send(memberShipDoc);
-                  } else {
-                    res.send({
-                      msg: "Finance and membership doc not created!",
-                      success: false,
-                    });
-                  }
-                }
-
-                membershipData.membership_status = "Active";
-                memberShipDoc = await createMemberShipDocument(
-                  membershipData,
-                  studentId
-                );
-                res.send(memberShipDoc);
-              } else {
-                res.send({
-                  msg: addresp.data.mesg ? addresp.data.mesg : addresp.data.msg,
-                  success: false,
-                });
-              }
-            } else {
-              // paylater with cash/cheque
-              if (!financeId) {
-                valorPayload.address = Address;
-                valorPayload.userId = userId;
-                valorPayload.studentId = studentId;
-                const financeDoc = await createFinanceDoc(valorPayload);
-                if (financeDoc.success) {
-                  membershipData.membership_status = "Active";
-                  memberShipDoc = await createMemberShipDocument(
-                    membershipData,
-                    studentId
-                  );
-                  return res.send(memberShipDoc);
-                } else {
-                  res.send({
-                    msg: "Finance and membership doc not created!",
-                    success: false,
-                  });
-                }
-              }
-              membershipData.membership_status = "Active";
-              memberShipDoc = await createMemberShipDocument(
-                membershipData,
-                studentId
-              );
-              return res.send(memberShipDoc);
-            }
-          } else {
-            res.send({ msg: resp.data.mesg, success: false });
-          }
-        } else if (ptype === "cash" || ptype === "cheque") {
-          if (
-            payLatter === "credit card" &&
-            (membershipData.payment_type === "monthly" ||
-              membershipData.payment_type === "weekly")
-          ) {
-            valorPayload.descriptor = "BETA TESTING";
-            valorPayload.product_description = "Mymember brand Product";
-            const { uid } = getUidAndInvoiceNumber();
-            delete valorPayload.subscription_starts_from;
-            delete valorPayload.Subscription_valid_for;
-            let addValorPay = valorPayload;
-            addValorPay = {
-              ...addValorPay,
-              amount: membershipData.payment_money,
-              subscription_starts_from: membershipData.schedulePayments[0].date
-                .split("-")
-                .join(""),
-              Subscription_valid_for:
-                membershipData.schedulePayments.length - 1,
-              ...getUidAndInvoiceNumber(),
-            };
-            const addFormatedPayload = getFormatedPayload(addValorPay);
-            const addresp = await valorTechPaymentGateWay.addSubscription(
-              addFormatedPayload
-            );
-            // console.log(addresp.data);
-            if (addresp.data.error_no === "S00") {
-              membershipData.subscription_id = addresp.data.subscription_id;
-              membershipData.transactionId = {
-                payment_type: "cash",
-              };
-              // console.log('isdnjv');
-
-              if (!financeId) {
-                valorPayload.address = Address;
-                valorPayload.userId = userId;
-                valorPayload.studentId = studentId;
-                const financeDoc = await createFinanceDoc(valorPayload);
-                if (financeDoc.success) {
-                  membershipData.membership_status = "Active";
-                  memberShipDoc = await createMemberShipDocument(
-                    membershipData,
-                    studentId
-                  );
-                  return res.send(memberShipDoc);
-                } else {
-                  res.send({
-                    msg: "Finance and membership doc not created!",
-                    success: false,
-                  });
-                }
-              }
-
-              membershipData.membership_status = "Active";
-              memberShipDoc = await createMemberShipDocument(
-                membershipData,
-                studentId
-              );
-              res.send(memberShipDoc);
-            } else {
-              res.send({
-                msg: addresp.data.mesg ? addresp.data.mesg : addresp.data.msg,
-                success: false,
-              });
-            }
-          }
-
-          if (!financeId) {
-            valorPayload.address = Address;
-            valorPayload.userId = userId;
-            valorPayload.studentId = studentId;
-            const financeDoc = await createFinanceDoc(valorPayload);
-            if (financeDoc.success) {
-              membershipData.membership_status = "Active";
-              memberShipDoc = await createMemberShipDocument(
-                membershipData,
-                studentId
-              );
-              return res.send(memberShipDoc);
-            } else {
-              res.send({
-                msg: "Finance and membership doc not created!",
-                success: false,
-              });
-            }
-          }
-          membershipData.membership_status = "Active";
-          memberShipDoc = await createMemberShipDocument(
-            membershipData,
-            studentId
-          );
-          return res.send(memberShipDoc);
+    membershipData.due_status = "paid";
+    membershipData.membership_status = "Active";
+    if (stripePayload && ptype === "credit card") {
+      var stripeObj = await require("stripe")(stripe_sec);
+      let cardId;
+      // if payment with new card
+      if (stripePayload.stripePaymentMethod === "newCard") {
+        // check if card already exist
+        let findExistingCard = await StripeCards.findOne({
+          card_number: stripePayload.card_number,
+          studentId: studentId,
+        });
+        if (findExistingCard) {
+          // if card already exist with same card number
+          cardId = findExistingCard["card_id"];
         } else {
-          res.send({
-            msg: "payment mode should be cash/cheque or credit card",
-            success: false,
-          });
+          //if card is not exist then create a card and save it for future use
+          if (!stripeObj) {
+            return res.send({
+              msg: "please add stipe Keys!",
+              success: false,
+            });
+          }
+          let createdCard = await createCard(
+            {
+              body: {
+                card_number: stripePayload.card_number,
+                card_holder_name: stripePayload.card_holder_name,
+                card_expiry_month: stripePayload.card_expiry_month,
+                card_expiry_year: stripePayload.card_expiry_year,
+                card_cvc: stripePayload.card_cvc,
+                email: stripePayload.email,
+                phone: stripePayload.phone,
+                userId: userId,
+                studentId: studentId,
+              },
+            },
+            stripeObj
+          );
+
+          if (createdCard["id"]) {
+            cardId = createdCard["id"];
+          } else {
+            return res.send({
+              msg: createdCard?.raw?.message,
+              success: false,
+              data: createdCard,
+            });
+          }
         }
       } else {
-        res.send({
-          msg: "payment type should be weekly/monthly",
-          success: false,
-        });
+        // if payment with existing card
+        cardId = stripePayload.card_id;
       }
-    } else {
-      if (!membershipData.isEMI && membershipData.balance == 0) {
-        membershipData.due_status = "paid";
-        membershipData.membership_status = "Active";
-        if (stripePayload && ptype === "credit card") {
-          var stripeObj = await require("stripe")(stripe_sec);
-          let cardId;
-          // if payment with new card
-          if (stripePayload.stripePaymentMethod === "newCard") {
-            // check if card already exist
-            let findExistingCard = await StripeCards.findOne({
-              card_number: stripePayload.card_number,
-              userId: studentId,
-            });
-            if (findExistingCard) {
-              // if card already exist with same card number
-              cardId = findExistingCard["card_id"];
-            } else {
-              //if card is not exist then create a card and save it for future use
-              if (!stripeObj) {
-                return res.send({
-                  msg: "please add stipe Keys!",
-                  success: false,
-                });
-              }
-              let createdCard = await createCard(
-                {
-                  body: {
-                    card_number: stripePayload.card_number,
-                    card_holder_name: stripePayload.card_holder_name,
-                    card_expiry_month: stripePayload.card_expiry_month,
-                    card_expiry_year: stripePayload.card_expiry_year,
-                    card_cvc: stripePayload.card_cvc,
-                    email: stripePayload.email,
-                    phone: stripePayload.phone,
-                    userId: userId,
-                    studentId: studentId,
-                  },
-                },
-                stripeObj
-              );
-
-              if (createdCard["id"]) {
-                cardId = createdCard["id"];
-              } else {
-                return res.send({
-                  msg: createdCard?.raw?.message,
-                  success: false,
-                  data: createdCard,
-                });
-              }
-            }
-          } else {
-            // if payment with existing card
-            cardId = stripePayload.card_id;
-          }
-          // create payment start
-          if (cardId) {
-            let createPaymentResponse = await createPayment(
+      /*============ after recieve cardId start ===========*/
+      if (cardId) {
+        if (membershipData.isEMI) {
+          //if membership is weekly or monthly
+          if (membershipData.payment_time > 0 && membershipData.balance > 0) {
+            membershipData.schedulePayments = createEMIRecord(
+              membershipData.payment_time,
+              membershipData.payment_money,
+              membershipData.mactive_date,
+              membershipData.createdBy,
+              membershipData.payment_type,
+              membershipData.pay_latter,
+              membershipData.due_every,
+              studentId,
+              userId
+            );
+            const PaymentResponse = await createPayment(
               {
                 body: {
                   amount: stripePayload.amount,
@@ -1491,52 +1289,208 @@ exports.buyMembershipStripe = async (req, res) => {
                   description: stripePayload.description,
                   email: stripePayload.email,
                   userId: userId,
+                  studentId: studentId,
                 },
               },
               stripeObj
             );
-            // create payment end
-            res.send({
-              msg: "Payment is completed!",
-              success: true,
-              data: createPaymentResponse,
+            await createFinanceDocFunction({
+              financeId,
+              studentId,
+              stripePayload,
+              membershipData,
+              memberShipDoc,
             });
-          }
-        } else if (ptype === ("cash" || "cheque")) {
-          if (!financeId) {
-            valorPayload.address = Address;
-            valorPayload.userId = userId;
-            valorPayload.studentId = studentId;
-            const financeDoc = await createFinanceDoc(valorPayload);
-            if (financeDoc.success) {
-              memberShipDoc = await createMemberShipDocument(
-                membershipData,
-                studentId
-              );
-              return res.send(memberShipDoc);
+            membershipData.membership_status = "Active";
+            membershipData.studentId = studentId;
+            memberShipDoc = await createMemberShipDocument(
+              membershipData,
+              studentId
+            );
+            if (
+              PaymentResponse?.statusCode === "200" ||
+              PaymentResponse?.status === "succeeded"
+            ) {
+              res.send({
+                msg: "Payment is completed!",
+                success: true,
+                data: PaymentResponse,
+                memberShipDoc: memberShipDoc,
+              });
             } else {
               res.send({
-                msg: "Finace and membership doc not created!",
+                msg: PaymentResponse?.raw?.message
+                  ? PaymentResponse?.raw?.message
+                  : "Payment is not completed",
                 success: false,
               });
             }
+          } else {
+            res.send({
+              msg: "payment type should be weekly/monthly",
+              success: false,
+            });
           }
-
-          memberShipDoc = await createMemberShipDocument(
-            membershipData,
-            studentId
+        } else {
+          // if its one time payment
+          let PaymentResponse = await createPayment(
+            {
+              body: {
+                amount: stripePayload.amount,
+                card_id: cardId,
+                description: stripePayload.description,
+                email: stripePayload.email,
+                userId: userId,
+                studentId: studentId,
+              },
+            },
+            stripeObj
           );
-          return res.send(memberShipDoc);
+          if (
+            PaymentResponse?.statusCode === "200" ||
+            PaymentResponse?.status === "succeeded"
+          ) {
+            res.send({
+              msg: "Payment is completed!",
+              success: true,
+              data: PaymentResponse,
+            });
+          } else {
+            res.send({
+              msg: PaymentResponse?.raw?.message
+                ? PaymentResponse?.raw?.message
+                : "Payment is not completed",
+              success: false,
+            });
+          }
         }
       } else {
         res.send({
-          msg: "payment type should be Pif or Monthly/Weekly",
-          success: false,
+          msg: "Card is not valid!",
+          success: true,
+          data: "",
         });
       }
+      /*============ after recieve cardId end ===========*/
+    } else if (ptype === ("cash" || "cheque")) {
+      await createFinanceDocFunction({
+        financeId,
+        studentId,
+        stripePayload,
+        membershipData,
+        memberShipDoc,
+      });
+      memberShipDoc = await createMemberShipDocument(membershipData, studentId);
+      return res.send(memberShipDoc);
     }
   } catch (error) {
     res.send({ msg: error.message.replace(/\"/g, ""), success: false });
+  }
+};
+
+exports.chargeEmiWithStripe = async (req, res) => {
+  const stripeObj = await require("stripe")(process.env.STRIPE_SECRET_KEY);
+  const todayDate = moment().format("yyyy-MM-DD");
+
+  await schedulePayment.find(
+    {
+      date: todayDate,
+      status: "due",
+      ptype: "credit card",
+    },
+    (error, dueEmiData) => {
+      if (error) {
+        res.send({ msg: "Data is not found!", success: false, error: error });
+      } else {
+        Promise.all(
+          dueEmiData?.map(async (dueEmiObj) => {
+            const studentId = dueEmiObj.studentId;
+            const userId = dueEmiObj.userId;
+            const amount = dueEmiObj.Amount;
+            const Id = dueEmiObj.Id;
+            const purchased_membership_id = dueEmiObj.purchased_membership_id;
+            // fetch stripe cards detail
+            const stripeDetails = await StripeCards?.findOne({
+              studentId: studentId,
+              userId: userId,
+            });
+            const card_id = stripeDetails.card_id;
+            const customer_id = stripeDetails.customer_id;
+
+            const paymentObj = {
+              amount: amount * 100, //stripe uses cents
+              currency: "usd",
+              customer: customer_id,
+              payment_method_types: ["card"],
+              payment_method: card_id,
+              confirm: "true",
+              description: "Monthly Emi installment",
+            };
+            const paymentIntent = await stripeObj.paymentIntents.create(
+              paymentObj
+            );
+            const storeTransaction = await StoreTransaction.create({
+              ...paymentIntent,
+              studentId,
+              userId,
+            });
+            if (
+              paymentIntent?.statusCode === "200" ||
+              paymentIntent?.status === "succeeded"
+            ) {
+              // update payment status
+              await schedulePayment.updateOne(
+                { studentId: studentId.toString(), Id: Id },
+                { $set: { status: "paid" } }
+              );
+              // update membership status
+              await buyMembership.updateOne(
+                { _id: ObjectId(purchased_membership_id) },
+                { $set: { membership_status: "Active" } }
+              );
+            }
+
+            return { studentId, userId, paymentIntent };
+          })
+        )
+          .then((resdata) => {
+            res.send({
+              msg: "Emi payment completed!",
+              data: resdata,
+              success: true,
+            });
+          })
+          .catch((error) => {
+            res.send({
+              msg: "Emi payment failed",
+              success: false,
+              error: error,
+            });
+          });
+      }
+    }
+  );
+};
+
+const createFinanceDocFunction = async ({
+  financeId,
+  studentId,
+  stripePayload,
+  membershipData,
+  memberShipDoc,
+}) => {
+  if (!financeId) {
+    console.log(financeId, "financeId");
+    const financeDoc = await createFinanceDoc(stripePayload);
+    if (financeDoc.success) {
+      memberShipDoc = await createMemberShipDocument(membershipData, studentId);
+      return res.send(memberShipDoc);
+    } else {
+      res.send({
+        msg: "Finace and membership doc not created!",
+        success: false,
+      });
+    }
   }
 };
 
@@ -1575,50 +1529,69 @@ function createMemberShipDocument(membershipData, studentId) {
     let membership = new buyMembership(membershipData);
     membership.save((err, data) => {
       if (err) {
-        resolve({ msg: "membership not buy", success: false });
+        resolve({ msg: "membership not buy", err: err, success: false });
       } else {
-        update = {
-          $set: {
-            status: "Active",
-            membership_expiry: data.expiry_date,
-            membership_start: data.mactive_date,
-          },
-          $push: { membership_details: data._id },
-        };
-        AddMember.findOneAndUpdate(
-          { _id: studentId },
-          update,
-          (err, stdData) => {
-            if (err) {
+        const schedulePayments = membershipData?.schedulePayments?.map(
+          (obj) => {
+            return { ...obj, purchased_membership_id: data._id };
+          }
+        );
+        schedulePayment.insertMany(
+          schedulePayments,
+          (error, respSchedulePayment) => {
+            if (error) {
               resolve({
-                msg: "membership id is not add in student",
+                msg: "schedulePayment not saved",
+                err: error,
                 success: false,
               });
             } else {
-              buyMembership
-                .findOneAndUpdate(
-                  { _id: data._id },
-                  {
-                    $push: {
-                      studentInfo: stdData._id,
-                      membershipIds: membershipData.membershipId,
-                    },
-                  }
-                )
-                .exec(async (err, result) => {
+              update = {
+                $set: {
+                  status: "Active",
+                  membership_expiry: data.expiry_date,
+                  membership_start: data.mactive_date,
+                },
+                $push: { membership_details: data._id },
+              };
+
+              AddMember.findOneAndUpdate(
+                { _id: studentId },
+                update,
+                (err, stdData) => {
                   if (err) {
                     resolve({
-                      msg: "student id is not add in buy membership",
+                      msg: "membership id is not add in student",
                       success: false,
                     });
                   } else {
-                    resolve({
-                      data: data._id,
-                      msg: "membership purchase successfully",
-                      success: true,
-                    });
+                    buyMembership
+                      .findOneAndUpdate(
+                        { _id: data._id },
+                        {
+                          $push: {
+                            studentInfo: stdData._id,
+                            membershipIds: membershipData.membershipId,
+                          },
+                        }
+                      )
+                      .exec(async (err, result) => {
+                        if (err) {
+                          resolve({
+                            msg: "student id is not add in buy membership",
+                            success: false,
+                          });
+                        } else {
+                          resolve({
+                            data: data._id,
+                            msg: "membership purchase successfully",
+                            success: true,
+                          });
+                        }
+                      });
                   }
-                });
+                }
+              );
             }
           }
         );
