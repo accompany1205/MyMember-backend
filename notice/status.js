@@ -772,7 +772,6 @@ async function DailyTriggeredMails() {
 }
 
 const chargeEmiWithStripeCron = async (req, res) => {
-  const stripeObj = await require("stripe")(process.env.STRIPE_SECRET_KEY);
   const todayDate = moment().format("yyyy-MM-DD");
 
   await schedulePayment.find(
@@ -792,6 +791,8 @@ const chargeEmiWithStripeCron = async (req, res) => {
             const amount = dueEmiObj.Amount;
             const Id = dueEmiObj.Id;
             const purchased_membership_id = dueEmiObj.purchased_membership_id;
+            const { stripe_sec } = await User.findOne({ _id: userId });
+            const stripeObj = await require("stripe")(stripe_sec);
             // fetch stripe cards detail
             const stripeDetails = await StripeCards?.findOne({
               studentId: studentId,
@@ -816,6 +817,8 @@ const chargeEmiWithStripeCron = async (req, res) => {
               ...paymentIntent,
               studentId,
               userId,
+              purchased_membership_id,
+              emiId: Id,
             });
             if (
               paymentIntent?.statusCode === "200" ||
@@ -833,7 +836,13 @@ const chargeEmiWithStripeCron = async (req, res) => {
               );
             }
 
-            return { studentId, userId, paymentIntent };
+            return {
+              studentId,
+              userId,
+              purchased_membership_id,
+              emiId: Id,
+              paymentIntent,
+            };
           })
         )
           .then((resdata) => {

@@ -1389,7 +1389,6 @@ exports.buyMembershipStripe = async (req, res) => {
 };
 
 exports.chargeEmiWithStripe = async (req, res) => {
-  const stripeObj = await require("stripe")(process.env.STRIPE_SECRET_KEY);
   const todayDate = moment().format("yyyy-MM-DD");
 
   await schedulePayment.find(
@@ -1409,6 +1408,8 @@ exports.chargeEmiWithStripe = async (req, res) => {
             const amount = dueEmiObj.Amount;
             const Id = dueEmiObj.Id;
             const purchased_membership_id = dueEmiObj.purchased_membership_id;
+            const { stripe_sec } = await User.findOne({ _id: userId });
+            const stripeObj = await require("stripe")(stripe_sec);
             // fetch stripe cards detail
             const stripeDetails = await StripeCards?.findOne({
               studentId: studentId,
@@ -1433,6 +1434,8 @@ exports.chargeEmiWithStripe = async (req, res) => {
               ...paymentIntent,
               studentId,
               userId,
+              emiId: Id,
+              purchased_membership_id,
             });
             if (
               paymentIntent?.statusCode === "200" ||
@@ -1450,7 +1453,13 @@ exports.chargeEmiWithStripe = async (req, res) => {
               );
             }
 
-            return { studentId, userId, paymentIntent };
+            return {
+              studentId,
+              userId,
+              purchased_membership_id,
+              emiId: Id,
+              paymentIntent,
+            };
           })
         )
           .then((resdata) => {
