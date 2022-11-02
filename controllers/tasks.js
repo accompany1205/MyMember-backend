@@ -8,6 +8,7 @@ const member = require("../models/addmember")
 const mongoose = require('mongoose');
 const event = require("../models/appointment")
 
+
 exports.Create = async (req, res) => {
   const Task = req.body;
   let userId = req.params.userId;
@@ -474,45 +475,47 @@ exports.seenTasks = async (req, res) => {
     const birthdayId = req.body.birthdayId;
     const renewalId = req.body.renewalId;
     const missucallId = req.body.missucallId;
-    const eventId = req.body.eventId
+    const eventId = req.body.eventId;
 
-    if (taskId != undefined || taskId.length > 0) {
+    if (taskId != undefined && taskId.length > 0) {
       const seenTasks = await tasks.updateOne(
         { _id: { $in: taskId } },
         { $set: { isSeen: true } }
       );
     }
-    if (eventId != undefined || eventId.length > 0) {
+    if (textId != undefined && textId.length > 0) {
+      const seenText = await textMessage.updateOne(
+        { _id: { $in: taskId } },
+        { $set: { isSeen: true } }
+      );
+    }
+    if (eventId != undefined && eventId.length > 0) {
       const seenEvents = await event.updateOne(
         { _id: { $in: eventId } },
         { $set: { isSeen: true } }
       );
     }
-    if (birthdayId != undefined || birthdayId.length > 0) {
+    if (birthdayId != undefined && birthdayId.length > 0) {
       const seenBirthday = await member.updateOne(
         { _id: { $in: birthdayId } },
-        { $set: { isSeen: "true" } }
+        { $set: { isSeen: true } }
       );
     }
-    if (renewalId != undefined || renewalId.length > 0) {
+    if (renewalId != undefined && renewalId.length > 0) {
       const seenRenewal = await member.updateOne(
         { _id: { $in: renewalId } },
-        { $set: { isSeen: "true" } }
+        { $set: { isSeen: true } }
       );
     }
 
-    if (missucallId != undefined || missucallId.length > 0) {
+    if (missucallId != undefined && missucallId.length > 0) {
       const seenMissucall = await member.updateOne(
         { _id: { $in: missucallId } },
-        { $set: { isSeen: "true" } }
+        { $set: { isSeen: true } }
       );
     }
-    if (textId != undefined || textId.length > 0) {
-      const seenText = await textMessage.updateOne(
-        { _id: { $in: textId } },
-        { $set: { isSeen: "true" } }
-      );
-    }
+
+
     res.send({ success: true, msg: "notification seen successfully" });
     // console.log("updatetask", seenTasks,"updateText",seenText,"seenmember",seenMember);
 
@@ -527,45 +530,45 @@ exports.seenRead = async (req, res) => {
     const textId = req.body.chatId;
     const birthdayId = req.body.birthdayId;
     const renewalId = req.body.renewalId;
-    const missucallId = req.body.missucallId; 
+    const missucallId = req.body.missucallId;
     const eventId = req.body.eventId;
 
 
-    if (taskId != undefined || taskId.length > 0) {
+    if (taskId != undefined && taskId.length > 0) {
       const seenTasks = await tasks.updateOne(
         { _id: { $in: taskId } },
         { $set: { isRead: true, isSeen: false } }
       );
     }
-    if (eventId != undefined || eventId.length > 0) {
+    if (eventId != undefined && eventId.length > 0) {
       const seenEvents = await event.updateOne(
         { _id: { $in: eventId } },
         { $set: { isRead: true, isSeen: false } }
       );
     }
-    if(birthdayId!=undefined|| birthdayId.length>0){
+    if (birthdayId != undefined && birthdayId.length > 0) {
       const seenBirthday = await member.updateOne(
         { _id: { $in: birthdayId } },
         { $set: { isRead: true, isSeen: false } }
       );
     }
-    if(renewalId!=undefined|| renewalId.length>0){
+    if (renewalId != undefined && renewalId.length > 0) {
       const seenRenewal = await member.updateOne(
         { _id: { $in: renewalId } },
         { $set: { isRead: true, isSeen: false } }
       );
     }
-    if (missucallId != undefined || missucallId.length > 0) {
+    if (missucallId != undefined && missucallId.length > 0) {
       const seenMissucall = await member.updateOne(
         { _id: { $in: missucallId } },
         { $set: { isRead: true, isSeen: false } }
       );
     }
-   
-    if (textId != undefined || textId.length > 0) {
+
+    if (textId != undefined && textId.length > 0) {
       const seenText = await textMessage.updateOne(
         { _id: { $in: textId } },
-        { $set: { isRead: true, isSeen: "false" } }
+        { $set: { isRead: true, isSeen: false } }
       );
     }
     res.send({ success: true, msg: "notification remove successfully" });

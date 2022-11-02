@@ -23,7 +23,7 @@ const TextMessageSchema = schema({
     require:true
   },
   isSeen:{
-    type: String,
+    type: Boolean,
     default:false,
     index: true,
   },

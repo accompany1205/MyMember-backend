@@ -305,7 +305,7 @@ const addmemberSchema = new schema(
       type: String,
     },
     isSeen:{
-      type: String,
+      type: Boolean,
       default:false,
       index: true
     },
