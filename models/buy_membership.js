@@ -153,6 +153,9 @@ const Membershipschema = new schema(
     emailToken: {
       type: String,
     },
+    paymentIntentId: {
+      type: String,
+    },
     membershipIds: [
       {
         type: schema.Types.ObjectId,

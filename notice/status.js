@@ -1,4 +1,3 @@
-const cron = require("node-cron");
 const Member = require("../models/addmember");
 const moment = require("moment");
 const schedulePayment = require("../models/schedulePayment");
@@ -12,6 +11,7 @@ const { filterSmartlist } = require("../controllers/smartlists");
 const smartlist = require("../models/smartlists");
 const Mailer = require("../helpers/Mailer");
 const ObjectId = require("mongodb").ObjectId;
+const cron = require("node-cron");
 
 function getUserId() {
   return new Promise((resolve, reject) => {
@@ -771,9 +771,9 @@ async function DailyTriggeredMails() {
   }
 }
 
-const chargeEmiWithStripeCron = async (req, res) => {
+const chargeEmiWithStripeCron = async () => {
   const todayDate = moment().format("yyyy-MM-DD");
-
+  console.log(todayDate, "todayDate");
   await schedulePayment.find(
     {
       date: todayDate,
@@ -782,8 +782,13 @@ const chargeEmiWithStripeCron = async (req, res) => {
     },
     (error, dueEmiData) => {
       if (error) {
-        res.send({ msg: "Data is not found!", success: false, error: error });
+        console.log({
+          msg: "Data is not found!",
+          success: false,
+          error: error,
+        });
       } else {
+        console.log(dueEmiData, "dueEmiData");
         Promise.all(
           dueEmiData?.map(async (dueEmiObj) => {
             const studentId = dueEmiObj.studentId;
@@ -794,10 +799,16 @@ const chargeEmiWithStripeCron = async (req, res) => {
             const { stripe_sec } = await User.findOne({ _id: userId });
             const stripeObj = await require("stripe")(stripe_sec);
             // fetch stripe cards detail
-            const stripeDetails = await StripeCards?.findOne({
+            let stripeDetails = {};
+            stripeDetails = await StripeCards?.findOne({
               studentId: studentId,
-              userId: userId,
+              isDefault: true,
             });
+            if (stripeDetails === null) {
+              stripeDetails = await StripeCards?.findOne({
+                studentId: studentId,
+              });
+            }
             const card_id = stripeDetails.card_id;
             const customer_id = stripeDetails.customer_id;
 
@@ -820,6 +831,7 @@ const chargeEmiWithStripeCron = async (req, res) => {
               purchased_membership_id,
               emiId: Id,
             });
+            console.log(paymentIntent, "paymentIntent");
             if (
               paymentIntent?.statusCode === "200" ||
               paymentIntent?.status === "succeeded"
@@ -846,14 +858,14 @@ const chargeEmiWithStripeCron = async (req, res) => {
           })
         )
           .then((resdata) => {
-            res.send({
+            console.log({
               msg: "Emi payment completed!",
               data: resdata,
               success: true,
             });
           })
           .catch((error) => {
-            res.send({
+            console.log({
               msg: "Emi payment failed",
               success: false,
               error: error,
@@ -871,7 +883,13 @@ module.exports = cron.schedule("0 1 * * *", () => {
 module.exports = cron.schedule(`*/1 * * * *`, () => emailCronFucntionality());
 
 // DailyTriggeredStripe Charge script();
-module.exports = cron.schedule("0 1 * * *", () => chargeEmiWithStripeCron);
+//module.exports = cron.schedule("0 1 * * *", () => chargeEmiWithStripeCron);
+const chargeEmiWithStripeCronjob = cron.schedule(
+  "*/2 * * * *",
+  () => chargeEmiWithStripeCron
+);
+
+chargeEmiWithStripeCronjob.start();
 
 // module.exports = cron.schedule('*/20 * * * * *',function(){
 //     let options = {

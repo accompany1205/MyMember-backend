@@ -24,6 +24,9 @@ const stripe_cards_schema = new schema(
       type: String,
       required: true,
     },
+    isDefault: {
+      type: Boolean,
+    },
     exp_month: {
       type: String,
       required: true,
@@ -44,10 +47,14 @@ const stripe_cards_schema = new schema(
       type: String,
       required: true,
     },
-    phone: {
+    card_holder_name: {
       type: String,
       required: true,
     },
+    phone: {
+      type: String,
+    },
+    address: {},
   },
   { timestamps: true }
 );

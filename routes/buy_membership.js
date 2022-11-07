@@ -55,7 +55,6 @@ router.post(
   "/membership/buy_membership_stripe/:userId/:studentId",
   buyMembershipStripe
 );
-router.get("/membership/charge_emi_withstripe/", chargeEmiWithStripe);
 // router.post("/membership/buy_membership/:userId",requireSignin,buyMembership);
 router.put(
   "/membership/update_buy_memberships/:userId/:membershipId/:type",

@@ -43,11 +43,15 @@ exports.membership_Info = (req, res) => {
     });
 };
 exports.update = async (req, res) => {
+  const userId = req.params.userId;
+  const { stripe_sec } = await User.findOne({ _id: userId });
+  const stripeObj = await require("stripe")(stripe_sec);
   const membershipId = req.params.membershipId;
   const type = req.params.type;
   const subscription_id = req.body.subscription_id;
   const cardDetails = req.body.cardDetails;
   let expiry_date = "";
+
   if (cardDetails) {
     expiry_date =
       toString(cardDetails.expiry_month) + toString(cardDetails.expiry_year);
@@ -247,10 +251,13 @@ exports.update = async (req, res) => {
       } else if (type == "refund") {
         let refundRes;
         const balance = req.body.balance;
+        const Amount = req.body.Amount;
+
+        const paymentIntentId = req.body.paymentIntentId;
         const emiId = req.body.emiId;
         const createdBy = req.body.createdBy;
-        if (cardDetails) {
-          const { uid } = getUidAndInvoiceNumber();
+        if (req.body.payment_type === "card") {
+          /* const { uid } = getUidAndInvoiceNumber();
           const valorRefundRes =
             await valorTechPaymentGateWay.refundSubscription({
               app_id: req.valorCredentials.app_id,
@@ -259,8 +266,16 @@ exports.update = async (req, res) => {
               ...cardDetails,
               uid,
               amount: req.body.Amount,
-            });
-          if (valorRefundRes.data.error_no === "S00") {
+            }); */
+          const stripeRefund = await stripeObj.refunds.create({
+            payment_intent: paymentIntentId,
+            amount: Amount * 100,
+          });
+          if (
+            stripeRefund &&
+            (stripeRefund.status === "succeeded" ||
+              stripeRefund.status === "pending")
+          ) {
             if (emiId) {
               await paymentProcessing(
                 membershipId,
@@ -274,12 +289,12 @@ exports.update = async (req, res) => {
             refundRes = await refundMembership(membershipId, req.body);
             if (refundRes) {
               res.status(200).send({
-                msg: "Membership refunded successfully!",
+                msg: `Membership amount $${Amount} refunded successfully!`,
                 success: true,
               });
             } else {
               res.status(400).send({
-                msg: "Refunded successfully but stundet info not updated!",
+                msg: "Refunded successfully but student info not updated!",
                 success: false,
               });
             }
@@ -322,6 +337,13 @@ exports.update = async (req, res) => {
 
 function terminateMembership(membershipId, reason) {
   return new Promise((resolve, reject) => {
+    const todayDate = moment().format("yyyy-MM-DD");
+    update = {
+      $set: {
+        status: "Terminated",
+      },
+    };
+
     buyMembership.findByIdAndUpdate(
       membershipId,
       {
@@ -338,6 +360,17 @@ function terminateMembership(membershipId, reason) {
           resolve(false);
         } else {
           lastestMembership(membershipId, "Terminated")
+            .then((data) => resolve(data))
+            .catch((err) => resolve(false));
+
+          schedulePayment
+            .updateMany(
+              {
+                purchased_membership_id: membershipId,
+                date: { $gte: todayDate },
+              },
+              update
+            )
             .then((data) => resolve(data))
             .catch((err) => resolve(false));
         }
@@ -1029,23 +1062,6 @@ exports.buyMembership = async (req, res) => {
   }
 };
 
-let createCardToken = async (body, resp) => {
-  let cardNumber = body.cardNumber;
-  let cardExpiryMonth = body.cardExpiryMonth;
-  let cardExpiryYear = body.cardExpiryYear;
-  let cardCvc = body.cardCvc;
-  let card_holder_name = body?.card_holder_name;
-  let cardToken = await resp.tokens.create({
-    card: {
-      number: cardNumber,
-      exp_month: cardExpiryMonth,
-      exp_year: cardExpiryYear,
-      cvc: cardCvc,
-    },
-  });
-  return cardToken;
-};
-
 let createPayment = async (req, stripeObj) => {
   const userId = req.body.userId;
   const studentId = req.body.studentId;
@@ -1076,117 +1092,6 @@ let createPayment = async (req, stripeObj) => {
     return paymentIntent;
   } catch (err) {
     return err;
-  }
-};
-
-let createCard = async (req, stripe) => {
-  try {
-    let cardNumber = req.body.card_number;
-    let cardExpiryMonth = req.body.card_expiry_month;
-    let cardExpiryYear = req.body.card_expiry_year;
-    let cardCvc = req.body.card_cvc;
-    let card_holder_name = req.body.card_holder_name;
-    let email = req.body.email;
-    let phone = req.body.phone;
-    let userId = req.body.userId;
-    let studentId = req.body.studentId;
-    let cardToken = await createCardToken(
-      { cardNumber, cardExpiryMonth, cardExpiryYear, cardCvc },
-      stripe
-    );
-
-    let findCustomer = await StripeCustomers.findOne({
-      email: email,
-      studentId: studentId,
-    });
-    let customerId;
-    let cardCheck = await StripeCards.findOne({
-      card_number: cardNumber,
-      email: email,
-      studentId: studentId,
-    });
-    if (cardCheck) {
-      return {
-        id: cardCheck["card_id"],
-        success: true,
-        message: "card already existed with this customer email",
-      };
-    }
-    if (findCustomer == null) {
-      // if customer is not exist in stripe and our db
-      let customer = await stripe.customers.create({
-        email: email,
-        name: card_holder_name,
-        metadata: {
-          userId: userId,
-          studentId: studentId,
-        },
-      });
-      customerId = customer.id;
-      let dataObj = {
-        id: customerId,
-        email: email,
-        studentId: studentId,
-        userId: userId,
-        name: card_holder_name ? card_holder_name : "",
-      };
-      let customerObj = await StripeCustomers.create(dataObj);
-    } else {
-      customerId = findCustomer.id;
-    }
-    // add payment method for stripe customer for future use
-    let paymentMethod = await stripe.customers.createSource(customerId, {
-      source: cardToken.id,
-    });
-    let storeCard = StripeCards.create({
-      studentId: studentId,
-      userId: userId,
-      customer_id: customerId,
-      card_id: paymentMethod.id,
-      brand: paymentMethod.brand,
-      exp_month: paymentMethod.exp_month,
-      exp_year: paymentMethod.exp_year,
-      last4: paymentMethod.last4,
-      card_number: cardNumber,
-      email: email,
-      phone: phone,
-    });
-
-    return paymentMethod;
-  } catch (error) {
-    return error;
-  }
-};
-
-let createCustomer = async (req, res) => {
-  let customerData = req.body;
-  let userId = req.params.userId;
-  try {
-    let { stripe_sec } = await User.findOne({ _id: userId });
-    let customer = await stripe.customers.create({
-      email: customerData.email,
-      metadata: {
-        account_id: customerData.account_id,
-      },
-    });
-    customerData.customer_id = customer.id;
-    let dataObj = {
-      id: customerData.customer_id,
-      email: customerData.email,
-      account_id: customerData.account_id,
-      name: customerData.name,
-    };
-    let findCustomer = await StripeCustomers.findOne({
-      email: customerData.email,
-    });
-    if (findCustomer) {
-      throw { status: false, message: "customer already existed" };
-    }
-    //Create a new customer in DB
-    let customerObj = await StripeCustomers.create(dataObj);
-    res.send(customerObj);
-  } catch (error) {
-    res.send(error);
   }
 };
 
@@ -1234,7 +1139,7 @@ exports.buyMembershipStripe = async (req, res) => {
               success: false,
             });
           }
-          let createdCard = await createCard(
+          let createdCard = await StripeApis.createCard(
             {
               body: {
                 card_number: stripePayload.card_number,
@@ -1281,88 +1186,60 @@ exports.buyMembershipStripe = async (req, res) => {
               studentId,
               userId
             );
-            const PaymentResponse = await createPayment(
-              {
-                body: {
-                  amount: stripePayload.amount,
-                  card_id: cardId,
-                  description: stripePayload.description,
-                  email: stripePayload.email,
-                  userId: userId,
-                  studentId: studentId,
-                },
-              },
-              stripeObj
-            );
-            await createFinanceDocFunction({
-              financeId,
-              studentId,
-              stripePayload,
-              membershipData,
-              memberShipDoc,
-            });
-            membershipData.membership_status = "Active";
-            membershipData.studentId = studentId;
-            memberShipDoc = await createMemberShipDocument(
-              membershipData,
-              studentId
-            );
-            if (
-              PaymentResponse?.statusCode === "200" ||
-              PaymentResponse?.status === "succeeded"
-            ) {
-              res.send({
-                msg: "Payment is completed!",
-                success: true,
-                data: PaymentResponse,
-                memberShipDoc: memberShipDoc,
-              });
-            } else {
-              res.send({
-                msg: PaymentResponse?.raw?.message
-                  ? PaymentResponse?.raw?.message
-                  : "Payment is not completed",
-                success: false,
-              });
-            }
           } else {
             res.send({
               msg: "payment type should be weekly/monthly",
               success: false,
             });
           }
-        } else {
-          // if its one time payment
-          let PaymentResponse = await createPayment(
-            {
-              body: {
-                amount: stripePayload.amount,
-                card_id: cardId,
-                description: stripePayload.description,
-                email: stripePayload.email,
-                userId: userId,
-                studentId: studentId,
-              },
+        }
+        // if its one time payment
+        let PaymentResponse = await createPayment(
+          {
+            body: {
+              amount: stripePayload.amount,
+              card_id: cardId,
+              description: stripePayload.description,
+              email: stripePayload.email,
+              userId: userId,
+              studentId: studentId,
             },
-            stripeObj
+          },
+          stripeObj
+        );
+        if (
+          PaymentResponse?.statusCode === "200" ||
+          PaymentResponse?.status === "succeeded"
+        ) {
+          membershipData.membership_status = "Active";
+          membershipData.studentId = studentId;
+          membershipData.paymentIntentId = PaymentResponse?.id;
+
+          await createFinanceDocFunction({
+            financeId,
+            studentId,
+            stripePayload,
+            membershipData,
+            memberShipDoc,
+          });
+
+          memberShipDoc = await createMemberShipDocument(
+            membershipData,
+            studentId
           );
-          if (
-            PaymentResponse?.statusCode === "200" ||
-            PaymentResponse?.status === "succeeded"
-          ) {
-            res.send({
-              msg: "Payment is completed!",
-              success: true,
-              data: PaymentResponse,
-            });
-          } else {
-            res.send({
-              msg: PaymentResponse?.raw?.message
-                ? PaymentResponse?.raw?.message
-                : "Payment is not completed",
-              success: false,
-            });
-          }
+          res.send({
+            msg: "Payment is completed!",
+            success: true,
+            data: PaymentResponse,
+            memberShipDoc: memberShipDoc,
+          });
+        } else {
+          res.send({
+            msg: PaymentResponse?.raw?.message
+              ? PaymentResponse?.raw?.message
+              : "Payment is not completed",
+            success: false,
+          });
         }
       } else {
         res.send({
@@ -1388,99 +1265,6 @@ exports.buyMembershipStripe = async (req, res) => {
   }
 };
 
-exports.chargeEmiWithStripe = async (req, res) => {
-  const todayDate = moment().format("yyyy-MM-DD");
-
-  await schedulePayment.find(
-    {
-      date: todayDate,
-      status: "due",
-      ptype: "credit card",
-    },
-    (error, dueEmiData) => {
-      if (error) {
-        res.send({ msg: "Data is not found!", success: false, error: error });
-      } else {
-        Promise.all(
-          dueEmiData?.map(async (dueEmiObj) => {
-            const studentId = dueEmiObj.studentId;
-            const userId = dueEmiObj.userId;
-            const amount = dueEmiObj.Amount;
-            const Id = dueEmiObj.Id;
-            const purchased_membership_id = dueEmiObj.purchased_membership_id;
-            const { stripe_sec } = await User.findOne({ _id: userId });
-            const stripeObj = await require("stripe")(stripe_sec);
-            // fetch stripe cards detail
-            const stripeDetails = await StripeCards?.findOne({
-              studentId: studentId,
-              userId: userId,
-            });
-            const card_id = stripeDetails.card_id;
-            const customer_id = stripeDetails.customer_id;
-
-            const paymentObj = {
-              amount: amount * 100, //stripe uses cents
-              currency: "usd",
-              customer: customer_id,
-              payment_method_types: ["card"],
-              payment_method: card_id,
-              confirm: "true",
-              description: "Monthly Emi installment",
-            };
-            const paymentIntent = await stripeObj.paymentIntents.create(
-              paymentObj
-            );
-            const storeTransaction = await StoreTransaction.create({
-              ...paymentIntent,
-              studentId,
-              userId,
-              emiId: Id,
-              purchased_membership_id,
-            });
-            if (
-              paymentIntent?.statusCode === "200" ||
-              paymentIntent?.status === "succeeded"
-            ) {
-              // update payment status
-              await schedulePayment.updateOne(
-                { studentId: studentId.toString(), Id: Id },
-                { $set: { status: "paid" } }
-              );
-              // update membership status
-              await buyMembership.updateOne(
-                { _id: ObjectId(purchased_membership_id) },
-                { $set: { membership_status: "Active" } }
-              );
-            }
-
-            return {
-              studentId,
-              userId,
-              purchased_membership_id,
-              emiId: Id,
-              paymentIntent,
-            };
-          })
-        )
-          .then((resdata) => {
-            res.send({
-              msg: "Emi payment completed!",
-              data: resdata,
-              success: true,
-            });
-          })
-          .catch((error) => {
-            res.send({
-              msg: "Emi payment failed",
-              success: false,
-              error: error,
-            });
-          });
-      }
-    }
-  );
-};
-
 const createFinanceDocFunction = async ({
   financeId,
   studentId,
@@ -1489,7 +1273,6 @@ const createFinanceDocFunction = async ({
   memberShipDoc,
 }) => {
   if (!financeId) {
-    console.log(financeId, "financeId");
     const financeDoc = await createFinanceDoc(stripePayload);
     if (financeDoc.success) {
       memberShipDoc = await createMemberShipDocument(membershipData, studentId);
@@ -1540,70 +1323,109 @@ function createMemberShipDocument(membershipData, studentId) {
       if (err) {
         resolve({ msg: "membership not buy", err: err, success: false });
       } else {
-        const schedulePayments = membershipData?.schedulePayments?.map(
-          (obj) => {
-            return { ...obj, purchased_membership_id: data._id };
-          }
-        );
-        schedulePayment.insertMany(
-          schedulePayments,
-          (error, respSchedulePayment) => {
-            if (error) {
-              resolve({
-                msg: "schedulePayment not saved",
-                err: error,
-                success: false,
-              });
-            } else {
-              update = {
-                $set: {
-                  status: "Active",
-                  membership_expiry: data.expiry_date,
-                  membership_start: data.mactive_date,
-                },
-                $push: { membership_details: data._id },
-              };
-
-              AddMember.findOneAndUpdate(
-                { _id: studentId },
-                update,
-                (err, stdData) => {
-                  if (err) {
-                    resolve({
-                      msg: "membership id is not add in student",
-                      success: false,
-                    });
-                  } else {
-                    buyMembership
-                      .findOneAndUpdate(
-                        { _id: data._id },
-                        {
-                          $push: {
-                            studentInfo: stdData._id,
-                            membershipIds: membershipData.membershipId,
-                          },
-                        }
-                      )
-                      .exec(async (err, result) => {
-                        if (err) {
-                          resolve({
-                            msg: "student id is not add in buy membership",
-                            success: false,
-                          });
-                        } else {
-                          resolve({
-                            data: data._id,
-                            msg: "membership purchase successfully",
-                            success: true,
-                          });
-                        }
-                      });
-                  }
-                }
-              );
+        update = {
+          $set: {
+            status: "Active",
+            membership_expiry: data.expiry_date,
+            membership_start: data.mactive_date,
+          },
+          $push: { membership_details: data._id },
+        };
+        if (membershipData?.schedulePayments?.length > 0) {
+          const schedulePayments = membershipData?.schedulePayments?.map(
+            (obj) => {
+              return { ...obj, purchased_membership_id: data._id };
             }
-          }
-        );
+          );
+          schedulePayment.insertMany(
+            schedulePayments,
+            (error, respSchedulePayment) => {
+              if (error) {
+                resolve({
+                  msg: "schedulePayment not saved",
+                  err: error,
+                  success: false,
+                });
+              } else {
+                AddMember.findOneAndUpdate(
+                  { _id: studentId },
+                  update,
+                  (err, stdData) => {
+                    if (err) {
+                      resolve({
+                        msg: "membership id is not add in student",
+                        success: false,
+                      });
+                    } else {
+                      buyMembership
+                        .findOneAndUpdate(
+                          { _id: data._id },
+                          {
+                            $push: {
+                              studentInfo: stdData._id,
+                              membershipIds: membershipData.membershipId,
+                            },
+                          }
+                        )
+                        .exec(async (err, result) => {
+                          if (err) {
+                            resolve({
+                              msg: "student id is not add in buy membership",
+                              success: false,
+                            });
+                          } else {
+                            resolve({
+                              data: data._id,
+                              msg: "membership purchase successfully",
+                              success: true,
+                            });
+                          }
+                        });
+                    }
+                  }
+                );
+              }
+            }
+          );
+        } else {
+          AddMember.findOneAndUpdate(
+            { _id: studentId },
+            update,
+            (err, stdData) => {
+              if (err) {
+                resolve({
+                  msg: "membership id is not add in student",
+                  success: false,
+                });
+              } else {
+                buyMembership
+                  .findOneAndUpdate(
+                    { _id: data._id },
+                    {
+                      $push: {
+                        studentInfo: stdData._id,
+                        membershipIds: membershipData.membershipId,
+                      },
+                    }
+                  )
+                  .exec(async (err, result) => {
+                    if (err) {
+                      resolve({
+                        msg: "student id is not add in buy membership",
+                        success: false,
+                      });
+                    } else {
+                      resolve({
+                        data: data._id,
+                        msg: "membership purchase successfully",
+                        success: true,
+                      });
+                    }
+                  });
+              }
+            }
+          );
+        }
       }
     });
   });
