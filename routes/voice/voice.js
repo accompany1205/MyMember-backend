@@ -79,7 +79,7 @@ router.post("/twiml", (req, res) => {
       console.log('true calling')
       response = `<?xml version="1.0" encoding="UTF-8"?>
     <Response>
-        <Dial callerId='+12059973433'  recordingStatusCallback='https://f2ca-206-84-188-48.ap.ngrok.io/v1/voice_recording?user_id=${user_id + "," + To}'  record='record-from-ringing' >+18323041166</Dial>
+        <Dial callerId='+12059973433'  recordingStatusCallback='https://mymember.com/v1/voice_recording?user_id=${user_id + "," + To}'  record='record-from-ringing' >+18323041166</Dial>
         <Say>Goodbye</Say>
     </Response>`;
 
