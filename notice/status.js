@@ -876,20 +876,17 @@ const chargeEmiWithStripeCron = async () => {
   );
 };
 
-// DailyTriggeredMails();
-module.exports = cron.schedule("0 1 * * *", () => {
-  collectionModify(), activeMembership(), expiredMembership();
+// DailyTriggeredCrons();
+module.exports = cron.schedule("* 1 * * * *", () => {
+  collectionModify(),
+    activeMembership(),
+    expiredMembership(),
+    chargeEmiWithStripeCron();
 });
 module.exports = cron.schedule(`*/1 * * * *`, () => emailCronFucntionality());
 
 // DailyTriggeredStripe Charge script();
 //module.exports = cron.schedule("0 1 * * *", () => chargeEmiWithStripeCron);
-const chargeEmiWithStripeCronjob = cron.schedule(
-  "*/2 * * * *",
-  () => chargeEmiWithStripeCron
-);
-
-chargeEmiWithStripeCronjob.start();
 
 // module.exports = cron.schedule('*/20 * * * * *',function(){
 //     let options = {
