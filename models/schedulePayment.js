@@ -42,6 +42,13 @@ const Membershipschema = new schema(
       required: true,
       index: true,
     },
+    paymentIntentId: {
+      type: String,
+    },
+    isRefund: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
