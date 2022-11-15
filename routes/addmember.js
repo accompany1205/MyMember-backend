@@ -54,7 +54,8 @@ const { addmember,
     test,
     StatisticsCount,
     leadUpdate,
-    filterLeads
+    filterLeads,
+    count
 
 } = require("../controllers/addmember")
 
@@ -153,6 +154,8 @@ router.get('/member/get_Active_member_by_Program/:userId/:programName', ActiveMe
 //Statistics
 
 router.get('/member/students_count_Statistics/:userId',requireSignin,StatisticsCount)
+
+router.get('/member/student_count_by_studentType_monthwise/:userId/:per_page/:page_no',requireSignin,count)
 
 
 
