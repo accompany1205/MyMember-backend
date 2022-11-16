@@ -419,7 +419,7 @@ app.use('/v1', VoiceCall)
 
 // form builder routes
 app.use("/api/forms", builderRoutes);
-app.use("/builder/view", viewFormRoutes);
+app.use("/api/builder/view", viewFormRoutes);
 app.set("view engine", "pug");
 app.set("views", path.join(__dirname, "template"));
 
