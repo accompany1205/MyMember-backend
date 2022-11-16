@@ -5,7 +5,7 @@ const Funnel = require("../../models/builder/funnel")
 const stripe = require("stripe")("sk_test_v9");
 const ObjectId = require("mongodb").ObjectId;
 
-
+//for funnels 
 exports.createFunnel = async (req, res) => {
   let userId = req.params.userId;
   if (!userId) {
