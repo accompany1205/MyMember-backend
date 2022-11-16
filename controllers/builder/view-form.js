@@ -1,7 +1,112 @@
 const Form = require("../../models/builder/Form.js");
 const addmember = require("../../models/addmember.js");
+const Funnel = require("../../models/builder/funnel")
 
 const stripe = require("stripe")("sk_test_v9");
+const ObjectId = require("mongodb").ObjectId;
+
+
+exports.createFunnel = async (req, res) => {
+  let userId = req.params.userId;
+  if (!userId) {
+    return res.send({ success: false, msg: "specify school!" });
+  }
+  try {
+    const data = req.body;
+    data.userId = userId;
+    let funnel = new Funnel(data);
+    let resp = await funnel.save();
+    res.send({ success: true, msg: "funnel created!" });
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ''), success: false })
+  }
+}
+
+exports.getSingleFunnel = async (req, res) => {
+  let funnelId = req.params.funnelId;
+  if (!funnelId) {
+    return res.send({ success: false, msg: "No funnel id!" });
+  }
+  try {
+    let data = await Funnel.findOne({_id:funnelId, isDeleted:false});
+    if(!data){
+      return res.send({msg:"No Funnel", success:true});
+    }
+    res.send({data:data, msg:"data!", success:true});
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ''), success: false })
+  }
+}
+
+exports.getFunnel = async (req, res) => {
+  let userId = req.params.userId;
+  if (!userId) {
+    return res.send({ success: false, msg: "specify school!" });
+  }
+  try {
+    const count = await Funnel.find({ userId: userId, isDeleted: false }).countDocuments();
+    var per_page = parseInt(req.params.per_page) || 5;
+    var page_no = parseInt(req.params.page_no) || 0;
+    var pagination = {
+      limit: per_page,
+      skip: per_page * page_no,
+    };
+    Funnel.find({ userId: userId, isDeleted: false })
+      .sort({
+        createdAt: -1,
+      })
+      .limit(pagination.limit)
+      .skip(pagination.skip)
+      .exec((err, memberdata) => {
+        if (err) {
+          res.send({
+            msg: "member data is not find",
+            success: false,
+          });
+        } else {
+          res.send({ memberdata, totalCount: count, success: true });
+        }
+      });
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ''), success: false })
+  }
+}
+
+exports.updateFunnel = async (req, res) => {
+  let funnelId = req.params.funnelId;
+  let userId = req.params.userId;
+  if (!userId || !funnelId) {
+    return res.send({ success: false, msg: "No funnel/school id!" });
+  }
+  try {
+    let body = req.body;
+    let formId = req.body.formId;
+    if (body.formId) {
+      body.formId = ObjectId(formId);
+    }
+    let data = await Funnel.updateOne({ _id: funnelId }, { $set: body });
+    if (data.nModified < 1) {
+      res.send({ msg: "not Updated!", success: false });
+    }
+    console.log(data)
+    res.send({ msg: "Updated Funnel!", success: true })
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ''), success: false })
+  }
+}
+
+exports.deletedFunnel = async (req, res) => {
+  let funnelId = req.params.funnelId;
+  try {
+    let deleted = await Funnel.updateOne({ _id: funnelId }, { $set: { isDeleted: true } });
+    if (deleted.nModified < 1) {
+      return res.send({ msg: "Not Deleted!", success: false });
+    }
+    res.send({ success: true, msg: "Deleted!" })
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ''), success: false })
+  }
+}
 
 exports.viewForm = async (req, res) => {
   console.log("FormID: ", req.params.formId, "UserID: ", req.params.userId);
@@ -17,20 +122,20 @@ exports.viewForm = async (req, res) => {
     html = html.replace(
       "<body>",
       '<body><form method="post" id="payment-form" action="/builder/view/process/newstudent/' +
-        id +
-        "/" +
-        userId +
-        '">'
+      id +
+      "/" +
+      userId +
+      '">'
     );
   } else {
     //html = html.replace('<body>', '<body><form method="post" action="/builder/view/process/newstudent/'+ id +'">')
     html = html.replace(
       "<body>",
       '<body><form method="post" action="/builder/view/process/newstudent/' +
-        id +
-        "/" +
-        userId +
-        '">'
+      id +
+      "/" +
+      userId +
+      '">'
     );
   }
 
@@ -75,7 +180,7 @@ exports.createSecret = async (req, res) => {
       },
     });
     res.json({ client_secret: paymentIntent.client_secret });
-  } catch (error) {}
+  } catch (error) { }
 };
 
 exports.chargeAccount = async (req, res) => {
