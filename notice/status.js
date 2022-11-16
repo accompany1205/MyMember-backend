@@ -773,7 +773,6 @@ async function DailyTriggeredMails() {
 
 const chargeEmiWithStripeCron = async () => {
   const todayDate = moment().format("yyyy-MM-DD");
-  console.log(todayDate, "todayDate");
   await schedulePayment.find(
     {
       date: todayDate,
@@ -788,7 +787,6 @@ const chargeEmiWithStripeCron = async () => {
           error: error,
         });
       } else {
-        console.log(dueEmiData, "dueEmiData");
         Promise.all(
           dueEmiData?.map(async (dueEmiObj) => {
             const studentId = dueEmiObj.studentId;
@@ -811,6 +809,7 @@ const chargeEmiWithStripeCron = async () => {
             }
             const card_id = stripeDetails.card_id;
             const customer_id = stripeDetails.customer_id;
+            const createdBy = stripeDetails.card_holder_name;
 
             const paymentObj = {
               amount: amount * 100, //stripe uses cents
@@ -824,14 +823,13 @@ const chargeEmiWithStripeCron = async () => {
             const paymentIntent = await stripeObj.paymentIntents.create(
               paymentObj
             );
-            const storeTransaction = await StoreTransaction.create({
+            await StoreTransaction.create({
               ...paymentIntent,
               studentId,
               userId,
               purchased_membership_id,
               emiId: Id,
             });
-            console.log(paymentIntent, "paymentIntent");
             if (
               paymentIntent?.statusCode === "200" ||
               paymentIntent?.status === "succeeded"
@@ -839,13 +837,33 @@ const chargeEmiWithStripeCron = async () => {
               // update payment status
               await schedulePayment.updateOne(
                 { studentId: studentId.toString(), Id: Id },
-                { $set: { status: "paid" } }
+                { $set: { status: "paid", paymentIntentId: paymentIntent.id } }
               );
-              // update membership status
+              /*  ======================*/
               await buyMembership.updateOne(
-                { _id: ObjectId(purchased_membership_id) },
-                { $set: { membership_status: "Active" } }
+                {
+                  _id: purchased_membership_id,
+                  "schedulePayments.Id": Id,
+                },
+                {
+                  $set: {
+                    membership_status: "Active",
+                    "schedulePayments.$.status": "paid",
+                    "schedulePayments.$.ptype": "credit card",
+                    "schedulePayments.$.paymentIntentId": paymentIntent.id,
+                    "schedulePayments.$.createdBy": createdBy,
+                    "schedulePayments.$.paidDate": new Date(),
+                  },
+                },
+                (err, data) => {
+                  if (err) {
+                    console.log(err, "err");
+                  } else {
+                    console.log(data, "success");
+                  }
+                }
               );
+              /*======================*/
             }
 
             return {

@@ -276,17 +276,23 @@ exports.update = async (req, res) => {
             (stripeRefund.status === "succeeded" ||
               stripeRefund.status === "pending")
           ) {
+            const refundId = stripeRefund.id;
+            const refundTransaction = stripeRefund.balance_transaction;
+            const check_number = "";
             if (emiId) {
-              await paymentProcessing(
+              refundRes = await refundMembershipEmi(
                 membershipId,
                 emiId,
                 balance,
-                createdBy,
                 type,
-                req.body.ptype
+                req.body.ptype,
+                check_number,
+                refundId,
+                refundTransaction
               );
+            } else {
+              refundRes = await refundMembership(membershipId, req.body, emiId);
             }
-            refundRes = await refundMembership(membershipId, req.body);
             if (refundRes) {
               res.status(200).send({
                 msg: `Membership amount $${Amount} refunded successfully!`,
@@ -306,16 +312,16 @@ exports.update = async (req, res) => {
           }
         } else {
           if (emiId) {
-            await paymentProcessing(
+            refundRes = await refundMembershipEmi(
               membershipId,
               emiId,
               balance,
-              createdBy,
               type,
               req.body.ptype
             );
+          } else {
+            refundRes = await refundMembership(membershipId, req.body, emiId);
           }
-          refundRes = await refundMembership(membershipId, req.body);
           if (refundRes) {
             res.status(200).send({
               msg: "Membership refunded successfully!",
@@ -605,25 +611,107 @@ function lastestMembership(membershipID, status, expiry_date) {
 exports.updatePayments = async (req, res) => {
   try {
     const buy_membershipId = req.params.membershipId;
+    const userId = req.params.userId;
+    let { stripe_sec } = await User.findOne({ _id: userId });
     const emiId = req.params.emiID;
     const createdBy = req.body.createdBy;
+    const studentId = req.body.studentId;
     const balance = req.body.balance - req.body.Amount;
-    const subscription_id = req.body.subscription_id;
-    const ptype = req.body.ptype;
     const payment_type = req.body.payment_type;
     const cardDetails = req.body.cardDetails;
-    let expiry_date = "";
-    if (cardDetails) {
-      expiry_date = cardDetails.expiry_month + cardDetails.expiry_year;
-      delete cardDetails.expiry_month;
-      delete cardDetails.expiry_year;
-      cardDetails.expiry_date = expiry_date;
-    }
-
+    const stripePaymentMethod = req.body.stripePaymentMethod;
     const { uid } = getUidAndInvoiceNumber();
     if (cardDetails) {
-      const valorPayload = { ...cardDetails, uid, amount: req.body.Amount };
-      valorPayload.app_id = req.valorCredentials.app_id;
+      const stripePayload = { ...cardDetails, uid, amount: req.body.Amount };
+      var stripeObj = await require("stripe")(stripe_sec);
+      let cardId;
+      // if payment with new card
+      if (stripePaymentMethod === "newCard") {
+        // check if card already exist
+        let findExistingCard = await StripeCards.findOne({
+          card_number: stripePayload.pan,
+          studentId: studentId,
+        });
+        if (findExistingCard) {
+          // if card already exist with same card number
+          cardId = findExistingCard["card_id"];
+        } else {
+          //if card is not exist then create a card and save it for future use
+          if (!stripeObj) {
+            return res.send({
+              msg: "please add stipe Keys!",
+              success: false,
+            });
+          }
+          let createdCard = await StripeApis.createCard(
+            {
+              body: {
+                card_number: stripePayload.pan,
+                card_holder_name: stripePayload.card_holder_name,
+                card_expiry_month: stripePayload.expiry_month,
+                card_expiry_year: stripePayload.expiry_year,
+                card_cvc: stripePayload.cvv,
+                email: stripePayload?.email,
+                phone: stripePayload?.phone,
+                userId: userId,
+                studentId: studentId,
+              },
+            },
+            stripeObj
+          );
+
+          if (createdCard["id"]) {
+            cardId = createdCard["id"];
+          } else {
+            return res.send({
+              msg: createdCard?.raw?.message,
+              success: false,
+              data: createdCard,
+            });
+          }
+        }
+      } else {
+        // if payment with existing card
+        cardId = stripePayload.card_id;
+      }
+      // if its one time payment
+      let PaymentResponse = await createPayment(
+        {
+          body: {
+            amount: stripePayload.amount,
+            card_id: cardId,
+            description: stripePayload.description,
+            email: stripePayload.email,
+            userId: userId,
+            studentId: studentId,
+          },
+        },
+        stripeObj
+      );
+      if (
+        PaymentResponse?.statusCode === "200" ||
+        PaymentResponse?.status === "succeeded"
+      ) {
+        const pay = await paymentProcessing(
+          buy_membershipId,
+          emiId,
+          balance,
+          createdBy,
+          "paid",
+          payment_type,
+          req.body.cheque_number,
+          PaymentResponse.id
+        );
+        res.send(pay);
+      } else {
+        res.send({
+          msg: PaymentResponse?.raw?.message
+            ? PaymentResponse?.raw?.message
+            : "Payment is not completed",
+          success: false,
+        });
+      }
+      /*  valorPayload.app_id = req.valorCredentials.app_id;
       valorPayload.auth_key = req.valorCredentials.auth_key;
       valorPayload.epi = req.valorCredentials.epi;
       const resp = await valorTechPaymentGateWay.saleSubscription(valorPayload);
@@ -643,7 +731,7 @@ exports.updatePayments = async (req, res) => {
           success: false,
           msg: "Payment is not completed due to technical reason please try again!",
         });
-      }
+      }  */
     } else {
       const pay = await paymentProcessing(
         buy_membershipId,
@@ -668,7 +756,8 @@ function paymentProcessing(
   createdBy,
   type,
   ptype,
-  check_number = ""
+  check_number = "",
+  paymentIntentId = ""
 ) {
   return new Promise((resolve, reject) => {
     buyMembership.updateOne(
@@ -681,6 +770,7 @@ function paymentProcessing(
           balance: balance,
           membership_status: "Active",
           "schedulePayments.$.status": type,
+          "schedulePayments.$.paymentIntentId": paymentIntentId,
           "schedulePayments.$.ptype": ptype,
           "schedulePayments.$.cheque_number": check_number,
           "schedulePayments.$.createdBy": createdBy,
@@ -693,6 +783,48 @@ function paymentProcessing(
         } else {
           resolve({
             message: "Payment Successfully Updated!",
+            success: true,
+            error: false,
+          });
+        }
+      }
+    );
+  });
+}
+
+function refundMembershipEmi(
+  buy_membershipId,
+  emiId,
+  balance,
+  type,
+  ptype,
+  check_number = "",
+  refundId = "",
+  refundTransaction = ""
+) {
+  return new Promise((resolve, reject) => {
+    buyMembership.updateOne(
+      {
+        _id: buy_membershipId,
+        "schedulePayments.Id": emiId,
+      },
+      {
+        $set: {
+          balance: balance,
+          "schedulePayments.$.status": type,
+          "schedulePayments.$.ptype": ptype,
+          "schedulePayments.$.cheque_number": check_number,
+          "schedulePayments.$.refundId": refundId,
+          "schedulePayments.$.refundTransaction": refundTransaction,
+          "schedulePayments.$.refundDate": new Date(),
+        },
+      },
+      (err, data) => {
+        if (err) {
+          resolve({ error: err.message.replace(/\"/g, ""), success: false });
+        } else {
+          resolve({
+            message: "Refund Successfully Updated!",
             success: true,
             error: false,
           });
