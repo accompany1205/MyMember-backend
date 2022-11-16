@@ -173,6 +173,8 @@ exports.getTextMessages = async (req, res) => {
 exports.getTextContactsDetails = async (req, res) => {
   const userId = req.params.userId;
   const studentType = req.query.studentType;
+  console.log("userId" , userId)
+  console.log("studentType", studentType)
   let data;
   try {
     if (studentType === 'Active Trial') {

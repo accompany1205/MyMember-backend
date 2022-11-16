@@ -10,6 +10,4 @@ router.put("/tutorial/update_subfolder/:userId/:subfolderId", verifySchool, upda
 router.delete("/tutorial/delete_subfolder/:userId/:subfolderId", verifySchool, delete_SubFolder);
 
 
-
-
 module.exports = router;
