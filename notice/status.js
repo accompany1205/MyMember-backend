@@ -807,72 +807,78 @@ const chargeEmiWithStripeCron = async () => {
                 studentId: studentId,
               });
             }
-            const card_id = stripeDetails.card_id;
-            const customer_id = stripeDetails.customer_id;
-            const createdBy = stripeDetails.card_holder_name;
+            if (stripeDetails?.card_id) {
+              const card_id = stripeDetails?.card_id;
+              const customer_id = stripeDetails?.customer_id;
+              const createdBy = stripeDetails?.card_holder_name;
 
-            const paymentObj = {
-              amount: amount * 100, //stripe uses cents
-              currency: "usd",
-              customer: customer_id,
-              payment_method_types: ["card"],
-              payment_method: card_id,
-              confirm: "true",
-              description: "Monthly Emi installment",
-            };
-            const paymentIntent = await stripeObj.paymentIntents.create(
-              paymentObj
-            );
-            await StoreTransaction.create({
-              ...paymentIntent,
-              studentId,
-              userId,
-              purchased_membership_id,
-              emiId: Id,
-            });
-            if (
-              paymentIntent?.statusCode === "200" ||
-              paymentIntent?.status === "succeeded"
-            ) {
-              // update payment status
-              await schedulePayment.updateOne(
-                { studentId: studentId.toString(), Id: Id },
-                { $set: { status: "paid", paymentIntentId: paymentIntent.id } }
+              const paymentObj = {
+                amount: amount * 100, //stripe uses cents
+                currency: "usd",
+                customer: customer_id,
+                payment_method_types: ["card"],
+                payment_method: card_id,
+                confirm: "true",
+                description: "Monthly Emi installment",
+              };
+              const paymentIntent = await stripeObj.paymentIntents.create(
+                paymentObj
               );
-              /*  ======================*/
-              await buyMembership.updateOne(
-                {
-                  _id: purchased_membership_id,
-                  "schedulePayments.Id": Id,
-                },
-                {
-                  $set: {
-                    membership_status: "Active",
-                    "schedulePayments.$.status": "paid",
-                    "schedulePayments.$.ptype": "credit card",
-                    "schedulePayments.$.paymentIntentId": paymentIntent.id,
-                    "schedulePayments.$.createdBy": createdBy,
-                    "schedulePayments.$.paidDate": new Date(),
-                  },
-                },
-                (err, data) => {
-                  if (err) {
-                    console.log(err, "err");
-                  } else {
-                    console.log(data, "success");
+              await StoreTransaction.create({
+                ...paymentIntent,
+                studentId,
+                userId,
+                purchased_membership_id,
+                emiId: Id,
+              });
+              if (
+                paymentIntent?.statusCode === "200" ||
+                paymentIntent?.status === "succeeded"
+              ) {
+                // update payment status
+                await schedulePayment.updateOne(
+                  { studentId: studentId.toString(), Id: Id },
+                  {
+                    $set: { status: "paid", paymentIntentId: paymentIntent.id },
                   }
-                }
-              );
-              /*======================*/
-            }
+                );
+                /*  ======================*/
+                await buyMembership.updateOne(
+                  {
+                    _id: purchased_membership_id,
+                    "schedulePayments.Id": Id,
+                  },
+                  {
+                    $set: {
+                      membership_status: "Active",
+                      "schedulePayments.$.status": "paid",
+                      "schedulePayments.$.ptype": "credit card",
+                      "schedulePayments.$.paymentIntentId": paymentIntent.id,
+                      "schedulePayments.$.createdBy": createdBy,
+                      "schedulePayments.$.paidDate": new Date(),
+                    },
+                  },
+                  (err, data) => {
+                    if (err) {
+                      console.log(err, "err");
+                    } else {
+                      console.log(data, "success");
+                    }
+                  }
+                );
+                /*======================*/
+              }
 
-            return {
-              studentId,
-              userId,
-              purchased_membership_id,
-              emiId: Id,
-              paymentIntent,
-            };
+              return {
+                studentId,
+                userId,
+                purchased_membership_id,
+                emiId: Id,
+                paymentIntent,
+              };
+            } else {
+              return false;
+            }
           })
         )
           .then((resdata) => {
