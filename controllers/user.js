@@ -1,17 +1,22 @@
 const User = require('../models/user');
+const UserPakages = require('../models/user_pakages')
 const { Order } = require('../models/order');
 const { errorHandler } = require('../helpers/dbErrorHandler');
 const navbar = require('../models/navbar.js')
 const cloudUrl = require("../gcloud/imageUrl")
 const request = require("request");
 const mergeFile = require('../Services/mergeFile');
-
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const client = require('twilio')(accountSid, authToken);
 
 exports.userById = (req, res, next, id) => {
   User
     .findById(id)
     .populate('locations')
     .populate('default_location')
+    .populate('userPakages')
+
     // .populate('subUsers')
     // .populate('mainUser')
     .exec((err, user) => {
@@ -25,6 +30,8 @@ exports.userById = (req, res, next, id) => {
       next();
     });
 };
+
+
 
 exports.verificationLink = async (req, res) => {
   let userId = req.params.userId;
@@ -109,6 +116,7 @@ function deleteVerifiedSendgridUser(option) {
     });
   })
 }
+
 function getverifiedSendgrid(options) {
   return new Promise((resolve, reject) => {
     request(options, function (error, response, body) {
@@ -190,16 +198,6 @@ exports.update = async (req, res) => {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false })
   }
 };
-
-
-
-
-
-
-
-
-
-
 
 
 exports.addOrderToUserHistory = (req, res, next) => {
@@ -313,3 +311,78 @@ exports.mergeUserInfo = async (req, res) => {
     res.send({ msg: err.message.replace(/\"/g, ''), success: false });
   }
 };
+exports.purchased_Num = async (req, res) => {
+  try {
+    // let {} = req.body
+    //  console.log('req body', req.body)
+    //  console.log('req params', req.params)
+    await client.incomingPhoneNumbers
+      .create({ phoneNumber: req.body.purchased_Num })
+      .then(incoming_phone_number =>
+        console.log(incoming_phone_number.sid)
+      );
+    let UserInfo = await User.findByIdAndUpdate(req.params.userid, req.body, {
+      new: true,
+      runValidators: true
+    })
+    res.status(200).json({
+      success: true,
+      data: UserInfo
+    })
+  } catch (error) {
+    console.log('purchase num err', error)
+  }
+}
+
+exports.Subtract_Credits = async (req, res) => {
+  try {
+    // let {} = req.body
+    console.log('req body', req.body)
+    console.log('req params', req.params)
+    let creditsInfo = await UserPakages.findByIdAndUpdate(req.params.userid, { $inc: { credits: -1 } }, {
+      new: true,
+      runValidators: true
+    })
+    res.status(200).json({
+      success: true,
+      data: creditsInfo
+    })
+  } catch (error) {
+    console.log('purchase num err', error)
+  }
+}
+exports.Add_Credits = async (req, res) => {
+  try {
+    let { credits } = req.body
+    console.log('req body', req.body, credits)
+    console.log('req params', req.params)
+    let creditsInfo = await UserPakages.findByIdAndUpdate(req.params.userid, { $inc: { credits: credits ? credits : 1 } }, {
+      new: true,
+      runValidators: true
+    })
+    res.status(200).json({
+      success: true,
+      data: creditsInfo
+    })
+  } catch (error) {
+    console.log('purchase num err', error)
+  }
+}
+exports.AddNew_Credits = async (req, res) => {
+  try {
+    // let {} = req.body
+    console.log('req body', req.body)
+    let newData = await UserPakages(req.body).save()
+      .then((item) => res.json({ success: true, data: item }))
+    //  let creditsInfo = await UserPakages.findByIdAndUpdate(req.params.userid , {$inc:{credits: 1}} ,{
+    //   new: true,
+    //   runValidators:true
+    //  })
+    res.status(200).json({
+      success: true,
+      data: creditsInfo
+    })
+  } catch (error) {
+    console.log('purchase num err', error)
+  }
+}

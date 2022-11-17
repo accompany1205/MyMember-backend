@@ -6,7 +6,6 @@ const cloudUrl = require("../gcloud/imageUrl");
 const textMessage = require('../models/text_message');
 const member =  require("../models/addmember")
 const mongoose = require('mongoose');
-const event = require("../models/appointment")
 
 exports.Create = async (req, res) => {
   const Task = req.body;
@@ -316,78 +315,9 @@ exports.taskFilter = async (req, res) => {
 };
 let moment = require("moment");
 const { isIsoDate } = require("@hapi/joi/lib/common");
+
 exports.notificationTodayTask = async (req, res) => {
   try {
-
-    // let currDate = new Date().toISOString().slice(0, 10);
-    // console.log(currDate)
-    // var todayEvent = await event.find(
-    //   {
-    //     userId: "606aea95a145ea2d26e0f1ab",
-    //     start: currDate,
-    //     $or: [{ 'isRead': null }, { 'isRead': false }]
-    //   },
-    //   { id: 1, title: 1, start: 1, notes: 1, isSeen: 1 }
-    // );
-
-    // let thisWeekBirthday = await member.aggregate([
-    //   {
-    //     $match: {
-    //       $and: [
-    //         { userId: '606aea95a145ea2d26e0f1aa' },
-    //         { 'isRead': false  },
-    //         { $expr: { $eq: [{ $week: '$dob' }, { $subtract: [{ $week: "$$NOW" },1]}] } },
-    //       ]
-    //     }
-    //   },
-    //   {
-    //     $project: {
-    //       id: 1,
-    //       firstName: 1,
-    //       lastName: 1,
-    //       age: 1,
-    //       dob: 1,
-    //       memberprofileImage: 1,
-    //       // week:{ $week: '$dob' },
-    //       // nowWeek:{ $subtract: [{ $week: "$$NOW" },1]},
-    //       isSeen: 1
-    //     }
-    //   }
-    // ])
-    // const d = new Date('2019-01-24T05:03:30.000Z');
-    // console.log(d,'date')
-
-   
-    // let today = moment('2022-01-24T00:00:00+05:30').startOf('day');
-    // console.log(today,'today',tomorrowMonth)
-
-    // let next2Month = moment().add(2, 'months');
-    // console.log(next2Month)
-    // let nextSixtyDays = await member.aggregate([
-    //   {
-    //     $match: {
-    //       $and: [
-    //         { userId: '606aea95a145ea2d26e0f1aa' },
-    //         { 'isRead': false  },
-    //         { $expr: { $eq: [{ $month: '$dob' }, { $month: new Date(next2Month) }] } }
-    //       ]
-    //     }
-    //   },
-    //   {
-    //     $project: {
-    //       id: 1,
-    //       firstName: 1,
-    //       lastName: 1,
-    //       age: 1,
-    //       dob: 1,
-    //       memberprofileImage: 1,
-    //       // month:{ $month: '$dob' },
-    //       // nowMonth:{$subtract:[{$month:  new Date('2019-01-24T05:03:30.000Z')},1]},
-    //       // nowWeek:{ $subtract: [{ $week: "$$NOW" },1]},
-    //       isSeen: 1
-    //     }
-    //   }
-    // ])
   //   let today = moment().startOf('day');
   // // "2018-12-05T00:00:00.00
     
@@ -396,15 +326,15 @@ exports.notificationTodayTask = async (req, res) => {
   // ("2018-12-05T23:59:59.999
     // let currDate = new Date().toISOString().slice(0, 10);
     // console.log(currDate, typeof currDate);
-    // let rest
+    let rest
 
-    // let users = await user.findOne({_id: "6138893333c9482cb41d88d5"},{_id: 1,task_setting: 1,birthday_setting:1,chat_setting:1})
-    // let notification ={}
-    // if(users.task_setting){
-    //   notification.task = [users]
-    // }else{
-    //   notification.task = []
-    // }
+    let users = await user.findOne({_id: "6138893333c9482cb41d88d5"},{_id: 1,task_setting: 1,birthday_setting:1,chat_setting:1})
+    let notification ={}
+    if(users.task_setting){
+      notification.task = [users]
+    }else{
+      notification.task = []
+    }
     
   // const tomorrow  = new Date(); // The Date object returns today's timestamp
   // tomorrow.setDate(tomorrow.getDate() + 1);
@@ -461,7 +391,7 @@ exports.notificationTodayTask = async (req, res) => {
    
   //  let count  =  text_chat.filter((item)=> item.isSeen == 'false').length;
 
-    res.send({ success: true, data: todayEvent });
+    res.send({ success: true, data: notification });
   } catch (err) {
     res.send({ error: err.message.replace(/\"/g, ""), success: false });
   }
@@ -472,7 +402,6 @@ exports.seenTasks = async (req, res) => {
     const taskId = req.body.taskId;
     const textId = req.body.chatId;
     const memberId = req.body.memberId
-    const eventId = req.body.eventId
     
        if(taskId != undefined || taskId.length > 0){
         const seenTasks = await tasks.updateOne(
@@ -480,12 +409,6 @@ exports.seenTasks = async (req, res) => {
           { $set: { isSeen: true } }
         );
         }
-        if(eventId != undefined || eventId.length > 0){
-          const seenEvents = await event.updateOne(
-            { _id: { $in: eventId }  },
-            { $set: { isSeen: true } }
-          );
-          }
         if(memberId != undefined || memberId.length > 0){
         const seenMember = await member.updateOne(
           { _id: { $in: memberId }},
@@ -511,19 +434,13 @@ exports.seenRead = async (req, res) => {
     const taskId = req.body.taskId;
     const textId = req.body.chatId;
     const memberId = req.body.memberId
-    const eventId = req.body.eventId
-       
+   
+    
        if(taskId != undefined || taskId.length > 0){
         const seenTasks = await tasks.updateOne(
           { _id: { $in: taskId }  },
           { $set: { isRead: true,isSeen: false } }
         );
-        }
-        if(eventId != undefined || eventId.length > 0){
-          const seenEvents = await event.updateOne(
-            { _id: { $in: eventId }  },
-            { $set: { isRead: true,isSeen: false } }
-          );
         }
         if(memberId != undefined || memberId.length > 0){
         const seenMember = await member.updateOne(
@@ -550,22 +467,7 @@ exports.notificationOnOFF = async (req, res) => {
   try{
     let task_setting = req.query.taskSetting
     let chat_setting = req.query.chatSetting
-    let nextSixtyDays_birthday_setting = req.query.sixtyDaysBirthdaySetting
-    let nextNintyDays_birthday_setting = req.query.nintyDaysBirthdaySetting
-    let thisWeek_birthday_setting = req.query.thisWeekBirthdaySetting
-    let thisMonth_birthday_setting = req.query.thisMonthBirthdaySetting
-    let lastMonth_birthday_setting = req.query.lastMonthBirthdaySetting
-    let event_notification_setting = req.query.eventNotificationSetting
-    let seven_to_fourteen_setting = req.query.sevenToFourteenSetting
-    let fifteen_to_thirty_setting = req.query.fifteenToThirtySetting
-    let thirtyone_to_sixty_setting = req.query.thirtyoneToSixtySetting
-    let sixtyone_plus_setting = req.query.sixtyonePlusSetting
-    let expire_notification_setting = req.query.expireNotificationSetting
-    let thirtydays_expire_notification_setting = req.query.thirtyDaysExpireNotificationSetting
-    let sixtydays_expire_notification_setting = req.query.sixtyDaysExpireNotificationSetting
-    let nintydays_expire_notification_setting = req.query.nintyDaysExpire_notification_setting
-    let frozen_notification_setting = req.query.frozenNotificationSetting
-    
+    let birthday_setting = req.query.birthdaySetting
     let query = {}
     if(task_setting != undefined){
       query.task_setting = task_setting
@@ -573,57 +475,13 @@ exports.notificationOnOFF = async (req, res) => {
     else if(chat_setting != undefined){
       query.chat_setting = chat_setting
     }
-    else if(nextSixtyDays_birthday_setting != undefined){
-      query.nextSixtyDays_birthday_setting = nextSixtyDays_birthday_setting
+    else if(birthday_setting != undefined){
+      query.birthday_setting = birthday_setting
     }
-    else if(nextNintyDays_birthday_setting != undefined){
-      query.nextNintyDays_birthday_setting = nextNintyDays_birthday_setting
-    }
-    else if(thisWeek_birthday_setting != undefined){
-      query.thisWeek_birthday_setting = thisWeek_birthday_setting
-    }
-    else if(thisMonth_birthday_setting != undefined){
-      query.thisMonth_birthday_setting = thisMonth_birthday_setting
-    }
-    else if(lastMonth_birthday_setting != undefined){
-      query.lastMonth_birthday_setting = lastMonth_birthday_setting
-    }
-    else if(event_notification_setting != undefined){
-      query.event_notification_setting = event_notification_setting
-    }
-    else if(seven_to_fourteen_setting != undefined){
-      query.seven_to_fourteen_setting = seven_to_fourteen_setting
-    }
-    else if(fifteen_to_thirty_setting != undefined){
-      query.fifteen_to_thirty_setting = fifteen_to_thirty_setting
-    }
-    else if(thirtyone_to_sixty_setting != undefined){
-      query.thirtyone_to_sixty_setting = thirtyone_to_sixty_setting
-    } 
-    else if(sixtyone_plus_setting != undefined){
-      query.sixtyone_plus_setting = sixtyone_plus_setting
-    } 
-    else if(expire_notification_setting != undefined){
-      query.expire_notification_setting = expire_notification_setting
-    } 
-    else if(thirtydays_expire_notification_setting != undefined){
-      query.thirtydays_expire_notification_setting = thirtydays_expire_notification_setting
-    } 
-    else if(sixtydays_expire_notification_setting != undefined){
-      query.sixtydays_expire_notification_setting = sixtydays_expire_notification_setting
-    } 
-    else if(nintydays_expire_notification_setting != undefined){
-      query.nintydays_expire_notification_setting = nintydays_expire_notification_setting
-    } 
-    else if(frozen_notification_setting != undefined){
-      query.frozen_notification_setting = (frozen_notification_setting)
-    } 
-
     let userId =  req.params.userId
     const id = mongoose.Types.ObjectId(userId);
     console.log(query,id)
-    let userNotificationUpdate = await user.updateOne({_id:id},{$set:query})
-    console.log(userNotificationUpdate)
+    await user.updateOne({_id:id},{$set:query})
     res.send({ success: true, msg: "notification setting update successfully" });
   }catch(err){
     res.send({ error: err.message.replace(/\"/g, ""), success: false });

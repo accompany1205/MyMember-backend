@@ -18,7 +18,7 @@ const userSchema = new schema(
         twilio: {
             type: String,
             unique: true,
-            index:true
+            index: true
         },
         isverify: {
             type: Boolean,
@@ -236,8 +236,8 @@ const userSchema = new schema(
         schoolId: {
             type: String,
             index: true,
-            index:true
-           
+            index: true
+
         },
         reset_code: {
             type: String,
@@ -279,16 +279,16 @@ const userSchema = new schema(
             password: {
                 type: String
             },
-           
+
         }],
-        stripe_pub:{
-            type:String
+        stripe_pub: {
+            type: String
         },
-        stripe_sec:{
-            type:String
+        stripe_sec: {
+            type: String
         },
-        stripe_name:{
-            type:String
+        stripe_name: {
+            type: String
         },
         task_setting: {
             type: Boolean,
@@ -302,74 +302,22 @@ const userSchema = new schema(
             type: Boolean,
             default: true
         },
-        today_birthday_setting:{
-            type: Boolean,
-            default: true
+        purchased_Num: {
+            type: String
         },
-        tomorrow_birthday_setting:{
-            type: Boolean,
-            default: true
+        customer_id: {
+            type: String
         },
-        thisWeek_birthday_setting:{
-            type: Boolean,
-            default: true
+        sub_id: {
+            type: String
         },
-        thisMonth_birthday_setting:{
+        is_Already_Purchase: {
             type: Boolean,
-            default: true
         },
-        lastMonth_birthday_setting:{
-            type: Boolean,
-            default: true
-        },
-        nextSixtyDays_birthday_setting:{
-            type: Boolean,
-            default: true
-        },
-        nextNintyDays_birthday_setting:{
-            type: Boolean,
-            default: true
-        },
-        event_notification_setting:{
-            type: Boolean,
-            default: true
-        },
-        seven_to_fourteen_setting:{
-            type: Boolean,
-            default: true
-        },
-        fifteen_to_thirty_setting:{
-            type: Boolean,
-            default: true
-        },
-        thirtyone_to_sixty_setting:{
-            type: Boolean,
-            default: true
-        },
-        sixtyone_plus_setting:{
-            type: Boolean,
-            default: true
-        },
-        expire_notification_setting:{
-            type: Boolean,
-            default: true
-        },
-        thirtydays_expire_notification_setting:{
-            type: Boolean,
-            default: true
-        },
-        sixtydays_expire_notification_setting:{
-            type: Boolean,
-            default: true
-        },
-        nintydays_expire_notification_setting:{
-            type: Boolean,
-            default: true
-        },
-        frozen_notification_setting:{
-
+        userPakages: {
+            type: schema.Types.ObjectId,
+            ref: "User_pakages"
         }
-
     },
     { timestamps: true }
 );
