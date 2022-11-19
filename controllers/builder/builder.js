@@ -1,5 +1,6 @@
 const Form = require("../../models/builder/Form.js")
 const addmember = require("../../models/addmember.js")
+const Funnel = require("../../models/builder/funnel.js")
 const mongoose = require("mongoose")
 
 //const stripe = require('stripe')('sk_test_v9')
@@ -16,7 +17,7 @@ const getToken = async (code) => {
     }
     return token;
 }
-    
+
 const getAccount = async (connectedAccountId) => {
     let account = {};
     try {
@@ -27,12 +28,12 @@ const getAccount = async (connectedAccountId) => {
     return account;
 }
 
-exports.processStripeConnect = async (req,res) => {
+exports.processStripeConnect = async (req, res) => {
 
-    
 
-    const account = await stripe.accounts.create({type: 'standard'});
-    
+
+    const account = await stripe.accounts.create({ type: 'standard' });
+
     /*
     const result = await stripe.oauth.token({
         grant_type: 'authorization_code',
@@ -50,19 +51,19 @@ exports.processStripeConnect = async (req,res) => {
     let refresh_url = `${process.env.BASE_URL}/`
 
     const accountLink = await stripe.accountLinks.create({
-    	account: account.id,
-    	refresh_url: refresh_url,
-    	return_url: return_url,
-    	type: 'account_onboarding'
+        account: account.id,
+        refresh_url: refresh_url,
+        return_url: return_url,
+        type: 'account_onboarding'
     })
 
     let url = accountLink.url
-                         
+
 }
 
-exports.getIntentClientSecret = async(req,res) => {
+exports.getIntentClientSecret = async (req, res) => {
 
-    try{
+    try {
 
         let amount = 0
         let currency = 'eur'
@@ -70,17 +71,17 @@ exports.getIntentClientSecret = async(req,res) => {
             amount: amount,
             currency: currency,
             automatic_payment_methods: {
-              enabled: true,
+                enabled: true,
             },
             application_fee_amount: 123,
-          }, {
+        }, {
             stripeAccount: '{{CONNECTED_ACCOUNT_ID}}',
         });
 
-        res.status(200).json({client_secret: paymentIntent.client_secret, success: true});
+        res.status(200).json({ client_secret: paymentIntent.client_secret, success: true });
 
-    }catch(error){
-        console.log("Error:",error)
+    } catch (error) {
+        console.log("Error:", error)
         res.status(500).json({
             success: false
         })
@@ -88,36 +89,62 @@ exports.getIntentClientSecret = async(req,res) => {
 
 }
 
+const checkFunnelId = async (funnelId) => {
+    try {
+        let funnel = await Funnel.findOne({ _id: funnelId });
+        if (funnel) {
+            return funnel;
+        }
+        return false;
+    } catch (err) {
+        console.log(err);
+    }
 
-exports.createForm = async (req,res) => {
-    try{
+}
+
+exports.createForm = async (req, res) => {
+    try {
+        let funnelId = req.body.funnelId;
+        let funnel = await checkFunnelId(funnelId);
+        if (!funnel) {
+            return res.send({ msg: "Incorrect funnel Id!", success: false });
+        }
         let formBody = "<html></html>"
         let title = "Form Title"
-		let created_by = new mongoose.Types.ObjectId
-
+        let created_by = new mongoose.Types.ObjectId
+        let newFunnelId = mongoose.Types.ObjectId(funnelId)
         let form = new Form
         form.title = title
         form.formBody = formBody
         form.created_by = created_by
+        form.funnelId = newFunnelId
         form.formData = JSON.stringify({
-                         "gjs-css":"",
-                         "gjs-html":"",
-                         "gjs-assets":"[]",
-                         "gjs-styles":"",
-                         "gjs-components":"[ {\"tagName\":\"h1\",\"type\":\"text\",\"attributes\":{\"id\":\"imc6s\"},\"components\":[ {\"type\":\"textnode\",\"content\":\"Form\"} ]}]"
-                        })
+            "gjs-css": "",
+            "gjs-html": "",
+            "gjs-assets": "[]",
+            "gjs-styles": "",
+            "gjs-components": "[ {\"tagName\":\"h1\",\"type\":\"text\",\"attributes\":{\"id\":\"imc6s\"},\"components\":[ {\"type\":\"textnode\",\"content\":\"Form\"} ]}]"
+        })
         //'{{"tagName":"h5","type":"text","attributes":{"id":"imc6s"},"components":[{"type":"textnode","content":"Form"}]}}'
-        form.save();
-
+        await form.save();
+        //console.log(data)
+        if (funnel.forms.length === 0) {
+            await Funnel.updateOne({_id:funnelId},{$push:{forms:mongoose.Types.ObjectId(form._id)}});
+        }else {
+            let latestFormId = funnel.forms.at(-1);
+            console.log(typeof(latestFormId));
+            await Form.updateOne({_id:latestFormId},{nextFormId:form._id});
+            await Funnel.updateOne({_id:newFunnelId},{$push:{forms:mongoose.Types.ObjectId(form._id)}})
+        }
         res.status(200).json({
             success: true,
             message: "Form created successfully",
             formId: form._id,
-	        data: "data test"
+            data: "data test"
         })
     }
-    catch(error){
-		console.log("Error:",error)
+    catch (error) {
+        console.log("Error:", error)
         res.status(500).json({
             success: false,
             message: "Error creating form"
@@ -125,11 +152,11 @@ exports.createForm = async (req,res) => {
     }
 }
 
-exports.markAsFavourite = async (req,res) => {
-    try{
-        let formId = req.params.id 
-        console.log("formId::",formId)
-        let form = await Form.findOne({_id: formId})
+exports.markAsFavourite = async (req, res) => {
+    try {
+        let formId = req.params.id
+        console.log("formId::", formId)
+        let form = await Form.findOne({ _id: formId })
         form.favourite = !form.favourite
         await form.save()
 
@@ -137,9 +164,9 @@ exports.markAsFavourite = async (req,res) => {
             success: true,
             message: "Form updated successfully"
         })
-       
+
     }
-    catch(error){
+    catch (error) {
         res.status(500).json({
             success: false,
             message: "Error updating form"
@@ -147,9 +174,9 @@ exports.markAsFavourite = async (req,res) => {
     }
 }
 
-exports.getFavourites = async(req,res) => {
-    try{
-        let forms = await Form.find({favourite: true})
+exports.getFavourites = async (req, res) => {
+    try {
+        let forms = await Form.find({ favourite: true })
 
         res.status(200).json({
             success: true,
@@ -157,7 +184,7 @@ exports.getFavourites = async(req,res) => {
             forms: forms
         })
     }
-    catch(error){
+    catch (error) {
         res.status(500).json({
             success: false,
             message: "Error marking form as favourite"
@@ -165,11 +192,11 @@ exports.getFavourites = async(req,res) => {
     }
 }
 
-exports.moveToTrash = async (req,res) => {
-    try{
-        
-        let formId = req.params.id 
-        let form = await Form.findOne({_id: formId})
+exports.moveToTrash = async (req, res) => {
+    try {
+
+        let formId = req.params.id
+        let form = await Form.findOne({ _id: formId })
         form.deleted = !form.deleted
         await form.save()
 
@@ -178,7 +205,7 @@ exports.moveToTrash = async (req,res) => {
             message: "Form deleted successfully"
         })
     }
-    catch(error){
+    catch (error) {
         console.log("mtt:", error)
         res.status(500).json({
             success: false,
@@ -187,10 +214,10 @@ exports.moveToTrash = async (req,res) => {
     }
 }
 
-exports.deleteForm = async (req,res) => {
-    try{
-        let formId = req.params.id 
-        let form = await Form.findOne({_id: formId})
+exports.deleteForm = async (req, res) => {
+    try {
+        let formId = req.params.id
+        let form = await Form.findOne({ _id: formId })
         await form.delete()
 
         res.status(200).json({
@@ -198,7 +225,7 @@ exports.deleteForm = async (req,res) => {
             message: "Form deleted successfully"
         })
     }
-    catch(error){
+    catch (error) {
         res.status(500).json({
             success: false,
             message: "Error deleting form"
@@ -206,11 +233,11 @@ exports.deleteForm = async (req,res) => {
     }
 }
 
-exports.archiveForm = async (req,res) => {
-    try{
-        let formId = req.params.id 
-        
-        let form = await Form.findOne({_id: formId})
+exports.archiveForm = async (req, res) => {
+    try {
+        let formId = req.params.id
+
+        let form = await Form.findOne({ _id: formId })
         form.archived = !form.archived
         await form.save()
 
@@ -219,7 +246,7 @@ exports.archiveForm = async (req,res) => {
             message: "Form updated successfully"
         })
     }
-    catch(error){
+    catch (error) {
         res.status(500).json({
             success: false,
             message: "Error updating form"
@@ -227,14 +254,14 @@ exports.archiveForm = async (req,res) => {
     }
 }
 
-exports.updateFormData = async (req,res) => {
-    try{
+exports.updateFormData = async (req, res) => {
+    try {
         let formId = req.params.id
-        let update = {html: req.body.html, css: req.body.css, js: req.body.js, data: req.body.data}
+        let update = { html: req.body.html, css: req.body.css, js: req.body.js, data: req.body.data }
         console.log("formId-2-settings:", formId)
 
-        let form = await Form.findOne({_id: formId})
-       
+        let form = await Form.findOne({ _id: formId })
+
         form.formBody = req.body.html
         form.formStyle = req.body.css
         form.formScript = req.body.js
@@ -247,8 +274,8 @@ exports.updateFormData = async (req,res) => {
         })
 
     }
-    catch(error){
-       
+    catch (error) {
+
         res.status(500).json({
             success: false,
             message: "Error updating form"
@@ -256,19 +283,19 @@ exports.updateFormData = async (req,res) => {
     }
 }
 
-exports.updateFormSettings = async (req,res) => {
-    try{
+exports.updateFormSettings = async (req, res) => {
+    try {
         let formId = req.params.id
-        let update = {title: req.body.title, enable: req.body.enabled}
+        let update = { title: req.body.title, enable: req.body.enabled }
         console.log("updateSettings:", formId, update)
         let enabled = null;
-        if(req.body.enabled == "enabled"){
+        if (req.body.enabled == "enabled") {
             enabled = true
-        }else{
+        } else {
             enabled = false
         }
 
-        let form = await Form.findOne({_id: formId})
+        let form = await Form.findOne({ _id: formId })
         form.title = req.body.title
         form.enabled = enabled
         await form.save()
@@ -279,8 +306,8 @@ exports.updateFormSettings = async (req,res) => {
         })
 
     }
-    catch(error){
-        console.log("uError:",error)
+    catch (error) {
+        console.log("uError:", error)
         res.status(500).json({
             success: false,
             message: "Error updating form"
@@ -290,11 +317,11 @@ exports.updateFormSettings = async (req,res) => {
 
 
 
-exports.getForms = async (req,res,next) => {
-    try{
+exports.getForms = async (req, res, next) => {
+    try {
         let uforms = await Form.find()
-		//console.log("getForms:", uforms)
-        if(uforms){
+        //console.log("getForms:", uforms)
+        if (uforms) {
             res.status(200).json({
                 success: true,
                 message: "Forms fetched successfully",
@@ -302,8 +329,8 @@ exports.getForms = async (req,res,next) => {
             })
         }
     }
-    catch(error){
-		console.log("error:",error)
+    catch (error) {
+        console.log("error:", error)
         res.status(500).json({
             success: false,
             message: "Error fetching forms"
@@ -311,124 +338,124 @@ exports.getForms = async (req,res,next) => {
     }
 }
 
-exports.storeForm = async(req,res,next) => {
-	try{
-	     console.log("storeForm-1:::", req.body)
-             res.status(200).json({test: "store form"})
-        }
-        catch(error){
-            console.log("storeForm::", error)
-	    res.status(500).json({
-            	success: false,
-            	message: "Error storing form"
-            })
-        }
+exports.storeForm = async (req, res, next) => {
+    try {
+        console.log("storeForm-1:::", req.body)
+        res.status(200).json({ test: "store form" })
+    }
+    catch (error) {
+        console.log("storeForm::", error)
+        res.status(500).json({
+            success: false,
+            message: "Error storing form"
+        })
+    }
 }
 
-exports.loadForm = async(req,res,next) => {
-	try{
-	     console.log("loadForm:::", req.body)
-             res.status(200).json({test: "load form"})
-        }
-        catch(error){
-            console.log("loadForm::", error)
-	    res.status(500).json({
-            	success: false,
-            	message: "Error loading form"
-            })
-        }
+exports.loadForm = async (req, res, next) => {
+    try {
+        console.log("loadForm:::", req.body)
+        res.status(200).json({ test: "load form" })
+    }
+    catch (error) {
+        console.log("loadForm::", error)
+        res.status(500).json({
+            success: false,
+            message: "Error loading form"
+        })
+    }
 }
 
-exports.getForm = async(req,res,next)=>{
-	try{
-		let formId = req.params.id
-		let uform = await Form.findOne({_id: formId})
-		if(uform){
-			res.status(200).json({
-		          success: true,
-		         message: "Form fetched successfully",
-		         uform: uform
-		       })
-		}
-	}
-	catch(error){
-		console.log("error:",error)
+exports.getForm = async (req, res, next) => {
+    try {
+        let formId = req.params.id
+        let uform = await Form.findOne({ _id: formId })
+        if (uform) {
+            res.status(200).json({
+                success: true,
+                message: "Form fetched successfully",
+                uform: uform
+            })
+        }
+    }
+    catch (error) {
+        console.log("error:", error)
         res.status(500).json({
             success: false,
             message: "Error fetching form:id"
         })
-	}
+    }
 }
 
 
-exports.processForm = async(req,res) => {
-    
-    try{
-	    console.log("Processing Form")
-	    console.log("Req.body::", req.body)
+exports.processForm = async (req, res) => {
 
-	    let formId = req.params.id
-	    let userId = req.params.userId
+    try {
+        console.log("Processing Form")
+        console.log("Req.body::", req.body)
 
-	    //Contact Info
-	    let memberType = req.body.member_type
-	    let memberId = req.body.memberId
+        let formId = req.params.id
+        let userId = req.params.userId
 
-	    // Member Info
-	    let firstName = req.body.first_name
-	    let lastName = req.body.last_name
-	    let gender = req.body.gender
-	    let dob = req.body.dob
-	    let age = req.body.age
-	    let street = req.body.street
-	    let city = req.body.city
-	    let state = req.body.state
-	    let zipCode = req.body.zipcode
-	    let country = req.body.country
-	    let phone1 = req.body.phone
-	    let phone2 = req.body.phone2
-	    let email = req.body.email
+        //Contact Info
+        let memberType = req.body.member_type
+        let memberId = req.body.memberId
 
-	    //Buyer Info
-	    let buyerFirstName = req.body.first_name2
-	    let buyerLastName = req.body.last_name2
-	    let buyerGender = req.body.gender2
-	    let buyerDob = req.body.dob2
-	    let buyerAge = req.body.age2
+        // Member Info
+        let firstName = req.body.first_name
+        let lastName = req.body.last_name
+        let gender = req.body.gender
+        let dob = req.body.dob
+        let age = req.body.age
+        let street = req.body.street
+        let city = req.body.city
+        let state = req.body.state
+        let zipCode = req.body.zipcode
+        let country = req.body.country
+        let phone1 = req.body.phone
+        let phone2 = req.body.phone2
+        let email = req.body.email
 
-	    //custom info
-	    let leadsTracing = req.body.leads
+        //Buyer Info
+        let buyerFirstName = req.body.first_name2
+        let buyerLastName = req.body.last_name2
+        let buyerGender = req.body.gender2
+        let buyerDob = req.body.dob2
+        let buyerAge = req.body.age2
 
-	    let form = await Form.findOne({_id: formId})
-	    form.submission += 1
-	    await form.save()
+        //custom info
+        let leadsTracing = req.body.leads
 
-	    let newmember = await addmember
-	    newmember.studentType = memberType
-	    newmember.firstName = firstName
-	    newmember.lastName = lastName
-	    newmember.dob = dob
-	    newmember.age = age
-	    newmember.gender = gender
-	    newmember.email = email
-	    newmember.primaryPhone = phone1
-	    newmember.secondaryPhone = phone2
-	    newmember.street = street
-	    newmember.city = city
-	    newmember.state = state
-	    newmember.country = country
-	    newmember.zipPostalCode = zipCode
+        let form = await Form.findOne({ _id: formId })
+        form.submission += 1
+        await form.save()
 
-	    newmember.buyerInfo.firstName = buyerFirstName
-	    newmember.buyerInfo.lastName = buyerLastName
-	    newmember.buyerInfo.gender = buyerGender
-	    newmember.buyerInfo.dob = buyerDob
-	    newmember.buyerInfo.age = buyerAge
+        let newmember = await addmember
+        newmember.studentType = memberType
+        newmember.firstName = firstName
+        newmember.lastName = lastName
+        newmember.dob = dob
+        newmember.age = age
+        newmember.gender = gender
+        newmember.email = email
+        newmember.primaryPhone = phone1
+        newmember.secondaryPhone = phone2
+        newmember.street = street
+        newmember.city = city
+        newmember.state = state
+        newmember.country = country
+        newmember.zipPostalCode = zipCode
 
-	    await newmember.save()  
-     }catch(error){
-         console.log("Err:",error)
-     }  
-    
+        newmember.buyerInfo.firstName = buyerFirstName
+        newmember.buyerInfo.lastName = buyerLastName
+        newmember.buyerInfo.gender = buyerGender
+        newmember.buyerInfo.dob = buyerDob
+        newmember.buyerInfo.age = buyerAge
+
+        await newmember.save()
+    } catch (error) {
+        console.log("Err:", error)
+    }
+
 }
 

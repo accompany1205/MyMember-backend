@@ -4,13 +4,13 @@ const { createMemberShipDocument } = require("../buy_membership");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 router.get("/config", async (req, res) => {
-  const price = await stripe.prices.retrieve(process.env.PRICE);
-  // console.log(price);
-  res.send({
-    publicKey: process.env.STRIPE_PUBLISHABLE_KEY,
-    unitAmount: price.unit_amount,
-    currency: price.currency,
-  });
+  // const price = await stripe.prices.retrieve(process.env.PRICE);
+   console.log( 'price');
+  // res.send({
+  //   publicKey: process.env.STRIPE_PUBLISHABLE_KEY,
+  //   unitAmount: price.unit_amount,
+  //   currency: price.currency,
+  // });
 });
 
 

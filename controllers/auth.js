@@ -24,12 +24,19 @@ const BuyMembership = require('../models/buy_membership');
 // TODO - Rakesh - Please write a mail service if user is coming with role 0(School)
 //TODO - Rakesh - Please read the admin email ids using a mongo query with the role 1.
 //todo - Pavan - #Copleted!
+exports.getMuj = async(req, res)=>{
 
+   User.find({}, function (err, items){
+     res.json({success:true ,data:items})
+   })
+}
 //Signup starting.....
 exports.signup = async (req, res) => {
 	// sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+	console.log('call' , req.body)
 	let userBody = req.body;
 	const user = new User(userBody);
+	
 	const admins = await User.find(
 		{
 			role: 1,
@@ -515,6 +522,7 @@ exports.addTwillioNumber = (req, res) => {
 
 exports.signin = async (req, res) => {
 	// find the user based on email
+	console.log('body login', req.body)
 	const { username, email, password, isAccessLocations, locations } =
 		req.body;
 	if (req.body.access_school) {
@@ -803,17 +811,16 @@ exports.requireSignin = expressJwt({
 	userProperty: 'auth',
 });
 
-exports.
-	isAuth = (req, res, next) => {
-		let user = req.profile && req.auth && req.profile._id == req.auth.id;
-		if (!user) {
-			return res.status(403).json({
-				msg: 'Access denied',
-				success: false,
-			});
-		}
-		next();
-	};
+exports.isAuth = (req, res, next) => {
+	let user = req.profile && req.auth && req.profile._id == req.auth.id;
+	if (!user) {
+		return res.status(403).json({
+			msg: 'Access denied',
+			success: false,
+		});
+	}
+	next();
+};
 
 if (!process.env.JWT_SECRET) {
 	var jwtKey = require('./jwtKey.js').jwtKey;

@@ -8,10 +8,42 @@ const Mailer = require("../helpers/Mailer");
 // sgMail.setApiKey(process.env.email);
 const client = require('twilio')(process.env.aid, process.env.authkey);
 // const VoiceResponse = require('twilio').twiml
-// const accountSid = process.env.TWILIO_ACCOUNT_SID;
-// const authToken = process.env.TWILIO_AUTH_TOKEN;
-// const client = require('twilio')(accountSid, authToken);
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const clientNum = require('twilio')(accountSid, authToken);
+exports.availabeNumber = (req, res) => {
 
+    let state = req.body.value
+    clientNum.availablePhoneNumbers('US')
+        .local
+        .list({ inRegion: state, limit: 20 })
+        .then(local => {
+            res.json({ success: true, data:local })
+        }
+        //      local.forEach(item => {
+
+
+
+        //     res.json({ success: true, data: item })
+        // }
+        
+        ).catch(err => {
+
+            res.json({ success: false, msg: "Something went Wrong" })
+        })
+
+    // clientNum.availablePhoneNumbers(region)
+    // .fetch()
+    // .then(available_phone_number_country =>{
+    //     res.json({success :true, data:available_phone_number_country  })
+    // }).catch(err =>{
+    //     res.json({success :false, msg :"Something went Wrong" })
+    // });
+
+    //     clientNum.availablePhoneNumbers
+    //   .list({limit: 20})
+    //   .then(availablePhoneNumbers => availablePhoneNumbers.forEach(a => console.log('response twillo', a.countryCode)));
+}
 
 exports.voiceCall = (req, res) => {
     client.calls

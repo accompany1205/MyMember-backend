@@ -55,6 +55,12 @@ const FormSchema = mongoose.Schema({
     includePayment: {
         type: Boolean,
         default: false
+    },
+    funnelId:{
+        type: mongoose.Schema.Types.ObjectId
+    },
+    nextFormId:{
+        type:String
     }
 
 })

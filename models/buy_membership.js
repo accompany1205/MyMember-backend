@@ -12,6 +12,10 @@ const Membershipschema = new schema(
       default: "due",
       enum: ["paid", "due", "over_due"],
     },
+    paymentFrom: {
+      type: String,
+      default: false,
+    },
     isFreeze: {
       type: Boolean,
       default: false,
@@ -29,7 +33,7 @@ const Membershipschema = new schema(
     isTerminate: {
       type: Boolean,
       default: false,
-      index:true
+      index: true,
     },
     whenTerminate: {
       type: Array,
@@ -122,26 +126,10 @@ const Membershipschema = new schema(
     emi_type: {
       type: String,
     },
-
-    // check_number: {
-    //   type: String,
-    // },
-    // card_number: {
-    //   type: String,
-    // },
-    // card_holder_name: {
-    //   type: String,
-    // },
-    // cvv_number: {
-    //   type: String,
-    // },
-    // card_expiry_date: {
-    //   type: String,
-    // },
     membership_status: {
       type: String,
       required: true,
-      index: true
+      index: true,
     },
     createdBy: {
       type: String,
@@ -150,7 +138,7 @@ const Membershipschema = new schema(
     userId: {
       type: String,
       required: true,
-      index: true
+      index: true,
     },
     transactionId: {},
     subscription_id: {
@@ -163,6 +151,9 @@ const Membershipschema = new schema(
       type: String,
     },
     emailToken: {
+      type: String,
+    },
+    paymentIntentId: {
       type: String,
     },
     membershipIds: [

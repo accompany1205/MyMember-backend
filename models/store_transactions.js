@@ -1,37 +1,40 @@
 const mongoose = require("mongoose");
-const schema = mongoose.Schema
+const schema = mongoose.Schema;
 
-const store_transactions_schema = new schema({
+const store_transactions_schema = new schema(
+  {
     id: {
-        type:String
+      type: String,
     },
-    object:{
-        type:String,
-        
+    studentId: {
+      type: String,
     },
-    amount:{
-        type:String,
-        
+    userId: {
+      type: String,
     },
-    status:{
-        type:String,
-        
+    object: {
+      type: String,
     },
-    currency:{
-        type:String,
-        
+    amount: {
+      type: String,
     },
-    card_number:{
-        type:String,
-        
+    status: {
+      type: String,
     },
-    email:{
-        type:String,
-        
-    }
-},
-    { timestamps: true }
-)
+    currency: {
+      type: String,
+    },
+    card_number: {
+      type: String,
+    },
+    email: {
+      type: String,
+    },
+  },
+  { timestamps: true }
+);
 
-module.exports = mongoose.model("store_transactions", store_transactions_schema);
-
+module.exports = mongoose.model(
+  "store_transactions",
+  store_transactions_schema
+);

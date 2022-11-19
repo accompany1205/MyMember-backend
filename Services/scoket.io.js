@@ -550,7 +550,7 @@ class SocketEngine {
                   { membership_status: "Expired" }
                 ]
               }
-            },  
+            },
             {
               $project: {
                 studentInfo: 1,

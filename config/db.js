@@ -146,7 +146,6 @@ async function sendMail(next) {
       smartData.map(async (smartlist1) => {
         let smartEmails = await filterSmartlist(smartlist1.criteria, userId);
         if (smartEmails.length) {
-
           if (
             JSON.stringify(smartEmails).includes(fullDocument._id.toString())
           ) {
