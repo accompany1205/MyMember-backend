@@ -904,8 +904,8 @@ const chargeEmiWithStripeCron = async () => {
 module.exports = cron.schedule("* 1 * * * *", () => {
   collectionModify(),
     activeMembership(),
-    expiredMembership(),
-    chargeEmiWithStripeCron();
+    expiredMembership()
+    // chargeEmiWithStripeCron();
 });
 module.exports = cron.schedule(`*/1 * * * *`, () => emailCronFucntionality());
 
