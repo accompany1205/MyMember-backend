@@ -12,7 +12,7 @@ async function main() {
     useNewUrlParser: true,
     useCreateIndex: true,
     useUnifiedTopology: true,
-    //  reconnectInterval: 500, // Reconnect every 500ms
+    reconnectInterval: 500, // Reconnect every 500ms
     poolSize: 5, // Maintain up to 5 socket connections
     connectTimeoutMS: 10000, // Give up initial connection after 10 seconds
     socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity

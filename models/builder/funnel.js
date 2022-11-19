@@ -20,14 +20,23 @@ const FunnelSchema = schema({
 	templateName:{
         type:String
     },
-    formId:{
+    forms:[{
         type: schema.Types.ObjectId,
-        ref:'Form'
-    },
+        ref:'Form',
+        default:[]
+    }],
     userId:{
         type:String
     },
     isDeleted :{
+        type:Boolean,
+        default:false
+    },
+    isFavorite:{
+        type:Boolean,
+        default:false
+    },
+    isArchived:{
         type:Boolean,
         default:false
     }
