@@ -16,7 +16,7 @@ exports.createFunnel = async (req, res) => {
     data.userId = userId;
     let funnel = new Funnel(data);
     let resp = await funnel.save();
-    res.send({ success: true, msg: "funnel created!" });
+    res.send({ success: true, msg: "funnel created!", data:resp });
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ''), success: false })
   }

@@ -216,10 +216,12 @@ exports.moveToTrash = async (req, res) => {
 
 exports.deleteForm = async (req, res) => {
     try {
-        let formId = req.params.id
-        let form = await Form.findOne({ _id: formId })
+        let formId = req.params.id;
+        formId = mongoose.Types.ObjectId(formId)
+        let form = await Form.findOne({ _id: formId });
+        let funnelId = mongoose.Types.ObjectId(form.funnelId);
+        await Funnel.updateOne({_id:funnelId},{ $pull: { 'forms':formId } });
         await form.delete()
-
         res.status(200).json({
             success: true,
             message: "Form deleted successfully"
