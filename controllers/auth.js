@@ -1258,6 +1258,7 @@ exports.memberStatistics = async (req, res) => {
 				}
 			},
 			{ $unwind: "$studentData" },
+			{ $sort : { "studentData.count" : -1 }},
 
 			{
 				$facet: {
