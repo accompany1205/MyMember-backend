@@ -24,19 +24,19 @@ const BuyMembership = require('../models/buy_membership');
 // TODO - Rakesh - Please write a mail service if user is coming with role 0(School)
 //TODO - Rakesh - Please read the admin email ids using a mongo query with the role 1.
 //todo - Pavan - #Copleted!
-exports.getMuj = async(req, res)=>{
+exports.getMuj = async (req, res) => {
 
-   User.find({}, function (err, items){
-     res.json({success:true ,data:items})
-   })
+	User.find({}, function (err, items) {
+		res.json({ success: true, data: items })
+	})
 }
 //Signup starting.....
 exports.signup = async (req, res) => {
 	// sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-	console.log('call' , req.body)
+	console.log('call', req.body)
 	let userBody = req.body;
 	const user = new User(userBody);
-	
+
 	const admins = await User.find(
 		{
 			role: 1,
@@ -1247,7 +1247,13 @@ exports.memberStatistics = async (req, res) => {
 								},
 							},
 						},
-
+						{
+							$project:{
+								_id:0,
+								studentType:"$_id",
+								count:1
+							}
+						}
 					]
 				}
 			},
@@ -1424,32 +1430,77 @@ exports.rankStatistics = async (req, res) => {
 }
 
 exports.retentionStatistics = async (req, res) => {
-	let data = await location.aggregate([
-		{
-			$project: {
-				locationName: 1,
-				userId: 1
-			}
-		},
-		{
-			$lookup: {
-				from: "members",
-				localField: "userId",
-				foreignField: "userId",
-				as: "studentData",
-				pipeline: [
-					{
-						$project: {
-							rating: 1
+	try {
+		let data = await location.aggregate([
+			{
+				$project: {
+					locationName: 1,
+					userId: 1
+				}
+			},
+			{
+				$lookup: {
+					from: "members",
+					localField: "userId",
+					foreignField: "userId",
+					as: "ratingCount",
+					pipeline: [
+						{
+							$project: {
+								rating: 1
+							}
+						},
+						{
+							$group: {
+								_id: "-",
+								ratings: { $push: "$rating" }
+							}
+						},
+						{
+							$project: {
+								_id: 0
+							}
 						}
+					]
+
+				}
+			}
+		])
+		for (let i of data) {
+			if (i.ratingCount.length > 0) {
+				const rate = { zero: 0, oneToSeven: 0, sevenToFourteen: 0, fourteenToThirty: 0, thirtyToSixty: 0, sixtyToNinty: 0, nintyPlus: 0 }
+				const rating = { zero: [], oneToSeven: [], sevenToFourteen: [], fourteenToThirty: [], thirtyToSixty: [], sixtyToNinty: [], nintyPlus: [] }
+				for (let j of i.ratingCount[0].ratings) {
+					if (j === 0) {
+						rating.zero.push(j)
+					} else if (j > 0 && j < 7) {
+						rating.oneToSeven.push(j)
+					} else if (j >= 7 && j < 14) {
+						rating.sevenToFourteen.push(j)
+					} else if (j >= 14 && j < 30) {
+						rating.fourteenToThirty.push(j)
+					} else if (j >= 30 && j < 60) {
+						rating.thirtyToSixty.push(j)
+					} else if (j >= 60 && j < 90) {
+						rating.sixtyToNinty.push(j)
+					} else if (j >= 90) {
+						rating.nintyPlus.push(j)
 					}
-				]
+				}
+				rate.zero = rating.zero.length
+				rate.oneToSeven = rating.oneToSeven.length
+				rate.sevenToFourteen = rating.sevenToFourteen.length
+				rate.fourteenToThirty = rating.fourteenToThirty.length
+				rate.thirtyToSixty = rating.thirtyToSixty.length
+				rate.sixtyToNinty = rating.sixtyToNinty.length
+				rate.nintyPlus = rating.nintyPlus.length
+				i.ratingCount.splice(0, 1, rate)
 			}
 		}
-	])
-	return res.send(data)
-	// console.log(data)
-
+		return res.send({ data: data, success: true });
+	} catch (err) {
+		return res.send({ msg: err.message.replace(/\"/g, ''), success: false });
+	}
 }
 
 
