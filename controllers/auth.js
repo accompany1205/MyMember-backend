@@ -1248,17 +1248,17 @@ exports.memberStatistics = async (req, res) => {
 							},
 						},
 						{
-							$project:{
-								_id:0,
-								studentType:"$_id",
-								count:1
+							$project: {
+								_id: 0,
+								studentType: "$_id",
+								count: 1
 							}
 						}
 					]
 				}
 			},
 			{ $unwind: "$studentData" },
-			{ $sort : { "studentData.count" : -1 }},
+			{ $sort: { "studentData.count": -1 } },
 
 			{
 				$facet: {
@@ -1284,67 +1284,77 @@ exports.memberStatistics = async (req, res) => {
 exports.incomeStatistics = async (req, res) => {
 	let year = req.query.year;
 	let month = req.query.month;
+	let yearlyMonthly = req.params.yearlyMonthly;
 	let per_page = parseInt(req.params.per_page) || 10;
 	let page_no = parseInt(req.params.page_no) || 0;
 	try {
-		let monthData = await monthlyExpenseIncome(month, year, per_page, page_no)
-		let incomeArr = []
-		for (let i of monthData.incomeByMembershipArray) {
-			for (let j of monthData.incomeByProductArray) {
-				let obj = { income: 0 }
-				if ((i.locationName == j.locationName)) {
-					obj.income = (i.incomeByMembership[0].dpayment) + (j.incomeByProduct[0].balance)
-					j.incomeByProduct.splice(0, 1, obj)
-					incomeArr.push(j)
+		if (yearlyMonthly == "monthly") {
+			let monthData = await monthlyExpenseIncome(month, year, per_page, page_no)
+			let incomeArr = []
+			for (let i of monthData.incomeByMembershipArray) {
+				for (let j of monthData.incomeByProductArray) {
+					let obj = { income: 0 }
+					if ((i.locationName == j.locationName)) {
+						obj.income = (i.incomeByMembership[0].dpayment) + (j.incomeByProduct[0].balance)
+						j.incomeByProduct.splice(0, 1, obj)
+						incomeArr.push(j)
+					}
 				}
 			}
-		}
-		let finalResult = []
-		for (let i of monthData.expenseData) {
-			for (let j of incomeArr) {
-				let obj = { income: 0, expense: 0, net: 0 }
-				if ((i.locationName == j.locationName)) {
-					obj.net = (j.incomeByProduct[0].income) - (i.expense[0].amount);
-					obj.income = j.incomeByProduct[0].income
-					obj.expense = i.expense[0].amount
-					j.incomeByProduct.splice(0, 1, obj)
-					finalResult.push(j)
+			let finalResult = []
+			for (let i of monthData.expenseData) {
+				for (let j of incomeArr) {
+					let obj = { income: 0, expense: 0, net: 0 }
+					if ((i.locationName == j.locationName)) {
+						obj.net = (j.incomeByProduct[0].income) - (i.expense[0].amount);
+						obj.income = j.incomeByProduct[0].income
+						obj.expense = i.expense[0].amount
+						j.incomeByProduct.splice(0, 1, obj)
+						finalResult.push(j)
+					}
 				}
 			}
+			res.send({
+				monthData: finalResult,
+				totalSchools: monthData.totalSchools,
+				success: true
+			})
+		} else if (yearlyMonthly == "yearly") {
+			let yearData = await yealyExpenseIncome(year, per_page, page_no)
+			let arr = []
+			for (let i of yearData.incomeByMembershipArray) {
+				for (let j of yearData.incomeByProductArray) {
+					let obj = { income: 0 }
+					if ((i.locationName == j.locationName)) {
+						obj.income = (i.incomeByMembership[0].dpayment) + (j.incomeByProduct[0].balance)
+						j.incomeByProduct.splice(0, 1, obj)
+						arr.push(j)
+					}
+				}
+			}
+			let result = []
+			for (let i of yearData.expenseData) {
+				for (let j of arr) {
+					let obj = { income: 0, expense: 0, net: 0 }
+					if ((i.locationName == j.locationName)) {
+						obj.net = (j.incomeByProduct[0].income) - (i.expense[0].amount);
+						obj.income = j.incomeByProduct[0].income
+						obj.expense = i.expense[0].amount
+						j.incomeByProduct.splice(0, 1, obj)
+						result.push(j)
+					}
+				}
+			}
+
+			res.send({
+				yearData: result,
+				totalSchools: yearData.totalSchools,
+				success: true
+			})
 		}
 
-		let yearData = await yealyExpenseIncome(year, per_page, page_no)
-		let arr = []
-		for (let i of yearData.incomeByMembershipArray) {
-			for (let j of yearData.incomeByProductArray) {
-				let obj = { income: 0 }
-				if ((i.locationName == j.locationName)) {
-					obj.income = (i.incomeByMembership[0].dpayment) + (j.incomeByProduct[0].balance)
-					j.incomeByProduct.splice(0, 1, obj)
-					arr.push(j)
-				}
-			}
-		}
-		let result = []
-		for (let i of yearData.expenseData) {
-			for (let j of arr) {
-				let obj = { income: 0, expense: 0, net: 0 }
-				if ((i.locationName == j.locationName)) {
-					obj.net = (j.incomeByProduct[0].income) - (i.expense[0].amount);
-					obj.income = j.incomeByProduct[0].income
-					obj.expense = i.expense[0].amount
-					j.incomeByProduct.splice(0, 1, obj)
-					result.push(j)
-				}
-			}
-		}
 
-		res.send({
-			monthData: finalResult,
-			yearData: result,
-			totalSchools: monthData.totalSchools,
-			success: true
-		})
+
 
 	} catch (err) {
 		return res.send({ msg: err.message, success: false });
@@ -1943,7 +1953,8 @@ async function yealyExpenseIncome(year, perPage, pageNo) {
 	return {
 		expenseData: expenseData[0].paginatedResults,
 		incomeByProductArray: incomeByProductArray[0].paginatedResults,
-		incomeByMembershipArray: incomeByMembershipArray[0].paginatedResults
+		incomeByMembershipArray: incomeByMembershipArray[0].paginatedResults,
+		totalSchools: expenseData[0].totalCount[0].count
 	}
 }
 
