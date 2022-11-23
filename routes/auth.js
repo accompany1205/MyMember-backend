@@ -69,7 +69,7 @@ router.get(
 );
 
 router.get('/Admin/Member_Statistics/:adminId/:per_page/:page_no',isAdmin,memberStatistics)
-router.get('/Admin/Income_Statistics/:adminId/:per_page/:page_no',isAdmin,incomeStatistics)
+router.get('/Admin/Income_Statistics/:adminId/:yearlyMonthly/:per_page/:page_no',isAdmin,incomeStatistics)
 router.get('/Admin/Rank_Statistics/:adminId/:per_page/:page_no',isAdmin,rankStatistics)
 router.get('/Admin/Retention_Statics/:adminId',isAdmin,retentionStatistics)
 
