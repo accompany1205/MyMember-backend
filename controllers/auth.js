@@ -520,6 +520,8 @@ exports.addTwillioNumber = (req, res) => {
 	}
 }
 
+
+
 exports.signin = async (req, res) => {
 	// find the user based on email
 	console.log('body login', req.body)
@@ -553,6 +555,7 @@ exports.signin = async (req, res) => {
 									success: false,
 								});
 							} else {
+
 								token = jwt.sign(
 									{
 										id: data._id,
@@ -582,6 +585,13 @@ exports.signin = async (req, res) => {
 
 								const { username, password, email, phone, role } = subUserData;
 								let default_location = await location.find({ _id: data.default_location });
+								let isLogin = new Date().getTime()
+								let userData = await User.updateOne({ username: username }, { isLogin: isLogin })
+								if (userData.nModified === 1) {
+									console.log({ success: true, msg: "islogin field updated" })
+								} else {
+									console.log({ success: false, msg: "islogin not updated" })
+								}
 								return res.json({
 									success: true,
 									token,
@@ -685,6 +695,14 @@ exports.signin = async (req, res) => {
 										lastname
 									},
 								});
+							}
+							let userName=req.body.username
+							let isLogin = new Date().getTime()
+							let userData = await User.updateOne({ username: userName }, { isLogin: isLogin })
+							if (userData.nModified === 1) {
+								console.log({ success: true, msg: "islogin field updated" })
+							} else {
+								console.log({ success: false, msg: "islogin not updated" })
 							}
 							token = jwt.sign(
 								{
@@ -1258,6 +1276,35 @@ exports.memberStatistics = async (req, res) => {
 				}
 			},
 			{ $unwind: "$studentData" },
+			{
+				$addFields: {
+					convertedId: { $toObjectId: "$userId" }
+				}
+			},
+			{
+				$lookup:{
+					from: "users",
+					localField: "convertedId",
+					foreignField: "_id",
+					as: "userData",
+					pipeline: [
+						{
+							$project:{
+								isLogin:1,
+								_id:0
+							}
+						}
+					]
+				}
+			},
+			{
+				$project:{
+					locationName:1,
+					userId:1,
+					studentData:1,
+					userData:1
+				}
+			},
 			{ $sort: { "studentData.count": -1 } },
 
 			{
