@@ -131,7 +131,7 @@ exports.createForm = async (req, res) => {
         if (funnel.forms.length === 0) {
             await Funnel.updateOne({_id:funnelId},{$push:{forms:mongoose.Types.ObjectId(form._id)}});
         }else {
-            let latestFormId = funnel.forms.at(-1);
+            let latestFormId = funnel.forms.slice(-1).pop();
             console.log(typeof(latestFormId));
             await Form.updateOne({_id:latestFormId},{nextFormId:form._id});
             await Funnel.updateOne({_id:newFunnelId},{$push:{forms:mongoose.Types.ObjectId(form._id)}})
@@ -221,6 +221,7 @@ exports.deleteForm = async (req, res) => {
         let form = await Form.findOne({ _id: formId });
         let funnelId = mongoose.Types.ObjectId(form.funnelId);
         await Funnel.updateOne({_id:funnelId},{ $pull: { 'forms':formId } });
+
         await form.delete()
         res.status(200).json({
             success: true,
