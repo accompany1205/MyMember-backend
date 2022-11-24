@@ -194,10 +194,10 @@ const viewFormRoutes = require("./routes/builder/view-form");
 const templateRoutes = require("./routes/builder/template");
 const templateCategoryRoutes = require("./routes/builder/template_category");
 // purchase number
-const purchaseNum = require('./routes/user')
+const purchaseNum = require("./routes/user");
 // buy historyy
-const buyhistory = require('./routes/BuyingHistory')
-const audioCall = require('./routes/AudioCall')
+const buyhistory = require("./routes/BuyingHistory");
+const audioCall = require("./routes/AudioCall");
 // my wallet
 const myWallet = require("./routes/Mywallet")
 
@@ -207,6 +207,9 @@ const livechatsetting = require("./routes/livechat_widget_setting");
 
 // ticket
 const ticket = require("./routes/ticket.route");
+
+// Work History
+const workHistory = require("./routes/workHistory");
 
 const app = express();
 // app.use(fileUpload({ safeFileNames: true, preserveExtension: true }))
@@ -420,14 +423,17 @@ app.use("/api", recommendedCandidatesRoutes);
 app.use("/api", membershipFolderRoute);
 app.use("/api", Dashboard);
 // purchae num
-app.use('/api', purchaseNum)
-app.use('/api', buyhistory)
+app.use("/api", purchaseNum);
+app.use("/api", buyhistory);
 // audio
-app.use("/api", audioCall)
+app.use("/api", audioCall);
 // my wallets
-app.use("/api", myWallet)
+app.use("/api", myWallet);
 // voice call
-app.use('/v1', VoiceCall) 
+app.use("/v1", VoiceCall);
+
+// Work history
+app.use("/api", workHistory);
 
 
 // livechat routes
