@@ -110,11 +110,11 @@ exports.createForm = async (req, res) => {
             return res.send({ msg: "Incorrect funnel Id!", success: false });
         }
         let formBody = "<html></html>"
-        let title = "Form Title"
+        //let title = "Form Title"
         let created_by = new mongoose.Types.ObjectId
         let newFunnelId = mongoose.Types.ObjectId(funnelId)
         let form = new Form
-        form.title = title
+        form.title = req.body.title
         form.formBody = formBody
         form.created_by = created_by
         form.funnelId = newFunnelId
