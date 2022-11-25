@@ -16,7 +16,7 @@ const { verifySchool } = require("../controllers/auth");
 router.post("/create_customer/:userId", createCustomer);
 router.get("/create_student/:student", createStudents);
 router.get("/list_customers", listCustomers);
-router.get("/charge_emi_withstripe", chargeEmiWithStripeCron);
+// router.get("/charge_emi_withstripe", chargeEmiWithStripeCron);
 // router.post("/create_card_token", createCardToken);
 router.post("/create_card", createCard);
 
