@@ -210,6 +210,7 @@ const ticket = require("./routes/ticket.route");
 
 // Work History
 const workHistory = require("./routes/workHistory");
+const sub_user_roles = require("./routes/sub_user_roles");
 
 const app = express();
 // app.use(fileUpload({ safeFileNames: true, preserveExtension: true }))
@@ -434,6 +435,7 @@ app.use("/v1", VoiceCall);
 
 // Work history
 app.use("/api", workHistory);
+app.use("/api", sub_user_roles);
 
 
 // livechat routes

@@ -180,6 +180,20 @@ exports.read = (req, res) => {
 //     })
 // }
 
+exports.socialAuth = async (req, res) => {
+  try {
+    let userId = req.params.userId;
+    const socialData = req.body;
+    const data = await User.updateOne({ _id: userId }, { $set: socialData });
+    if (data.nModified === 1) {
+      return res.send({ msg: "updated!", success: true });
+    }
+    return res.send({ msg: "not Updated!", success: false });
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+  }
+};
+
 exports.update = async (req, res) => {
   let userId = req.params.userId;
   let body = req.body;
