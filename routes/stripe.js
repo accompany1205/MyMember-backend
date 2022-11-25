@@ -9,7 +9,7 @@ const {
   createStudents,
   setDefaultPaymentMethod,
   deletePaymentMethod,
-  chargeEmiWithStripeCron,
+  // chargeEmiWithStripeCron,
 } = require("../Services/stripe");
 const { verifySchool } = require("../controllers/auth");
 

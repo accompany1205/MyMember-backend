@@ -556,7 +556,7 @@ const createRefund = async (req, res) => {
 };
 
 module.exports = {
-  chargeEmiWithStripeCron,
+  // chargeEmiWithStripeCron,
   addStripePaymentMethod,
   createCard,
   confirmPayment,
