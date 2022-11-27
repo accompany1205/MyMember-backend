@@ -1297,6 +1297,7 @@ exports.memberStatistics = async (req, res) => {
 					]
 				}
 			},
+			{ $unwind: "$userData" },
 			{
 				$project:{
 					locationName:1,
@@ -1322,6 +1323,7 @@ exports.memberStatistics = async (req, res) => {
 				},
 			}
 		])
+		//console.log(data)
 		res.send({ data: data[0].paginatedResults, totalCount: data[0].totalCount[0].count, success: true });
 	} catch (err) {
 		return res.send({ msg: err.message.replace(/\"/g, ''), success: false });
@@ -1362,7 +1364,7 @@ exports.incomeStatistics = async (req, res) => {
 				}
 			}
 			res.send({
-				monthData: finalResult,
+				data: finalResult,
 				totalSchools: monthData.totalSchools,
 				success: true
 			})
@@ -1394,7 +1396,7 @@ exports.incomeStatistics = async (req, res) => {
 			}
 
 			res.send({
-				yearData: result,
+				data: result,
 				totalSchools: yearData.totalSchools,
 				success: true
 			})
@@ -1438,7 +1440,8 @@ exports.rankStatistics = async (req, res) => {
 						{
 							$project: {
 								studentType: 1,
-								current_rank_name: 1
+								current_rank_name: 1,
+								current_rank_img:1
 							}
 						},
 						{
@@ -1453,7 +1456,8 @@ exports.rankStatistics = async (req, res) => {
 									$sum: 1
 								},
 								studentType: { $first: '$studentType' },
-								rankName: { $first: "$current_rank_name" }
+								rankName: { $first: "$current_rank_name" },
+								rankImage:{$first: "$current_rank_img"}
 
 							}
 						},
