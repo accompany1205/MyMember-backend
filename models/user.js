@@ -18,7 +18,7 @@ const userSchema = new schema(
         twilio: {
             type: String,
             unique: true,
-            index:  true
+            index: true
         },
         isverify: {
             type: Boolean,
@@ -169,6 +169,9 @@ const userSchema = new schema(
         location_address: {
             type: String
         },
+        isLogin: {
+            type: Date
+        },
         zipPostal_code: {
             type: String,
             default: ''
@@ -281,14 +284,14 @@ const userSchema = new schema(
             },
 
         }],
-        stripe_pub:  {
-            type:  String
+        stripe_pub: {
+            type: String
         },
-        stripe_sec:  {
-            type:  String
+        stripe_sec: {
+            type: String
         },
-        stripe_name:  {
-            type:  String
+        stripe_name: {
+            type: String
         },
         task_setting: {
             type: Boolean,
@@ -322,35 +325,35 @@ const userSchema = new schema(
             type: Boolean,
             default: true
         },
-        purchased_Num:  {
+        purchased_Num: {
             type: String
         },
-        customer_id:  {
+        customer_id: {
             type: String
         },
-        sub_id:  {
+        sub_id: {
             type: String
         },
-        is_Already_Purchase:  {
+        is_Already_Purchase: {
             type: Boolean,
         },
-        thirtydays_expire_notification_setting_renewal:{
-            type: Boolean,
-            default: false
-        },
-        sixtydays_expire_notification_setting_renewal:{
+        thirtydays_expire_notification_setting_renewal: {
             type: Boolean,
             default: false
         },
-        nintydays_expire_notification_setting_renewal:{
+        sixtydays_expire_notification_setting_renewal: {
             type: Boolean,
             default: false
         },
-        expire_notification_setting:{
+        nintydays_expire_notification_setting_renewal: {
             type: Boolean,
             default: false
         },
-        frozen_notification_setting:{
+        expire_notification_setting: {
+            type: Boolean,
+            default: false
+        },
+        frozen_notification_setting: {
             type: Boolean,
             default: false
         },
