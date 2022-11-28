@@ -131,9 +131,6 @@ exports.createForm = async (req, res) => {
         if (funnel.forms.length === 0) {
             await Funnel.updateOne({_id:funnelId},{$push:{forms:mongoose.Types.ObjectId(form._id)}});
         }else {
-            let latestFormId = funnel.forms.slice(-1).pop();
-            console.log(typeof(latestFormId));
-            await Form.updateOne({_id:latestFormId},{nextFormId:form._id});
             await Funnel.updateOne({_id:newFunnelId},{$push:{forms:mongoose.Types.ObjectId(form._id)}})
         }
         res.status(200).json({
