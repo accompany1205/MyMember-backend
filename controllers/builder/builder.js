@@ -40,7 +40,7 @@ exports.processStripeConnect = async (req, res) => {
         code: req.query.code
     })
     .catch((err) => {
-         
+
     })
     const account = await stripe.accounts?.retrieve(result?.stripe_user_id)
     ?.catch((err)=>{
@@ -123,7 +123,7 @@ exports.createForm = async (req, res) => {
             "gjs-html": "",
             "gjs-assets": "[]",
             "gjs-styles": "",
-            "gjs-components": "[ {\"tagName\":\"h1\",\"type\":\"text\",\"attributes\":{\"id\":\"imc6s\"},\"components\":[ {\"type\":\"textnode\",\"content\":\"Form\"} ]}]"
+            "gjs-components": "[]"
         })
         //'{{"tagName":"h5","type":"text","attributes":{"id":"imc6s"},"components":[{"type":"textnode","content":"Form"}]}}'
         await form.save();
@@ -131,9 +131,6 @@ exports.createForm = async (req, res) => {
         if (funnel.forms.length === 0) {
             await Funnel.updateOne({_id:funnelId},{$push:{forms:mongoose.Types.ObjectId(form._id)}});
         }else {
-            let latestFormId = funnel.forms.slice(-1).pop();
-            console.log(typeof(latestFormId));
-            await Form.updateOne({_id:latestFormId},{nextFormId:form._id});
             await Funnel.updateOne({_id:newFunnelId},{$push:{forms:mongoose.Types.ObjectId(form._id)}})
         }
         res.status(200).json({

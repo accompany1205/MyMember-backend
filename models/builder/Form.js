@@ -59,6 +59,9 @@ const FormSchema = mongoose.Schema({
     funnelId:{
         type: mongoose.Schema.Types.ObjectId
     },
+    templateId:{
+        type: mongoose.Schema.Types.ObjectId
+    },
     nextFormId:{
         type:String
     }

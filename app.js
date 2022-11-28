@@ -190,6 +190,8 @@ const finance = require("./routes/finance");
 //Form builder Routes
 const builderRoutes = require("./routes/builder/routes");
 const viewFormRoutes = require("./routes/builder/view-form");
+const templateRoutes = require("./routes/builder/template");
+const templateCategoryRoutes = require("./routes/builder/template_category");
 // purchase number
 const purchaseNum = require('./routes/user')
 // buy historyy
@@ -420,6 +422,9 @@ app.use('/v1', VoiceCall)
 // form builder routes
 app.use("/api/forms", builderRoutes);
 app.use("/api/builder/view", viewFormRoutes);
+app.use("/api/builder/template", templateRoutes);
+app.use("/api/builder/template_category", templateCategoryRoutes);
+
 app.set("view engine", "pug");
 app.set("views", path.join(__dirname, "template"));
 
