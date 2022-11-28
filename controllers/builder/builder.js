@@ -40,7 +40,7 @@ exports.processStripeConnect = async (req, res) => {
         code: req.query.code
     })
     .catch((err) => {
-         
+
     })
     const account = await stripe.accounts?.retrieve(result?.stripe_user_id)
     ?.catch((err)=>{
@@ -123,7 +123,7 @@ exports.createForm = async (req, res) => {
             "gjs-html": "",
             "gjs-assets": "[]",
             "gjs-styles": "",
-            "gjs-components": "[ {\"tagName\":\"h1\",\"type\":\"text\",\"attributes\":{\"id\":\"imc6s\"},\"components\":[ {\"type\":\"textnode\",\"content\":\"Form\"} ]}]"
+            "gjs-components": "[]"
         })
         //'{{"tagName":"h5","type":"text","attributes":{"id":"imc6s"},"components":[{"type":"textnode","content":"Form"}]}}'
         await form.save();
