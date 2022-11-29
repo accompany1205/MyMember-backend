@@ -24,7 +24,7 @@ const { requireSignin, isAuth, verifySchool, isAdmin } = require("../../controll
 //funnel
 router.post("/:userId", requireSignin, upload.single('file'), createTemplate);
 router.post("/form/:userId", requireSignin, createForm);
-router.delete("/form/:userId", requireSignin, deleteForm);
+router.delete("/form/:id", requireSignin, deleteForm);
 router.get("/:userId/:page_no/:per_page", requireSignin, getTemplates);
 router.patch("/:templateId/:userId", requireSignin, updateTemplate);
 router.delete("/:templateId/:userId", requireSignin, deletedTemplate);
