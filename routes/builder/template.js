@@ -7,12 +7,13 @@ const {
     deletedTemplate,
     createForm,
     getDetailTemplate,
-    getTemplates
+    getTemplates,
+    deleteForm
 
 
 } = require("../../controllers/builder/template")
 
-const { requireSignin, isAuth, verifySchool } = require("../../controllers/auth");
+const { requireSignin, isAuth, verifySchool, isAdmin } = require("../../controllers/auth");
 
 /*
 * /builder/view/:formId
@@ -23,6 +24,7 @@ const { requireSignin, isAuth, verifySchool } = require("../../controllers/auth"
 //funnel
 router.post("/:userId", requireSignin, upload.single('file'), createTemplate);
 router.post("/form/:userId", requireSignin, createForm);
+router.delete("/form/:userId", requireSignin, deleteForm);
 router.get("/:userId/:page_no/:per_page", requireSignin, getTemplates);
 router.patch("/:templateId/:userId", requireSignin, updateTemplate);
 router.delete("/:templateId/:userId", requireSignin, deletedTemplate);

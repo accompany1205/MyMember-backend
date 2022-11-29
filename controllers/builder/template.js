@@ -24,11 +24,11 @@ exports.createForm = async (req, res) => {
             return res.send({ msg: "Incorrect template Id!", success: false });
         }
         let formBody = "<html></html>"
-        let title = "Form Title"
+
         let created_by = new mongoose.Types.ObjectId
         let newTemplateId = mongoose.Types.ObjectId(templateId)
         let form = new Form
-        form.title = title
+        form.title = req.body.title;
         form.formBody = formBody
         form.created_by = created_by
         form.templateId = newTemplateId
@@ -55,6 +55,27 @@ exports.createForm = async (req, res) => {
         res.status(500).json({
             success: false,
             message: "Error creating form"
+        })
+    }
+}
+
+exports.deleteForm = async (req, res) => {
+    try {
+        let formId = req.params.id;
+        formId = mongoose.Types.ObjectId(formId)
+        let form = await Form.findOne({ _id: formId });
+        let templateId = mongoose.Types.ObjectId(form.templateId);
+        await Template.updateOne({_id:templateId},{ $pull: { 'forms':formId } });
+        await form.delete()
+        res.status(200).json({
+            success: true,
+            message: "Form deleted successfully"
+        })
+    }
+    catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error deleting form"
         })
     }
 }
