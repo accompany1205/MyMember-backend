@@ -30,7 +30,8 @@ const funnelContact = new schema({
         type:schema.Types.ObjectId
     },
     isDeleted:{
-        type:Boolean
+        type:Boolean,
+        default:false
     }
 },
 { timestamps: true }
