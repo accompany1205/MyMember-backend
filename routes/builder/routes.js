@@ -16,7 +16,9 @@ const {getForms,
        loadForm,
        favouriteForm,
        archiveForm,
-       processStripeConnect
+       processStripeConnect,
+       saveFunnelContact,
+       getFunnelContact
     } = require("../../controllers/builder/builder")
 
 const { requireSignin, isAuth, verifySchool } = require("../../controllers/auth");
@@ -28,6 +30,9 @@ router.use((req,res,next) => {
 });
 
 router.post("/verifyStripe", requireSignin, processStripeConnect)
+
+router.post("/contact/:formId", saveFunnelContact);
+router.get("/contact/:funnelId/:page_no/:per_page", requireSignin, getFunnelContact);
 
 /**
  * @swagger
@@ -62,7 +67,7 @@ router.get('/test', (req,res)=>{
  *       200:
  *         description: Created
  */
-router.post('/new', requireSignin, createForm)
+router.post('/new/:userId', requireSignin, createForm)
 
 /**
  * @swagger

@@ -1,6 +1,7 @@
 const Form = require("../../models/builder/Form.js")
 const addmember = require("../../models/addmember.js")
 const Funnel = require("../../models/builder/funnel.js")
+const FunnelContact = require("../../models/funnelContact.js");
 const mongoose = require("mongoose")
 
 //const stripe = require('stripe')('sk_test_v9')
@@ -102,9 +103,78 @@ const checkFunnelId = async (funnelId) => {
 
 }
 
+async function contactCreate(body, formData) {
+    let contactInfo = body;
+    contactInfo.userId = mongoose.Types.ObjectId(formData.userId);
+    contactInfo.formId = mongoose.Types.ObjectId(formData._id);
+    contactInfo.funnelId = mongoose.Types.ObjectId(formData.funnelId)
+    let studentInfo = new FunnelContact(contactInfo);
+    await studentInfo.save();
+}
+
+exports.saveFunnelContact = async (req, res) => {
+    const formId = req.params.formId;
+    if (!formId) {
+        return res.send({ success: false, msg: "not valid form!" });
+    }
+    try {
+        let formData = await Form.findOne({ _id: formId });
+        console.log(formData)
+        let funneldata = await Funnel.findOne({ _id: formData.funnelId });
+        if (funneldata.isAutomation) {
+            let memberdata = req.body
+            memberdata.userId = formData.userId;
+            let studentData = addmember(memberdata)
+            await studentData.save();
+            await contactCreate(memberdata, formData)
+            return res.send({ success: true, msg: "Submitted !" })
+        }
+        await contactCreate(memberdata)
+        return res.send({ success: true, msg: "Submitted !" })
+    } catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ''), success: false })
+    }
+}
+
+exports.getFunnelContact = async (req, res) => {
+    const funnelId = req.params.funnelId;
+    let funnel = await checkFunnelId(funnelId);
+    if (!funnel) {
+        return res.send({ success: false, msg: "not valid funnelId!" });
+    }
+    try {
+        const count = await FunnelContact.find({ funnelId: funnelId, isDeleted: false }).countDocuments();
+        var per_page = parseInt(req.params.per_page) || 5;
+        var page_no = parseInt(req.params.page_no) || 0;
+        var pagination = {
+            limit: per_page,
+            skip: per_page * page_no,
+        };
+        FunnelContact.find({funnelId: funnelId, isDeleted: false })
+            .sort({
+                createdAt: -1,
+            })
+            .limit(pagination.limit)
+            .skip(pagination.skip)
+            .exec((err, memberdata) => {
+                if (err) {
+                    res.send({
+                        msg: "member data is not find",
+                        success: false,
+                    });
+                } else {
+                    res.send({ memberdata, totalCount: count, success: true });
+                }
+            });
+    } catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ''), success: false })
+    }
+}
+
 exports.createForm = async (req, res) => {
     try {
         let funnelId = req.body.funnelId;
+        let userId = req.params.userId;
         let funnel = await checkFunnelId(funnelId);
         if (!funnel) {
             return res.send({ msg: "Incorrect funnel Id!", success: false });
@@ -118,6 +188,7 @@ exports.createForm = async (req, res) => {
         form.formBody = formBody
         form.created_by = created_by
         form.funnelId = newFunnelId
+        form.userId = userId;
         form.formData = JSON.stringify({
             "gjs-css": "",
             "gjs-html": "",
@@ -129,9 +200,9 @@ exports.createForm = async (req, res) => {
         await form.save();
         //console.log(data)
         if (funnel.forms.length === 0) {
-            await Funnel.updateOne({_id:funnelId},{$push:{forms:mongoose.Types.ObjectId(form._id)}});
-        }else {
-            await Funnel.updateOne({_id:newFunnelId},{$push:{forms:mongoose.Types.ObjectId(form._id)}})
+            await Funnel.updateOne({ _id: funnelId }, { $push: { forms: mongoose.Types.ObjectId(form._id) } });
+        } else {
+            await Funnel.updateOne({ _id: newFunnelId }, { $push: { forms: mongoose.Types.ObjectId(form._id) } })
         }
         res.status(200).json({
             success: true,
@@ -148,6 +219,8 @@ exports.createForm = async (req, res) => {
         })
     }
 }
+
+
 
 exports.markAsFavourite = async (req, res) => {
     try {
@@ -217,7 +290,7 @@ exports.deleteForm = async (req, res) => {
         formId = mongoose.Types.ObjectId(formId)
         let form = await Form.findOne({ _id: formId });
         let funnelId = mongoose.Types.ObjectId(form.funnelId);
-        await Funnel.updateOne({_id:funnelId},{ $pull: { 'forms':formId } });
+        await Funnel.updateOne({ _id: funnelId }, { $pull: { 'forms': formId } });
 
         await form.delete()
         res.status(200).json({
