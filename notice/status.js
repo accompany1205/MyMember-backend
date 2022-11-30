@@ -901,7 +901,7 @@ const chargeEmiWithStripeCron = async () => {
 };
 
 // DailyTriggeredCrons();
-module.exports = cron.schedule("* 1 * * * *", () => {
+module.exports = cron.schedule("0 13 * * *", () => {
   collectionModify(),
     activeMembership(),
     expiredMembership()

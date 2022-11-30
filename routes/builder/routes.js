@@ -31,8 +31,10 @@ router.use((req,res,next) => {
 
 router.post("/verifyStripe", requireSignin, processStripeConnect)
 
+//form-contact
 router.post("/contact/:formId", saveFunnelContact);
 router.get("/contact/:funnelId/:page_no/:per_page", requireSignin, getFunnelContact);
+
 
 /**
  * @swagger

@@ -16,25 +16,27 @@ const funnelContact = new schema({
     },
     program: {
         type: String,
-        def:"No Program"
+        def: "No Program"
     },
     funnelId: {
         type: schema.Types.ObjectId
     },
-
+    primaryPhone: {
+        type: String,
+    },
     formId: {
         type: schema.Types.ObjectId,
-        ref:'Form'
+        ref: 'Form'
     },
     userId: {
-        type:schema.Types.ObjectId
+        type: schema.Types.ObjectId
     },
-    isDeleted:{
-        type:Boolean,
-        default:false
+    isDeleted: {
+        type: Boolean,
+        default: false
     }
 },
-{ timestamps: true }
+    { timestamps: true }
 )
 
 module.exports = mongoose.model("funnelContact", funnelContact);
