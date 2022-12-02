@@ -756,7 +756,7 @@ async function DailyTriggeredMails() {
                 // console.log(resp.n)
               })
               .catch((err) => {
-                console.log(err);
+                console.log(err); 
               });
           })
         );
