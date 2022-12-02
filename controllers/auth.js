@@ -20,7 +20,7 @@ const Expense = require('../models/expenses');
 const mongoose = require('mongoose');
 const BuyProduct = require('../models/buy_product');
 const BuyMembership = require('../models/buy_membership');
-
+const programRank=require('../models/program_rank')
 // TODO - Rakesh - Please write a mail service if user is coming with role 0(School)
 //TODO - Rakesh - Please read the admin email ids using a mongo query with the role 1.
 //todo - Pavan - #Copleted!
@@ -1410,7 +1410,7 @@ exports.incomeStatistics = async (req, res) => {
 	}
 }
 exports.rankStatistics = async (req, res) => {
-	let type = req.query.type || "Active Student";
+	let program = req.params.program;
 	let per_page = parseInt(req.params.per_page) || 10;
 	let page_no = parseInt(req.params.page_no) || 0;
 	var pagination = {
@@ -1418,6 +1418,13 @@ exports.rankStatistics = async (req, res) => {
 		skip: per_page * page_no,
 	};
 	try {
+		let programData=await programRank.find(
+			{},{
+				programName:1,
+				rank_image:1,
+				rank_name:1
+			}
+		)
 		let data = await location.aggregate([
 			{
 				$project: {
@@ -1434,12 +1441,12 @@ exports.rankStatistics = async (req, res) => {
 					pipeline: [
 						{
 							$match: {
-								studentType: type
+								program: program
 							}
 						},
 						{
 							$project: {
-								studentType: 1,
+								program: 1,
 								current_rank_name: 1,
 								current_rank_img:1
 							}
@@ -1455,10 +1462,9 @@ exports.rankStatistics = async (req, res) => {
 								count: {
 									$sum: 1
 								},
-								studentType: { $first: '$studentType' },
+								programName: { $first: '$program' },
 								rankName: { $first: "$current_rank_name" },
-								rankImage:{$first: "$current_rank_img"}
-
+								rankImage:{$first:"$current_rank_img"}
 							}
 						},
 						{
@@ -1485,13 +1491,19 @@ exports.rankStatistics = async (req, res) => {
 				},
 			}
 		])
-		res.send({ data: data[0].paginatedResults, totalCount: data[0].totalCount[0].count, success: true });
+		res.send({ data: data[0].paginatedResults,programData:programData, totalCount: data[0].totalCount[0].count, success: true });
 	} catch (err) {
 		return res.send({ msg: err.message.replace(/\"/g, ''), success: false });
 	}
 }
 
 exports.retentionStatistics = async (req, res) => {
+	let per_page = parseInt(req.params.per_page) || 10;
+	let page_no = parseInt(req.params.page_no) || 0;
+	var pagination = {
+		limit: per_page,
+		skip: per_page * page_no,
+	};
 	try {
 		let data = await location.aggregate([
 			{
@@ -1526,9 +1538,25 @@ exports.retentionStatistics = async (req, res) => {
 					]
 
 				}
+			},
+			{
+				$facet: {
+					paginatedResults: [
+						{ $skip: pagination.skip },
+						{ $limit: pagination.limit },
+					],
+					totalCount: [
+						{
+							$count: "count",
+						}
+					],
+
+				},
 			}
 		])
-		for (let i of data) {
+		let result=data[0].paginatedResults
+		// console.log(data[0].paginatedResults)
+		for (let i of result) {
 			if (i.ratingCount.length > 0) {
 				const rate = { zero: 0, oneToSeven: 0, sevenToFourteen: 0, fourteenToThirty: 0, thirtyToSixty: 0, sixtyToNinty: 0, nintyPlus: 0 }
 				const rating = { zero: [], oneToSeven: [], sevenToFourteen: [], fourteenToThirty: [], thirtyToSixty: [], sixtyToNinty: [], nintyPlus: [] }
@@ -1559,7 +1587,7 @@ exports.retentionStatistics = async (req, res) => {
 				i.ratingCount.splice(0, 1, rate)
 			}
 		}
-		return res.send({ data: data, success: true });
+		return res.send({ data: result, totalcount:data[0].totalCount[0].count,success: true });
 	} catch (err) {
 		return res.send({ msg: err.message.replace(/\"/g, ''), success: false });
 	}
