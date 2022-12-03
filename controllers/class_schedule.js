@@ -60,16 +60,19 @@ exports.readSchedule = async (req, res) => {
   let updateM = ("0" + (parseInt(newMonth) + 1)).slice(-2);
   let finalDate;
   if (newMonth === "12") {
-    let newupdateM = "01";
-    let updateY = "" + (parseInt(newYear) + 1);
-    finalDate = `${newupdateM}/${newDate}/${updateY}`;
+    let newupdateM = "12";
+    let updateY = "" + (parseInt(newYear));
+    finalDate = `${newupdateM}/${31}/${updateY}`;
+    console.log(finalDate)
   } else {
     finalDate = `${updateM}/${newDate}/${newYear}`;
+    console.log(finalDate)
   }
   try {
     let parDate = startDate.split("-");
     startDate = parDate.join("/");
-    class_schedule
+    console.log(startDate)
+    let result=await class_schedule
       .find({
         isActive: true,
         $and: [
@@ -77,12 +80,7 @@ exports.readSchedule = async (req, res) => {
           { start_date: { $gte: startDate, $lt: finalDate } },
         ],
       })
-      .then((result) => {
-        return res.send({ success: true, data: result });
-      })
-      .catch((err) => {
-        return res.send({ msg: "No data!", success: false });
-      });
+      return res.send({ success: true, data: result });
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }

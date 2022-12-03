@@ -1438,11 +1438,6 @@ exports.rankStatistics = async (req, res) => {
 					as: "studentData",
 					pipeline: [
 						{
-							$match: {
-								program: program
-							}
-						},
-						{
 							$project: {
 								program: 1,
 								current_rank_name: 1,
@@ -1451,16 +1446,21 @@ exports.rankStatistics = async (req, res) => {
 						},
 						{
 							$match: {
-								current_rank_name: { $ne: null }
+								current_rank_name: { $ne: null },
+								current_rank_img: { $ne: null }	
 							}
 						},
 						{
 							$group: {
 								_id: "$current_rank_name",
 								count: {
-									$sum: 1
+									$sum: { $cond: [
+										{ $eq: [ "$program", program ] },
+										1,
+										0
+									]}
 								},
-								programName: { $first: '$program' },
+								programName: { $first: program },
 								rankName: { $first: "$current_rank_name" },
 								rankImage:{$first:"$current_rank_img"}
 							}
