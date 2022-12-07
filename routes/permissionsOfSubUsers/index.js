@@ -22,4 +22,3 @@ router.put("/roles-list/update/:RolesListId", permissionsOfSubUsers.updateRolesL
 router.delete("/roles-list/delete/:RoleInfoId", permissionsOfSubUsers.deleteRoleInfo);
 
 
-module.exports = router
