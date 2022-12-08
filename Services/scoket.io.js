@@ -10,6 +10,7 @@ const ChatUser = require("../models/chat_user");
 const Chat = require("../models/chat");
 const ClientSocket = require("../models/ClientSocket");
 let moment = require("moment");
+const CustomerSocket = require("../models/CustomerSocket");
 
 class SocketEngine {
   constructor(io) {
@@ -42,9 +43,45 @@ class SocketEngine {
       });
 
       // Event listeners for livechat
-
       socket.on("startChat", async (payload) => {
         const client = await ClientSocket.findOne({ clientId: payload.clientId });
+
+        // Check customer socket exists, if then, update it with new socket
+        const oldCustomer = await CustomerSocket.findOne({clientId: payload.clientId, email: payload.userInfo.email})
+        
+        if(oldCustomer){
+          oldCustomer.socketId = socket.id;
+          oldCustomer.save();
+        }
+        else{
+          const newCustomer = new CustomerSocket({
+            socketId: socket.id,
+            clientId: payload.clientId,
+            email: payload.userInfo.email,
+            username: payload.userInfo.username
+          })
+          newCustomer.save();
+        }
+
+        socket.on("customerMessage", async(payload) => {
+          const client = await ClientSocket.findOne({ clientId: payload.clientId});
+
+          if(!client){
+            socket.emit("client off line");
+            return;
+          }
+          socket.to(client.socketId).emit("customerMessage", payload);
+        })
+
+        socket.on("clientMessage", async(payload) => {
+          const customer = await CustomerSocket.findOne({ email: payload.email, clientId: payload.clientId});
+          if(!customer){
+            socket.emit("customer off line");
+            return;
+          }
+          socket.to(customer.socketId).emit("clientMessage", payload);
+        })
+
         console.log("start chat with", client);
         if (!client) {
           socket.emit("clientOffLine");
