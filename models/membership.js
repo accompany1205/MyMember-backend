@@ -83,6 +83,9 @@ const membershipSchema = schema(
 			type: schema.Types.ObjectId,
 			ref: 'membershipFolder',
 		},
+		docType:{
+			type:String
+		}
 	},
 	{ timestamps: true }
 );

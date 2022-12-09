@@ -216,7 +216,7 @@ exports.updateRolesList = (req, res) => {
                             }
                             else {
                                 res.send({ 'msg': 'Roles List info is update successfully', 'success': true })
-                            }
+                            }     
                         })
 
                 }
