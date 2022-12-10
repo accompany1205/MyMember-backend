@@ -89,13 +89,12 @@ const createCustomer = async (req, res, next) => {
   }
 };
 
-let createCardToken = async (body, res) => {
+let createCardToken = async (body, stripeObj) => {
   let cardNumber = body.cardNumber;
   let cardExpiryMonth = body.cardExpiryMonth;
   let cardExpiryYear = body.cardExpiryYear;
   let cardCvc = body.cardCvc;
-
-  let cardToken = await stripe.tokens.create({
+  let cardToken = await stripeObj.tokens.create({
     card: {
       number: cardNumber,
       exp_month: cardExpiryMonth,
@@ -154,7 +153,6 @@ const createCard = async (req, stripe) => {
       { cardNumber, cardExpiryMonth, cardExpiryYear, cardCvc },
       stripe
     );
-
     let findCustomer = await StripeCustomers.findOne({
       email: email,
       studentId: studentId,
@@ -286,126 +284,126 @@ const listCards = async (req, res) => {
   res.send(cardsList);
 };
 
-// const chargeEmiWithStripeCron = async (req, res) => {
-//   const todayDate = moment().format("yyyy-MM-DD");
-//   console.log(todayDate, "todayDate");
-//   await schedulePayment.find(
-//     {
-//       date: todayDate,
-//       status: "due",
-//       ptype: "credit card",
-//     },
-//     (error, dueEmiData) => {
-//       if (error) {
-//         res.send({ msg: "Data is not found!", success: false, error: error });
-//       } else {
-//         console.log(dueEmiData, "dueEmiData");
-//         Promise.all(
-//           dueEmiData?.map(async (dueEmiObj) => {
-//             const studentId = dueEmiObj.studentId;
-//             const userId = dueEmiObj.userId;
-//             const amount = dueEmiObj.Amount;
-//             const Id = dueEmiObj.Id;
-//             const purchased_membership_id = dueEmiObj.purchased_membership_id;
-//             const { stripe_sec } = await User.findOne({ _id: userId });
-//             const stripeObj = await require("stripe")(stripe_sec);
-//             // fetch stripe cards detail
-//             let stripeDetails = {};
-//             stripeDetails = await StripeCards?.findOne({
-//               studentId: studentId,
-//               isDefault: true,
-//             });
-//             if (stripeDetails === null) {
-//               stripeDetails = await StripeCards?.findOne({
-//                 studentId: studentId,
-//               });
-//             }
-//             const card_id = stripeDetails.card_id;
-//             const customer_id = stripeDetails.customer_id;
-//             const createdBy = stripeDetails.card_holder_name;
+const chargeEmiWithStripeCron = async (req, res) => {
+  const todayDate = moment().format("yyyy-MM-DD");
+  console.log(todayDate, "todayDate");
+  await schedulePayment.find(
+    {
+      date: todayDate,
+      status: "due",
+      ptype: "credit card",
+    },
+    (error, dueEmiData) => {
+      if (error) {
+        res.send({ msg: "Data is not found!", success: false, error: error });
+      } else {
+        console.log(dueEmiData, "dueEmiData");
+        Promise.all(
+          dueEmiData?.map(async (dueEmiObj) => {
+            const studentId = dueEmiObj.studentId;
+            const userId = dueEmiObj.userId;
+            const amount = dueEmiObj.Amount;
+            const Id = dueEmiObj.Id;
+            const purchased_membership_id = dueEmiObj.purchased_membership_id;
+            const { stripe_sec } = await User.findOne({ _id: userId });
+            const stripeObj = await require("stripe")(stripe_sec);
+            // fetch stripe cards detail
+            let stripeDetails = {};
+            stripeDetails = await StripeCards?.findOne({
+              studentId: studentId,
+              isDefault: true,
+            });
+            if (stripeDetails === null) {
+              stripeDetails = await StripeCards?.findOne({
+                studentId: studentId,
+              });
+            }
+            const card_id = stripeDetails.card_id;
+            const customer_id = stripeDetails.customer_id;
+            const createdBy = stripeDetails.card_holder_name;
 
-//             const paymentObj = {
-//               amount: amount * 100, //stripe uses cents
-//               currency: "usd",
-//               customer: customer_id,
-//               payment_method_types: ["card"],
-//               payment_method: card_id,
-//               confirm: "true",
-//               description: "Monthly Emi installment",
-//             };
-//             const paymentIntent = await stripeObj.paymentIntents.create(
-//               paymentObj
-//             );
-//             await StoreTransaction.create({
-//               ...paymentIntent,
-//               studentId,
-//               userId,
-//               purchased_membership_id,
-//               emiId: Id,
-//             });
-//             if (
-//               paymentIntent?.statusCode === "200" ||
-//               paymentIntent?.status === "succeeded"
-//             ) {
-//               // update payment status
-//               await schedulePayment.updateOne(
-//                 { studentId: studentId.toString(), Id: Id },
-//                 { $set: { status: "paid", paymentIntentId: paymentIntent.id } }
-//               );
-//               /*  ======================*/
-//               await buyMembership.updateOne(
-//                 {
-//                   _id: purchased_membership_id,
-//                   "schedulePayments.Id": Id,
-//                 },
-//                 {
-//                   $set: {
-//                     membership_status: "Active",
-//                     "schedulePayments.$.status": "paid",
-//                     "schedulePayments.$.ptype": "credit card",
-//                     "schedulePayments.$.paymentIntentId": paymentIntent.id,
-//                     "schedulePayments.$.createdBy": createdBy,
-//                     "schedulePayments.$.paidDate": new Date(),
-//                   },
-//                 },
-//                 (err, data) => {
-//                   if (err) {
-//                     console.log(err, "err");
-//                   } else {
-//                     console.log(data, "success");
-//                   }
-//                 }
-//               );
-//               /*======================*/
-//             }
+            const paymentObj = {
+              amount: amount * 100, //stripe uses cents
+              currency: "usd",
+              customer: customer_id,
+              payment_method_types: ["card"],
+              payment_method: card_id,
+              confirm: "true",
+              description: "Monthly Emi installment",
+            };
+            const paymentIntent = await stripeObj.paymentIntents.create(
+              paymentObj
+            );
+            await StoreTransaction.create({
+              ...paymentIntent,
+              studentId,
+              userId,
+              purchased_membership_id,
+              emiId: Id,
+            });
+            if (
+              paymentIntent?.statusCode === "200" ||
+              paymentIntent?.status === "succeeded"
+            ) {
+              // update payment status
+              await schedulePayment.updateOne(
+                { studentId: studentId.toString(), Id: Id },
+                { $set: { status: "paid", paymentIntentId: paymentIntent.id } }
+              );
+              /*  ======================*/
+              await buyMembership.updateOne(
+                {
+                  _id: purchased_membership_id,
+                  "schedulePayments.Id": Id,
+                },
+                {
+                  $set: {
+                    membership_status: "Active",
+                    "schedulePayments.$.status": "paid",
+                    "schedulePayments.$.ptype": "credit card",
+                    "schedulePayments.$.paymentIntentId": paymentIntent.id,
+                    "schedulePayments.$.createdBy": createdBy,
+                    "schedulePayments.$.paidDate": new Date(),
+                  },
+                },
+                (err, data) => {
+                  if (err) {
+                    console.log(err, "err");
+                  } else {
+                    console.log(data, "success");
+                  }
+                }
+              );
+              /*======================*/
+            }
 
-//             return {
-//               studentId,
-//               userId,
-//               purchased_membership_id,
-//               emiId: Id,
-//               paymentIntent,
-//             };
-//           })
-//         )
-//           .then((resdata) => {
-//             res.send({
-//               msg: "Emi payment completed!",
-//               data: resdata,
-//               success: true,
-//             });
-//           })
-//           .catch((error) => {
-//             res.send({
-//               msg: "Emi payment failed",
-//               success: false,
-//               error: error,
-//             });
-//           });
-//       }
-//     }
-//   );
-// };
+            return {
+              studentId,
+              userId,
+              purchased_membership_id,
+              emiId: Id,
+              paymentIntent,
+            };
+          })
+        )
+          .then((resdata) => {
+            res.send({
+              msg: "Emi payment completed!",
+              data: resdata,
+              success: true,
+            });
+          })
+          .catch((error) => {
+            res.send({
+              msg: "Emi payment failed",
+              success: false,
+              error: error,
+            });
+          });
+      }
+    }
+  );
+};
 
 const setDefaultPaymentMethod = async (req, res) => {
   const studentId = req.params.studentId;
@@ -554,10 +552,9 @@ const createRefund = async (req, res) => {
     res.send({ status: false, message: err });
   }
 };
-//sdjshsds
 
 module.exports = {
-  // chargeEmiWithStripeCron,
+  chargeEmiWithStripeCron,
   addStripePaymentMethod,
   createCard,
   confirmPayment,
