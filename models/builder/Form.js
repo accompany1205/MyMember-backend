@@ -30,37 +30,40 @@ const FormSchema = mongoose.Schema({
         default: ""
     },
     enabled: {
-	    type: Boolean,
-	    default: true
+        type: Boolean,
+        default: true
     },
     deleted: {
-       type: Boolean,
-       default: false
+        type: Boolean,
+        default: false
     },
     favourite: {
-       type: Boolean,
-       default: false
+        type: Boolean,
+        default: false
     },
     archived: {
-       type: Boolean,
-       default: false
+        type: Boolean,
+        default: false
     },
     action: {
-	    type: String
+        type: String
     },
     formData: {
-	    type: String,
+        type: String,
         default: "{}"
     },
     includePayment: {
         type: Boolean,
         default: false
     },
-    funnelId:{
+    funnelId: {
         type: mongoose.Schema.Types.ObjectId
     },
-    nextFormId:{
-        type:String
+    nextFormId: {
+        type: String
+    },
+    subUserId: {
+        type: mongoose.Schema.Types.ObjectId
     }
 
 })
