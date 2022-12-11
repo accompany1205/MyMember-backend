@@ -203,6 +203,9 @@ const myWallet = require("./routes/Mywallet")
 // livechat
 const livechat = require("./routes/livechat");
 
+// ticket
+const ticket = require("./routes/ticket.route");
+
 const app = express();
 // app.use(fileUpload({ safeFileNames: true, preserveExtension: true }))
 const { v4: uuidv4 } = require("uuid");
@@ -432,7 +435,7 @@ app.use("/api/forms", builderRoutes);
 app.use("/api/builder/view", viewFormRoutes);
 app.use("/api/builder/template", templateRoutes);
 app.use("/api/builder/template_category", templateCategoryRoutes);
-
+app.use("/api", ticket);
 app.set("view engine", "pug");
 app.set("views", path.join(__dirname, "template"));
 
