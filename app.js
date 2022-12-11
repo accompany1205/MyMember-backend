@@ -199,6 +199,10 @@ const buyhistory = require('./routes/BuyingHistory')
 const audioCall = require('./routes/AudioCall')
 // my wallet
 const myWallet = require("./routes/Mywallet")
+
+// livechat
+const livechat = require("./routes/livechat");
+
 const app = express();
 // app.use(fileUpload({ safeFileNames: true, preserveExtension: true }))
 const { v4: uuidv4 } = require("uuid");
@@ -419,6 +423,10 @@ app.use("/api", myWallet)
 // voice call
 app.use('/v1', VoiceCall) 
 
+
+// livechat routes
+app.use("/api", livechat);
+
 // form builder routes
 app.use("/api/forms", builderRoutes);
 app.use("/api/builder/view", viewFormRoutes);
@@ -433,6 +441,7 @@ app.use(middleware.errorHandler);
 app.use(middleware.unknownEndpoint);
 // menu middle
 app.use("/api", student_menu);
+
 
 // const privateKey1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/privkey.pem', 'utf8');
 // const certificate1 = fs.readFileSync('/etc/letsencrypt/live/mymember.com/cert.pem', 'utf8');

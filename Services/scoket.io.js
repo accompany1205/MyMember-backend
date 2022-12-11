@@ -12,6 +12,7 @@ const Chat = require("../models/chat");
 const ClientSocket = require("../models/ClientSocket");
 let moment = require("moment");
 const CustomerSocket = require("../models/CustomerSocket");
+const Channel = require("../models/channel");
 
 const adminSockets = {};
 const clientSockets = {};
@@ -41,7 +42,6 @@ class SocketEngine {
         adminSockets[adminId][socket.id] = adminId;
         socket2adminId[socket.id] = adminId;
         console.log('admin socket status', adminSockets, socket2adminId);
-
       });
 
       socket.on('disconnect', () => {
@@ -74,23 +74,35 @@ class SocketEngine {
         // socket.to(clientSockets[adminId][machineId]).emit('adminMsgRev', 'aaaaaa');
       })
 
-      socket.on("startChat", ({adminId, machineId, userInfo}) => {
+      socket.on("startChat", async ({adminId, machineId, userInfo}) => {
+
+        // Broadcast to all admins for starting chat
         if (adminSockets[adminId]) {
           for (let key in adminSockets[adminId]) {
             socket.to(key).emit("startChat", {machineId, userInfo});
           }
         }
 
+        // Save the channel to DB.
+        const newChannel = new Channel({
+          machineId,
+          adminId,
+          username: userInfo.username,
+          email: userInfo.email,
+          messages: []
+        })
+
+        await newChannel.save()
+
+        // Broadcast to all clients for starting chat
         if (clientSockets[adminId][machineId]) {
           for (let key in clientSockets[adminId][machineId]) {
             io.to(key).emit("startChat", userInfo);
           }
         }
-
       })
 
-
-      socket.on('adminMsgSend', ({machineId, adminId, msg, userInfo}) => {
+      socket.on('adminMsgSend', async ({machineId, adminId, msg, userInfo}) => {
         if (clientSockets[adminId][machineId]) {
           console.log('adminMsg', msg, clientSockets[adminId][machineId]);
           for (let key in clientSockets[adminId][machineId]) {
@@ -103,9 +115,19 @@ class SocketEngine {
             io.to(key).emit("adminMsgRev", {machineId, msg, userInfo});  // sent to admin
           }
         }
+
+        // Save message to DB.
+        await Channel.findOneAndUpdate({machineId, adminId}, {
+          "$push": {
+            messages: {
+              type: "adminMessage",
+              msg: msg,
+            }
+          }
+        })
       })
 
-      socket.on('clientMsgSend', ({machineId, adminId, msg, userInfo}) => {
+      socket.on('clientMsgSend', async ({machineId, adminId, msg, userInfo}) => {
 
         if (adminSockets[adminId]) {
           for (let key in adminSockets[adminId]) {
@@ -118,9 +140,19 @@ class SocketEngine {
             io.to(key).emit("clientMsgRev", msg);
           }
         }
+
+        // Save client message to DB.
+
+        await Channel.findOneAndUpdate({machineId, adminId},
+          {
+            "$push":{
+              messages: {
+                type: "customerMessage",
+                msg: msg,
+              }
+            }
+          })
       })
-
-
 
       // Event listeners for livechat
       // socket.on("startChat", async (payload) => {
