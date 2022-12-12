@@ -9,11 +9,11 @@ const TicketSchema  = mongoose.Schema({
         type: String,
         required: true
     },
-    requesterName: {
+    reqName: {
         type: String,
         required: true
     },
-    requesterEmail: {
+    reqEmail: {
         type: String,
         required: true
     },
@@ -33,20 +33,27 @@ const TicketSchema  = mongoose.Schema({
     ],
     messages: [
         {
-            sender: {
-                type: String,  // This is Enum type : { 'assignee_msg', 'requester_msg' }
-                required: true,
+            type: new mongoose.Schema({
+                sender: {
+                    type: String,  // This is Enum type : { 'agent_msg', 'requester_msg' }
+                    required: true,
+                },
+                msg: {
+                    type: String,
+                    required: false,
+                },
+                newTicketStatus: {
+                    type: String,
+                    required: false,
+                }
             },
-            msg: {
-                type: String,
-                required: false,
-            },
-            newTicketStatus: {
-                type: String,
-                required: false,
-            }
-        }
+            { timestamps:true }
+            ) 
+        },
+        
     ]
-})
+},
+{ timestamps:true }
+)
 
 module.exports = mongoose.model("Ticket", TicketSchema);
