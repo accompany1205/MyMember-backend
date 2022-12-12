@@ -11,7 +11,7 @@ async function main() {
   const client = mongoose.connect(uri, {
     useNewUrlParser: true,
     useCreateIndex: true,
-    useUnifiedTopology: true,
+    // useUnifiedTopology: true,
     reconnectInterval: 500, // Reconnect every 500ms
     poolSize: 5, // Maintain up to 5 socket connections
     connectTimeoutMS: 10000, // Give up initial connection after 10 seconds
@@ -53,7 +53,7 @@ async function main() {
       },
     },
   ];
-  await monitorListingsUsingEventEmitter(pipeline);
+  // await monitorListingsUsingEventEmitter(pipeline);
 }
 
 main().catch(console.error);
