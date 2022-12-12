@@ -1,7 +1,11 @@
 const Form = require("../../models/builder/Form.js")
+const emoloyeeForm = require('../../models/employeeForm')
 const addmember = require("../../models/addmember.js")
 const Funnel = require("../../models/builder/funnel.js")
-const sub_users_role=require("../../models/sub_user_roles")
+const sub_users_role = require("../../models/sub_user_roles")
+const FunnelContact = require("../../models/funnelContact.js");
+const userSectionFiles = require("../../models/userSectionFiles")
+const user = require("../../models/user")
 const mongoose = require("mongoose")
 
 //const stripe = require('stripe')('sk_test_v9')
@@ -41,7 +45,7 @@ exports.processStripeConnect = async (req, res) => {
         code: req.query.code
     })
     .catch((err) => {
-         
+
     })
     const account = await stripe.accounts?.retrieve(result?.stripe_user_id)
     ?.catch((err)=>{
@@ -103,39 +107,106 @@ const checkFunnelId = async (funnelId) => {
 
 }
 
+async function contactCreate(body, formData) {
+    let contactInfo = body;
+    contactInfo.userId = mongoose.Types.ObjectId(formData.userId);
+    contactInfo.formId = mongoose.Types.ObjectId(formData._id);
+    contactInfo.funnelId = mongoose.Types.ObjectId(formData.funnelId)
+    let studentInfo = new FunnelContact(contactInfo);
+    await studentInfo.save();
+}
+
+exports.saveFunnelContact = async (req, res) => {
+    const formId = req.params.formId;
+    if (!formId) {
+        return res.send({ success: false, msg: "not valid form!" });
+    }
+    try {
+        let formData = await Form.findOne({ _id: formId });
+        console.log(formData)
+        let funneldata = await Funnel.findOne({ _id: formData.funnelId });
+        if (funneldata.isAutomation) {
+            let memberdata = req.body
+            memberdata.userId = formData.userId;
+            let studentData = addmember(memberdata)
+            await studentData.save();
+            await contactCreate(memberdata, formData)
+            return res.send({ success: true, msg: "Submitted !" })
+        }
+        await contactCreate(memberdata)
+        return res.send({ success: true, msg: "Submitted !" })
+    } catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ''), success: false })
+    }
+}
+
+exports.getFunnelContact = async (req, res) => {
+    const funnelId = req.params.funnelId;
+    let funnel = await checkFunnelId(funnelId);
+    if (!funnel) {
+        return res.send({ success: false, msg: "not valid funnelId!" });
+    }
+    try {
+        const count = await FunnelContact.find({ funnelId: funnelId, isDeleted: false }).countDocuments();
+        var per_page = parseInt(req.params.per_page) || 5;
+        var page_no = parseInt(req.params.page_no) || 0;
+        var pagination = {
+            limit: per_page,
+            skip: per_page * page_no,
+        };
+        FunnelContact.find({ funnelId: funnelId, isDeleted: false })
+            .sort({
+                createdAt: -1,
+            })
+            .limit(pagination.limit)
+            .skip(pagination.skip)
+            .exec((err, memberdata) => {
+                if (err) {
+                    res.send({
+                        msg: "member data is not find",
+                        success: false,
+                    });
+                } else {
+                    res.send({ memberdata, totalCount: count, success: true });
+                }
+            });
+    } catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ''), success: false })
+    }
+}
+
 exports.createForm = async (req, res) => {
     try {
         let funnelId = req.body.funnelId;
+        let userId = req.params.userId;
         let funnel = await checkFunnelId(funnelId);
         if (!funnel) {
             return res.send({ msg: "Incorrect funnel Id!", success: false });
         }
         let formBody = "<html></html>"
-        let title = "Form Title"
+        //let title = "Form Title"
         let created_by = new mongoose.Types.ObjectId
         let newFunnelId = mongoose.Types.ObjectId(funnelId)
         let form = new Form
-        form.title = title
+        form.title = req.body.title
         form.formBody = formBody
         form.created_by = created_by
         form.funnelId = newFunnelId
+        form.userId = userId;
         form.formData = JSON.stringify({
             "gjs-css": "",
             "gjs-html": "",
             "gjs-assets": "[]",
             "gjs-styles": "",
-            "gjs-components": "[ {\"tagName\":\"h1\",\"type\":\"text\",\"attributes\":{\"id\":\"imc6s\"},\"components\":[ {\"type\":\"textnode\",\"content\":\"Form\"} ]}]"
+            "gjs-components": "[]"
         })
         //'{{"tagName":"h5","type":"text","attributes":{"id":"imc6s"},"components":[{"type":"textnode","content":"Form"}]}}'
         await form.save();
         //console.log(data)
         if (funnel.forms.length === 0) {
-            await Funnel.updateOne({_id:funnelId},{$push:{forms:mongoose.Types.ObjectId(form._id)}});
-        }else {
-            let latestFormId = funnel.forms.at(-1);
-            console.log(typeof(latestFormId));
-            await Form.updateOne({_id:latestFormId},{nextFormId:form._id});
-            await Funnel.updateOne({_id:newFunnelId},{$push:{forms:mongoose.Types.ObjectId(form._id)}})
+            await Funnel.updateOne({ _id: funnelId }, { $push: { forms: mongoose.Types.ObjectId(form._id) } });
+        } else {
+            await Funnel.updateOne({ _id: newFunnelId }, { $push: { forms: mongoose.Types.ObjectId(form._id) } })
         }
         res.status(200).json({
             success: true,
@@ -152,6 +223,8 @@ exports.createForm = async (req, res) => {
         })
     }
 }
+
+
 
 exports.markAsFavourite = async (req, res) => {
     try {
@@ -217,10 +290,13 @@ exports.moveToTrash = async (req, res) => {
 
 exports.deleteForm = async (req, res) => {
     try {
-        let formId = req.params.id
-        let form = await Form.findOne({ _id: formId })
-        await form.delete()
+        let formId = req.params.id;
+        formId = mongoose.Types.ObjectId(formId)
+        let form = await Form.findOne({ _id: formId });
+        let funnelId = mongoose.Types.ObjectId(form.funnelId);
+        await Funnel.updateOne({ _id: funnelId }, { $pull: { 'forms': formId } });
 
+        await form.delete()
         res.status(200).json({
             success: true,
             message: "Form deleted successfully"
@@ -473,48 +549,50 @@ const checkSbUserIdId = async (funnelId) => {
 
 }
 
-exports.createDigitalForm=async(req,res)=>{
+exports.createDigitalForm = async (req, res) => {
+    let userId = req.params.userId;
+    let userSectionId = req.body.userSectionId;
     try {
-        let subUserId = req.body.subUserId;
-        console.log(subUserId)
-        let subUser = await checkSbUserIdId(subUserId);
-        console.log(subUser)
-        if (!subUser) {
-            return res.send({ msg: "Incorrect subuser Id!", success: false });
+        if (req.params.form == "digital") {
+            let subUserId = req.body.subUserId;
+            let subUser = await checkSbUserIdId(subUserId);
+            if (!subUser) {
+                return res.send({ msg: "Incorrect subuser Id!", success: false });
+            }
+            let formBody = "<html></html>"
+            let title = "Form Title"
+            let created_by = new mongoose.Types.ObjectId
+            let employee_form = new emoloyeeForm
+            employee_form.title = title
+            employee_form.formBody = formBody
+            employee_form.created_by = created_by
+            employee_form.userId = userId
+            employee_form.formData = JSON.stringify({
+                "gjs-css": "",
+                "gjs-html": "",
+                "gjs-assets": "[]",
+                "gjs-styles": "",
+                "gjs-components": "[ {\"tagName\":\"h1\",\"type\":\"text\",\"attributes\":{\"id\":\"imc6s\"},\"components\":[ {\"type\":\"textnode\",\"content\":\"Form\"} ]}]"
+            })
+            await employee_form.save();
+            await sub_users_role.updateOne({ _id: subUserId }, { $push: { digitalId: mongoose.Types.ObjectId(employee_form._id) } });
+            res.status(200).json({
+                success: true,
+                message: "Form created successfully",
+                formId: employee_form._id,
+                data: "data test"
+            })
+        } else if (req.params.form == "document") {
+            let documentData = await userSectionFiles.find({ _id: { $in: userSectionId } })
+            documentData.map(async (ele) => {
+                await user.updateOne({ _id: userId }, { $push: { employeeId: mongoose.Types.ObjectId(ele._id) } });
+            })
+            res.status(200).json({
+                success: true,
+                message: "document  created successfully",
+                data: "data test"
+            })
         }
-        let formBody = "<html></html>"
-        let title = "Form Title"
-        let created_by = new mongoose.Types.ObjectId
-        let newSubUserId = mongoose.Types.ObjectId(subUserId)
-        let form = new Form
-        form.title = title
-        form.formBody = formBody
-        form.created_by = created_by
-        form.subUserId = newSubUserId
-        form.formData = JSON.stringify({
-            "gjs-css": "",
-            "gjs-html": "",
-            "gjs-assets": "[]",
-            "gjs-styles": "",
-            "gjs-components": "[ {\"tagName\":\"h1\",\"type\":\"text\",\"attributes\":{\"id\":\"imc6s\"},\"components\":[ {\"type\":\"textnode\",\"content\":\"Form\"} ]}]"
-        })
-        //'{{"tagName":"h5","type":"text","attributes":{"id":"imc6s"},"components":[{"type":"textnode","content":"Form"}]}}'
-        await form.save();
-        //console.log(data)
-        if (sub_users_role.digitalId.length === 0) {
-            await sub_users_role.updateOne({_id:subUserId},{$push:{digitalId:mongoose.Types.ObjectId(form._id)}});
-        }else {
-            let latestSubUserId = sub_users_role.digitalId.at(-1);
-            console.log(typeof(latestSubUserId));
-            await Form.updateOne({_id:latestSubUserId},{nextFormId:form._id});
-            await sub_users_role.updateOne({_id:newSubUserId},{$push:{digitalId:mongoose.Types.ObjectId(form._id)}})
-        }
-        res.status(200).json({
-            success: true,
-            message: "Form created successfully",
-            formId: form._id,
-            data: "data test"
-        })
     }
     catch (error) {
         console.log("Error:", error)

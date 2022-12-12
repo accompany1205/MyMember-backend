@@ -21,5 +21,6 @@ router.post("/roles-list/create/:userId", permissionsOfSubUsers.createRolesList)
 router.put("/roles-list/update/:RolesListId", permissionsOfSubUsers.updateRolesList);
 router.delete("/roles-list/delete/:RoleInfoId", permissionsOfSubUsers.deleteRoleInfo);
 
+router.get("/roles-list/form_info/:userId",permissionsOfSubUsers.getRolls)
 
 module.exports = router

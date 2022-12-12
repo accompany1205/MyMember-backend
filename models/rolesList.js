@@ -56,6 +56,21 @@ const userSchema = new schema(
         contactNo: {
             type: Number
         },
+        digitalId:[{
+            type: schema.Types.ObjectId,
+            ref:'Form',
+            default:[]
+        }],
+        documentId:[{
+            type: schema.Types.ObjectId,
+            ref:'usersectionfiles',
+            default:[]
+        }],
+        taskId:[{
+            type: schema.Types.ObjectId,
+            ref:'Task',
+            default:[]
+        }],
         roles: [{
             dashboard: {
                 type: Boolean,

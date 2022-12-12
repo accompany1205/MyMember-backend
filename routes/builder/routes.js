@@ -2,23 +2,25 @@ const express = require("express");
 const router = express.Router();
 const cors = require("cors")
 
-const { getForms,
-    getForm,
-    updateFormData,
-    updateFormSettings,
-    deleteForm,
-    moveToTrash,
-    processForm,
-    createForm,
-    markAsFavourite,
-    getFavourites,
-    storeForm,
-    loadForm,
-    favouriteForm,
-    archiveForm,
-    processStripeConnect,
-    createDigitalForm
-} = require("../../controllers/builder/builder")
+const {getForms, 
+       getForm,
+       updateFormData,
+       updateFormSettings, 
+       deleteForm,
+       moveToTrash,
+       processForm, 
+       createForm,
+       markAsFavourite,
+       getFavourites,
+       storeForm,
+       loadForm,
+       favouriteForm,
+       archiveForm,
+       processStripeConnect,
+       saveFunnelContact,
+       getFunnelContact,
+       createDigitalForm
+    } = require("../../controllers/builder/builder")
 
 const { requireSignin, isAuth, verifySchool } = require("../../controllers/auth");
 
@@ -29,6 +31,11 @@ router.use((req, res, next) => {
 });
 
 router.post("/verifyStripe", requireSignin, processStripeConnect)
+
+//form-contact
+router.post("/contact/:formId", saveFunnelContact);
+router.get("/contact/:funnelId/:page_no/:per_page", requireSignin, getFunnelContact);
+
 
 /**
  * @swagger
@@ -63,7 +70,7 @@ router.get('/process/newstudent/:id/:userId', verifySchool, processForm)
  *       200:
  *         description: Created
  */
-router.get('/new', requireSignin, createForm)
+router.post('/new/:userId', requireSignin, createForm)
 
 /**
  * @swagger
@@ -221,6 +228,6 @@ router.get('/load/:id', requireSignin, loadForm)
  */
 router.get('/:id', requireSignin, getForm)
 
-router.get('/digitalFrom', requireSignin, createDigitalForm)
+router.post('/digitalFrom/:userId/:form', requireSignin, createDigitalForm)
 
 module.exports = router;

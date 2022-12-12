@@ -162,6 +162,11 @@ const userSchema = new schema(
             type: Boolean,
             default: false
         },
+        employeeId:[{
+            type: schema.Types.ObjectId,
+            ref:'usersectionfiles',
+            default:[]
+        }],
         isLocation: {
             type: Boolean,
             default: false

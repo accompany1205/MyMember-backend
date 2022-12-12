@@ -1,11 +1,23 @@
 const Form = require("../../models/builder/Form.js");
 const addmember = require("../../models/addmember.js");
 const Funnel = require("../../models/builder/funnel")
-
+const Template = require("../../models/builder/template")
+const mongoose = require("mongoose")
 const stripe = require("stripe")("sk_test_v9");
 const ObjectId = require("mongodb").ObjectId;
 
-//for funnels 
+async function cloneForm(form, funnelId) {
+  let newForm = new Form
+  newForm.title = form.title;
+  newForm.formBody = form.formBody
+  newForm.created_by = form.created_by
+  newForm.formData = form.formData;
+  newForm.funnelId = funnelId;
+
+  await newForm.save();
+  return newForm._id;
+}
+//for funnels
 exports.createFunnel = async (req, res) => {
   let userId = req.params.userId;
   if (!userId) {
@@ -16,7 +28,25 @@ exports.createFunnel = async (req, res) => {
     data.userId = userId;
     let funnel = new Funnel(data);
     let resp = await funnel.save();
-    res.send({ success: true, msg: "funnel created!" });
+    if(data.templateId) {
+      console.log("Have Template");
+      let templateData = await Template.findOne({ _id: data.templateId, isDeleted: false }).populate('forms');
+      let forms = templateData.forms;
+
+      if(forms.length > 0) {
+        let formIds = [];
+        for(let form of forms) {
+          console.log("Origin form is " + form._id);
+          let formId = await cloneForm(form, funnel._id);
+          console.log("Clone id is " + formId);
+          formIds.push(formId);
+        }
+        console.log(formIds);
+        funnel.forms = formIds;
+        resp = await funnel.save();
+      }
+    }
+    res.send({ success: true, msg: "funnel created!", data:resp });
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ''), success: false })
   }
