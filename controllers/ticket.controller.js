@@ -1,6 +1,6 @@
 const Ticket = require("../models/ticket")
 const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey("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");
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 exports.createTicket = async (req, res) => {
     try{
@@ -89,9 +89,9 @@ exports.addNewMessage = async (req, res) => {
               }
             });
             const emailData = {
-                sendgrid_key: "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",
+                sendgrid_key: process.env.SENDGRID_API_KEY,
                 to: "xing.liao724@gmail.com",
-                from: "hello@tbo.clothing",
+                from: process.env.from_email,
                 //from_name: 'noreply@gmail.com',
                 subject: "Ticket was updated",
                 html: `<strong>${message}</strong>`,
