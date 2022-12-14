@@ -9,6 +9,11 @@ const ChannelSchema = mongoose.Schema({
         type: String,
         required: true,
     },
+    activated: {
+        type: Boolean,
+        required: true,
+        default: true,
+    },
     username: {
         type: String,
         required: true,
@@ -17,18 +22,31 @@ const ChannelSchema = mongoose.Schema({
         type: String,
         required: true,
     },
+    locationInfo: {  // This is location info in JSON type
+        type: String,
+        required: true,
+    },
+    browserInfo: {
+        type: String,
+        required: true,
+    },
     messages: [
         {
-            type: {
-                type: String,
-                required: true,
+            // Enum type : ["Pre chat form", "clientMessage", "adminMessage", "post chat form"]
+            // Prechatform : { username, email }
+            // Postchatform: { questions: ..., rate: ...}\
+            type: new mongoose.Schema({
+                type: {
+                    type: String, 
+                    required: true,
+                },
+                msg: {
+                    type: String, // Will be JSON.stringify for prepost and sufpost
+                    required: false,
+                },
             },
-            msg: {
-                type: String,
-                required: false,
-            }
+            { timestamps: true })
         },
-        { timestamps: true }
     ]
 })
 

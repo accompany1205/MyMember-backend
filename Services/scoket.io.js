@@ -3,7 +3,7 @@ const member = require("../models/addmember");
 const buymembership = require("../models/buy_membership");
 const User = require("../models/user");
 const tasks = require("../models/task");
-const Message = require ("../models/message");
+const Message = require("../models/message");
 const event = require("../models/appointment");
 const location = require("../models/admin/settings/location");
 const jwt = require("jsonwebtoken");
@@ -19,7 +19,6 @@ const clientSockets = {};
 const socket2adminId = {};
 const socket2clientId = {};
 
-
 class SocketEngine {
   constructor(io) {
     this.sConnection = io;
@@ -27,7 +26,6 @@ class SocketEngine {
     this.adminSockets = {};
     this.socket2adminId = {};
     this.init();
-    
   }
 
   async init() {
@@ -37,15 +35,17 @@ class SocketEngine {
       console.log("server socket created");
       // Register user with socket Id to clinetsocket table
       socket.on("adminRegister", (adminId) => {
+        console.log("[SOCKET] ADMIN REGISTER: ", adminId, socket.id);
         if (!adminId) return;
         if (!adminSockets[adminId]) adminSockets[adminId] = {};
         adminSockets[adminId][socket.id] = adminId;
         socket2adminId[socket.id] = adminId;
-        console.log('admin socket status', adminSockets, socket2adminId);
+        console.log("admin socket status", adminSockets, socket2adminId);
       });
 
-      socket.on('disconnect', () => {
-        console.log('close event');
+      socket.on("disconnect", () => {
+        console.log("[SOCKET] DISCONNECTED");
+        console.log("close event");
         if (socket2adminId[socket.id]) {
           const adminId = socket2adminId[socket.id];
           delete socket2adminId[socket.id];
@@ -55,44 +55,79 @@ class SocketEngine {
         }
 
         if (socket2clientId[socket.id]) {
-          const {adminId, machineId} = socket2clientId[socket.id];
+          const { adminId, machineId } = socket2clientId[socket.id];
           delete socket2clientId[socket.id];
-          if (clientSockets[adminId] && clientSockets[adminId][machineId] && clientSockets[adminId][machineId][socket.id]) {
+          if (
+            clientSockets[adminId] &&
+            clientSockets[adminId][machineId] &&
+            clientSockets[adminId][machineId][socket.id]
+          ) {
             delete clientSockets[adminId][machineId][socket.id];
           }
         }
-      })
+      });
 
-      socket.on('clientRegister', ({adminId, machineId}) => {
+      socket.on("clientRegister", ({ adminId, machineId }) => {
+        console.log("[SOCKET] Client Register", { adminId, machineId });
         if (!adminId || !machineId) return;
         if (!clientSockets[adminId]) clientSockets[adminId] = {};
-        if (!clientSockets[adminId][machineId]) clientSockets[adminId][machineId] = {};
+        if (!clientSockets[adminId][machineId])
+          clientSockets[adminId][machineId] = {};
         clientSockets[adminId][machineId][socket.id] = socket.id;
-        socket2clientId[socket.id] = { adminId, machineId};
-        console.log('clientSocket status', clientSockets, socket2clientId);
+        socket2clientId[socket.id] = { adminId, machineId };
+        console.log("clientSocket status", clientSockets, socket2clientId);
 
         // socket.to(clientSockets[adminId][machineId]).emit('adminMsgRev', 'aaaaaa');
-      })
+      });
 
-      socket.on("startChat", async ({adminId, machineId, userInfo}) => {
+      socket.on("startChat", async ({ adminId, machineId, userInfo, locationInfo, browserInfo }) => {
+        // Save the channel to DB.
+        // If there exists a old channel which has same machinId and adminId, updates its username and email then add a prechat messsage
+        // If no old channel exists, make new channel!!
+        console.log("[SOCKET] Start chat: ", { adminId, machineId, userInfo, locationInfo, browserInfo });
+        const oldChannel = await Channel.findOne({ machineId, adminId });
+        if (oldChannel) {
+          await Channel.updateOne(
+            { machineId, adminId },
+            {
+              username: userInfo.username,
+              email: userInfo.email,
+              locationInfo: locationInfo,
+              browserInfo: browserInfo,
+              activated: true,
+              $push: {
+                messages: {
+                  type: "PreChatForm",
+                  msg: JSON.stringify(userInfo),
+                },
+              },
+            }
+          );
+        } else {
+          const newChannel = new Channel({
+            machineId,
+            adminId,
+            username: userInfo.username,
+            locationInfo: locationInfo,
+            browserInfo: browserInfo,
+            email: userInfo.email,
+            activated: true,
+            messages: [
+              {
+                type: "PreChatForm",
+                msg: JSON.stringify(userInfo),
+              },
+            ],
+          });
+          await newChannel.save();
+        }
 
         // Broadcast to all admins for starting chat
         if (adminSockets[adminId]) {
           for (let key in adminSockets[adminId]) {
-            socket.to(key).emit("startChat", {machineId, userInfo});
+            socket.to(key).emit("startChat", { machineId, userInfo });
           }
         }
-
-        // Save the channel to DB.
-        const newChannel = new Channel({
-          machineId,
-          adminId,
-          username: userInfo.username,
-          email: userInfo.email,
-          messages: []
-        })
-
-        await newChannel.save()
 
         // Broadcast to all clients for starting chat
         if (clientSockets[adminId][machineId]) {
@@ -100,59 +135,112 @@ class SocketEngine {
             io.to(key).emit("startChat", userInfo);
           }
         }
-      })
+      });
 
-      socket.on('adminMsgSend', async ({machineId, adminId, msg, userInfo}) => {
-        if (clientSockets[adminId][machineId]) {
-          console.log('adminMsg', msg, clientSockets[adminId][machineId]);
-          for (let key in clientSockets[adminId][machineId]) {
-            io.to(key).emit("adminMsgRev", msg);
-          }
+      socket.on("endChat", async ({ machineId, adminId }) => {
+        console.log("[SOCKET] End Chat: ", { machineId, adminId });
+        const channel = await Channel.findOne({ machineId, adminId });
+        if (channel) {
+          console.log("old channel found");
+          await Channel.updateOne(
+            { machineId, adminId },
+            {
+              activated: false,
+              "$push": {
+                messages: {
+                  type: "PostChatForm",
+                  msg: JSON.stringify({
+                    rate: 4, // TODO: This is temp rate.
+                  }),
+                },
+              },
+            }
+          );
         }
 
+        // Broadcast to all admins for starting chat
         if (adminSockets[adminId]) {
           for (let key in adminSockets[adminId]) {
-            io.to(key).emit("adminMsgRev", {machineId, msg, userInfo});  // sent to admin
+            socket.to(key).emit("endChat", { machineId });
           }
         }
 
-        // Save message to DB.
-        await Channel.findOneAndUpdate({machineId, adminId}, {
-          "$push": {
-            messages: {
-              type: "adminMessage",
-              msg: msg,
-            }
-          }
-        })
-      })
-
-      socket.on('clientMsgSend', async ({machineId, adminId, msg, userInfo}) => {
-
-        if (adminSockets[adminId]) {
-          for (let key in adminSockets[adminId]) {
-            io.to(key).emit("clientMsgRev", {machineId, msg, userInfo});  // sent to admin
-          }
-        }
-
+        // Broadcast to all clients for starting chat
         if (clientSockets[adminId][machineId]) {
           for (let key in clientSockets[adminId][machineId]) {
-            io.to(key).emit("clientMsgRev", msg);
+            io.to(key).emit("endChat", {});
           }
         }
+      });
 
-        // Save client message to DB.
-
-        await Channel.findOneAndUpdate({machineId, adminId},
-          {
-            "$push":{
-              messages: {
-                type: "customerMessage",
-                msg: msg,
-              }
+      socket.on(
+        "adminMsgSend",
+        async ({ machineId, adminId, msg, userInfo }) => {
+          if (clientSockets[adminId][machineId]) {
+            console.log("adminMsg", msg, clientSockets[adminId][machineId]);
+            for (let key in clientSockets[adminId][machineId]) {
+              io.to(key).emit("adminMsgRev", msg);
             }
-          })
-      })
+          }
+
+          if (adminSockets[adminId]) {
+            for (let key in adminSockets[adminId]) {
+              io.to(key).emit("adminMsgRev", { machineId, msg, userInfo }); // sent to admin
+            }
+          }
+
+          // Save message to DB.
+          await Channel.findOneAndUpdate(
+            { machineId, adminId },
+            {
+              $push: {
+                messages: {
+                  type: "adminMessage",
+                  msg: msg,
+                },
+              },
+            }
+          );
+        }
+      );
+
+      socket.on(
+        "clientMsgSend",
+        async ({ machineId, adminId, msg, userInfo }) => {
+          console.log(
+            "[SOCKET] Client message: ",
+            machineId,
+            adminId,
+            msg,
+            userInfo
+          );
+          if (adminSockets[adminId]) {
+            for (let key in adminSockets[adminId]) {
+              io.to(key).emit("clientMsgRev", { machineId, msg, userInfo }); // sent to admin
+            }
+          }
+
+          if (clientSockets[adminId][machineId]) {
+            for (let key in clientSockets[adminId][machineId]) {
+              io.to(key).emit("clientMsgRev", msg);
+            }
+          }
+
+          // Save client message to DB.
+
+          await Channel.findOneAndUpdate(
+            { machineId, adminId },
+            {
+              $push: {
+                messages: {
+                  type: "customerMessage",
+                  msg: msg,
+                },
+              },
+            }
+          );
+        }
+      );
 
       // Event listeners for livechat
       // socket.on("startChat", async (payload) => {
@@ -232,9 +320,6 @@ class SocketEngine {
       //   socket.emit("clientMessage", newMessage);
       //   socket.to(customer.socketId).emit("clientMessage", newMessage);
       // });
-
-
-      
 
       // socket.on("joinTextChatRoom", async (room) => {
       //   socket.join(room);

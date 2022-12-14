@@ -66,9 +66,10 @@ exports.addNewMessage = async (req, res) => {
     const {ticketId, message, status, sender} = req.body;
 
     try {
+        console.log("new ticket status", status); 
         const oldTicket = await Ticket.findById(ticketId);
         let newStatus = status;
-        if(oldTicket.status !== 'spam'){
+        if(oldTicket.status !== 'spam' && !status){
             if(sender == "agent_msg") {
                 newStatus = "pending"
             }
@@ -78,7 +79,7 @@ exports.addNewMessage = async (req, res) => {
         }
         let newTicketStatus = newStatus;
         if( oldTicket.status === newTicketStatus ) newTicketStatus = '';
-        const newTicket = await Ticket.findByIdAndUpdate(ticketId, {
+        await Ticket.findByIdAndUpdate(ticketId, {
             status: newStatus,
             "$push": {
                 messages: {
@@ -87,23 +88,27 @@ exports.addNewMessage = async (req, res) => {
                   newTicketStatus,
                 }
               }
-            });
-            const emailData = {
-                sendgrid_key: process.env.SENDGRID_API_KEY,
-                to: "xing.liao724@gmail.com",
-                from: process.env.from_email,
-                //from_name: 'noreply@gmail.com',
-                subject: "Ticket was updated",
-                html: `<strong>${message}</strong>`,
-            };
-            sgMail.send(emailData).then((response) => {
-                console.log("message sent");
-            })
-            .catch((error) => {
-                console.log("error is", error);
-            })
+        });
+
+        const updatedTicket = await Ticket.findById(ticketId);
+
+        const emailData = {
+            sendgrid_key: process.env.SENDGRID_API_KEY,
+            to: "xing.liao724@gmail.com",
+            from: process.env.from_email,
+            //from_name: 'noreply@gmail.com',
+            subject: "Ticket was updated",
+            html: `<strong>${message}</strong>`,
+        };
+        sgMail.send(emailData).then((response) => {
+            console.log("message sent");
+        })
+        .catch((error) => {
+            console.log("error is", error);
+        })
         
-        res.json(newTicket);
+        console.log("new ticket is ", updatedTicket);
+        res.json(updatedTicket);
     }
     catch(err) {
         res.send({ msg: err.message.replace(/\"/g, ""), success: false });
