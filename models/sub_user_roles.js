@@ -73,6 +73,11 @@ const userSchema = new schema(
             ref:'usersectionfiles',
             default:[]
         }],
+        taskId:[{
+            type: schema.Types.ObjectId,
+            ref:'Task',
+            default:[]
+        }],
         roles: [{
             dashboard: {
                 type: Boolean,
