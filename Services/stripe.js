@@ -89,13 +89,12 @@ const createCustomer = async (req, res, next) => {
   }
 };
 
-let createCardToken = async (body, res) => {
+let createCardToken = async (body, stripeObj) => {
   let cardNumber = body.cardNumber;
   let cardExpiryMonth = body.cardExpiryMonth;
   let cardExpiryYear = body.cardExpiryYear;
   let cardCvc = body.cardCvc;
-
-  let cardToken = await stripe.tokens.create({
+  let cardToken = await stripeObj.tokens.create({
     card: {
       number: cardNumber,
       exp_month: cardExpiryMonth,
@@ -154,7 +153,6 @@ const createCard = async (req, stripe) => {
       { cardNumber, cardExpiryMonth, cardExpiryYear, cardCvc },
       stripe
     );
-
     let findCustomer = await StripeCustomers.findOne({
       email: email,
       studentId: studentId,

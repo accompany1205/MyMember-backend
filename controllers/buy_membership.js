@@ -623,6 +623,7 @@ exports.updatePayments = async (req, res) => {
     const { uid } = getUidAndInvoiceNumber();
     if (cardDetails) {
       const stripePayload = { ...cardDetails, uid, amount: req.body.Amount };
+
       var stripeObj = await require("stripe")(stripe_sec);
       let cardId;
       // if payment with new card
@@ -1250,6 +1251,28 @@ exports.buyMembershipStripe = async (req, res) => {
   try {
     membershipData.due_status = "paid";
     membershipData.membership_status = "Active";
+    if (membershipData.isEMI) {
+      //if membership is weekly or monthly
+      if (membershipData.payment_time > 0 && membershipData.balance > 0) {
+        membershipData.schedulePayments = createEMIRecord(
+          membershipData.payment_time,
+          membershipData.payment_money,
+          membershipData.mactive_date,
+          membershipData.createdBy,
+          membershipData.payment_type,
+          membershipData.pay_latter,
+          membershipData.due_every,
+          studentId,
+          userId
+        );
+      } else {
+        res.send({
+          msg: "payment type should be weekly/monthly",
+          success: false,
+        });
+      }
+    }
+
     if (stripePayload && ptype === "credit card") {
       var stripeObj = await require("stripe")(stripe_sec);
       let cardId;
@@ -1304,27 +1327,6 @@ exports.buyMembershipStripe = async (req, res) => {
       }
       /*============ after recieve cardId start ===========*/
       if (cardId) {
-        if (membershipData.isEMI) {
-          //if membership is weekly or monthly
-          if (membershipData.payment_time > 0 && membershipData.balance > 0) {
-            membershipData.schedulePayments = createEMIRecord(
-              membershipData.payment_time,
-              membershipData.payment_money,
-              membershipData.mactive_date,
-              membershipData.createdBy,
-              membershipData.payment_type,
-              membershipData.pay_latter,
-              membershipData.due_every,
-              studentId,
-              userId
-            );
-          } else {
-            res.send({
-              msg: "payment type should be weekly/monthly",
-              success: false,
-            });
-          }
-        }
         // if its one time payment
         let PaymentResponse = await createPayment(
           {
@@ -1389,6 +1391,7 @@ exports.buyMembershipStripe = async (req, res) => {
         membershipData,
         memberShipDoc,
       });
+
       memberShipDoc = await createMemberShipDocument(membershipData, studentId);
       return res.send(memberShipDoc);
     }
