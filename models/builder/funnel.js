@@ -20,6 +20,11 @@ const FunnelSchema = schema({
 	templateName:{
         type:String
     },
+    forms:[{
+        type: schema.Types.ObjectId,
+        ref:'Form',
+        default:[]
+    }],
     userId:{
         type:String
     },
