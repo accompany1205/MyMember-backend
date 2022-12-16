@@ -910,7 +910,7 @@ module.exports = cron.schedule("0 13 * * *", () => {
 
     expiredMembership()
     // chargeEmiWithStripeCron();
-
+    chargeEmiWithStripeCron(),
 });
 module.exports = cron.schedule(`*/1 * * * *`, () => emailCronFucntionality());
 
