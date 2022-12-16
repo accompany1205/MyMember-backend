@@ -1232,6 +1232,7 @@ exports.buyMembershipStripe = async (req, res) => {
   const userId = req.params.userId;
   let { stripe_sec } = await User.findOne({ _id: userId });
   const studentId = req.params.studentId;
+  console.log(studentId, "studentId");
   let stripePayload = req.body.membership_details.stripePayload
     ? req.body.membership_details.stripePayload
     : {};

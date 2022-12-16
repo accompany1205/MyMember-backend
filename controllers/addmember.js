@@ -38,6 +38,230 @@ const mergeMultipleFiles = require("../Services/mergeMultipleFiles");
 //     })
 // }
 
+async function MonthlyCount(month, userId, year, per_page, page_no) {
+  let expr = { $not: { $in: ['Former Trial', "Former Student"] } }
+  let expr2 = { $in: ['Former Trial', "Former Student"] }
+  var pagination = {
+    limit: per_page,
+    skip: per_page * page_no,
+  };
+
+  let joined = await addmemberModal.aggregate([
+    {
+      $match: {
+        userId: userId
+      }
+    },
+    {
+      $project: {
+        firstName: 1,
+        lastName: 1,
+        studentType: 1,
+        month: { "$month": "$updatedAt" },
+        year: { "$year": "$updatedAt" }
+      }
+    },
+    {
+      $match: {
+        month: month,
+        year: year,
+        studentType: expr
+      }
+    },
+    {
+      $facet: {
+        paginatedResults: [
+          { $skip: pagination.skip },
+          { $limit: pagination.limit },
+        ],
+        totalCount: [
+          {
+            $count: "count",
+          },
+        ],
+      },
+    },
+  ])
+
+
+  let lost = await addmemberModal.aggregate([
+    {
+      $match: {
+        userId: userId
+      }
+    },
+    {
+      $project: {
+        firstName: 1,
+        lastName: 1,
+        studentType: 1,
+        month: { "$month": "$updatedAt" },
+        year: { "$year": "$updatedAt" }
+      }
+    },
+    {
+      $match: {
+        month: month,
+        year: year,
+        studentType: expr2
+      }
+    },
+    {
+      $facet: {
+        paginatedResults: [
+          { $skip: pagination.skip },
+          { $limit: pagination.limit },
+        ],
+        totalCount: [
+          {
+            $count: "count",
+          },
+        ],
+      },
+    },
+  ])
+  return {
+    joined: joined[0],
+    lost: lost[0]
+  }
+
+}
+async function yearlyCount(userId, year, per_page, page_no) {
+  let expr = { $not: { $in: ['Former Trial', "Former Student"] } }
+  let expr2 = { $in: ['Former Trial', "Former Student"] }
+  var pagination = {
+    limit: per_page,
+    skip: per_page * page_no,
+  };
+  let joined = await addmemberModal.aggregate([
+    {
+      $match: {
+        userId: userId
+      }
+    },
+    {
+      $project: {
+        firstName: 1,
+        lastName: 1,
+        studentType: 1,
+        month: { "$month": "$updatedAt" },
+        year: { "$year": "$updatedAt" }
+      }
+    },
+    {
+      $match: {
+        // month: month,
+        year: year,
+        studentType: expr
+      }
+    },
+    {
+      $facet: {
+        paginatedResults: [
+          { $skip: pagination.skip },
+          { $limit: pagination.limit },
+        ],
+        totalCount: [
+          {
+            $count: "count",
+          },
+        ],
+      },
+    },
+  ])
+
+
+  let lost = await addmemberModal.aggregate([
+    {
+      $match: {
+        userId: userId
+      }
+    },
+    {
+      $project: {
+        firstName: 1,
+        lastName: 1,
+        studentType: 1,
+        month: { "$month": "$updatedAt" },
+        year: { "$year": "$updatedAt" }
+      }
+    },
+    {
+      $match: {
+        // month: month,
+        year: year,
+        studentType: expr2
+      }
+    },
+    {
+      $facet: {
+        paginatedResults: [
+          { $skip: pagination.skip },
+          { $limit: pagination.limit },
+        ],
+        totalCount: [
+          {
+            $count: "count",
+          },
+        ],
+      },
+    },
+  ])
+  return {
+    joined: joined[0],
+    lost: lost[0]
+  }
+}
+
+
+
+exports.count = async (req, res) => {
+  let userId = req.params.userId;
+  let per_page = parseInt(req.params.per_page) || 10;
+  let page_no = parseInt(req.params.page_no) || 0;
+  let year = parseInt(req.query.year);
+  let month = parseInt(req.query.month);
+  try {
+    if (month) {
+      if (year) {
+        let monthCount = await MonthlyCount(month, userId, year, per_page, page_no)
+        if (monthCount.lost.totalCount[0]) {
+          let data = [{ joined: monthCount.joined.paginatedResults, joinedCount: monthCount.joined.totalCount[0].count },
+          { lost: monthCount.lost.paginatedResults, lostCount: monthCount.lost.totalCount[0].count }]
+          return res.send({
+            success: true,
+            data: data
+          })
+        } else {
+          return res.send({
+            success: true,
+            data: [],
+            msg: "There is no students in this month "
+          })
+        }
+      }
+    } else if (year) {
+      let yearCount = await yearlyCount(userId, year, per_page, page_no)
+      if (yearCount.joined.totalCount[0]) {
+        let data = [{ joined: yearCount.joined.paginatedResults, joinedCount: yearCount.joined.totalCount[0].count },
+        { lost: yearCount.lost.paginatedResults, lostCount: yearCount.lost.totalCount[0].count }]
+        return res.send({
+          success: true,
+          data: data
+        })
+      } else {
+        return res.send({
+          success: true,
+          data: [],
+          msg: "There is no students in this year "
+        })
+      }
+
+    }
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+  }
+}
 
 
 exports.StatisticsCount = async (req, res) => {
@@ -1288,22 +1512,76 @@ exports.filterLeads = async (req, res) => {
         {
           $project:{
             month: { $month: '$createdAt' },
+            status: 1,
+            days_expire: 1,
+            day_left:1,
+            programColor: 1,
+            next_rank_name: 1,
+            next_rank_img: 1,
+            current_rank_name:1,
+            current_rank_id: 1,
+            subcategory: 1,
+            leadsTracking: 1,
+            after_camp: 1,
+            memberprofileImage:1,
+            rating: 1,
+            attendence_color: 1,
+            missclass_count: 1,
+            attendedclass_count: 1,
+            attendence_status: 1,
+            rankFromRecomendedTest: 1,
+            membership_details: 1,
+            product_details: 1,
+            finance_details: 1,
+            myFaimly:1,
+            myGroup: 1,
+            test_purchasing:1,
+            renewals_notes:1,
+            birthday_notes:1,
+            birthday_checklist:1,
+            last_contact_missCall:1,
+            last_contact_renewal:1,
+            missYouCall_notes: 1,
+            followup_notes:1,
+            rank_update_history:1,
+            rank_update_test_history:1,
+            isRecomCandidate:1,
+            isRecommended:1,
+            time:1,
+            isInvitee:1,
+            isSeen:1,
+            isRead: 1,
+            class_count: 1,
             firstName:1,
-            lastName:1,
-            studentType:1,
-            leadsTracking:1,
-            age:1,
+            lastName: 1,
+            gender: 1,
             dob:1,
-            gender:1,
-            street:1,
-            zipPostalCode:1,
-            email:1,
-            state:1,
-            primaryPhone:1,
-            secondaryNumber:1,
-            state:1,
-            country:1,
-            city:1,            
+            age:1,
+            primaryPhone: 1,
+            email: 1,
+            secondaryNumber: 1,
+            street: 1,
+            zipPostalCode: 1,
+            town: 1,
+            country: 1,
+            notes:1,
+            studentType:1,
+            school:1,
+            location:1,
+            customId:1,
+            intrested:1,
+            program: 1,
+            category:1,
+            state: 1,
+            userId:1,
+            createdAt: 1,
+            updatedAt:1,
+            __v: 1,
+            next_rank_id: 1,
+            programID: 1,
+            current_rank_img:1,
+            rank_order: 1,
+            leadStatus:1,
           }
         },
         {
@@ -1325,24 +1603,167 @@ exports.filterLeads = async (req, res) => {
         {
           $project:{
             year: { $year: '$createdAt' },
+            status: 1,
+            days_expire: 1,
+            day_left:1,
+            programColor: 1,
+            next_rank_name: 1,
+            next_rank_img: 1,
+            current_rank_name:1,
+            current_rank_id: 1,
+            subcategory: 1,
+            leadsTracking: 1,
+            after_camp: 1,
+            memberprofileImage:1,
+            rating: 1,
+            attendence_color: 1,
+            missclass_count: 1,
+            attendedclass_count: 1,
+            attendence_status: 1,
+            rankFromRecomendedTest: 1,
+            membership_details: 1,
+            product_details: 1,
+            finance_details: 1,
+            myFaimly:1,
+            myGroup: 1,
+            test_purchasing:1,
+            renewals_notes:1,
+            birthday_notes:1,
+            birthday_checklist:1,
+            last_contact_missCall:1,
+            last_contact_renewal:1,
+            missYouCall_notes: 1,
+            followup_notes:1,
+            rank_update_history:1,
+            rank_update_test_history:1,
+            isRecomCandidate:1,
+            isRecommended:1,
+            time:1,
+            isInvitee:1,
+            isSeen:1,
+            isRead: 1,
+            class_count: 1,
             firstName:1,
-            lastName:1,
-            studentType:1,
-            leadsTracking:1,
-            age:1,
+            lastName: 1,
+            gender: 1,
             dob:1,
-            gender:1,
-            street:1,
-            zipPostalCode:1,
-            email:1,
-            state:1,
-            primaryPhone:1,
-            secondaryNumber:1,
-            state:1,
-            country:1,
-            city:1, 
-            createdAt:1,
-            updatedAt:1           
+            age:1,
+            primaryPhone: 1,
+            email: 1,
+            secondaryNumber: 1,
+            street: 1,
+            zipPostalCode: 1,
+            town: 1,
+            country: 1,
+            notes:1,
+            studentType:1,
+            school:1,
+            location:1,
+            customId:1,
+            intrested:1,
+            program: 1,
+            category:1,
+            state: 1,
+            userId:1,
+            createdAt: 1,
+            updatedAt:1,
+            __v: 1,
+            next_rank_id: 1,
+            programID: 1,
+            current_rank_img:1,
+            rank_order: 1,
+            leadStatus:1,
+          }
+        },
+        {
+          $match: {
+            year: year
+          }
+        }
+      ]);
+      res.send({ data: data, success: true })
+    } else if (month) {
+      const data = await addmemberModal.aggregate([
+        {
+          $match: {
+            $and: [
+              { userId: userId }, { leadsTracking: { $in: leadFilter } }
+            ]
+          }
+        },
+        {
+          $project: {
+            month: { $month: '$createdAt' },
+            status: 1,
+            days_expire: 1,
+            day_left:1,
+            programColor: 1,
+            next_rank_name: 1,
+            next_rank_img: 1,
+            current_rank_name:1,
+            current_rank_id: 1,
+            subcategory: 1,
+            leadsTracking: 1,
+            after_camp: 1,
+            memberprofileImage:1,
+            rating: 1,
+            attendence_color: 1,
+            missclass_count: 1,
+            attendedclass_count: 1,
+            attendence_status: 1,
+            rankFromRecomendedTest: 1,
+            membership_details: 1,
+            product_details: 1,
+            finance_details: 1,
+            myFaimly:1,
+            myGroup: 1,
+            test_purchasing:1,
+            renewals_notes:1,
+            birthday_notes:1,
+            birthday_checklist:1,
+            last_contact_missCall:1,
+            last_contact_renewal:1,
+            missYouCall_notes: 1,
+            followup_notes:1,
+            rank_update_history:1,
+            rank_update_test_history:1,
+            isRecomCandidate:1,
+            isRecommended:1,
+            time:1,
+            isInvitee:1,
+            isSeen:1,
+            isRead: 1,
+            class_count: 1,
+            firstName:1,
+            lastName: 1,
+            gender: 1,
+            dob:1,
+            age:1,
+            primaryPhone: 1,
+            email: 1,
+            secondaryNumber: 1,
+            street: 1,
+            zipPostalCode: 1,
+            town: 1,
+            country: 1,
+            notes:1,
+            studentType:1,
+            school:1,
+            location:1,
+            customId:1,
+            intrested:1,
+            program: 1,
+            category:1,
+            state: 1,
+            userId:1,
+            createdAt: 1,
+            updatedAt:1,
+            __v: 1,
+            next_rank_id: 1,
+            programID: 1,
+            current_rank_img:1,
+            rank_order: 1,
+            leadStatus:1,
           }
         },
         {
@@ -2714,4 +3135,60 @@ exports.leads_past3_month = async (req, res) => {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }
 };
+
+
+// async function collectionModify() {
+//   try {
+//     let data=await addmemberModal.aggregate([
+//       { $match: {$and:[{ userId: "61fc0df9f134f62878899a45"},{rating:0}]} },
+//       {
+//         $project: {
+//           rating: 1,
+//         },
+//       },
+      // {
+      //   $match: { last_attended_date: { $ne: null } },
+      // },
+      // {
+      //   $addFields: {
+      //     last_attended_date: {
+      //       $toDate: {
+      //         $dateToString: {
+      //           format: "%Y-%m-%d",
+      //           date: {
+      //             $toDate: "$last_attended_date",
+      //           },
+      //         },
+      //       },
+      //     },
+      //   },
+      // },
+      // {
+      //   $addFields: {
+      //     rating: {
+      //       $floor: {
+      //         $divide: [
+      //           {
+      //             $subtract: ["$$NOW", "$last_attended_date"],
+      //           },
+      //           1000 * 60 * 60 * 24,
+      //         ],
+      //       },
+      //     },
+      //   },
+      // },
+      // {
+      //   $match:{
+      //     rating:0
+      //   }
+      // }
+//     ])
+//     console.log(data)
+
+//   } catch (err) {
+//     console.log({ msg: err.message.replace(/\"/g, ""), success: false });
+//   }
+// }
+// collectionModify();
+
 

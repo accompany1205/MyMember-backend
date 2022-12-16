@@ -1,11 +1,23 @@
 const Form = require("../../models/builder/Form.js");
 const addmember = require("../../models/addmember.js");
 const Funnel = require("../../models/builder/funnel")
-
+const Template = require("../../models/builder/template")
+const mongoose = require("mongoose")
 const stripe = require("stripe")("sk_test_v9");
 const ObjectId = require("mongodb").ObjectId;
 
-//for funnels 
+async function cloneForm(form, funnelId) {
+  let newForm = new Form
+  newForm.title = form.title;
+  newForm.formBody = form.formBody
+  newForm.created_by = form.created_by
+  newForm.formData = form.formData;
+  newForm.funnelId = funnelId;
+
+  await newForm.save();
+  return newForm._id;
+}
+//for funnels
 exports.createFunnel = async (req, res) => {
   let userId = req.params.userId;
   if (!userId) {
@@ -16,7 +28,127 @@ exports.createFunnel = async (req, res) => {
     data.userId = userId;
     let funnel = new Funnel(data);
     let resp = await funnel.save();
-    res.send({ success: true, msg: "funnel created!" });
+    if(data.templateId) {
+      console.log("Have Template");
+      let templateData = await Template.findOne({ _id: data.templateId, isDeleted: false }).populate('forms');
+      let forms = templateData.forms;
+
+      if(forms.length > 0) {
+        let formIds = [];
+        for(let form of forms) {
+          console.log("Origin form is " + form._id);
+          let formId = await cloneForm(form, funnel._id);
+          console.log("Clone id is " + formId);
+          formIds.push(formId);
+        }
+        console.log(formIds);
+        funnel.forms = formIds;
+        resp = await funnel.save();
+      }
+    }
+    res.send({ success: true, msg: "funnel created!", data:resp });
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ''), success: false })
+  }
+}
+
+exports.getArchive = async (req, res) => {
+  let userId = req.params.userId;
+  if (!userId) {
+    return res.send({ success: false, msg: "specify school!" });
+  }
+  try {
+    let count = await Funnel.find({ userId: userId, isDeleted: false, isArchived: true }).countDocuments();
+    var per_page = parseInt(req.params.per_page) || 5;
+    var page_no = parseInt(req.params.page_no) || 0;
+    var pagination = {
+      limit: per_page,
+      skip: per_page * page_no,
+    };
+    Funnel.find({ userId: userId, isDeleted: false, isArchived: true })
+      .sort({
+        createdAt: -1,
+      })
+      .limit(pagination.limit)
+      .skip(pagination.skip)
+      .exec((err, memberdata) => {
+        if (err) {
+          res.send({
+            msg: "Funnel data is not found",
+            success: false,
+          });
+        } else {
+          res.send({ memberdata, totalCount: count, success: true });
+        }
+      });
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ''), success: false })
+  }
+}
+
+exports.getTrashForm = async (req, res) => {
+  let userId = req.params.userId;
+  if (!userId) {
+    return res.send({ success: false, msg: "specify school!" });
+  }
+  try {
+    let count = await Funnel.find({userId: userId, isDeleted: true }).countDocuments();
+    var per_page = parseInt(req.params.per_page) || 5;
+    var page_no = parseInt(req.params.page_no) || 0;
+    var pagination = {
+      limit: per_page,
+      skip: per_page * page_no,
+    };
+    Funnel.find({ userId: userId, isDeleted: true })
+      .sort({
+        createdAt: -1,
+      })
+      .limit(pagination.limit)
+      .skip(pagination.skip)
+      .exec((err, memberdata) => {
+        if (err) {
+          res.send({
+            msg: "Funnel data is not found",
+            success: false,
+          });
+        } else {
+          res.send({ memberdata, totalCount: count, success: true });
+        }
+      });
+  } catch (err) {
+    res.send({ msg: err.message.replace(/\"/g, ''), success: false })
+  }
+}
+
+exports.getFavorite = async (req, res) => {
+  let userId = req.params.userId;
+  if (!userId) {
+    return res.send({ success: false, msg: "specify school!" });
+  }
+  try {
+    let count = await Funnel.find({userId: userId, isDeleted: false, isFavorite:true }).countDocuments();
+    var per_page = parseInt(req.params.per_page) || 5;
+    var page_no = parseInt(req.params.page_no) || 0;
+    var pagination = {
+      limit: per_page,
+      skip: per_page * page_no,
+    };
+    Funnel.find({ userId: userId, isDeleted: false, isFavorite:true })
+      .sort({
+        createdAt: -1,
+      })
+      .limit(pagination.limit)
+      .skip(pagination.skip)
+      .exec((err, memberdata) => {
+        if (err) {
+          res.send({
+            msg: "Funnel data is not found",
+            success: false,
+          });
+        } else {
+          res.send({ memberdata, totalCount: count, success: true });
+        }
+      });
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ''), success: false })
   }
@@ -28,11 +160,11 @@ exports.getSingleFunnel = async (req, res) => {
     return res.send({ success: false, msg: "No funnel id!" });
   }
   try {
-    let data = await Funnel.findOne({_id:funnelId, isDeleted:false});
-    if(!data){
-      return res.send({msg:"No Funnel", success:true});
+    let data = await Funnel.findOne({ _id: funnelId, isDeleted: false }).populate('forms');
+    if (!data) {
+      return res.send({ msg: "No Funnel", success: true });
     }
-    res.send({data:data, msg:"data!", success:true});
+    res.send({ data: data, msg: "data!", success: true });
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ''), success: false })
   }

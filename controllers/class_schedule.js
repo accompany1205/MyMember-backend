@@ -75,18 +75,19 @@ exports.read = async (req, res) => {
 
 exports.readSchedule = async (req, res) => {
   let startDate = req.params.dates;
+
   let monthStartDate = moment(startDate).startOf("month").format("MM/DD/YYYY");
   let monthEndDate = moment(startDate).endOf("month").format("MM/DD/YYYY");
 
   try {
-    class_schedule
-      .find({
+    class_schedule.find({
         isActive: true,
         $and: [
           { userId: req.params.userId },
           { start_date: { $gte: monthStartDate, $lt: monthEndDate } },
         ],
       })
+
       .then((result) => {
         return res.send({ success: true, data: result });
       })
@@ -94,6 +95,7 @@ exports.readSchedule = async (req, res) => {
         console.log(err, "err");
         return res.send({ msg: "No data!", success: false });
       });
+
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }

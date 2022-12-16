@@ -1,24 +1,19 @@
 const mongoose = require("mongoose");
 const schema = mongoose.Schema
 
-const FunnelSchema = schema({
-    funnelName:{
+const TemplateSchema = schema({
+    name:{
         type:String
     },
-	memberType:{
+    description:{
         type:String
     },
-	isAutomation:{
-        type:Boolean
-    },
-	funnelType:{
+    thumbnail:{
         type:String
     },
-	templateBody:{
-        type:String
-    },
-	templateName:{
-        type:String
+	categoryId:{
+        type: schema.Types.ObjectId,
+        ref:'template_category',
     },
     forms:[{
         type: schema.Types.ObjectId,
@@ -32,16 +27,8 @@ const FunnelSchema = schema({
         type:Boolean,
         default:false
     },
-    isFavorite:{
-        type:Boolean,
-        default:false
-    },
-    isArchived:{
-        type:Boolean,
-        default:false
-    }
 },
     { timestamps: true }
 )
 
-module.exports = mongoose.model("funnel", FunnelSchema);
+module.exports = mongoose.model("template", TemplateSchema);

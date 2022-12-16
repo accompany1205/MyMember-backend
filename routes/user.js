@@ -4,7 +4,7 @@ const upload = require('../handler/multer');
 const User = require('../models/user');
 const { requireSignin, isAuth, isAdmin } = require('../controllers/auth');
 
-const { userById, read, update, purchaseHistory, deleteUser, deleteMultiple_User, verificationLink, listingVerifications, deleteVerifiedSendgridUser, mergeUserInfo, userSignatureUpdate, purchased_Num, Subtract_Credits, Add_Credits, AddNew_Credits, userByPakage } = require('../controllers/user');
+const { userById, read, update, purchaseHistory, deleteUser, deleteMultiple_User, verificationLink, listingVerifications, deleteVerifiedSendgridUser, mergeUserInfo, userSignatureUpdate, purchased_Num, Subtract_Credits, Add_Credits, AddNew_Credits, userByPakage,socialAuth } = require('../controllers/user');
 
 router.get('/secret', requireSignin, (req, res) => {
     res.json({
@@ -30,6 +30,7 @@ router.put('/credits/:userid', Subtract_Credits)
 router.put('/Addcredits/:userid', Add_Credits)
 router.post('/addNewCredits', AddNew_Credits)
 //  router.post("/getPakge/:userid", userByPakage)
+router.put('/facebookGooglekey/:userId',requireSignin, socialAuth)
 
 router.post("/getPakge/:userid", (req, res) => {
     console.log('call here', req.params)

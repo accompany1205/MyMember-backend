@@ -15,23 +15,28 @@ const ObjectId = require('mongodb').ObjectId;
 const { map } = require('lodash');
 const { errorMonitor } = require('events');
 const location = require("../models/admin/settings/location")
-
+const members = require('../models/addmember')
+const Expense = require('../models/expenses');
+const mongoose = require('mongoose');
+const BuyProduct = require('../models/buy_product');
+const BuyMembership = require('../models/buy_membership');
+const programRank=require('../models/program_rank')
 // TODO - Rakesh - Please write a mail service if user is coming with role 0(School)
 //TODO - Rakesh - Please read the admin email ids using a mongo query with the role 1.
 //todo - Pavan - #Copleted!
-exports.getMuj = async(req, res)=>{
+exports.getMuj = async (req, res) => {
 
-   User.find({}, function (err, items){
-     res.json({success:true ,data:items})
-   })
+	User.find({}, function (err, items) {
+		res.json({ success: true, data: items })
+	})
 }
 //Signup starting.....
 exports.signup = async (req, res) => {
 	// sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-	console.log('call' , req.body)
+	console.log('call', req.body)
 	let userBody = req.body;
 	const user = new User(userBody);
-	
+
 	const admins = await User.find(
 		{
 			role: 1,
@@ -515,6 +520,8 @@ exports.addTwillioNumber = (req, res) => {
 	}
 }
 
+
+
 exports.signin = async (req, res) => {
 	// find the user based on email
 	console.log('body login', req.body)
@@ -548,6 +555,7 @@ exports.signin = async (req, res) => {
 									success: false,
 								});
 							} else {
+
 								token = jwt.sign(
 									{
 										id: data._id,
@@ -577,6 +585,13 @@ exports.signin = async (req, res) => {
 
 								const { username, password, email, phone, role } = subUserData;
 								let default_location = await location.find({ _id: data.default_location });
+								let isLogin = new Date().getTime()
+								let userData = await User.updateOne({ username: username }, { isLogin: isLogin })
+								if (userData.nModified === 1) {
+									console.log({ success: true, msg: "islogin field updated" })
+								} else {
+									console.log({ success: false, msg: "islogin not updated" })
+								}
 								return res.json({
 									success: true,
 									token,
@@ -680,6 +695,14 @@ exports.signin = async (req, res) => {
 										lastname
 									},
 								});
+							}
+							let userName=req.body.username
+							let isLogin = new Date().getTime()
+							let userData = await User.updateOne({ username: userName }, { isLogin: isLogin })
+							if (userData.nModified === 1) {
+								console.log({ success: true, msg: "islogin field updated" })
+							} else {
+								console.log({ success: false, msg: "islogin not updated" })
 							}
 							token = jwt.sign(
 								{
@@ -1199,4 +1222,819 @@ exports.verify_otp = async (req, res) => {
 function AddMinutesToDate(date, minutes) {
 	return new Date(date.getTime() + minutes * 60000);
 }
+
+
+exports.memberStatistics = async (req, res) => {
+	let type = req.query.type || "Active Student";
+	let per_page = parseInt(req.params.per_page) || 10;
+	let page_no = parseInt(req.params.page_no) || 0;
+	var pagination = {
+		limit: per_page,
+		skip: per_page * page_no,
+	};
+	try {
+		let data = await location.aggregate([
+			{
+				$project: {
+					locationName: 1,
+					userId: 1
+				}
+			},
+			{
+				$lookup: {
+					from: "members",
+					localField: "userId",
+					foreignField: "userId",
+					as: "studentData",
+					pipeline: [
+						{
+							$match: {
+								studentType: type
+							}
+						},
+						{
+							$project: {
+								studentType: 1
+							}
+						},
+						{
+							$group: {
+								_id: "$studentType",
+								count: {
+									$sum: 1,
+								},
+							},
+						},
+						{
+							$project: {
+								_id: 0,
+								studentType: "$_id",
+								count: 1
+							}
+						}
+					]
+				}
+			},
+			{ $unwind: "$studentData" },
+			{
+				$addFields: {
+					convertedId: { $toObjectId: "$userId" }
+				}
+			},
+			{
+				$lookup:{
+					from: "users",
+					localField: "convertedId",
+					foreignField: "_id",
+					as: "userData",
+					pipeline: [
+						{
+							$project:{
+								isLogin:1,
+								_id:0
+							}
+						}
+					]
+				}
+			},
+			{ $unwind: "$userData" },
+			{
+				$project:{
+					locationName:1,
+					userId:1,
+					studentData:1,
+					userData:1
+				}
+			},
+			{ $sort: { "studentData.count": -1 } },
+
+			{
+				$facet: {
+					paginatedResults: [
+						{ $skip: pagination.skip },
+						{ $limit: pagination.limit },
+					],
+					totalCount: [
+						{
+							$count: "count",
+						}
+					],
+
+				},
+			}
+		])
+		//console.log(data)
+		res.send({ data: data[0].paginatedResults, totalCount: data[0].totalCount[0].count, success: true });
+	} catch (err) {
+		return res.send({ msg: err.message.replace(/\"/g, ''), success: false });
+	}
+}
+
+exports.incomeStatistics = async (req, res) => {
+	let year = req.query.year;
+	let month = req.query.month;
+	let yearlyMonthly = req.params.yearlyMonthly;
+	let per_page = parseInt(req.params.per_page) || 10;
+	let page_no = parseInt(req.params.page_no) || 0;
+	try {
+		if (yearlyMonthly == "monthly") {
+			let monthData = await monthlyExpenseIncome(month, year, per_page, page_no)
+			let incomeArr = []
+			for (let i of monthData.incomeByMembershipArray) {
+				for (let j of monthData.incomeByProductArray) {
+					let obj = { income: 0 }
+					if ((i.locationName == j.locationName)) {
+						obj.income = (i.incomeByMembership[0].dpayment) + (j.incomeByProduct[0].balance)
+						j.incomeByProduct.splice(0, 1, obj)
+						incomeArr.push(j)
+					}
+				}
+			}
+			let finalResult = []
+			for (let i of monthData.expenseData) {
+				for (let j of incomeArr) {
+					let obj = { income: 0, expense: 0, net: 0 }
+					if ((i.locationName == j.locationName)) {
+						obj.net = (j.incomeByProduct[0].income) - (i.expense[0].amount);
+						obj.income = j.incomeByProduct[0].income
+						obj.expense = i.expense[0].amount
+						j.incomeByProduct.splice(0, 1, obj)
+						finalResult.push(j)
+					}
+				}
+			}
+			res.send({
+				data: finalResult,
+				totalSchools: monthData.totalSchools,
+				success: true
+			})
+		} else if (yearlyMonthly == "yearly") {
+			let yearData = await yealyExpenseIncome(year, per_page, page_no)
+			let arr = []
+			for (let i of yearData.incomeByMembershipArray) {
+				for (let j of yearData.incomeByProductArray) {
+					let obj = { income: 0 }
+					if ((i.locationName == j.locationName)) {
+						obj.income = (i.incomeByMembership[0].dpayment) + (j.incomeByProduct[0].balance)
+						j.incomeByProduct.splice(0, 1, obj)
+						arr.push(j)
+					}
+				}
+			}
+			let result = []
+			for (let i of yearData.expenseData) {
+				for (let j of arr) {
+					let obj = { income: 0, expense: 0, net: 0 }
+					if ((i.locationName == j.locationName)) {
+						obj.net = (j.incomeByProduct[0].income) - (i.expense[0].amount);
+						obj.income = j.incomeByProduct[0].income
+						obj.expense = i.expense[0].amount
+						j.incomeByProduct.splice(0, 1, obj)
+						result.push(j)
+					}
+				}
+			}
+
+			res.send({
+				data: result,
+				totalSchools: yearData.totalSchools,
+				success: true
+			})
+		}
+
+
+
+
+	} catch (err) {
+		return res.send({ msg: err.message, success: false });
+	}
+}
+exports.rankStatistics = async (req, res) => {
+	let program = req.params.program;
+	let per_page = parseInt(req.params.per_page) || 10;
+	let page_no = parseInt(req.params.page_no) || 0;
+	var pagination = {
+		limit: per_page,
+		skip: per_page * page_no,
+	};
+	try {
+		let programData=await programRank.find(
+			{},{
+				programName:1,
+				rank_image:1,
+				rank_name:1
+			}
+		)
+		let data = await location.aggregate([
+			{
+				$project: {
+					locationName: 1,
+					userId: 1
+				}
+			},
+			{
+				$lookup: {
+					from: "members",
+					localField: "userId",
+					foreignField: "userId",
+					as: "studentData",
+					pipeline: [
+						{
+							$project: {
+								program: 1,
+								current_rank_name: 1,
+								current_rank_img:1
+							}
+						},
+						{
+							$match: {
+								current_rank_name: { $ne: null },
+								current_rank_img: { $ne: null }	
+							}
+						},
+						{
+							$group: {
+								_id: "$current_rank_name",
+								count: {
+									$sum: { $cond: [
+										{ $eq: [ "$program", program ] },
+										1,
+										0
+									]}
+								},
+								programName: { $first: program },
+								rankName: { $first: "$current_rank_name" },
+								rankImage:{$first:"$current_rank_img"}
+							}
+						},
+						{
+							$project: {
+								_id: 0
+							}
+						},
+						{ $sort: { count: 1 } }
+					]
+				}
+			},
+			{
+				$facet: {
+					paginatedResults: [
+						{ $skip: pagination.skip },
+						{ $limit: pagination.limit },
+					],
+					totalCount: [
+						{
+							$count: "count",
+						}
+					],
+
+				},
+			}
+		])
+		res.send({ data: data[0].paginatedResults,programData:programData, totalCount: data[0].totalCount[0].count, success: true });
+	} catch (err) {
+		return res.send({ msg: err.message.replace(/\"/g, ''), success: false });
+	}
+}
+
+exports.retentionStatistics = async (req, res) => {
+	let per_page = parseInt(req.params.per_page) || 10;
+	let page_no = parseInt(req.params.page_no) || 0;
+	var pagination = {
+		limit: per_page,
+		skip: per_page * page_no,
+	};
+	try {
+		let data = await location.aggregate([
+			{
+				$project: {
+					locationName: 1,
+					userId: 1
+				}
+			},
+			{
+				$lookup: {
+					from: "members",
+					localField: "userId",
+					foreignField: "userId",
+					as: "ratingCount",
+					pipeline: [
+						{
+							$project: {
+								rating: 1
+							}
+						},
+						{
+							$group: {
+								_id: "-",
+								ratings: { $push: "$rating" }
+							}
+						},
+						{
+							$project: {
+								_id: 0
+							}
+						}
+					]
+
+				}
+			},
+			{
+				$facet: {
+					paginatedResults: [
+						{ $skip: pagination.skip },
+						{ $limit: pagination.limit },
+					],
+					totalCount: [
+						{
+							$count: "count",
+						}
+					],
+
+				},
+			}
+		])
+		let result=data[0].paginatedResults
+		// console.log(data[0].paginatedResults)
+		for (let i of result) {
+			if (i.ratingCount.length > 0) {
+				const rate = { zero: 0, oneToSeven: 0, sevenToFourteen: 0, fourteenToThirty: 0, thirtyToSixty: 0, sixtyToNinty: 0, nintyPlus: 0 }
+				const rating = { zero: [], oneToSeven: [], sevenToFourteen: [], fourteenToThirty: [], thirtyToSixty: [], sixtyToNinty: [], nintyPlus: [] }
+				for (let j of i.ratingCount[0].ratings) {
+					if (j === 0) {
+						rating.zero.push(j)
+					} else if (j > 0 && j < 7) {
+						rating.oneToSeven.push(j)
+					} else if (j >= 7 && j < 14) {
+						rating.sevenToFourteen.push(j)
+					} else if (j >= 14 && j < 30) {
+						rating.fourteenToThirty.push(j)
+					} else if (j >= 30 && j < 60) {
+						rating.thirtyToSixty.push(j)
+					} else if (j >= 60 && j < 90) {
+						rating.sixtyToNinty.push(j)
+					} else if (j >= 90) {
+						rating.nintyPlus.push(j)
+					}
+				}
+				rate.zero = rating.zero.length
+				rate.oneToSeven = rating.oneToSeven.length
+				rate.sevenToFourteen = rating.sevenToFourteen.length
+				rate.fourteenToThirty = rating.fourteenToThirty.length
+				rate.thirtyToSixty = rating.thirtyToSixty.length
+				rate.sixtyToNinty = rating.sixtyToNinty.length
+				rate.nintyPlus = rating.nintyPlus.length
+				i.ratingCount.splice(0, 1, rate)
+			}
+		}
+		return res.send({ data: result, totalcount:data[0].totalCount[0].count,success: true });
+	} catch (err) {
+		return res.send({ msg: err.message.replace(/\"/g, ''), success: false });
+	}
+}
+
+
+async function monthlyExpenseIncome(month, year, perPage, pageNo) {
+	const thisMonth = parseInt(month) || new Date().getMonth() + 1;
+	const thisYear = parseInt(year) || new Date().getFullYear();
+	let per_page = perPage || 10
+	let page_no = pageNo || 0;
+	var pagination = {
+		limit: per_page,
+		skip: per_page * page_no,
+	};
+	let expenseData = await location.aggregate([
+		{
+			$project: {
+				locationName: 1,
+				userId: 1
+			}
+		},
+		{
+			$addFields: {
+				convertedId: { $toObjectId: "$userId" }
+			}
+		},
+		{
+			$lookup: {
+				from: "expenses",
+				localField: "convertedId",
+				foreignField: "userId",
+				as: "expense",
+				pipeline: [
+					{
+						$project: {
+							amount: 1,
+							month: { $month: '$date' },
+							year: { $year: '$date' },
+						},
+					},
+
+					{
+						$match: {
+							month: thisMonth,
+							year: thisYear,
+						},
+					},
+
+					{
+						$group: {
+							_id: '-',
+							amount: { $sum: '$amount' },
+						},
+					},
+					{
+						$project: {
+							_id: 0,
+						}
+					}
+				]
+			}
+		},
+		{
+			$facet: {
+				paginatedResults: [
+					{ $skip: pagination.skip },
+					{ $limit: pagination.limit },
+				],
+				totalCount: [
+					{
+						$count: "count",
+					}
+				],
+
+			},
+		}
+	]);
+	for (let i of expenseData[0].paginatedResults) {
+		let obj = { amount: 0 }
+		if (i.expense.length === 0) {
+			i.expense.push(obj)
+		}
+	}
+
+	const incomeByProductArray = await location.aggregate([
+		{
+			$project: {
+				locationName: 1,
+				userId: 1
+			}
+		},
+		{
+			$lookup: {
+				from: "buy_products",
+				localField: "userId",
+				foreignField: "userId",
+				as: "incomeByProduct",
+				pipeline: [
+					{
+						$project: {
+							deposite: '$deposite',
+							month: { $month: '$createdAt' },
+							year: { $year: '$createdAt' },
+							productType: '$product_type',
+							createdAt: 1,
+						},
+					},
+					{
+						$match: {
+							month: thisMonth,
+							year: thisYear
+						},
+					},
+					{
+						$group: {
+							_id: null,
+							balance: { $sum: '$deposite' },
+						},
+					},
+					{
+						$project: {
+							_id: 0
+						}
+					},
+
+				]
+			}
+		},
+		{
+			$facet: {
+				paginatedResults: [
+					{ $skip: pagination.skip },
+					{ $limit: pagination.limit },
+				],
+				totalCount: [
+					{
+						$count: "count",
+					}
+				],
+
+			},
+		}
+	])
+	for (let i of incomeByProductArray[0].paginatedResults) {
+		let obj = { balance: 0 }
+		if (i.incomeByProduct.length === 0) {
+			i.incomeByProduct.push(obj)
+		}
+	}
+
+
+	const incomeByMembershipArray = await location.aggregate([
+		{
+			$project: {
+				locationName: 1,
+				userId: 1
+			}
+		},
+		{
+			$lookup: {
+				from: "buy_memberships",
+				localField: "userId",
+				foreignField: "userId",
+				as: "incomeByMembership",
+				pipeline: [
+					{
+						$project: {
+							dpayment: '$dpayment',
+							register_fees: '$register_fees',
+							month: { $month: '$createdAt' },
+							year: { $year: '$createdAt' },
+							createdAt: 1,
+						},
+					},
+					{
+						$match: {
+							month: thisMonth,
+							year: thisYear
+						},
+					},
+					{
+						$group: {
+							_id: null,
+							dpayment: { $sum: '$dpayment' },
+							register_fees: { $sum: '$register_fees' },
+						},
+					},
+					{
+						$project: {
+							_id: 0,
+							register_fees: 0
+						}
+					},
+
+				]
+			}
+		},
+		{
+			$facet: {
+				paginatedResults: [
+					{ $skip: pagination.skip },
+					{ $limit: pagination.limit },
+				],
+				totalCount: [
+					{
+						$count: "count",
+					}
+				],
+
+			},
+		}
+	]);
+
+	for (let i of incomeByMembershipArray[0].paginatedResults) {
+		let obj = { dpayment: 0 }
+		if (i.incomeByMembership.length === 0) {
+			i.incomeByMembership.push(obj)
+		}
+	}
+	// console.log(incomeByMembershipArray[0].paginatedResults)
+	return {
+		expenseData: expenseData[0].paginatedResults,
+		incomeByProductArray: incomeByProductArray[0].paginatedResults,
+		incomeByMembershipArray: incomeByMembershipArray[0].paginatedResults,
+		totalSchools: expenseData[0].totalCount[0].count
+	}
+}
+
+
+
+
+async function yealyExpenseIncome(year, perPage, pageNo) {
+	const currentDate = new Date();
+	const currentYear = parseInt(year) || currentDate.getFullYear();
+	let per_page = perPage || 10
+	let page_no = pageNo || 0;
+	var pagination = {
+		limit: per_page,
+		skip: per_page * page_no,
+	};
+
+	let expenseData = await location.aggregate([
+		{
+			$project: {
+				locationName: 1,
+				userId: 1
+			}
+		},
+		{
+			$addFields: {
+				convertedId: { $toObjectId: "$userId" }
+			}
+		},
+		{
+			$lookup: {
+				from: "expenses",
+				localField: "convertedId",
+				foreignField: "userId",
+				as: "expense",
+				pipeline: [
+					{
+						$project: {
+							amount: 1,
+							month: { $month: '$date' },
+							year: { $year: '$date' },
+						},
+					},
+
+					{
+						$match: {
+							year: currentYear,
+						},
+					},
+
+					{
+						$group: {
+							_id: '-',
+							amount: { $sum: '$amount' },
+						},
+					},
+					{
+						$project: {
+							_id: 0,
+						}
+					}
+				]
+			}
+		},
+		{
+			$facet: {
+				paginatedResults: [
+					{ $skip: pagination.skip },
+					{ $limit: pagination.limit },
+				],
+				totalCount: [
+					{
+						$count: "count",
+					}
+				],
+
+			},
+		}
+	]);
+	for (let i of expenseData[0].paginatedResults) {
+		let obj = { amount: 0 }
+		if (i.expense.length === 0) {
+			i.expense.push(obj)
+		}
+	}
+
+
+	const incomeByProductArray = await location.aggregate([
+		{
+			$project: {
+				locationName: 1,
+				userId: 1
+			}
+		},
+		{
+			$lookup: {
+				from: "buy_products",
+				localField: "userId",
+				foreignField: "userId",
+				as: "incomeByProduct",
+				pipeline: [
+					{
+						$project: {
+							deposite: '$deposite',
+							month: { $month: '$createdAt' },
+							year: { $year: '$createdAt' },
+							productType: '$product_type',
+							createdAt: 1,
+						},
+					},
+					{
+						$match: { year: currentYear },
+					},
+					{
+						$group: {
+							_id: null,
+							balance: { $sum: '$deposite' },
+						},
+					},
+					{
+						$project: {
+							_id: 0
+						}
+					},
+
+				]
+			}
+		},
+		{
+			$facet: {
+				paginatedResults: [
+					{ $skip: pagination.skip },
+					{ $limit: pagination.limit },
+				],
+				totalCount: [
+					{
+						$count: "count",
+					}
+				],
+
+			},
+		}
+	])
+	for (let i of incomeByProductArray[0].paginatedResults) {
+		let obj = { balance: 0 }
+		if (i.incomeByProduct.length === 0) {
+			i.incomeByProduct.push(obj)
+		}
+	}
+
+
+	const incomeByMembershipArray = await location.aggregate([
+		{
+			$project: {
+				locationName: 1,
+				userId: 1
+			}
+		},
+		{
+			$lookup: {
+				from: "buy_memberships",
+				localField: "userId",
+				foreignField: "userId",
+				as: "incomeByMembership",
+				pipeline: [
+					{
+						$project: {
+							dpayment: '$dpayment',
+							register_fees: '$register_fees',
+							month: { $month: '$createdAt' },
+							year: { $year: '$createdAt' },
+							createdAt: 1,
+						},
+					},
+					{
+						$match: { year: currentYear },
+					},
+					{
+						$group: {
+							_id: null,
+							dpayment: { $sum: '$dpayment' },
+							register_fees: { $sum: '$register_fees' },
+						},
+					},
+					{
+						$project: {
+							_id: 0,
+							register_fees: 0
+						}
+					},
+
+				]
+			}
+		},
+		{
+			$facet: {
+				paginatedResults: [
+					{ $skip: pagination.skip },
+					{ $limit: pagination.limit },
+				],
+				totalCount: [
+					{
+						$count: "count",
+					}
+				],
+
+			},
+		}
+	]);
+
+	for (let i of incomeByMembershipArray[0].paginatedResults) {
+		let obj = { dpayment: 0 }
+		if (i.incomeByMembership.length === 0) {
+			i.incomeByMembership.push(obj)
+		}
+	}
+	return {
+		expenseData: expenseData[0].paginatedResults,
+		incomeByProductArray: incomeByProductArray[0].paginatedResults,
+		incomeByMembershipArray: incomeByMembershipArray[0].paginatedResults,
+		totalSchools: expenseData[0].totalCount[0].count
+	}
+}
+
 

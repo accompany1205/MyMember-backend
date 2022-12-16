@@ -65,15 +65,12 @@ const FormSchema = mongoose.Schema({
     templateId:{
         type: mongoose.Schema.Types.ObjectId
     },
-    nextFormId:{
-        type:String
-    },
     userId:{
         type:String
     }
 
 })
 
-const Form = mongoose.model('Form', FormSchema)
+const Form = mongoose.model('employeeForm', FormSchema)
 
 module.exports = Form

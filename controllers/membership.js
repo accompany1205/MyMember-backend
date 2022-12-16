@@ -8,7 +8,7 @@ const mergeFile = require('../Services/mergeFile');
 
 exports.create = async (req, res) => {
   try {
-    const membershipDetails = await req.body;
+    const membershipDetails = req.body;
     membershipDetails.userId = req.params.userId;
     membershipDetails.adminId = req.params.adminId;
     membershipDetails.folderId = req.params.folderId;

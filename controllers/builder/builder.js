@@ -1,5 +1,11 @@
 const Form = require("../../models/builder/Form.js")
+const emoloyeeForm = require('../../models/employeeForm')
 const addmember = require("../../models/addmember.js")
+const Funnel = require("../../models/builder/funnel.js")
+const sub_users_role = require("../../models/sub_user_roles")
+const FunnelContact = require("../../models/funnelContact.js");
+const userSectionFiles = require("../../models/userSectionFiles")
+const user = require("../../models/user")
 const mongoose = require("mongoose")
 
 //const stripe = require('stripe')('sk_test_v9')
@@ -16,7 +22,7 @@ const getToken = async (code) => {
     }
     return token;
 }
-    
+
 const getAccount = async (connectedAccountId) => {
     let account = {};
     try {
@@ -27,19 +33,19 @@ const getAccount = async (connectedAccountId) => {
     return account;
 }
 
-exports.processStripeConnect = async (req,res) => {
+exports.processStripeConnect = async (req, res) => {
 
-    
 
-    const account = await stripe.accounts.create({type: 'standard'});
-    
+
+    const account = await stripe.accounts.create({ type: 'standard' });
+
     /*
     const result = await stripe.oauth.token({
         grant_type: 'authorization_code',
         code: req.query.code
     })
     .catch((err) => {
-         
+
     })
     const account = await stripe.accounts?.retrieve(result?.stripe_user_id)
     ?.catch((err)=>{
@@ -50,19 +56,19 @@ exports.processStripeConnect = async (req,res) => {
     let refresh_url = `${process.env.BASE_URL}/`
 
     const accountLink = await stripe.accountLinks.create({
-    	account: account.id,
-    	refresh_url: refresh_url,
-    	return_url: return_url,
-    	type: 'account_onboarding'
+        account: account.id,
+        refresh_url: refresh_url,
+        return_url: return_url,
+        type: 'account_onboarding'
     })
 
     let url = accountLink.url
-                         
+
 }
 
-exports.getIntentClientSecret = async(req,res) => {
+exports.getIntentClientSecret = async (req, res) => {
 
-    try{
+    try {
 
         let amount = 0
         let currency = 'eur'
@@ -70,17 +76,17 @@ exports.getIntentClientSecret = async(req,res) => {
             amount: amount,
             currency: currency,
             automatic_payment_methods: {
-              enabled: true,
+                enabled: true,
             },
             application_fee_amount: 123,
-          }, {
+        }, {
             stripeAccount: '{{CONNECTED_ACCOUNT_ID}}',
         });
 
-        res.status(200).json({client_secret: paymentIntent.client_secret, success: true});
+        res.status(200).json({ client_secret: paymentIntent.client_secret, success: true });
 
-    }catch(error){
-        console.log("Error:",error)
+    } catch (error) {
+        console.log("Error:", error)
         res.status(500).json({
             success: false
         })
@@ -88,36 +94,129 @@ exports.getIntentClientSecret = async(req,res) => {
 
 }
 
+const checkFunnelId = async (funnelId) => {
+    try {
+        let funnel = await Funnel.findOne({ _id: funnelId });
+        if (funnel) {
+            return funnel;
+        }
+        return false;
+    } catch (err) {
+        console.log(err);
+    }
 
-exports.createForm = async (req,res) => {
-    try{
+}
+
+async function contactCreate(body, formData) {
+    let contactInfo = body;
+    contactInfo.userId = mongoose.Types.ObjectId(formData.userId);
+    contactInfo.formId = mongoose.Types.ObjectId(formData._id);
+    contactInfo.funnelId = mongoose.Types.ObjectId(formData.funnelId)
+    let studentInfo = new FunnelContact(contactInfo);
+    await studentInfo.save();
+}
+
+exports.saveFunnelContact = async (req, res) => {
+    const formId = req.params.formId;
+    if (!formId) {
+        return res.send({ success: false, msg: "not valid form!" });
+    }
+    try {
+        let formData = await Form.findOne({ _id: formId });
+        console.log(formData)
+        let funneldata = await Funnel.findOne({ _id: formData.funnelId });
+        if (funneldata.isAutomation) {
+            let memberdata = req.body
+            memberdata.userId = formData.userId;
+            let studentData = addmember(memberdata)
+            await studentData.save();
+            await contactCreate(memberdata, formData)
+            return res.send({ success: true, msg: "Submitted !" })
+        }
+        await contactCreate(memberdata)
+        return res.send({ success: true, msg: "Submitted !" })
+    } catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ''), success: false })
+    }
+}
+
+exports.getFunnelContact = async (req, res) => {
+    const funnelId = req.params.funnelId;
+    let funnel = await checkFunnelId(funnelId);
+    if (!funnel) {
+        return res.send({ success: false, msg: "not valid funnelId!" });
+    }
+    try {
+        const count = await FunnelContact.find({ funnelId: funnelId, isDeleted: false }).countDocuments();
+        var per_page = parseInt(req.params.per_page) || 5;
+        var page_no = parseInt(req.params.page_no) || 0;
+        var pagination = {
+            limit: per_page,
+            skip: per_page * page_no,
+        };
+        FunnelContact.find({ funnelId: funnelId, isDeleted: false })
+            .sort({
+                createdAt: -1,
+            })
+            .limit(pagination.limit)
+            .skip(pagination.skip)
+            .exec((err, memberdata) => {
+                if (err) {
+                    res.send({
+                        msg: "member data is not find",
+                        success: false,
+                    });
+                } else {
+                    res.send({ memberdata, totalCount: count, success: true });
+                }
+            });
+    } catch (err) {
+        res.send({ msg: err.message.replace(/\"/g, ''), success: false })
+    }
+}
+
+exports.createForm = async (req, res) => {
+    try {
+        let funnelId = req.body.funnelId;
+        let userId = req.params.userId;
+        let funnel = await checkFunnelId(funnelId);
+        if (!funnel) {
+            return res.send({ msg: "Incorrect funnel Id!", success: false });
+        }
         let formBody = "<html></html>"
-        let title = "Form Title"
-		let created_by = new mongoose.Types.ObjectId
-
+        //let title = "Form Title"
+        let created_by = new mongoose.Types.ObjectId
+        let newFunnelId = mongoose.Types.ObjectId(funnelId)
         let form = new Form
-        form.title = title
+        form.title = req.body.title
         form.formBody = formBody
         form.created_by = created_by
+        form.funnelId = newFunnelId
+        form.userId = userId;
         form.formData = JSON.stringify({
-                         "gjs-css":"",
-                         "gjs-html":"",
-                         "gjs-assets":"[]",
-                         "gjs-styles":"",
-                         "gjs-components":"[ {\"tagName\":\"h1\",\"type\":\"text\",\"attributes\":{\"id\":\"imc6s\"},\"components\":[ {\"type\":\"textnode\",\"content\":\"Form\"} ]}]"
-                        })
+            "gjs-css": "",
+            "gjs-html": "",
+            "gjs-assets": "[]",
+            "gjs-styles": "",
+            "gjs-components": "[]"
+        })
         //'{{"tagName":"h5","type":"text","attributes":{"id":"imc6s"},"components":[{"type":"textnode","content":"Form"}]}}'
-        form.save();
-
+        await form.save();
+        //console.log(data)
+        if (funnel.forms.length === 0) {
+            await Funnel.updateOne({ _id: funnelId }, { $push: { forms: mongoose.Types.ObjectId(form._id) } });
+        } else {
+            await Funnel.updateOne({ _id: newFunnelId }, { $push: { forms: mongoose.Types.ObjectId(form._id) } })
+        }
         res.status(200).json({
             success: true,
             message: "Form created successfully",
             formId: form._id,
-	        data: "data test"
+            data: "data test"
         })
     }
-    catch(error){
-		console.log("Error:",error)
+    catch (error) {
+        console.log("Error:", error)
         res.status(500).json({
             success: false,
             message: "Error creating form"
@@ -125,11 +224,13 @@ exports.createForm = async (req,res) => {
     }
 }
 
-exports.markAsFavourite = async (req,res) => {
-    try{
-        let formId = req.params.id 
-        console.log("formId::",formId)
-        let form = await Form.findOne({_id: formId})
+
+
+exports.markAsFavourite = async (req, res) => {
+    try {
+        let formId = req.params.id
+        console.log("formId::", formId)
+        let form = await Form.findOne({ _id: formId })
         form.favourite = !form.favourite
         await form.save()
 
@@ -137,9 +238,9 @@ exports.markAsFavourite = async (req,res) => {
             success: true,
             message: "Form updated successfully"
         })
-       
+
     }
-    catch(error){
+    catch (error) {
         res.status(500).json({
             success: false,
             message: "Error updating form"
@@ -147,9 +248,9 @@ exports.markAsFavourite = async (req,res) => {
     }
 }
 
-exports.getFavourites = async(req,res) => {
-    try{
-        let forms = await Form.find({favourite: true})
+exports.getFavourites = async (req, res) => {
+    try {
+        let forms = await Form.find({ favourite: true })
 
         res.status(200).json({
             success: true,
@@ -157,7 +258,7 @@ exports.getFavourites = async(req,res) => {
             forms: forms
         })
     }
-    catch(error){
+    catch (error) {
         res.status(500).json({
             success: false,
             message: "Error marking form as favourite"
@@ -165,11 +266,11 @@ exports.getFavourites = async(req,res) => {
     }
 }
 
-exports.moveToTrash = async (req,res) => {
-    try{
-        
-        let formId = req.params.id 
-        let form = await Form.findOne({_id: formId})
+exports.moveToTrash = async (req, res) => {
+    try {
+
+        let formId = req.params.id
+        let form = await Form.findOne({ _id: formId })
         form.deleted = !form.deleted
         await form.save()
 
@@ -178,7 +279,7 @@ exports.moveToTrash = async (req,res) => {
             message: "Form deleted successfully"
         })
     }
-    catch(error){
+    catch (error) {
         console.log("mtt:", error)
         res.status(500).json({
             success: false,
@@ -187,18 +288,21 @@ exports.moveToTrash = async (req,res) => {
     }
 }
 
-exports.deleteForm = async (req,res) => {
-    try{
-        let formId = req.params.id 
-        let form = await Form.findOne({_id: formId})
-        await form.delete()
+exports.deleteForm = async (req, res) => {
+    try {
+        let formId = req.params.id;
+        formId = mongoose.Types.ObjectId(formId)
+        let form = await Form.findOne({ _id: formId });
+        let funnelId = mongoose.Types.ObjectId(form.funnelId);
+        await Funnel.updateOne({ _id: funnelId }, { $pull: { 'forms': formId } });
 
+        await form.delete()
         res.status(200).json({
             success: true,
             message: "Form deleted successfully"
         })
     }
-    catch(error){
+    catch (error) {
         res.status(500).json({
             success: false,
             message: "Error deleting form"
@@ -206,11 +310,11 @@ exports.deleteForm = async (req,res) => {
     }
 }
 
-exports.archiveForm = async (req,res) => {
-    try{
-        let formId = req.params.id 
-        
-        let form = await Form.findOne({_id: formId})
+exports.archiveForm = async (req, res) => {
+    try {
+        let formId = req.params.id
+
+        let form = await Form.findOne({ _id: formId })
         form.archived = !form.archived
         await form.save()
 
@@ -219,7 +323,7 @@ exports.archiveForm = async (req,res) => {
             message: "Form updated successfully"
         })
     }
-    catch(error){
+    catch (error) {
         res.status(500).json({
             success: false,
             message: "Error updating form"
@@ -227,14 +331,14 @@ exports.archiveForm = async (req,res) => {
     }
 }
 
-exports.updateFormData = async (req,res) => {
-    try{
+exports.updateFormData = async (req, res) => {
+    try {
         let formId = req.params.id
-        let update = {html: req.body.html, css: req.body.css, js: req.body.js, data: req.body.data}
+        let update = { html: req.body.html, css: req.body.css, js: req.body.js, data: req.body.data }
         console.log("formId-2-settings:", formId)
 
-        let form = await Form.findOne({_id: formId})
-       
+        let form = await Form.findOne({ _id: formId })
+
         form.formBody = req.body.html
         form.formStyle = req.body.css
         form.formScript = req.body.js
@@ -247,8 +351,8 @@ exports.updateFormData = async (req,res) => {
         })
 
     }
-    catch(error){
-       
+    catch (error) {
+
         res.status(500).json({
             success: false,
             message: "Error updating form"
@@ -256,19 +360,19 @@ exports.updateFormData = async (req,res) => {
     }
 }
 
-exports.updateFormSettings = async (req,res) => {
-    try{
+exports.updateFormSettings = async (req, res) => {
+    try {
         let formId = req.params.id
-        let update = {title: req.body.title, enable: req.body.enabled}
+        let update = { title: req.body.title, enable: req.body.enabled }
         console.log("updateSettings:", formId, update)
         let enabled = null;
-        if(req.body.enabled == "enabled"){
+        if (req.body.enabled == "enabled") {
             enabled = true
-        }else{
+        } else {
             enabled = false
         }
 
-        let form = await Form.findOne({_id: formId})
+        let form = await Form.findOne({ _id: formId })
         form.title = req.body.title
         form.enabled = enabled
         await form.save()
@@ -279,8 +383,8 @@ exports.updateFormSettings = async (req,res) => {
         })
 
     }
-    catch(error){
-        console.log("uError:",error)
+    catch (error) {
+        console.log("uError:", error)
         res.status(500).json({
             success: false,
             message: "Error updating form"
@@ -290,11 +394,11 @@ exports.updateFormSettings = async (req,res) => {
 
 
 
-exports.getForms = async (req,res,next) => {
-    try{
+exports.getForms = async (req, res, next) => {
+    try {
         let uforms = await Form.find()
-		//console.log("getForms:", uforms)
-        if(uforms){
+        //console.log("getForms:", uforms)
+        if (uforms) {
             res.status(200).json({
                 success: true,
                 message: "Forms fetched successfully",
@@ -302,8 +406,8 @@ exports.getForms = async (req,res,next) => {
             })
         }
     }
-    catch(error){
-		console.log("error:",error)
+    catch (error) {
+        console.log("error:", error)
         res.status(500).json({
             success: false,
             message: "Error fetching forms"
@@ -311,124 +415,190 @@ exports.getForms = async (req,res,next) => {
     }
 }
 
-exports.storeForm = async(req,res,next) => {
-	try{
-	     console.log("storeForm-1:::", req.body)
-             res.status(200).json({test: "store form"})
-        }
-        catch(error){
-            console.log("storeForm::", error)
-	    res.status(500).json({
-            	success: false,
-            	message: "Error storing form"
-            })
-        }
+exports.storeForm = async (req, res, next) => {
+    try {
+        console.log("storeForm-1:::", req.body)
+        res.status(200).json({ test: "store form" })
+    }
+    catch (error) {
+        console.log("storeForm::", error)
+        res.status(500).json({
+            success: false,
+            message: "Error storing form"
+        })
+    }
 }
 
-exports.loadForm = async(req,res,next) => {
-	try{
-	     console.log("loadForm:::", req.body)
-             res.status(200).json({test: "load form"})
-        }
-        catch(error){
-            console.log("loadForm::", error)
-	    res.status(500).json({
-            	success: false,
-            	message: "Error loading form"
-            })
-        }
+exports.loadForm = async (req, res, next) => {
+    try {
+        console.log("loadForm:::", req.body)
+        res.status(200).json({ test: "load form" })
+    }
+    catch (error) {
+        console.log("loadForm::", error)
+        res.status(500).json({
+            success: false,
+            message: "Error loading form"
+        })
+    }
 }
 
-exports.getForm = async(req,res,next)=>{
-	try{
-		let formId = req.params.id
-		let uform = await Form.findOne({_id: formId})
-		if(uform){
-			res.status(200).json({
-		          success: true,
-		         message: "Form fetched successfully",
-		         uform: uform
-		       })
-		}
-	}
-	catch(error){
-		console.log("error:",error)
+exports.getForm = async (req, res, next) => {
+    try {
+        let formId = req.params.id
+        let uform = await Form.findOne({ _id: formId })
+        if (uform) {
+            res.status(200).json({
+                success: true,
+                message: "Form fetched successfully",
+                uform: uform
+            })
+        }
+    }
+    catch (error) {
+        console.log("error:", error)
         res.status(500).json({
             success: false,
             message: "Error fetching form:id"
         })
-	}
+    }
 }
 
 
-exports.processForm = async(req,res) => {
-    
-    try{
-	    console.log("Processing Form")
-	    console.log("Req.body::", req.body)
+exports.processForm = async (req, res) => {
 
-	    let formId = req.params.id
-	    let userId = req.params.userId
+    try {
+        console.log("Processing Form")
+        console.log("Req.body::", req.body)
 
-	    //Contact Info
-	    let memberType = req.body.member_type
-	    let memberId = req.body.memberId
+        let formId = req.params.id
+        let userId = req.params.userId
 
-	    // Member Info
-	    let firstName = req.body.first_name
-	    let lastName = req.body.last_name
-	    let gender = req.body.gender
-	    let dob = req.body.dob
-	    let age = req.body.age
-	    let street = req.body.street
-	    let city = req.body.city
-	    let state = req.body.state
-	    let zipCode = req.body.zipcode
-	    let country = req.body.country
-	    let phone1 = req.body.phone
-	    let phone2 = req.body.phone2
-	    let email = req.body.email
+        //Contact Info
+        let memberType = req.body.member_type
+        let memberId = req.body.memberId
 
-	    //Buyer Info
-	    let buyerFirstName = req.body.first_name2
-	    let buyerLastName = req.body.last_name2
-	    let buyerGender = req.body.gender2
-	    let buyerDob = req.body.dob2
-	    let buyerAge = req.body.age2
+        // Member Info
+        let firstName = req.body.first_name
+        let lastName = req.body.last_name
+        let gender = req.body.gender
+        let dob = req.body.dob
+        let age = req.body.age
+        let street = req.body.street
+        let city = req.body.city
+        let state = req.body.state
+        let zipCode = req.body.zipcode
+        let country = req.body.country
+        let phone1 = req.body.phone
+        let phone2 = req.body.phone2
+        let email = req.body.email
 
-	    //custom info
-	    let leadsTracing = req.body.leads
+        //Buyer Info
+        let buyerFirstName = req.body.first_name2
+        let buyerLastName = req.body.last_name2
+        let buyerGender = req.body.gender2
+        let buyerDob = req.body.dob2
+        let buyerAge = req.body.age2
 
-	    let form = await Form.findOne({_id: formId})
-	    form.submission += 1
-	    await form.save()
+        //custom info
+        let leadsTracing = req.body.leads
 
-	    let newmember = await addmember
-	    newmember.studentType = memberType
-	    newmember.firstName = firstName
-	    newmember.lastName = lastName
-	    newmember.dob = dob
-	    newmember.age = age
-	    newmember.gender = gender
-	    newmember.email = email
-	    newmember.primaryPhone = phone1
-	    newmember.secondaryPhone = phone2
-	    newmember.street = street
-	    newmember.city = city
-	    newmember.state = state
-	    newmember.country = country
-	    newmember.zipPostalCode = zipCode
+        let form = await Form.findOne({ _id: formId })
+        form.submission += 1
+        await form.save()
 
-	    newmember.buyerInfo.firstName = buyerFirstName
-	    newmember.buyerInfo.lastName = buyerLastName
-	    newmember.buyerInfo.gender = buyerGender
-	    newmember.buyerInfo.dob = buyerDob
-	    newmember.buyerInfo.age = buyerAge
+        let newmember = await addmember
+        newmember.studentType = memberType
+        newmember.firstName = firstName
+        newmember.lastName = lastName
+        newmember.dob = dob
+        newmember.age = age
+        newmember.gender = gender
+        newmember.email = email
+        newmember.primaryPhone = phone1
+        newmember.secondaryPhone = phone2
+        newmember.street = street
+        newmember.city = city
+        newmember.state = state
+        newmember.country = country
+        newmember.zipPostalCode = zipCode
 
-	    await newmember.save()  
-     }catch(error){
-         console.log("Err:",error)
-     }  
-    
+        newmember.buyerInfo.firstName = buyerFirstName
+        newmember.buyerInfo.lastName = buyerLastName
+        newmember.buyerInfo.gender = buyerGender
+        newmember.buyerInfo.dob = buyerDob
+        newmember.buyerInfo.age = buyerAge
+
+        await newmember.save()
+    } catch (error) {
+        console.log("Err:", error)
+    }
+
 }
 
+const checkSbUserIdId = async (funnelId) => {
+    try {
+        let subUsersRole = await sub_users_role.findOne({ _id: funnelId });
+        if (subUsersRole) {
+            return subUsersRole;
+        }
+        return false;
+    } catch (err) {
+        console.log(err);
+    }
+
+}
+
+exports.createDigitalForm = async (req, res) => {
+    let userId = req.params.userId;
+    let userSectionId = req.body.userSectionId;
+    try {
+        if (req.params.form == "digital") {
+            let subUserId = req.body.subUserId;
+            let subUser = await checkSbUserIdId(subUserId);
+            if (!subUser) {
+                return res.send({ msg: "Incorrect subuser Id!", success: false });
+            }
+            let formBody = "<html></html>"
+            let title = "Form Title"
+            let created_by = new mongoose.Types.ObjectId
+            let employee_form = new emoloyeeForm
+            employee_form.title = title
+            employee_form.formBody = formBody
+            employee_form.created_by = created_by
+            employee_form.userId = userId
+            employee_form.formData = JSON.stringify({
+                "gjs-css": "",
+                "gjs-html": "",
+                "gjs-assets": "[]",
+                "gjs-styles": "",
+                "gjs-components": "[ {\"tagName\":\"h1\",\"type\":\"text\",\"attributes\":{\"id\":\"imc6s\"},\"components\":[ {\"type\":\"textnode\",\"content\":\"Form\"} ]}]"
+            })
+            await employee_form.save();
+            await sub_users_role.updateOne({ _id: subUserId }, { $push: { digitalId: mongoose.Types.ObjectId(employee_form._id) } });
+            res.status(200).json({
+                success: true,
+                message: "Form created successfully",
+                formId: employee_form._id,
+                data: "data test"
+            })
+        } else if (req.params.form == "document") {
+            let documentData = await userSectionFiles.find({ _id: { $in: userSectionId } })
+            documentData.map(async (ele) => {
+                await user.updateOne({ _id: userId }, { $push: { employeeId: mongoose.Types.ObjectId(ele._id) } });
+            })
+            res.status(200).json({
+                success: true,
+                message: "document  created successfully",
+                data: "data test"
+            })
+        }
+    }
+    catch (error) {
+        console.log("Error:", error)
+        res.status(500).json({
+            success: false,
+            message: "Error creating form"
+        })
+    }
+}

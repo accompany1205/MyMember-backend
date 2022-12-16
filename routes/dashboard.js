@@ -29,11 +29,11 @@ router.get(
 	getDateRangePaymentDue
 );
 
-router.get(
-	'/dashboard/payment-due-states/:userId',
-	requireSignin,
-	getDateRangePaymentDue
-);
+// router.get(
+// 	'/dashboard/payment-due-states/:userId',
+// 	requireSignin,
+// 	getDateRangePaymentDue
+// );
 
 router.get(
 	'/dashboard/student-count/:userId',

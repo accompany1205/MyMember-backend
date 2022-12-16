@@ -101,10 +101,10 @@ async function promoteStudents(registerdId, current_rank_name, next_rank_name) {
     let currentImage = data ? data.rank_image : "no data";
     let rank_order = data ? data.rank_order : "no data";
     let currentprogramName = data.programName
-    let currentday_to_ready = data.day_to_readyu
+    let currentday_to_ready = data.day_to_ready
     if (!registeredData.isDeleted) {
 
-        await RegisterdForTest.findOneAndUpdate({
+        await RegisterdForTest.updateOne({
             _id: registerdId
         }, {
             isDeleted: true,
@@ -113,12 +113,12 @@ async function promoteStudents(registerdId, current_rank_name, next_rank_name) {
             next_rank_img: nextImage,
             current_rank_img: currentImage
         });
-        await Member.findByIdAndUpdate({ _id: studentId },
+        await Member.updateOne({ _id: studentId },
             { $set: { current_rank_name: current_rank_name, next_rank_name: next_rank_name, rank_order: rank_order, current_rank_img: currentImage, next_rank_name: next_rank_name, next_rank_img: nextImage } });
         studentRankInfo = await student_info_Rank.findOne({ "studentId": studentId, "programName": currentprogramName })
 
         if (studentRankInfo !== null) {
-            await student_info_Rank.findOneAndUpdate({ studentId: studentId, programName: currentprogramName }, { rank_name: current_rank_name, day_to_ready: currentday_to_ready, rank_image: currentImage })
+            await student_info_Rank.updateOne({ studentId: studentId, programName: currentprogramName }, { rank_name: current_rank_name, day_to_ready: currentday_to_ready, rank_image: currentImage })
         } else {
             const resp = new student_info_Rank({
                 programName: currentprogramName,

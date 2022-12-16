@@ -16,12 +16,15 @@ const {getForms,
        loadForm,
        favouriteForm,
        archiveForm,
-       processStripeConnect
+       processStripeConnect,
+       saveFunnelContact,
+       getFunnelContact,
+       createDigitalForm
     } = require("../../controllers/builder/builder")
 
 const { requireSignin, isAuth, verifySchool } = require("../../controllers/auth");
 
-router.use((req,res,next) => {
+router.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
@@ -29,13 +32,18 @@ router.use((req,res,next) => {
 
 router.post("/verifyStripe", requireSignin, processStripeConnect)
 
+//form-contact
+router.post("/contact/:formId", saveFunnelContact);
+router.get("/contact/:funnelId/:page_no/:per_page", requireSignin, getFunnelContact);
+
+
 /**
  * @swagger
  * /api/forms/test:
  *   get:
  *     description: api test
  */
-router.get('/test', (req,res)=>{
+router.get('/test', (req, res) => {
     res.json({
         success: false,
         message: "API Test Successful"
@@ -48,7 +56,7 @@ router.get('/test', (req,res)=>{
  *   get:
  *     description: process form
  */
- router.get('/process/newstudent/:id/:userId', verifySchool, processForm)
+router.get('/process/newstudent/:id/:userId', verifySchool, processForm)
 
 /**
  * @swagger
@@ -62,7 +70,7 @@ router.get('/test', (req,res)=>{
  *       200:
  *         description: Created
  */
-router.get('/new', requireSignin, createForm)
+router.post('/new/:userId', requireSignin, createForm)
 
 /**
  * @swagger
@@ -116,13 +124,13 @@ router.patch('/update/settings/:id', requireSignin, updateFormSettings)
  *       200:
  *         descripton: update form
  */
- router.patch('/update/data/:id', requireSignin, updateFormData)
+router.patch('/update/data/:id', requireSignin, updateFormData)
 
- 
- //router.patch('/favourite/:id', favouriteForm)
 
- router.patch('/archive/:id', requireSignin, archiveForm)
- 
+//router.patch('/favourite/:id', favouriteForm)
+
+router.patch('/archive/:id', requireSignin, archiveForm)
+
 
 /**
  * @swagger
@@ -169,7 +177,7 @@ router.patch('/trash/:id', requireSignin, moveToTrash)
  *           type: String
  *         required: true
  */
-router.patch('/favourite/:id',requireSignin, markAsFavourite)
+router.patch('/favourite/:id', requireSignin, markAsFavourite)
 
 /**
  * @swagger
@@ -184,7 +192,7 @@ router.patch('/favourite/:id',requireSignin, markAsFavourite)
  *           type: String
  *         required: true
  */
- router.post('/favourites', requireSignin, getFavourites)
+router.post('/favourites', requireSignin, getFavourites)
 
 /**
  * @swagger
@@ -193,7 +201,7 @@ router.patch('/favourite/:id',requireSignin, markAsFavourite)
  *     summary: store form
  *     description: store form
  */
- router.post('/store/:id', requireSignin, storeForm)
+router.post('/store/:id', requireSignin, storeForm)
 
 /**
  * @swagger
@@ -202,7 +210,7 @@ router.patch('/favourite/:id',requireSignin, markAsFavourite)
  *     summary: load form
  *     description: load form
  */
- router.get('/load/:id', requireSignin, loadForm)
+router.get('/load/:id', requireSignin, loadForm)
 
 /**
  * @swagger
@@ -220,5 +228,6 @@ router.patch('/favourite/:id',requireSignin, markAsFavourite)
  */
 router.get('/:id', requireSignin, getForm)
 
+router.post('/digitalFrom/:userId/:form', requireSignin, createDigitalForm)
 
 module.exports = router;

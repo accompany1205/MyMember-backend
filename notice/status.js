@@ -756,7 +756,7 @@ async function DailyTriggeredMails() {
                 // console.log(resp.n)
               })
               .catch((err) => {
-                console.log(err);
+                console.log(err); 
               });
           })
         );
@@ -904,12 +904,13 @@ const chargeEmiWithStripeCron = async () => {
 };
 
 // DailyTriggeredCrons();
-module.exports = cron.schedule("* 1 * * * *", () => {
+module.exports = cron.schedule("0 13 * * *", () => {
   collectionModify(),
     activeMembership(),
-    expiredMembership(),
-    chargeEmiWithStripeCron(),
-    expiredMembership();
+
+    expiredMembership()
+    // chargeEmiWithStripeCron();
+
 });
 module.exports = cron.schedule(`*/1 * * * *`, () => emailCronFucntionality());
 

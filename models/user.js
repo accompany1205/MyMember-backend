@@ -162,12 +162,20 @@ const userSchema = new schema(
             type: Boolean,
             default: false
         },
+        employeeId:[{
+            type: schema.Types.ObjectId,
+            ref:'usersectionfiles',
+            default:[]
+        }],
         isLocation: {
             type: Boolean,
             default: false
         },
         location_address: {
             type: String
+        },
+        isLogin: {
+            type: Date
         },
         zipPostal_code: {
             type: String,
@@ -298,7 +306,27 @@ const userSchema = new schema(
             type: Boolean,
             default: true
         },
-        birthday_setting: {
+        thisWeek_birthday_setting: {
+            type: Boolean,
+            default: false
+        },
+        thisMonth_birthday_setting: {
+            type: Boolean,
+            default: false
+        },
+        lastMonth_birthday_setting: {
+            type: Boolean,
+            default: false
+        },
+        nextSixtyDays_birthday_setting: {
+            type: Boolean,
+            default: false
+        },
+        nextNintyDays_birthday_setting: {
+            type: Boolean,
+            default: false
+        },
+        event_notification_setting: {
             type: Boolean,
             default: true
         },
@@ -314,10 +342,27 @@ const userSchema = new schema(
         is_Already_Purchase: {
             type: Boolean,
         },
-        userPakages: {
-            type: schema.Types.ObjectId,
-            ref: "User_pakages"
-        }
+        thirtydays_expire_notification_setting_renewal: {
+            type: Boolean,
+            default: false
+        },
+        sixtydays_expire_notification_setting_renewal: {
+            type: Boolean,
+            default: false
+        },
+        nintydays_expire_notification_setting_renewal: {
+            type: Boolean,
+            default: false
+        },
+        expire_notification_setting: {
+            type: Boolean,
+            default: false
+        },
+        frozen_notification_setting: {
+            type: Boolean,
+            default: false
+        },
+
     },
     { timestamps: true }
 );
