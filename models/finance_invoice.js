@@ -14,6 +14,10 @@ const Finance_invoiceSchema = new schema(
     project: {
       type: String,
     },
+    amount: {
+      type: Number,
+      required: true,
+    },
     invoice_date: {
       type: Date,
       required: true,
