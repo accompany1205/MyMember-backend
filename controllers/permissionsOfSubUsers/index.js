@@ -1,6 +1,9 @@
 const SubUsersRole = require("../../models/sub_user_roles");
 const RolesList = require("../../models/rolesList")
 const cloudUrl = require('../../gcloud/imageUrl');
+const From = require('../../models/builder/Form')
+const userSectionFiles = require("../../models/userSectionFiles")
+const Task = require('../../models/task')
 
 exports.create = async (req, res) => {
     try {
@@ -181,16 +184,38 @@ exports.deleteSubUserInfo = (req, res) => {
 
 // **** Roles List ****
 
-exports.createRolesList = (req, res) => {
+exports.createRolesList = async (req, res) => {
     const userId = req.params.userId;
+    let digital = await From.exists({ _id: { $in: req.body.digitalId } });
+    let document = await userSectionFiles.exists({ _id: { $in: req.body.documentId } });
+    let task = await Task.exists({ _id: { $in: req.body.taskId } });
+    if (digital) {
+        digital = req.body.digitalId
+    } else {
+        digital = []
+    }
+    if (document) {
+        document = req.body.documentId
+    } else {
+        document = []
+    }
+    if (task) {
+        task = req.body.taskId
+    } else {
+        task = []
+    }
     try {
         var RolesListObj = new RolesList(req.body)
         RolesListObj.userId = userId;
+        RolesListObj.digitalId = digital;
+        RolesListObj.documentId = document;
+        RolesListObj.taskId = task;
         RolesListObj.save((err, data) => {
             if (err) {
                 res.send({ 'msg': err.message, 'success': false })
             }
             else {
+
                 res.send({ 'msg': 'Roles-List info add successfully.', 'success': true })
             }
         })
@@ -216,7 +241,7 @@ exports.updateRolesList = (req, res) => {
                             }
                             else {
                                 res.send({ 'msg': 'Roles List info is update successfully', 'success': true })
-                            }     
+                            }
                         })
 
                 }
@@ -255,4 +280,79 @@ exports.deleteRoleInfo = (req, res) => {
     } catch (error) {
         res.send({ 'msg': error.message, 'success': false });
     }
+}
+
+
+exports.getRolls = async (req, res) => {
+    let userId = req.params.userId
+    let documentData = await RolesList.aggregate([
+        {
+            $match: {
+                userId: userId
+            }
+        },
+        {
+            $project:{
+                taskId:0,
+                digitalId:0
+            }
+        },
+        { $unwind: "$documentId" },
+        {
+            $lookup: {
+                from: "usersectionfiles",
+                localField: "documentId",
+                foreignField: "_id",
+                as: "rolesData"
+            }
+        }
+    ])
+
+    let digitalData=await RolesList.aggregate([
+        {
+            $match: {
+                userId: userId
+            }
+        },
+        {
+            $project:{
+                taskId:0,
+                documentId:0
+            }
+        },
+        { $unwind: "$digitalId" },
+        {
+            $lookup: {
+                from: "Form",
+                localField: "digitalId",
+                foreignField: "_id",
+                as: "rolesData"
+            }
+        }
+    ])
+
+    let taskData=await RolesList.aggregate([
+        {
+            $match: {
+                userId: userId
+            }
+        },
+        {
+            $project:{
+                digitalId:0,
+                documentId:0
+            }
+        },
+        { $unwind: "$taskId" },
+        {
+            $lookup: {
+                from: "Task",
+                localField: "taskId",
+                foreignField: "_id",
+                as: "rolesData"
+            }
+        }
+    ])
+
+    res.send({ "documentData": documentData,"digitalData": digitalData,"taskData": taskData, "success": true });
 }

@@ -1,7 +1,11 @@
 const Form = require("../../models/builder/Form.js")
+const emoloyeeForm = require('../../models/employeeForm')
 const addmember = require("../../models/addmember.js")
 const Funnel = require("../../models/builder/funnel.js")
+const sub_users_role = require("../../models/sub_user_roles")
 const FunnelContact = require("../../models/funnelContact.js");
+const userSectionFiles = require("../../models/userSectionFiles")
+const user = require("../../models/user")
 const mongoose = require("mongoose")
 
 //const stripe = require('stripe')('sk_test_v9')
@@ -150,7 +154,7 @@ exports.getFunnelContact = async (req, res) => {
             limit: per_page,
             skip: per_page * page_no,
         };
-        FunnelContact.find({funnelId: funnelId, isDeleted: false })
+        FunnelContact.find({ funnelId: funnelId, isDeleted: false })
             .sort({
                 createdAt: -1,
             })
@@ -532,3 +536,69 @@ exports.processForm = async (req, res) => {
 
 }
 
+const checkSbUserIdId = async (funnelId) => {
+    try {
+        let subUsersRole = await sub_users_role.findOne({ _id: funnelId });
+        if (subUsersRole) {
+            return subUsersRole;
+        }
+        return false;
+    } catch (err) {
+        console.log(err);
+    }
+
+}
+
+exports.createDigitalForm = async (req, res) => {
+    let userId = req.params.userId;
+    let userSectionId = req.body.userSectionId;
+    try {
+        if (req.params.form == "digital") {
+            let subUserId = req.body.subUserId;
+            let subUser = await checkSbUserIdId(subUserId);
+            if (!subUser) {
+                return res.send({ msg: "Incorrect subuser Id!", success: false });
+            }
+            let formBody = "<html></html>"
+            let title = "Form Title"
+            let created_by = new mongoose.Types.ObjectId
+            let employee_form = new emoloyeeForm
+            employee_form.title = title
+            employee_form.formBody = formBody
+            employee_form.created_by = created_by
+            employee_form.userId = userId
+            employee_form.formData = JSON.stringify({
+                "gjs-css": "",
+                "gjs-html": "",
+                "gjs-assets": "[]",
+                "gjs-styles": "",
+                "gjs-components": "[ {\"tagName\":\"h1\",\"type\":\"text\",\"attributes\":{\"id\":\"imc6s\"},\"components\":[ {\"type\":\"textnode\",\"content\":\"Form\"} ]}]"
+            })
+            await employee_form.save();
+            await sub_users_role.updateOne({ _id: subUserId }, { $push: { digitalId: mongoose.Types.ObjectId(employee_form._id) } });
+            res.status(200).json({
+                success: true,
+                message: "Form created successfully",
+                formId: employee_form._id,
+                data: "data test"
+            })
+        } else if (req.params.form == "document") {
+            let documentData = await userSectionFiles.find({ _id: { $in: userSectionId } })
+            documentData.map(async (ele) => {
+                await user.updateOne({ _id: userId }, { $push: { employeeId: mongoose.Types.ObjectId(ele._id) } });
+            })
+            res.status(200).json({
+                success: true,
+                message: "document  created successfully",
+                data: "data test"
+            })
+        }
+    }
+    catch (error) {
+        console.log("Error:", error)
+        res.status(500).json({
+            success: false,
+            message: "Error creating form"
+        })
+    }
+}

@@ -63,6 +63,16 @@ const userSchema = new schema(
             trim: true,
             maxlength: 100
         },
+        digitalId:[{
+            type: schema.Types.ObjectId,
+            ref:'Form',
+            default:[]
+        }],
+        documentId:[{
+            type: schema.Types.ObjectId,
+            ref:'usersectionfiles',
+            default:[]
+        }],
         roles: [{
             dashboard: {
                 type: Boolean,

@@ -38,7 +38,7 @@ exports.updateFile = async (req, res) => {
         if (req.file) {
             let file = await cloudUrl.imageUrl(req.file);
             let updatedFolderData = { ...req.body, SettingFile: file };
-            await userSettingFile.findByIdAndUpdate(userSectionFiles , { $set: updatedFolderData }).then(data => {
+            await userSettingFile.findByIdAndUpdate(userSectionFiles, { $set: updatedFolderData }).then(data => {
                 res.send({
                     msg: "folder updated!", success: true
                 })
@@ -48,7 +48,7 @@ exports.updateFile = async (req, res) => {
                 })
             })
         } else {
-            await userSettingFile.findByIdAndUpdate( userSectionFiles , { $set: updatedData })
+            await userSettingFile.findByIdAndUpdate(userSectionFiles, { $set: updatedData })
                 .then(data => {
                     res.send({
                         msg: "folder updated!", success: true, data
@@ -67,7 +67,7 @@ exports.updateFile = async (req, res) => {
 exports.getFile = async (req, res) => {
     let userSectionFiles = req.params.userSectionFiles;
     try {
-        await userSettingFile.findById({_id:userSectionFiles}).then(data => {
+        await userSettingFile.findById({ _id: userSectionFiles }).then(data => {
             res.send({
                 msg: "getData!", success: true, data
             })
@@ -95,7 +95,26 @@ exports.getAll = async (req, res) => {
             })
         }).catch(err => {
             res.send({
-                msg:"no data!", success:false
+                msg: "no data!", success: false
+            })
+        })
+    } catch (err) {
+        res.send({ error: err.message.replace(/\"/g, ""), success: false })
+    }
+}
+
+exports.getAllUserData = async (req, res) => {
+    let userId = req.params.userId;
+    try {
+        await userSettingFile.find(
+            { userId: userId }
+        ).then(data => {
+            res.send({
+                msg: "get data!", success: true, data
+            })
+        }).catch(err => {
+            res.send({
+                msg: "no data!", success: false
             })
         })
     } catch (err) {
