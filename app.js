@@ -203,6 +203,7 @@ const myWallet = require("./routes/Mywallet")
 
 // livechat
 const livechat = require("./routes/livechat");
+const livechatsetting = require("./routes/livechat_widget_setting");
 
 // ticket
 const ticket = require("./routes/ticket.route");
@@ -431,7 +432,7 @@ app.use('/v1', VoiceCall)
 
 // livechat routes
 app.use("/api", livechat);
-
+app.use("/api", livechatsetting);
 // form builder routes
 app.use("/api/forms", builderRoutes);
 app.use("/api/builder/view", viewFormRoutes);
