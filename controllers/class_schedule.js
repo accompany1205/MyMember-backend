@@ -16,23 +16,44 @@ exports.Create = async (req, res) => {
     const dates = dateRange(startDate, endDate);
     let allAttendance = [];
     series_id = mongo.Types.ObjectId();
-    for (let index in dates) {
-      let date = moment(dates[index], "MM/DD/YYYY").format("MM/DD/YYYY");
-      let dayName = moment(new Date(date)).format("dddd").toLowerCase();
-      if (repeat_weekly_on.includes(dayName)) {
-        let NewEvent = {
-          ...reqBody,
-          series_id,
-          start_date: date,
-          end_date: date,
-          wholeSeriesEndDate: endDate,
-          wholeSeriesStartDate: startDate,
-        };
-        allAttendance.push(NewEvent);
+    if (dates.length > 1) {
+      for (let index in dates) {
+        let date = moment(dates[index], "MM/DD/YYYY").format("MM/DD/YYYY");
+        let dayName = moment(new Date(date)).format("dddd").toLowerCase();
+        console.log(dayName, "dayName");
+        console.log(repeat_weekly_on, "repeat_weekly_on");
+        if (repeat_weekly_on.includes(dayName)) {
+          let NewEvent = {
+            ...reqBody,
+            series_id,
+            start_date: date,
+            end_date: date,
+            wholeSeriesEndDate: endDate,
+            wholeSeriesStartDate: startDate,
+          };
+          allAttendance.push(NewEvent);
+        }
       }
+    } else if (dates.length === 1) {
+      let date = moment(dates[0], "MM/DD/YYYY").format("MM/DD/YYYY");
+      let NewEvent = {
+        ...reqBody,
+        start_date: date,
+        end_date: date,
+        series_id,
+        wholeSeriesEndDate: endDate,
+        wholeSeriesStartDate: startDate,
+      };
+      allAttendance.push(NewEvent);
     }
-    await class_schedule.insertMany(allAttendance);
-    res.send({ msg: "Class schedule succefully!", success: true });
+    await class_schedule
+      .insertMany(allAttendance)
+      .then((result) => {
+        res.send({ msg: "Class schedule succefully!", success: true });
+      })
+      .catch((error) => {
+        res.send({ error: error.message.replace(/\"/g, ""), success: false });
+      });
   } catch (error) {
     res.send({ error: error.message.replace(/\"/g, ""), success: false });
   }
@@ -54,33 +75,27 @@ exports.read = async (req, res) => {
 
 exports.readSchedule = async (req, res) => {
   let startDate = req.params.dates;
-  let newMonth = startDate.slice(0, 2);
-  let newDate = startDate.slice(3, 5);
-  let newYear = startDate.slice(-4);
-  let updateM = ("0" + (parseInt(newMonth) + 1)).slice(-2);
-  let finalDate;
-  if (newMonth === "12") {
-    let newupdateM = "12";
-    let updateY = "" + (parseInt(newYear));
-    finalDate = `${newupdateM}/${31}/${updateY}`;
-    console.log(finalDate)
-  } else {
-    finalDate = `${updateM}/${newDate}/${newYear}`;
-    console.log(finalDate)
-  }
+
+  let monthStartDate = moment(startDate).startOf("month").format("MM/DD/YYYY");
+  let monthEndDate = moment(startDate).endOf("month").format("MM/DD/YYYY");
+
   try {
-    let parDate = startDate.split("-");
-    startDate = parDate.join("/");
-    console.log(startDate)
-    let result=await class_schedule
-      .find({
+    class_schedule.find({
         isActive: true,
         $and: [
           { userId: req.params.userId },
-          { start_date: { $gte: startDate, $lt: finalDate } },
+          { start_date: { $gte: monthStartDate, $lt: monthEndDate } },
         ],
       })
-      return res.send({ success: true, data: result });
+
+      .then((result) => {
+        return res.send({ success: true, data: result });
+      })
+      .catch((err) => {
+        console.log(err, "err");
+        return res.send({ msg: "No data!", success: false });
+      });
+
   } catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false });
   }
@@ -100,8 +115,8 @@ exports.class_schedule_Info = (req, res) => {
             class_name: 1,
             start_date: 1,
             end_date: 1,
-            start_time:1,
-            end_time:1,
+            start_time: 1,
+            end_time: 1,
             program_color: 1,
             class_attendanceArray: 1,
           },
@@ -120,8 +135,8 @@ exports.class_schedule_Info = (req, res) => {
             class_name: 1,
             start_date: 1,
             end_date: 1,
-            start_time:1,
-            end_time:1,
+            start_time: 1,
+            end_time: 1,
             program_color: 1,
             class_attendanceArray: 1,
             "data.firstName": 1,
@@ -216,8 +231,8 @@ exports.updateAll = async (req, res) => {
       let endTimeM = moment(reqBody.end_time).format("mm");
       let endTimeP = moment(reqBody.end_time).format("A");
       const dates = dateRange(start_time, end_time);
-      console.log(startTimeA)
-      console.log(endTimeP)
+      console.log(startTimeA);
+      console.log(endTimeP);
 
       let allAttendance = [];
       for (let index in dates) {
@@ -229,14 +244,18 @@ exports.updateAll = async (req, res) => {
           moment(d).set({
             hour: Number(startTimeH),
             minute: Number(startTimeM),
-            meridiem:  startTimeA
+            meridiem: startTimeA,
           })
         );
-        console.log(date)
+        console.log(date);
         let dateE = new Date(
-          moment(d).set({ hour: Number(endTimeH), minute: Number(endTimeM), meridiem: endTimeP})
+          moment(d).set({
+            hour: Number(endTimeH),
+            minute: Number(endTimeM),
+            meridiem: endTimeP,
+          })
         );
-        console.log(dateE)
+        console.log(dateE);
         let dayName = moment(new Date(date)).format("dddd").toLowerCase();
         if (repeat_weekly_on.includes(dayName)) {
           let NewEvent = {

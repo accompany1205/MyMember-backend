@@ -623,6 +623,7 @@ exports.updatePayments = async (req, res) => {
     const { uid } = getUidAndInvoiceNumber();
     if (cardDetails) {
       const stripePayload = { ...cardDetails, uid, amount: req.body.Amount };
+
       var stripeObj = await require("stripe")(stripe_sec);
       let cardId;
       // if payment with new card

@@ -773,6 +773,7 @@ async function DailyTriggeredMails() {
 
 const chargeEmiWithStripeCron = async () => {
   const todayDate = moment().format("yyyy-MM-DD");
+  console.log(todayDate, "todayDate");
   await schedulePayment.find(
     {
       date: todayDate,
@@ -789,6 +790,7 @@ const chargeEmiWithStripeCron = async () => {
       } else {
         Promise.all(
           dueEmiData?.map(async (dueEmiObj) => {
+            console.log(dueEmiObj, "dueEmiObj");
             const studentId = dueEmiObj.studentId;
             const userId = dueEmiObj.userId;
             const amount = dueEmiObj.Amount;
@@ -807,6 +809,7 @@ const chargeEmiWithStripeCron = async () => {
                 studentId: studentId,
               });
             }
+            console.log(stripeDetails?.card_id, "card_id");
             if (stripeDetails?.card_id) {
               const card_id = stripeDetails?.card_id;
               const customer_id = stripeDetails?.customer_id;
@@ -904,13 +907,15 @@ const chargeEmiWithStripeCron = async () => {
 module.exports = cron.schedule("0 13 * * *", () => {
   collectionModify(),
     activeMembership(),
+
     expiredMembership()
     // chargeEmiWithStripeCron();
+
 });
 module.exports = cron.schedule(`*/1 * * * *`, () => emailCronFucntionality());
 
 // DailyTriggeredStripe Charge script();
-//module.exports = cron.schedule("0 1 * * *", () => chargeEmiWithStripeCron);
+//module.exports = cron.schedule(`*/1 * * * *`, () => chargeEmiWithStripeCron());
 
 // module.exports = cron.schedule('*/20 * * * * *',function(){
 //     let options = {
