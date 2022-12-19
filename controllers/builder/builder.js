@@ -554,7 +554,7 @@ const checkSbUserIdId = async (funnelId) => {
 exports.createDigitalForm = async (req, res) => {
     let userId = req.params.userId;
     let subUserId = req.body.subUserId;
-    let formType = req.body.form
+    let formType = req.params.formType
     let subUser = await checkSbUserIdId(subUserId);
     if (!subUser) {
         return res.send({ msg: "Incorrect subuser Id!", success: false });
@@ -624,7 +624,7 @@ exports.createDigitalForm = async (req, res) => {
                 },
                 {
                     $lookup: {
-                        from: "Form",
+                        from: "employeeForm",
                         localField: "digitalId",
                         foreignField: "_id",
                         as: "digitalData"

@@ -18,6 +18,14 @@ const userSectionFiles = new schema({
         type: String,
         index:true
     },
+    isApprove:{
+        type:Boolean,
+        default: false
+    },
+    isSubmit:{
+        type:Boolean,
+        default: false
+    },
     userId: {
         type: String,
         index:true
