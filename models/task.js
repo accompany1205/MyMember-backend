@@ -75,6 +75,14 @@ const taskSchema = schema(
 		rating: {
 			type: Number,
 		},
+		isApprove:{
+			type:Boolean,
+			default: false
+		},
+		isSubmit:{
+			type:Boolean,
+			default: false
+		},
 		isYesOrNo: {
 			type: Boolean,
 		},

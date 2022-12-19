@@ -1,11 +1,13 @@
 const Form = require("../../models/builder/Form.js")
 const emoloyeeForm = require('../../models/employeeForm')
 const addmember = require("../../models/addmember.js")
+const Task = require('../../models/task')
 const Funnel = require("../../models/builder/funnel.js")
 const sub_users_role = require("../../models/sub_user_roles")
 const FunnelContact = require("../../models/funnelContact.js");
 const userSectionFiles = require("../../models/userSectionFiles")
 const user = require("../../models/user")
+const roleList = require("../../models/rolesList")
 const mongoose = require("mongoose")
 
 //const stripe = require('stripe')('sk_test_v9')
@@ -551,48 +553,169 @@ const checkSbUserIdId = async (funnelId) => {
 
 exports.createDigitalForm = async (req, res) => {
     let userId = req.params.userId;
-    let userSectionId = req.body.userSectionId;
+    let subUserId = req.body.subUserId;
+    let formType = req.params.formType
+    let subUser = await checkSbUserIdId(subUserId);
+    if (!subUser) {
+        return res.send({ msg: "Incorrect subuser Id!", success: false });
+    }
     try {
-        if (req.params.form == "digital") {
-            let subUserId = req.body.subUserId;
-            let subUser = await checkSbUserIdId(subUserId);
-            if (!subUser) {
-                return res.send({ msg: "Incorrect subuser Id!", success: false });
-            }
-            let formBody = "<html></html>"
-            let title = "Form Title"
-            let created_by = new mongoose.Types.ObjectId
-            let employee_form = new emoloyeeForm
-            employee_form.title = title
-            employee_form.formBody = formBody
-            employee_form.created_by = created_by
-            employee_form.userId = userId
-            employee_form.formData = JSON.stringify({
-                "gjs-css": "",
-                "gjs-html": "",
-                "gjs-assets": "[]",
-                "gjs-styles": "",
-                "gjs-components": "[ {\"tagName\":\"h1\",\"type\":\"text\",\"attributes\":{\"id\":\"imc6s\"},\"components\":[ {\"type\":\"textnode\",\"content\":\"Form\"} ]}]"
+        if (formType == "document") {
+            let data = await roleList.aggregate([
+                {
+                    $match: {
+                        userId: userId,
+                        documentId: { $ne: [] }
+                    }
+                },
+                {
+                    $project: {
+                        documentId: 1
+                    }
+                },
+                {
+                    $unwind: "$documentId"
+                },
+                {
+                    $lookup: {
+                        from: "usersectionfiles",
+                        localField: "documentId",
+                        foreignField: "_id",
+                        as: "documentData"
+                    }
+                },
+                {
+                    $unwind: "$documentData"
+                }
+            ])
+            data.map(async (ele) => {
+                let documentForm = new userSectionFiles
+                documentForm.fileName = ele.documentData.fileName
+                documentForm.SettingFile = ele.documentData.SettingFile
+                documentForm.fileType = ele.documentData.fileType
+                documentForm.studentId = ele.documentData.studentId
+                documentForm.userId = ele.documentData.userId
+                documentForm.description = ele.documentData.description
+
+                await documentForm.save();
+                await sub_users_role.updateOne({ _id: subUserId }, { $push: { documentId: mongoose.Types.ObjectId(documentForm._id) } })
+
             })
-            await employee_form.save();
-            await sub_users_role.updateOne({ _id: subUserId }, { $push: { digitalId: mongoose.Types.ObjectId(employee_form._id) } });
             res.status(200).json({
                 success: true,
-                message: "Form created successfully",
-                formId: employee_form._id,
+                message: "Document Form created successfully",
                 data: "data test"
             })
-        } else if (req.params.form == "document") {
-            let documentData = await userSectionFiles.find({ _id: { $in: userSectionId } })
-            documentData.map(async (ele) => {
-                await user.updateOne({ _id: userId }, { $push: { employeeId: mongoose.Types.ObjectId(ele._id) } });
+        } else if (formType == "digital") {
+            let data = await roleList.aggregate([
+                {
+                    $match: {
+                        userId: userId,
+                        digitalId: { $ne: [] }
+                    }
+                },
+                {
+                    $project: {
+                        digitalId: 1
+                    }
+                },
+                {
+                    $unwind: "$digitalId"
+                },
+                {
+                    $lookup: {
+                        from: "employeeForm",
+                        localField: "digitalId",
+                        foreignField: "_id",
+                        as: "digitalData"
+                    }
+                },
+                {
+                    $unwind: "$digitalData"
+                }
+            ])
+            data.map(async (ele) => {
+                let employee_form = new emoloyeeForm
+                employee_form.title = ele.digitalData.title
+                employee_form.formBody = ele.digitalData.formBody
+                employee_form.created_by = mongoose.Types.ObjectId(ele.digitalData.created_by)
+                employee_form.userId = ele.digitalData.userId
+                employee_form.formData = ele.digitalData.formData
+                await employee_form.save();
+                await sub_users_role.updateOne({ _id: subUserId }, { $push: { digitalId: mongoose.Types.ObjectId(employee_form._id) } });
+
             })
             res.status(200).json({
                 success: true,
-                message: "document  created successfully",
+                message: "Digital Form created successfully",
+                data: "data test"
+            })
+        } else if (formType == "task") {
+            let data = await roleList.aggregate([
+                {
+                    $match: {
+                        userId: userId,
+                        digitalId: { $ne: [] }
+                    }
+                },
+                {
+                    $project: {
+                        taskId: 1
+                    }
+                },
+                {
+                    $unwind: "$taskId"
+                },
+                {
+                    $lookup: {
+                        from: "Form",
+                        localField: "taskId",
+                        foreignField: "_id",
+                        as: "taskData"
+                    }
+                }
+            ])
+            data.map(async (ele) => {
+                let task = new Task
+                task.name = ele.taskData.name
+                task.assign = ele.taskData.assign
+                task.type = ele.taskData.type
+                task.interval = ele.taskData.interval
+                task.range = ele.taskData.range
+                task.start = ele.taskData.start
+                task.end = ele.taskData.end
+                task.start_time = ele.taskData.start_time
+                task.end_time = ele.taskData.end_time
+                task.repeatedDates = ele.taskData.repeatedDates
+                task.repeatedConcurrence = ele.taskData.repeatedConcurrence
+                task.label = ele.taskData.label
+                task.due_date = ele.taskData.due_date
+                task.priority = ele.taskData.priority
+                task.isproof = ele.taskData.isproof
+                task.isproof = ele.taskData.isproof
+                task.document = ele.taskData.document
+                task.isEnterData = ele.taskData.isEnterData
+                task.description = ele.taskData.description
+                task.isRating = ele.taskData.isRating
+                task.rating = ele.taskData.rating
+                task.isYesOrNo = ele.taskData.isYesOrNo
+                task.isYesOrNo = ele.taskData.isYesOrNo
+                task.yesOrNo = ele.taskData.yesOrNo
+                task.status = ele.taskData.status
+                taak.userId = ele.taskData.status
+                task.subfolderId = ele.taskData.status
+                task.isSeen = ele.taskData.isSeen
+                task.isRead = ele.taskData.isSeen
+                await task.save();
+                await sub_users_role.updateOne({ _id: subUserId }, { $push: { digitalId: mongoose.Types.ObjectId(task._id) } });
+            })
+            res.status(200).json({
+                success: true,
+                message: "Digital Form created successfully",
                 data: "data test"
             })
         }
+
     }
     catch (error) {
         console.log("Error:", error)

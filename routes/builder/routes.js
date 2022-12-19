@@ -228,6 +228,6 @@ router.get('/load/:id', requireSignin, loadForm)
  */
 router.get('/:id', requireSignin, getForm)
 
-router.post('/digitalFrom/:userId/:form', requireSignin, createDigitalForm)
+router.post('/digitalFrom/:userId/:formType', requireSignin, createDigitalForm)
 
 module.exports = router;

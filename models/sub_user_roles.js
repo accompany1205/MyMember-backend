@@ -37,6 +37,36 @@ const userSchema = new schema(
             unique: true,
             maxlength: 100
         },
+        mobileNo: {
+            type: Number
+        },
+        homeNo: {
+            type: Number
+        },
+        pronouns: {
+            type: String
+        },
+        birthday: {
+            type: Date
+        },
+        Address: {
+            type: String
+        },
+        zipCode: {
+            type: String
+        },
+        city: {
+            type: String
+        },
+        state: {
+            type: String
+        },
+        contactName: {
+            type: String
+        },
+        contactNo: {
+            type: Number
+        },
         status: {
             type: String,
             default: 'Inactive' // school status active and diactive by admin
@@ -65,12 +95,17 @@ const userSchema = new schema(
         },
         digitalId:[{
             type: schema.Types.ObjectId,
-            ref:'Form',
+            ref:'employeeForm',
             default:[]
         }],
         documentId:[{
             type: schema.Types.ObjectId,
             ref:'usersectionfiles',
+            default:[]
+        }],
+        taskId:[{
+            type: schema.Types.ObjectId,
+            ref:'Task',
             default:[]
         }],
         roles: [{

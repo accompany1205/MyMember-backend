@@ -29,6 +29,14 @@ const FormSchema = mongoose.Schema({
         type: String,
         default: ""
     },
+    isApprove:{
+        type:Boolean,
+        default: false
+    },
+    isSubmit:{
+        type:Boolean,
+        default: false
+    },
     enabled: {
         type: Boolean,
         default: true

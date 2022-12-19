@@ -1,9 +1,11 @@
 const SubUsersRole = require("../../models/sub_user_roles");
 const RolesList = require("../../models/rolesList")
 const cloudUrl = require('../../gcloud/imageUrl');
-const From = require('../../models/builder/Form')
 const userSectionFiles = require("../../models/userSectionFiles")
+const employeeForm = require("../../models/employeeForm")
 const Task = require('../../models/task')
+const mongoose = require("mongoose");
+const { TrunkPage } = require("twilio/lib/rest/trunking/v1/trunk");
 
 exports.create = async (req, res) => {
     try {
@@ -30,6 +32,7 @@ exports.create = async (req, res) => {
 
 
 exports.update = async (req, res) => {
+    From
     try {
         let subUserBody = req.body
         subUserBody.roles = req.body.roles ? JSON.parse(req.body.roles) : []
@@ -186,39 +189,56 @@ exports.deleteSubUserInfo = (req, res) => {
 
 exports.createRolesList = async (req, res) => {
     const userId = req.params.userId;
-    let digital = await From.exists({ _id: { $in: req.body.digitalId } });
+    let digital = await employeeForm.exists({ _id: { $in: req.body.digitalId } });
     let document = await userSectionFiles.exists({ _id: { $in: req.body.documentId } });
     let task = await Task.exists({ _id: { $in: req.body.taskId } });
-    if (digital) {
-        digital = req.body.digitalId
-    } else {
-        digital = []
-    }
-    if (document) {
-        document = req.body.documentId
-    } else {
-        document = []
-    }
-    if (task) {
-        task = req.body.taskId
-    } else {
-        task = []
-    }
     try {
-        var RolesListObj = new RolesList(req.body)
-        RolesListObj.userId = userId;
-        RolesListObj.digitalId = digital;
-        RolesListObj.documentId = document;
-        RolesListObj.taskId = task;
-        RolesListObj.save((err, data) => {
-            if (err) {
-                res.send({ 'msg': err.message, 'success': false })
-            }
-            else {
+        if (digital) {
+            let RolesListObj = new RolesList(req.body)
+            digital = req.body.digitalId
+            RolesListObj.userId = userId;
+            RolesListObj.digitalId = digital;
+            RolesListObj.save((err, data) => {
+                if (err) {
+                    res.send({ 'msg': err.message, 'success': false })
+                }
+                else {
 
-                res.send({ 'msg': 'Roles-List info add successfully.', 'success': true })
-            }
-        })
+                    res.send({ 'msg': 'Roles-List info for digital add successfully.', 'success': true })
+                }
+            })
+        } else if (document) {
+            let RolesListObj = new RolesList(req.body)
+            document = req.body.documentId
+            RolesListObj.userId = userId;
+            RolesListObj.documentId = document;
+            RolesListObj.save((err, data) => {
+                if (err) {
+                    res.send({ 'msg': err.message, 'success': false })
+                }
+                else {
+
+                    res.send({ 'msg': 'Roles-List info document add successfully.', 'success': true })
+                }
+            })
+        } else if (task) {
+            let RolesListObj = new RolesList(req.body)
+            task = req.body.taskId
+            RolesListObj.userId = userId;
+            RolesListObj.documentId = document;
+            RolesListObj.save((err, data) => {
+                if (err) {
+                    res.send({ 'msg': err.message, 'success': false })
+                }
+                else {
+
+                    res.send({ 'msg': 'Roles-List info task add successfully.', 'success': true })
+                }
+            })
+        }else {
+            res.send({ 'msg': 'Id is not correct', 'success': true })
+        }
+
     } catch (error) {
         res.send({ 'msg': error.message, 'success': false });
     }
@@ -292,9 +312,9 @@ exports.getRolls = async (req, res) => {
             }
         },
         {
-            $project:{
-                taskId:0,
-                digitalId:0
+            $project: {
+                taskId: 0,
+                digitalId: 0
             }
         },
         { $unwind: "$documentId" },
@@ -308,22 +328,22 @@ exports.getRolls = async (req, res) => {
         }
     ])
 
-    let digitalData=await RolesList.aggregate([
+    let digitalData = await RolesList.aggregate([
         {
             $match: {
                 userId: userId
             }
         },
         {
-            $project:{
-                taskId:0,
-                documentId:0
+            $project: {
+                taskId: 0,
+                documentId: 0
             }
         },
         { $unwind: "$digitalId" },
         {
             $lookup: {
-                from: "Form",
+                from: "employeeForm",
                 localField: "digitalId",
                 foreignField: "_id",
                 as: "rolesData"
@@ -331,16 +351,16 @@ exports.getRolls = async (req, res) => {
         }
     ])
 
-    let taskData=await RolesList.aggregate([
+    let taskData = await RolesList.aggregate([
         {
             $match: {
                 userId: userId
             }
         },
         {
-            $project:{
-                digitalId:0,
-                documentId:0
+            $project: {
+                digitalId: 0,
+                documentId: 0
             }
         },
         { $unwind: "$taskId" },
@@ -354,5 +374,468 @@ exports.getRolls = async (req, res) => {
         }
     ])
 
-    res.send({ "documentData": documentData,"digitalData": digitalData,"taskData": taskData, "success": true });
+    res.send({ "documentData": documentData, "digitalData": digitalData, "taskData": taskData, "success": true });
 }
+
+exports.submitForm = async (req, res) => {
+    let subUserId = mongoose.Types.ObjectId(req.params.subuserId);
+    let documentId = req.body.documentId;
+    let taskId = req.body.taskId;
+    let digitalId = req.body.digitalId;
+    let formType = req.params.formType;
+    try {
+        if (formType == "document") {
+            let documentData = await SubUsersRole.aggregate([
+                {
+                    $match: {
+                        _id: subUserId
+                    }
+                },
+                {
+                    $project: {
+                        documentId: 1
+                    }
+                },
+                { $unwind: "$documentId" },
+                {
+                    $lookup: {
+                        from: "usersectionfiles",
+                        localField: "documentId",
+                        foreignField: "_id",
+                        as: "documentData"
+                    }
+                },
+                { $unwind: "$documentData" }
+            ])
+            documentData.map(async (ele) => {
+                if (documentId == (ele.documentData._id)) {
+                    let result = await userSectionFiles.updateOne({ _id: documentId }, { $set: { isSubmit: true } })
+                    if (result.nModified === 1) {
+                        return res.send("form submit")
+                    } else {
+                        return res.send("form hasn't been submit")
+                    }
+                }
+            })
+        } else if (formType == "digital") {
+            let digitalData = await SubUsersRole.aggregate([
+                {
+                    $match: {
+                        _id: subUserId
+                    }
+                },
+                {
+                    $project: {
+                        digitalId: 1
+                    }
+                },
+                { $unwind: "$digitalId" },
+                {
+                    $lookup: {
+                        from: "employeeForm",
+                        localField: "digitalId",
+                        foreignField: "_id",
+                        as: "digitalData"
+                    }
+                },
+                { $unwind: "$digitalData" }
+            ])
+            digitalData.map(async (ele) => {
+                if (digitalId == (ele.digitalData._id)) {
+                    let result = await employeeForm.updateOne({ _id: digitalId }, { $set: { isSubmit: true } })
+                    if (result.nModified === 1) {
+                        return res.send("form submit")
+                    } else {
+                        return res.send("form hasn't been submit")
+                    }
+                }
+            })
+        } else if (formType == "task") {
+            let taskData = await SubUsersRole.aggregate([
+                {
+                    $match: {
+                        _id: subUserId
+                    }
+                },
+                {
+                    $project: {
+                        taskId: 1
+                    }
+                },
+                { $unwind: "$taskId" },
+                {
+                    $lookup: {
+                        from: "Task",
+                        localField: "taskId",
+                        foreignField: "_id",
+                        as: "taskData"
+                    }
+                },
+                { $unwind: "$taskData" }
+            ])
+            taskData.map(async (ele) => {
+                if (taskId == (ele.taskData._id)) {
+                    let result = await Task.updateOne({ _id: taskId }, { $set: { isSubmit: true } })
+                    if (result.nModified === 1) {
+                        return res.send("form submit")
+                    } else {
+                        return res.send("form hasn't been submit")
+                    }
+                }
+            })
+        }
+    } catch (error) {
+        res.send({ 'msg': error.message, 'success': false });
+    }
+}
+
+exports.approveForm = async (req, res) => {
+    let userId = req.params.userId;
+    let formType = req.params.formType;
+    try {
+        if (formType == "document") {
+            let documentData = await SubUsersRole.aggregate([
+                {
+                    $match: {
+                        userId: userId
+                    }
+                },
+                {
+                    $project: {
+                        documentId: 1
+                    }
+                },
+                { $unwind: "$documentId" },
+                {
+                    $lookup: {
+                        from: "usersectionfiles",
+                        localField: "documentId",
+                        foreignField: "_id",
+                        as: "documentData"
+                    }
+                },
+                { $unwind: "$documentData" }
+            ])
+            documentData.map(async (ele) => {
+                if (ele.documentData.isSubmit) {
+                    let result = await userSectionFiles.updateOne({ _id: ele.documentData._id }, { $set: { isApprove: true } })
+                    if (result.nModified === 1) {
+                        return res.send("form approve")
+                    } else {
+                        return res.send("form hasn't been approve")
+                    }
+                }
+            })
+        } else if (formType == "digital") {
+            let digitalData = await SubUsersRole.aggregate([
+                {
+                    $match: {
+                        userId: userId
+                    }
+                },
+                {
+                    $project: {
+                        digitalId: 1
+                    }
+                },
+                { $unwind: "$digitalId" },
+                {
+                    $lookup: {
+                        from: "employeeForm",
+                        localField: "digitalId",
+                        foreignField: "_id",
+                        as: "digitalData"
+                    }
+                },
+                { $unwind: "$digitalData" }
+            ])
+            digitalData.map(async (ele) => {
+                if (ele.digitalData.isSubmit) {
+                    let result = await employeeForm.updateOne({ _id: ele.digitalData._id }, { $set: { isApprove: true } })
+                    if (result.nModified === 1) {
+                        return res.send("form approve")
+                    } else {
+                        return res.send("form hasn't been approve")
+                    }
+                }
+            })
+        } else if (formType == "task") {
+            let taskData = await SubUsersRole.aggregate([
+                {
+                    $match: {
+                        userId: userId
+                    }
+                },
+                {
+                    $project: {
+                        taskId: 1
+                    }
+                },
+                { $unwind: "$taskId" },
+                {
+                    $lookup: {
+                        from: "Task",
+                        localField: "taskId",
+                        foreignField: "_id",
+                        as: "taskData"
+                    }
+                },
+                { $unwind: "$taskData" }
+            ])
+            taskData.map(async (ele) => {
+                if (ele.taskData.isSubmit) {
+                    let result = await Task.updateOne({ _id: ele.taskData._id }, { $set: { isApprove: true } })
+                    if (result.nModified === 1) {
+                        return res.send("form approve")
+                    } else {
+                        return res.send("form hasn't been approve")
+                    }
+                }
+            })
+        }
+    } catch (error) {
+        res.send({ 'msg': error.message, 'success': false });
+    }
+
+}
+
+exports.approveFormStatus = async (req, res) => {
+    let userId = req.params.userId;
+    let formType = req.params.formType;
+    try {
+        if (formType == "document") {
+            let documentData = await SubUsersRole.aggregate([
+                {
+                    $match: {
+                        userId: userId
+                    }
+                },
+                {
+                    $project: {
+                        documentId: 1
+                    }
+                },
+                { $unwind: "$documentId" },
+                {
+                    $lookup: {
+                        from: "usersectionfiles",
+                        localField: "documentId",
+                        foreignField: "_id",
+                        as: "documentData"
+                    }
+                },
+                { $unwind: "$documentData" }
+            ])
+            let approve = 0
+            let notApprove = documentData.length
+            documentData.map(async (ele) => {
+                if (ele.documentData.isApprove) {
+                    approve++
+                }
+            })
+            let result = (approve / notApprove) * 100
+            if (isNaN(result)) {
+                return res.send({ documentStatus: `${0} % document form are approved from  user` })
+            } else {
+                return res.send({ documentStatus: `${result} % document form are approved from user` })
+            }
+
+        } else if (formType == "digital") {
+            let digitalData = await SubUsersRole.aggregate([
+                {
+                    $match: {
+                        userId: userId
+                    }
+                },
+                {
+                    $project: {
+                        digitalId: 1
+                    }
+                },
+                { $unwind: "$digitalId" },
+                {
+                    $lookup: {
+                        from: "employeeForm",
+                        localField: "digitalId",
+                        foreignField: "_id",
+                        as: "digitalData"
+                    }
+                },
+                { $unwind: "$digitalData" }
+            ])
+            let approve = 0
+            let notApprove = digitalData.length
+            digitalData.map(async (ele) => {
+                if (ele.digitalData.isApprove) {
+                    approve++
+                }
+            })
+            let result = (approve / notApprove) * 100
+            if (isNaN(result)) {
+                return res.send({ digitalData: `${0} % digital form are approved from user` })
+            } else {
+                return res.send({ digitalData: `${result} % digital form are approved from user` })
+            }
+        } else if (formType == "task") {
+            let taskData = await SubUsersRole.aggregate([
+                {
+                    $match: {
+                        userId: userId
+                    }
+                },
+                {
+                    $project: {
+                        taskId: 1
+                    }
+                },
+                { $unwind: "$taskId" },
+                {
+                    $lookup: {
+                        from: "Task",
+                        localField: "taskId",
+                        foreignField: "_id",
+                        as: "taskData"
+                    }
+                },
+                { $unwind: "$taskData" }
+            ])
+            let approve = 0
+            let notApprove = taskData.length
+            taskData.map(async (ele) => {
+                if (ele.digitalData.isApprove) {
+                    approve++
+                } else {
+                    notApprove++
+                }
+            })
+            let result = (approve / notApprove) * 100
+            if (isNaN(result)) {
+                return res.send({ taskData: `${0} % task form are approved from user` })
+            } else {
+                return res.send({ taskData: `${result} % task form are approved from user` })
+            }
+        }
+    } catch (error) {
+        res.send({ 'msg': error.message, 'success': false });
+    }
+
+}
+
+exports.submitFormStatus = async (req, res) => {
+    let subUserId = mongoose.Types.ObjectId(req.params.subuserId);
+    let formType = req.params.formType;
+    try {
+        if (formType == "document") {
+            let documentData = await SubUsersRole.aggregate([
+                {
+                    $match: {
+                        _id: subUserId
+                    }
+                },
+                {
+                    $project: {
+                        documentId: 1
+                    }
+                },
+                { $unwind: "$documentId" },
+                {
+                    $lookup: {
+                        from: "usersectionfiles",
+                        localField: "documentId",
+                        foreignField: "_id",
+                        as: "documentData"
+                    }
+                },
+                { $unwind: "$documentData" }
+            ])
+            let submit = 0
+            let notSubmit = documentData.length
+            documentData.map(async (ele) => {
+                if (ele.documentData.isSubmit) {
+                    submit++
+                }
+            })
+            let result = (submit / notSubmit) * 100
+            if (isNaN(result)) {
+                return res.send({ documentStatus: `${0} % document form are submit from  employee` })
+            } else {
+                return res.send({ documentStatus: `${result} % document form are submit from  employee` })
+            }
+        } else if (formType == "digital") {
+            let digitalData = await SubUsersRole.aggregate([
+                {
+                    $match: {
+                        _id: subUserId
+                    }
+                },
+                {
+                    $project: {
+                        digitalId: 1
+                    }
+                },
+                { $unwind: "$digitalId" },
+                {
+                    $lookup: {
+                        from: "employeeForm",
+                        localField: "digitalId",
+                        foreignField: "_id",
+                        as: "digitalData"
+                    }
+                },
+                { $unwind: "$digitalData" }
+            ])
+            let submit = 0
+            let notSubmit = digitalData.length
+            digitalData.map(async (ele) => {
+                if (ele.documentData.isSubmit) {
+                    submit++
+                }
+            })
+            let result = (submit / notSubmit) * 100
+            if (isNaN(result)) {
+                return res.send({ digitalStatus: `${0} % digital form are submit from  employee` })
+            } else {
+                return res.send({ digitalStatus: `${result} % digital form are submit from  employee` })
+            }
+        } else if (formType == "task") {
+            let taskData = await SubUsersRole.aggregate([
+                {
+                    $match: {
+                        _id: subUserId
+                    }
+                },
+                {
+                    $project: {
+                        taskId: 1
+                    }
+                },
+                { $unwind: "$taskId" },
+                {
+                    $lookup: {
+                        from: "Task",
+                        localField: "taskId",
+                        foreignField: "_id",
+                        as: "taskData"
+                    }
+                },
+                { $unwind: "$taskData" }
+            ])
+            let submit = 0
+            let notSubmit = taskData.length
+            taskData.map(async (ele) => {
+                if (ele.documentData.isSubmit) {
+                    submit++
+                }
+            })
+            let result = (submit / notSubmit) * 100
+            if (isNaN(result)) {
+                return res.send({ taskStatus: `${0} % task form are submit from  employee` })
+            } else {
+                return res.send({ taskStatus: `${result} % task form are submit from  employee` })
+            }
+        }
+    } catch (error) {
+        res.send({ 'msg': error.message, 'success': false });
+    }
+}
+
