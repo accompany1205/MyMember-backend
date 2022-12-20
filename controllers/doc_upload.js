@@ -7,61 +7,57 @@ const std = require("../models/addmember")
 const cloudUrl = require("../gcloud/imageUrl");
 
 exports.docupload = async (req, res) => {
-  let rootFolderId = req.params.folderId;
-  let subFolderId = req.params.subFolderId;
-  let userId = req.params.userId;
-  let adminId = req.params.adminId;
-  let docData = req.body
+  let { rootFolderId, subFolderId, userId, adminId } = req.params;
+  let docData = req.body;
   try {
-
-    const docFileDetails = {
-      document_name: docData.document_name,
-      rootFolderId: rootFolderId,
-      subFolderId: subFolderId,
-      userId: userId,
-      adminId: adminId
-    }
-    if (req.file) {
-      await cloudUrl
-        .imageUrl(req.file)
-        .then(data => {
-          docFileDetails.document = data
-        })
-        .catch(err => {
+    const allDocFileDetails = [];
+    if (req.files) {
+      for(const file of req.files) {
+        const docFileDetails = {
+          rootFolderId: rootFolderId,
+          subFolderId: subFolderId,
+          userId: userId,
+          adminId: adminId
+        }
+        try {
+          const data = await cloudUrl.imageUrl(file);
+          docFileDetails.document_name = docData.document_name || Math.random().toString(36).substring(5);
+          docFileDetails.document = data;
+          allDocFileDetails.push(docFileDetails)
+        } catch(err) {
           res.send({ msg: "Document not uploaded!", success: false })
-        })
+        }
+      }
     }
-    var mydoc = new docfile(docFileDetails);
-    mydoc.save((err, docdata) => {
-      if (err) {
-        res.send({ msg: 'document is not added', success: err })
-      }
-      else {
-        if ((subFolderId == "null" ? true : false)) {
-          docfolder.findByIdAndUpdate(rootFolderId, { $push: { document: docdata._id } },
-            function (err, updateDoc) {
-              if (err) {
-                return res.send({ msg: 'File not added', success: err })
-              }
-              else {
 
-                return res.send({ msg: "Document Uploaded Successfully!", success: updateDoc })
-              }
-            })
-        }
-        else {
-          docsubfolder.findByIdAndUpdate(subFolderId, { $push: { document: docdata._id } },
-            function (err, updateDoc) {
-              if (err) {
-                return res.send({ msg: 'File not added', success: err })
-              }
-              else {
-                return res.send({ msg: "Document Uploaded Successfully!", success: true })
-              }
-            })
-        }
+    docfile.insertMany(allDocFileDetails).then((docdata) => {
+      let ids = docdata.map((d) => {
+        return d._id;
+      });
+      if(
+        subFolderId !== undefined &&
+        subFolderId !== null &&
+        subFolderId !== ':subFolderId'
+        ) {
+        docsubfolder.findByIdAndUpdate(subFolderId, { $push: { document: ids } })
+        .then((updateDoc) => {
+          return res.send({ msg: "Document Uploaded Successfully in Sub Folder!", success: true })
+        })
+        .catch((err) => {
+          return res.send({ msg: 'File not added', success: err })
+        })
+      } else {
+        docfolder.findByIdAndUpdate(rootFolderId, { $push: { document: ids } })
+        .then((updateDoc) => {
+          return res.send({ msg: "Document Uploaded Successfully in Root Folder!", success: updateDoc })
+        })
+        .catch((err) => {
+          return res.send({ msg: 'File not added', success: err })
+        })
       }
-    });
+    }).catch((err) => {
+      res.send({ msg: 'document is not added', success: err })
+    })
   }
   catch (err) {
     res.send({ msg: err.message.replace(/\"/g, ""), success: false })
