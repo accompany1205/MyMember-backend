@@ -1,41 +1,92 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const schema = mongoose.Schema
+const schema = mongoose.Schema;
 const userSchema = new schema(
-    {
-        firstname: {
-            type: String,
-            trim: true,
-            maxlength: 100
+  {
+    firstname: {
+      type: String,
+      trim: true,
+      maxlength: 100,
+    },
+    lastname: {
+      type: String,
+      trim: true,
+      maxlength: 100,
+    },
+    twilio: {
+      trim: true,
+      type: String,
+      index: true,
+    },
+    profile_img: {
+      type: String,
+    },
+    userId: {
+      type: String,
+      index: true,
+    },
+    phone: {
+      type: String,
+      trim: true,
+      maxlength: 100,
+    },
+    username: {
+      type: String,
+      trim: true,
+      unique: true,
+      maxlength: 100,
+    },
+    status: {
+      type: String,
+      default: "Inactive", // school status active and diactive by admin
+    },
+    sub_user_type: {
+      type: Boolean,
+      default: true,
+    },
+    email: {
+      type: String,
+      trim: true,
+      // unique: true
+    },
+    role: {
+      type: String,
+      trim: true,
+      maxlength: 100,
+    },
+    password: {
+      type: String,
+    },
+    default_location: {
+      type: String,
+      trim: true,
+      maxlength: 100,
+    },
+    roles: [
+      {
+        dashboard: {
+          type: Boolean,
+          default: false,
         },
-        lastname: {
-            type: String,
-            trim: true,
-            maxlength: 100
+        members: {
+          type: Boolean,
+          default: false,
         },
-        twilio: {
-            trim: true,
-            type: String,
-            index:true
-
+        my_school: {
+          type: Boolean,
+          default: false,
         },
-        profile_img: {
-            type: String
+        task_and_goals: {
+          type: Boolean,
+          default: false,
         },
-        userId: {
-            type: String,
-            index:true
+        calendar: {
+          type: Boolean,
+          default: false,
         },
-        phone: {
-            type: String,
-            trim: true,
-            maxlength: 100
-        },
-        username: {
-            type: String,
-            trim: true,
-            unique: true,
-            maxlength: 100
+        marketing: {
+          type: Boolean,
+          default: false,
         },
         mobileNo: {
             type: Number
@@ -71,27 +122,29 @@ const userSchema = new schema(
             type: String,
             default: 'Inactive' // school status active and diactive by admin
         },
-        sub_user_type: {
-            type: Boolean,
-            default: true
+        shop: {
+          type: Boolean,
+          default: false,
         },
-        email: {
-            type: String,
-            trim: true,
-            // unique: true
+        finance: {
+          type: Boolean,
+          default: false,
         },
-        role: {
-            type: String,
-            trim: true,
-            maxlength: 100
+        event_manager: {
+          type: Boolean,
+          default: false,
         },
-        password: {
-            type: String,
+        form_builder: {
+          type: Boolean,
+          default: false,
         },
-        default_location: {
-            type: String,
-            trim: true,
-            maxlength: 100
+        documents: {
+          type: Boolean,
+          default: false,
+        },
+        settings: {
+          type: Boolean,
+          default: false,
         },
         digitalId:[{
             type: schema.Types.ObjectId,
@@ -160,6 +213,8 @@ const userSchema = new schema(
         }]
     },
     { timestamps: true }
+    ]
+}
 );
 
-module.exports = mongoose.model('sub_users_role', userSchema);  
+module.exports = mongoose.model("sub_users_role", userSchema);

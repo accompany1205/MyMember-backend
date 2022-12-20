@@ -8,9 +8,11 @@ module.exports = class Mailer {
             port: 587,
             secure: false,
             auth: {
-                user: 'admin@mymanager.com',
-                pass: 'Rr42728292',
+                user: 'admin.gmail@mymanager.com',
+                pass: '12345',
             },
+            use_authentication: true,
+            replyTo: "postmaster@mymanager.com",
             dkim: {
                 domainName: "mymanager.com",
                 keySelector: "mail",
