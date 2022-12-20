@@ -7,11 +7,8 @@ const std = require("../models/addmember")
 const cloudUrl = require("../gcloud/imageUrl");
 
 exports.docupload = async (req, res) => {
-  let rootFolderId = req.params.folderId;
-  let subFolderId = req.params.subFolderId;
-  let userId = req.params.userId;
-  let adminId = req.params.adminId;
-  let docData = req.body
+  let { rootFolderId, subFolderId, userId, adminId } = req.params;
+  let docData = req.body;
   try {
     const allDocFileDetails = [];
     if (req.files) {
@@ -37,10 +34,14 @@ exports.docupload = async (req, res) => {
       let ids = docdata.map((d) => {
         return d._id;
       });
-      if(subFolderId) {
+      if(
+        subFolderId !== undefined &&
+        subFolderId !== null &&
+        subFolderId !== ':subFolderId'
+        ) {
         docsubfolder.findByIdAndUpdate(subFolderId, { $push: { document: ids } })
         .then((updateDoc) => {
-          return res.send({ msg: "Document Uploaded Successfully!", success: true })
+          return res.send({ msg: "Document Uploaded Successfully in Sub Folder!", success: true })
         })
         .catch((err) => {
           return res.send({ msg: 'File not added', success: err })
@@ -48,7 +49,7 @@ exports.docupload = async (req, res) => {
       } else {
         docfolder.findByIdAndUpdate(rootFolderId, { $push: { document: ids } })
         .then((updateDoc) => {
-          return res.send({ msg: "Document Uploaded Successfully!", success: updateDoc })
+          return res.send({ msg: "Document Uploaded Successfully in Root Folder!", success: updateDoc })
         })
         .catch((err) => {
           return res.send({ msg: 'File not added', success: err })
