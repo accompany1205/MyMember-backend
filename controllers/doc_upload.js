@@ -7,20 +7,24 @@ const std = require("../models/addmember")
 const cloudUrl = require("../gcloud/imageUrl");
 
 exports.docupload = async (req, res) => {
-  let { rootFolderId, subFolderId, userId, adminId } = req.params;
+  let { folderId, subFolderId, userId, adminId } = req.params;
   let docData = req.body;
   try {
     const allDocFileDetails = [];
     if (req.files) {
       for(const file of req.files) {
         const docFileDetails = {
-          rootFolderId: rootFolderId,
-          subFolderId: subFolderId,
+          rootFolderId: folderId,
           userId: userId,
           adminId: adminId
         }
         try {
           const data = await cloudUrl.imageUrl(file);
+          if (subFolderId !== undefined && subFolderId !== null && subFolderId !== ':subFolderId') {
+            docFileDetails.subFolderId = subFolderId;
+          } else {
+            docFileDetails.rootFolderId = folderId;
+          }
           docFileDetails.document_name = docData.document_name || Math.random().toString(36).substring(5);
           docFileDetails.document = data;
           allDocFileDetails.push(docFileDetails)
@@ -34,6 +38,10 @@ exports.docupload = async (req, res) => {
       let ids = docdata.map((d) => {
         return d._id;
       });
+      let cloudUrls = docdata.map((d) => {
+        return { name: d.document_name, url: d.document };
+      })
+
       if(
         subFolderId !== undefined &&
         subFolderId !== null &&
@@ -41,15 +49,15 @@ exports.docupload = async (req, res) => {
         ) {
         docsubfolder.findByIdAndUpdate(subFolderId, { $push: { document: ids } })
         .then((updateDoc) => {
-          return res.send({ msg: "Document Uploaded Successfully in Sub Folder!", success: true })
+          return res.send({ msg: "Document Uploaded Successfully in Sub Folder!", success: true, uploadedDocuments: cloudUrls })
         })
         .catch((err) => {
           return res.send({ msg: 'File not added', success: err })
         })
       } else {
-        docfolder.findByIdAndUpdate(rootFolderId, { $push: { document: ids } })
+        docfolder.findByIdAndUpdate(folderId, { $push: { document: ids } })
         .then((updateDoc) => {
-          return res.send({ msg: "Document Uploaded Successfully in Root Folder!", success: updateDoc })
+          return res.send({ msg: "Document Uploaded Successfully in Root Folder!", success: true, uploadedDocuments: cloudUrls })
         })
         .catch((err) => {
           return res.send({ msg: 'File not added', success: err })
