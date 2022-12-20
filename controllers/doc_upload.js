@@ -14,7 +14,6 @@ exports.docupload = async (req, res) => {
     if (req.files) {
       for(const file of req.files) {
         const docFileDetails = {
-          rootFolderId: folderId,
           userId: userId,
           adminId: adminId
         }
