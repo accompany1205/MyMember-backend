@@ -41,9 +41,9 @@ router.get('/:formId/:userId', verifySchool, viewForm);
 
 router.post("/process/newstudent/:formId/:userId", verifySchool, processForm)
 
-router.get('/payment-status', requireSignin, viewPaymentStatus)
-router.get('/payment-success', requireSignin, showPaymentSuccess)
-router.get('/payment-error', requireSignin, showPaymentError)
+//router.get('/payment-status', requireSignin, viewPaymentStatus)
+//router.get('/payment-success', requireSignin, showPaymentSuccess)
+//router.get('/payment-error', requireSignin, showPaymentError)
 
 
 module.exports = router

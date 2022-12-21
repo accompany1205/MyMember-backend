@@ -70,7 +70,7 @@ router.get('/process/newstudent/:id/:userId', verifySchool, processForm)
  *       200:
  *         description: Created
  */
-router.post('/new/:userId', requireSignin, createForm)
+router.post('/new/:userId', createForm)
 
 /**
  * @swagger
