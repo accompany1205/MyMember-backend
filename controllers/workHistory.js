@@ -7,7 +7,12 @@ exports.getWorkHistory = (req, res) => {
   const { employeeId } = req.params;
   const histories = WorkHistory.find({ userId: employeeId })
     .then((result) => {
-      res.json(result);
+      const historyResult = result.map((history) => {
+        const {screenshots, ...newHistory} = history._doc;
+        return newHistory;
+      })
+      console.log(historyResult);
+      res.json(historyResult);
     })
     .catch((e) => res.json(e));
 };
@@ -150,3 +155,21 @@ exports.getOverview = async (req, res) => {
   }
 
 };
+
+exports.getScreenshots = async (req, res) => {
+  try{
+    const {historyId} =req.params;
+
+    const oldHistory = await WorkHistory.findById(historyId);
+    if(oldHistory){
+      res.json(oldHistory.screenshots);
+    }
+    else{
+      res.status(404)
+    }
+  }
+  catch(err) {
+      res.send({ msg: err.message.replace(/\"/g, ""), success: false });
+  }
+
+}
