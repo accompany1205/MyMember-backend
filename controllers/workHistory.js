@@ -90,7 +90,7 @@ exports.getOverview = async (req, res) => {
   let workDays = 0;
   if (totalhistories && totalhistories.length > 0) {
     workDays = Math.ceil(
-      (new Date(totalhistories[totalhistories.length - 1].startTime) -
+      (new Date(totalhistories[totalhistories.length - 1].endTime) -
         new Date(totalhistories[0].startTime)) /
         (1000 * 60 * 60 * 24)
     );
