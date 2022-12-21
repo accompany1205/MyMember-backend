@@ -32,7 +32,6 @@ exports.create = async (req, res) => {
 
 
 exports.update = async (req, res) => {
-    From
     try {
         let subUserBody = req.body
         subUserBody.roles = req.body.roles ? JSON.parse(req.body.roles) : []
@@ -42,7 +41,7 @@ exports.update = async (req, res) => {
         SubUsersRole.findByIdAndUpdate(req.params.SubUserId, subUserBody)
             .exec((err, data) => {
                 if (err) {
-                    res.send({ 'msg': 'sub-users info is not update', 'success': false })
+                    res.send({ 'msg': err.message, 'success': false })
                 }
                 else {
                     res.send({ 'msg': 'permission of sub user info is update successfully', 'success': true })
@@ -235,7 +234,7 @@ exports.createRolesList = async (req, res) => {
                     res.send({ 'msg': 'Roles-List info task add successfully.', 'success': true })
                 }
             })
-        }else {
+        } else {
             res.send({ 'msg': 'Id is not correct', 'success': true })
         }
 
@@ -596,8 +595,9 @@ exports.approveForm = async (req, res) => {
     } catch (error) {
         res.send({ 'msg': error.message, 'success': false });
     }
-
 }
+
+
 
 exports.approveFormStatus = async (req, res) => {
     let userId = req.params.userId;

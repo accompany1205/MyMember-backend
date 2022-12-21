@@ -78,7 +78,7 @@ const userSchema = new schema(
         email: {
             type: String,
             trim: true,
-            // unique: true
+            unique: true
         },
         role: {
             type: String,
