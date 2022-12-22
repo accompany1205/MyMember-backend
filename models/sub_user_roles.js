@@ -126,9 +126,10 @@ const userSchema = new schema(
           type: Boolean,
           default: false,
         },
-        finance: {
-          type: Boolean,
-          default: false,
+        email: {
+            type: String,
+            trim: true,
+            unique: true
         },
         event_manager: {
           type: Boolean,
