@@ -17,6 +17,7 @@ var workHistorySchema = new schema(
       type: String,
     },
     screenshots: [
+      
       {
         trackTime: Date,
         screenshot: String,

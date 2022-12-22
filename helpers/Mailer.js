@@ -8,8 +8,8 @@ module.exports = class Mailer {
             port: 587,
             secure: false,
             auth: {
-                user: 'admin.gmail@mymanager.com',
-                pass: '12345',
+                user: 'admin@mymanager.com',
+                pass: 'Rr42728292',
             },
             use_authentication: true,
             replyTo: "postmaster@mymanager.com",
@@ -36,11 +36,12 @@ module.exports = class Mailer {
     }
 
     sendMail = async () => {
-        const { from = "mymanger <hello@mymanager.com>", to = [], subject = '', text = '', html = '', attachments = null } = this.mailOptions;
+        const { from = "mymanger <hello@mymanager.com>", to = [], subject = '', text = '', html = '', attachments = null, replyTo } = this.mailOptions;
         return new Promise((resolve, reject) => {
             for (let recipient of to) {
                 this.transporter.sendMail({
                     from: from,
+                    replyTo: replyTo,
                     envelope: {
                         from: 'admin@mymanager.com',
                         to: [recipient]
