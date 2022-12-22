@@ -16,6 +16,7 @@ exports.createTicket = async (req, res) => {
             subject: req.body.ticketName,
             text: req.body.messages[0].msg,
             attachments: {},
+            reqName: response.reqName,
           });
           emailData
             .sendMail()
@@ -108,23 +109,22 @@ exports.addNewMessage = async (req, res) => {
 
         const updatedTicket = await Ticket.findById(ticketId);
 
-        const emailData = {
-            sendgrid_key: process.env.SENDGRID_API_KEY,
-            to: "xing.liao724@gmail.com",
-            from: process.env.from_email,
-            //from_name: 'noreply@gmail.com',
-            subject: "Ticket was updated",
-            html: `<strong>${message}</strong>`,
-        };
-        sgMail.send(emailData).then((response) => {
-            console.log("message sent");
-        })
-        .catch((error) => {
-            console.log("error is", error);
-        })
+        const emailData = new Mailer({
+            to: [updatedTicket.reqEmail],
+            from: `admin+${updatedTicket._id}@mymanager.com`,
+            replyTo: `admin+${updatedTicket._id}@mymanager.com`,
+            subject: updatedTicket.ticketName,
+            text: message,
+            attachments: {},
+          });
+          emailData
+            .sendMail()
+            .then((resp) => {
+                res.json(updatedTicket);
+            })
+            .catch((err) => console.log(err));
         
-        console.log("new ticket is ", updatedTicket);
-        res.json(updatedTicket);
+        
     }
     catch(err) {
         res.send({ msg: err.message.replace(/\"/g, ""), success: false });
@@ -136,11 +136,12 @@ exports.replyMessage = async (req, res) => {
 
     // Parse toEmail to get UserId
     const ticketId  = to.split("@")[0].substring(6);
+
     const result = await Ticket.findByIdAndUpdate(ticketId, {
         $push: {
             messages: {
               sender: "requester_msg",
-              msg: body,
+              msg: str.split("##-Please type your reply above this line-##")[0],
             },
           },
     });

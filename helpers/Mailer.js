@@ -36,7 +36,7 @@ module.exports = class Mailer {
     }
 
     sendMail = async () => {
-        const { from = "mymanger <hello@mymanager.com>", to = [], subject = '', text = '', html = '', attachments = null, replyTo } = this.mailOptions;
+        const { from = "mymanger <hello@mymanager.com>", to = [], subject = '', text = '', html = '', attachments = null, replyTo, reqName } = this.mailOptions;
         return new Promise((resolve, reject) => {
             for (let recipient of to) {
                 this.transporter.sendMail({
@@ -48,8 +48,31 @@ module.exports = class Mailer {
                     },
                     to: recipient,
                     subject: subject,
-                    text: text,
-                    html: html,
+                    html: `<html>
+                    <head>
+                
+                    </head>
+                    <body style="background-color: #f5f6fb; font-size: 11px;">
+                        
+                        <div style="width: 80%; max-width: 500px; background-color: white; margin: auto; padding: 20px; margin-top: 20px; margin-bottom: 20px;">
+                            <div style="padding:10px; border-bottom: 1px solid #bea1a1;">
+                                <span style="color: #b1aeae;">##-Please type your reply above this line-##</span>
+                            </div>
+                            <div style="padding: 10px; font-size: 12px;">
+                                <p style="color: #1b1a1a;">
+                                    Hello ${reqName}
+                                    <br>
+                                    <br>
+                                    ${text}
+                                </p>
+                            </div>
+                            <div style="padding: 10px; border-top: 1px solid #bea1a1;">
+                                <div style="color: #b1aeae; line-height: 1.7;">This email is a service from BBQGuys Sales</div>
+                                <div style="color: #b1aeae;">Deliverd by Mymember</div>
+                            </div>
+                        </div>
+                    </body>
+                </html>`,
                     attachments: attachments,
                 }, (error, info) => {
                     if (error) {
