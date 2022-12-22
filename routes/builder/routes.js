@@ -226,7 +226,7 @@ router.get('/load/:id', requireSignin, loadForm)
  *             schema:
  *               $ref: '#/components/schemas/ArrayOfForms'
  */
-router.get('/:id', requireSignin, getForm)
+router.get('/:id', getForm)
 
 router.post('/digitalFrom/:userId/:formType', requireSignin, createDigitalForm)
 
