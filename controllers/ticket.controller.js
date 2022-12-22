@@ -1,12 +1,28 @@
 const Ticket = require("../models/ticket")
 const sgMail = require('@sendgrid/mail');
+const app = require("../app");
+const Mailer = require("../helpers/Mailer");
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 exports.createTicket = async (req, res) => {
     try{
         const newTicket = new Ticket({...req.body});
         const response = await newTicket.save();
-        res.json(response);
+
+        const emailData = new Mailer({
+            to: [req.body.reqEmail],
+            from: `admin+${response._id}@mymanager.com`,
+            replyTo: `admin+${response._id}@mymanager.com`,
+            subject: req.body.ticketName,
+            text: req.body.messages[0].msg,
+            attachments: {},
+          });
+          emailData
+            .sendMail()
+            .then((resp) => {
+                res.json(response);
+            })
+            .catch((err) => console.log(err));
     }
     catch(err){
         res.send({ msg: err.message.replace(/\"/g, ""), success: false });
@@ -113,4 +129,23 @@ exports.addNewMessage = async (req, res) => {
     catch(err) {
         res.send({ msg: err.message.replace(/\"/g, ""), success: false });
     }
+}
+
+exports.replyMessage = async (req, res) => {
+    const {from, to, subject, body, date} = req.body;
+
+    // Parse toEmail to get UserId
+    const ticketId  = to.split("@")[0].substring(6);
+    const result = await Ticket.findByIdAndUpdate(ticketId, {
+        $push: {
+            messages: {
+              sender: "requester_msg",
+              msg: body,
+            },
+          },
+    });
+
+    res.json(result);
+
+    app.socketEngine.notifyNewEmail(result.userId);
 }

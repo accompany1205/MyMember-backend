@@ -220,7 +220,7 @@ const server = http.createServer(app);
 const io = socketio(server);
 app.set("socketio", io);
 const engineSocket = require("./Services/scoket.io");
-new engineSocket(io);
+exports.socketEngine = new engineSocket(io);
 
 const followup_notes = require("./models/followup_notes");
 uuidv4();
