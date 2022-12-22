@@ -137,11 +137,19 @@ exports.replyMessage = async (req, res) => {
     // Parse toEmail to get UserId
     const ticketId  = to.split("@")[0].substring(6);
 
+
+    const sentences = body.split("\n");
+    let resMessage = "";
+    for (let i =0 ;i< sentences.length; i++){
+        if(sentences[i].includes("On") && sentences[i].includes("wrote:") && sentences[i].includes("@")) break;
+        resMessage = resMessage.concat(sentences[i]);
+    }
+
     const result = await Ticket.findByIdAndUpdate(ticketId, {
         $push: {
             messages: {
               sender: "requester_msg",
-              msg: str.split("##-Please type your reply above this line-##")[0],
+              msg: resMessage,
             },
           },
     });
