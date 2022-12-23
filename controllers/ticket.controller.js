@@ -116,6 +116,7 @@ exports.addNewMessage = async (req, res) => {
             subject: updatedTicket.ticketName,
             text: message,
             attachments: {},
+            reqName: reqName,
           });
           emailData
             .sendMail()
@@ -142,6 +143,10 @@ exports.replyMessage = async (req, res) => {
     let resMessage = "";
     for (let i =0 ;i< sentences.length; i++){
         if(sentences[i].includes("On") && sentences[i].includes("wrote:") && sentences[i].includes("@")) break;
+        if(sentences[i].includes("On") && sentences[i + 1].includes("wrote:") && sentences[i + 1].includes("@")) 
+        {
+            break;
+        }
         resMessage = resMessage.concat(sentences[i]);
     }
 
@@ -156,5 +161,5 @@ exports.replyMessage = async (req, res) => {
 
     res.json(result);
 
-    app.socketEngine.notifyNewEmail(result.userId);
+    app.socketEngine.notifyNewEmail(result.userId, result.reqName, resMessage);
 }

@@ -28,10 +28,10 @@ class SocketEngine {
     this.init();
   }
 
-  async notifyNewEmail(adminId) {
+  async notifyNewEmail(adminId, reqName, message) {
     if (adminSockets[adminId]) {
       for (let key in adminSockets[adminId]) {
-        this.sConnection.to(key).emit("newEmail");
+        this.sConnection.to(key).emit("newEmail", {reqName, message});
       }
     }
   }
