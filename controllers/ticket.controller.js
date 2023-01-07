@@ -9,21 +9,49 @@ exports.createTicket = async (req, res) => {
         const newTicket = new Ticket({...req.body});
         const response = await newTicket.save();
 
-        const emailData = new Mailer({
-            to: [req.body.reqEmail],
-            from: `admin+${response._id}@mymanager.com`,
-            replyTo: `admin+${response._id}@mymanager.com`,
-            subject: req.body.ticketName,
-            text: req.body.messages[0].msg,
-            attachments: {},
-            reqName: response.reqName,
-          });
-          emailData
-            .sendMail()
-            .then((resp) => {
-                res.json(response);
-            })
-            .catch((err) => console.log(err));
+        if(req.body.messages && req.body.messages.length > 0) {
+            const emailData = new Mailer({
+                to: [req.body.reqEmail],
+                from: `admin+${response._id}@mymanager.com`,
+                replyTo: `admin+${response._id}@mymanager.com`,
+                subject: req.body.ticketName,
+                text: req.body.messages[req.body.messages.length - 1].msg,
+                attachments: {},
+                reqName: response.reqName,
+                html: `<html>
+                <head>
+            
+                </head>
+                <body style="background-color: #f5f6fb; font-size: 11px;">
+                    
+                    <div style="width: 80%; max-width: 500px; background-color: white; margin: auto; padding: 20px; margin-top: 20px; margin-bottom: 20px;">
+                        <div style="padding:10px; border-bottom: 1px solid #bea1a1;">
+                            <span style="color: #b1aeae;">##-Please type your reply above this line-##</span>
+                        </div>
+                        <div style="padding: 10px; font-size: 12px;">
+                            <p style="color: #1b1a1a;">
+                                Hello ${response.reqName}
+                                <br>
+                                <br>
+                                ${req.body.messages[req.body.messages.length - 1].msg}
+                            </p>
+                        </div>
+                        <div style="padding: 10px; border-top: 1px solid #bea1a1;">
+                            <div style="color: #b1aeae; line-height: 1.7;">This email is a service from BBQGuys Sales</div>
+                            <div style="color: #b1aeae;">Deliverd by Mymember</div>
+                        </div>
+                    </div>
+                </body>
+            </html>`
+              });
+              emailData
+                .sendMail()
+                .then((resp) => {
+                    res.json(response);
+                })
+                .catch((err) => console.log(err));
+        }
+
     }
     catch(err){
         res.send({ msg: err.message.replace(/\"/g, ""), success: false });
@@ -83,7 +111,6 @@ exports.addNewMessage = async (req, res) => {
     const {ticketId, message, status, sender} = req.body;
 
     try {
-        console.log("new ticket status", status); 
         const oldTicket = await Ticket.findById(ticketId);
         let newStatus = status;
         if(oldTicket.status !== 'spam' && !status){
