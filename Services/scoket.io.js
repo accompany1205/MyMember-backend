@@ -140,7 +140,8 @@ class SocketEngine {
         // Broadcast to all clients for starting chat
         if (clientSockets[adminId][machineId]) {
           for (let key in clientSockets[adminId][machineId]) {
-            io.to(key).emit("startChat", userInfo);
+            socket.to(key).emit("startChat", userInfo);
+            socket.emit("startChat", userInfo);
           }
         }
       });
@@ -176,7 +177,8 @@ class SocketEngine {
         // Broadcast to all clients for starting chat
         if (clientSockets[adminId][machineId]) {
           for (let key in clientSockets[adminId][machineId]) {
-            io.to(key).emit("endChat", {});
+            socket.to(key).emit("endChat", {});
+            socket.emit("endChat", {})
           }
         }
       });
